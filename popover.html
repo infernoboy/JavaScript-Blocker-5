@@ -1,0 +1,328 @@
+<!--
+/***************************************
+ * @file popover.html
+ * @author Travis Roman (travis@toggleable.com)
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ ***************************************/
+-->
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	
+	<title></title>
+		
+	<link rel="stylesheet" href="css/poppy.css" type="text/css" id="poppy-style" />
+	<link rel="stylesheet" href="css/main.css" type="text/css" id="main-style"/>
+	<link rel="stylesheet" href="" type="text/css" id="main-large-style"/>
+	<link rel="stylesheet" href="" type="text/css" id="main-theme-style"/>
+	<link rel="stylesheet" href="css/highlight.css" />
+	
+	<script src="js/highlight.js"></script>
+	<script src="js/safari.js"></script>
+	<script src="js/chrome.js"></script>
+	<script src="js/popover.js"></script>
+</head>
+
+<body class="blocking-mode">
+	<div id="modal">
+		<header class="main-header"><h1 data-i18n="JavaScript Blocker"><span class="console-unread"> 0</span></h1></header>
+	</div>
+	
+	<header class="main-header"><h1 data-i18n="JavaScript Blocker"><span class="console-unread"> 0</span></h1></header>
+	
+	<div id="container">
+		<div id="quick-add-info">
+			<p>
+				<input class="orange" type="button" id="apply-quick-add" data-i18n="Apply Changes" value=" " />
+				<input type="button" id="clear-quick-add" data-i18n="Clear Selection" value=" " />
+				<span class="label" data-i18n="Closing the popover will apply changes."></span>
+			</p>
+		</div>
+
+		<div id="find-bar">
+			<input type="button" id="find-bar-done" value=" " data-i18n="Done" />
+			<input type="search" id="find-bar-search" incremental="incremental" results="10" autosave="find_on" />
+			<label for="find-bar-search" id="find-bar-matches"></label>
+		</div>
+		<div id="main" class="whoop">
+			<div id="update-warn">
+				<p data-i18n="This view contains outdated information. Scroll to the top to have it updated."></p>
+			</div>
+			
+			<div id="disabled" class="embossed">
+				<p data-i18n="JavaScript Blocker is disabled."></p>
+			</div>
+
+			<div class="filter-bar actions-bar" id="top-most">
+				<ul>
+					<li id="unlock" data-i18n="Unlock"></li>
+					<li id="disable" data-i18n="Disable JavaScript Blocker" class="divider"></li>
+					<li id="js-help" data-i18n="Help" class="divider"></li>
+					<li id="js-settings" data-i18n="Settings" class="divider"></li>
+					<li id="view-rules" data-i18n="Rules" class="divider"></li>
+					<li id="toggle-hidden" data-i18n="Show Hidden" class="divider"></li>
+					<li id="jsblocker-name"><span data-i18n="JavaScript Blocker"></span> <div class="console-unread"> 0</div></li>
+				</ul>
+				<br style="clear:both;" />
+			</div>
+
+			<p class="misc-info snapshot-info"></p>
+				
+			<div id="host-sections"></div>
+		</div>
+
+		<div id="rules-list" class="whoop">
+			<div class="info-container">
+				<p class="misc-info" id="rule-counter" data-i18n="{1} domains, {2} rules" data-i18n-fill="[0,0]"></p>
+				<p class="misc-info snapshot-info"></p>
+				<input class="orange" type="button" value=" " id="rules-list-back" data-i18n="Close Rules List" />
+			</div>
+			<div id="data">
+				<div id="rules-filter-bar" class="filter-bar">
+					<ul id="filter-type-collapse">
+						<li class="label" data-i18n="Visibility:"></li>
+						<li id="filter-all" class="selected orange" data-i18n="Any"></li>
+						<li class="orange" id="filter-collapsed" data-i18n="Collapsed"></li>
+						<li class="orange" id="filter-expanded" data-i18n="Expanded"></li>
+					</ul>
+					<div class="divider"></div>
+					<ul id="filter-type-page">
+						<li class="label" data-i18n="Type:"></li>
+						<li class="selected orange" id="filter-domain-hidden" data-i18n="Domain Based {1}" data-i18n-fill="[0]"></li>
+						<li class="orange" id="filter-page-hidden" data-i18n="Page Based {1}" data-i18n-fill="[0]"></li>
+					</ul>
+					<div class="divider"></div>
+					<ul id="filter-type-not-used" class="age-filter">
+						<li class="label" data-i18n="Not Used Within:"></li>
+						<li id="filter-age-all" class="selected orange" data-i18n="All"></li>
+						<li class="orange" id="filter-age-hour" data-i18n="Past Hour"></li>
+						<li class="orange" id="filter-age-day" data-i18n="Past Day"></li>
+						<li class="orange" id="filter-age-week" data-i18n="Past Week"></li>
+						<li class="orange" id="filter-age-month" data-i18n="Past Month"></li>
+						<li class="orange" id="filter-age-year" data-i18n="Past Year"></li>
+					</ul>
+					<div class="divider"></div>
+					<ul id="filter-type-used" class="age-filter">
+						<li class="label" data-i18n="Used Within:"></li>
+						<li id="filter-only-all" class="selected orange" data-i18n="All"></li>
+						<li class="orange" id="filter-only-hour" data-i18n="Past Hour"></li>
+						<li class="orange" id="filter-only-day" data-i18n="Past Day"></li>
+						<li class="orange" id="filter-only-week" data-i18n="Past Week"></li>
+						<li class="orange" id="filter-only-month" data-i18n="Past Month"></li>
+						<li class="orange" id="filter-only-year" data-i18n="Past Year"></li>
+					</ul>
+					<div class="divider"></div>
+					<ul id="filter-type-domain">
+						<li class="label" data-i18n="Filter:"></li>
+						<li id="li-domain-filter" class="li-text-filter">
+							<input type="search" placeholder="Domains" data-i18n="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" class="text-filter orange" />
+							<br style="clear:both;" />
+						</li>
+					</ul>
+					<div class="divider"></div>
+					<br style="clear:both;" />
+				</div>
+				<div id="rules-actions-bar" class="filter-bar actions-bar">
+					<ul id="rule-list-actions">
+						<li id="collapse-all" title=" " data-i18n="Collapse All"></li>
+						<li id="expand-all" title=" " data-i18n="Expand All"></li>
+						<li id="show-active-rules" class="divider" title=" " data-i18n="Show Active"></li>
+						<li id="show-temporary-rules" class="divider" title=" " data-i18n="Show Temporary"></li>
+						<li id="edit-domains" class="divider" title=" " data-i18n="Edit"></li>
+						<li id="make-temp-perm" class="divider" title=" " data-i18n="Make Temporary Rules Permanent"></li>
+						<li id="remove-all-temp" title=" " data-i18n="Remove Temporary Rules"></li>
+						<li id="time-machine" class="divider" title=" " data-i18n="Snapshots"></li>
+						<li id="reload-rules" title=" " data-i18n="Reload Rules"></li>
+					</ul>
+					<br style="clear:both;" />
+				</div>
+
+				<div id="rule-container">
+					<ul class="rules-wrapper"></ul>
+				</div>
+			</div>
+		</div>
+		<div id="misc" class="whoop">
+			<div class="info-container">
+				<p class="misc-header"></p>
+				<input type="button" value=" " id="misc-close" data-i18n="Close" />
+			</div>
+			<div id="misc-content"></div>
+		</div>
+		<div id="snapshots" class="whoop">
+			<div class="info-container">
+				<p class="misc-info" data-i18n="Snapshots"></p>
+				<input id="close-snapshots" value=" " type="button" data-i18n="Close Snapshots" class="purple" />
+				<input id="create-snapshot" value=" " type="button" data-i18n="Create Snapshot" class="purple" />
+			</div>
+
+			<p id="snapshots-info"></p>
+			<ul id="current-snapshots">
+				<li id="kept-snapshots">
+					<header id="head-kept-snapshots" class="snapshots-header">
+						<h3 id="kept-snapshots-header" data-i18n="Kept"></h3>
+						<a id="toggle-kept-snapshots" class="toggle-snapshots" data-i18n="Hide"></a>
+						<br style="clear:both;" />
+					</header>
+				</li>
+
+				<li id="snapshots-list-kept-container" class="snapshots-list-container">
+					<ul id="snapshots-list-kept" class="snapshots-wrapper"></ul>
+				</li>
+
+				<li id="unkept-snapshots">
+					<header id="head-unkept-snapshots" class="snapshots-header">
+						<h3 id="unkept-snapshots-header" data-i18n="Unkept"></h3>
+						<a id="toggle-unkept-snapshots" class="toggle-snapshots" data-i18n="Hide"></a>
+						<br style="clear:both;" />
+					</header>
+				</li>
+
+				<li id="snapshots-list-unkept-container" class="snapshots-list-container">
+					<ul id="snapshots-list-unkept" class="snapshots-wrapper"></ul>
+				</li>
+			</ul>
+		</div>
+
+		<div id="resize-handler"></div>
+	</div>
+	
+	<div id="hidden-extras">
+		<ul id="jsconsolelogger"><li id="console-header"><p class="misc-info">Console</p></li></ul>
+
+		<textarea id="tmpl_host_section">
+			<div class="host-section" id="host-section-<%=self.id%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>">
+				<div class="host-section-host">
+					<span class="label"><% if(self.is_main) { %><%=_('Main host')%><% } else { %><%=_('Frame host')%><% } %></span><span class="host-divider">&nbsp;</span>
+					<span class="section-host"><%=(self.host === 'blank' && !self.is_main ? 'blank - ' + self.host_host : self.host)%></span>
+					<span class="host-divider">&nbsp;</span><span class="section-hidden section-host">0 hidden</span>
+					<input type="button" class="host-toggler <%=(self.disabled ? 'disabled' : '')%>" value="<%=(self.disabled ? _('Enable') : _('Disable'))%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>" />
+				</div>
+
+				<% if (self.disabled) { %>
+				<div class="domain-disabled">
+					<p class="embossed"><%=_('JavaScript Blocker is disabled on this host.')%></p>
+				</div>
+				<% } else { %>
+
+				<div class="allowed-blocked-columns inner-section">
+					<div class="column allowed-column">
+						<div class="info-container" class="allowed-container">
+							<label class="allowed-label"><%=_('Allowed:')%></label> 
+							<span class="allowed-scripts-count scripts-count">0</span> 
+							<span class="scripts-count-type" data-i18n="hosts"></span> 
+							<input type="button" class="allowed all-action-link" value="<%=_('Block…')%>" />
+						</div>
+		
+						<div class="urls-wrapper allowed-script-urls">
+							<div class="urls-inner"></div>
+						</div>
+					</div>
+									
+					<div class="column blocked-column">
+						<div class="info-container" class="blocked-container">
+							<label class="blocked-label"><%=_('Blocked:')%></label> 
+							<span class="blocked-scripts-count scripts-count">0</span> 
+							<span class="scripts-count-type" data-i18n="hosts"></span> 
+							<input type="button" class="blocked all-action-link" value="<%=_('Allow…')%>" />
+						</div>
+		
+						<div class="urls-wrapper blocked-script-urls">
+							<div class="urls-inner"></div>
+						</div>
+					</div>
+					
+					<br style="clear:both;" />
+				</div>
+				
+				<% if (Settings.getItem('showUnblocked')) { %>
+				<div class="unblocked-section inner-section unblocked-column">
+					<div class="info-container" class="unblocked-container">
+						<label class="unblocked-label"><%=_('Unblocked:')%></label> <span class="unblocked-scripts-count scripts-count">0</span>
+					</div>
+			
+					<div class="urls-wrapper unblocked-script-urls">
+						<div class="urls-inner"></div>
+					</div>
+				</div>
+				<% } %>
+			</div>
+			<% } %>
+		</div>
+		</textarea>
+
+		<textarea id="tmpl_domain_picker">
+			<% if (!self.no_label) { %><label for="domain-picker<%=('id' in self ? '-' + self.id : '')%>"><%=_('On:')%> </label><% } %>
+			<select class="domain-picker" id="domain-picker<%=('id' in self ? '-' + self.id : '')%>" <% if ((self.domain_parts.length === 2 && self.no_all) || (self.domain_parts[0] === null && !self.no_all)) { %>class="single"<% } %>>
+			<%
+				var n;
+				for (n = 0; n < self.domain_parts.length; n++) {
+					if (self.domain_parts[n] === null || (self.no_all && n === self.domain_parts.length - 1)) continue; %>
+					<option value="<%=((n === 0 ? '' : '.') + self.domain_parts[n])%>"><%=(self.domain_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + JB.utils.escape_html(self.domain_parts[n])))%></option>
+			<% } 
+				if (self.pages) {
+					var page, option; %>
+					<optgroup label="<%=_('Pages')%>">
+						<% for (page in self.pages) {
+							option = document.createElement('option');
+							option.value = self.pages[page].regexp;
+							option.innerText = page;
+
+						%><%=option.outerHTML%>
+						<% } %>
+					</optgroup>
+				<% }
+				if (self.show_other) { %>
+					<option value="custom.other"><%=_('Other…')%></option>
+			<% } %>
+			</select>
+		</textarea>
+		
+		<textarea id="tmpl_main_wrapper">
+			<header class="head-<%=self.which%>-<%=self.kind%> kind-header visible">
+				<h3 class="<%=self.which%>-<%=self.kind%>-items"><%=self.local%></h3>
+				<a class="toggle-<%=self.kind%>-<%=self.which%>-items toggle-main">Hide</a>
+				<br style="clear:both;" />
+			</header>
+			<div class="<%=self.which%>-items-<%=self.kind%>-container item-list-container" style="overflow:hidden;">
+				<ul class="<%=self.which%>-items-<%=self.kind%> main-wrapper" data-kind="<%=self.kind%>"></ul>
+			</div>
+		</textarea>
+
+		<textarea id="tmpl_rule_wrapper_inner">
+			<%
+			var li = document.createElement('li');
+			li.id = Math.random().toString(36);
+			li.setAttribute('data-value', self.domain_display);
+			li.className = "domain-name " + (self.collapsed ? 'hidden' : '');
+			li.innerHTML = '<span class="' + self.selectable + '">' + self.domain_display + '</span>';
+			%><%=li.outerHTML%>
+			<% if (!self.no_list) {
+				li = document.createElement('li');
+				li.id = Math.random().toString(36);
+				li.setAttribute('data-value', self.domain);
+				li.setAttribute('data-encoded', JB.utils.utf8_to_b64(self.domain));
+				li.className = "domain-rules";
+				li.innerHTML = '<ul></ul>';
+			%><%=li.outerHTML%>
+			<% } %>
+		</textarea>
+
+		<textarea id="tmpl_rule_item">
+			<li>
+				<div class="bubble bubble-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><div class="inner-bubble"></div></div>
+				<span class="<%=Settings.getItem('traverseRulesRules') ? 'selectable' : ''%> rule type-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><%=self.text%></span>
+				<% if (self.button !== null && self.rtype !== 4 && self.rtype !== 5) { %><input type="button" value="<%=self.button%>" class="<% if (self.is_delete) { %>delete<% } else { %>purple<% } %>" /><% } %>
+				<div class="divider"></div>
+			</li>
+		</textarea>
+		
+		<div id="poppy-arrow-settings"></div>
+		<div id="poppy-arrow-settings-secondary"></div>
+		<div id="select-arrow-settings"></div>
+	</div>
+</body>
+</html>

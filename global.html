@@ -1,0 +1,101 @@
+<!--
+/***************************************
+ * @file global.html
+ * @author Travis Roman (travis@toggleable.com)
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ ***************************************/
+-->
+
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		
+		<title>JavaScript Blocker</title>
+		
+		<script src="js/global/tlds.js"></script>
+		<script src="js/global/hostmap.js"></script>
+		<script src="js/global/jquery.js"></script>
+		<script src="js/safari.js"></script>
+		<script src="js/promise.js"></script>
+		<script src="js/utilities.js"></script>
+		<script src="js/store.js"></script>
+		<script src="js/global/snapshot.js"></script>
+		<script src="js/global/beautify.min.js"></script>
+		<script src="js/global/settings.js"></script>
+		<script src="js/global/special.js"></script>
+		<script src="js/global/userScript.js"></script>
+		<script src="js/global/resource.js"></script>
+		<script src="js/global/rules.js"></script>
+		<script src="js/global/popover.js"></script>
+		<script src="js/global/pages.js"></script>
+		<script src="js/global/maintenance.js"></script>
+		<script src="js/global/predefined.js"></script>
+		<script src="js/global/commands.js"></script>
+
+		<script>
+			var realDomain,
+					domains,
+					rule;
+
+			// Rules.list.blacklist.rules.lock = false;
+
+			// var kinds = Rules.list.blacklist.kind('*');
+
+			// for (var domain in Blacklist.script) {
+			// 	realDomain = domain === '.*' ? '*' : domain;
+
+			// 	domains = kinds.domain(realDomain);
+
+			// 	for (rule in Blacklist.script[domain])
+			// 		domains.set(rule, {
+			// 			regexp: true,
+			// 			action: 4
+			// 		});
+			// }
+
+			// 11
+			var res = new Resource('script', 'http://a.a/', 'http://a.a/');
+			// var res = new Resource('script', 'http://a.a/', 'http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.a/');
+			// 150
+
+			var best = {};
+
+			function findBest (chunks) {
+				Resource.longRegExps.clear();
+
+				window.CHUNKS = chunks;
+
+				res.canLoad();
+
+				var times = [], total = 0;
+
+				for (var i = 0; i < 10; i++) {
+					var start = Date.now();
+
+					res.canLoad();
+
+					var end = Date.now() - start;
+
+					total += end;
+
+					times.push(end);
+				}
+
+				best[chunks] = total / times.length;
+
+				// console.log('CHUNKS:', chunks, 'TIME:', total / times.length);
+
+				// if (chunks < 10000)
+				// 	setTimeout(function (chunks) {
+				// 		findBest(chunks);
+				// 	}, 0, chunks + 5);
+				// else
+					console.log('DONE', best[chunks])
+			}
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

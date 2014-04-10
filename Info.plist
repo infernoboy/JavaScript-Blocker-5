@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>Travis Roman</string>
+	<key>Builder Version</key>
+	<string>9537.75.14</string>
+	<key>CFBundleDisplayName</key>
+	<string>JavaScript Blocker 5</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.toggleable.JavaScriptBlocker5</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>5.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>300</string>
+	<key>Chrome</key>
+	<dict>
+		<key>Database Quota</key>
+		<real>52428800</real>
+		<key>Global Page</key>
+		<string>global.html</string>
+		<key>Popovers</key>
+		<array>
+			<dict>
+				<key>Filename</key>
+				<string>popover.html</string>
+				<key>Height</key>
+				<real>350</real>
+				<key>Identifier</key>
+				<string>manageItems</string>
+				<key>Width</key>
+				<real>460</real>
+			</dict>
+		</array>
+		<key>Toolbar Items</key>
+		<array>
+			<dict>
+				<key>Identifier</key>
+				<string>popoverTrigger</string>
+				<key>Image</key>
+				<string>image/toolbar-attn.png</string>
+				<key>Label</key>
+				<string>JavaScript Blocker 5</string>
+				<key>Palette Label</key>
+				<string>JavaScript Blocker 5</string>
+				<key>Popover</key>
+				<string>manageItems</string>
+				<key>Tool Tip</key>
+				<string>JavaScript Blocker 5</string>
+			</dict>
+		</array>
+	</dict>
+	<key>Content</key>
+	<dict>
+		<key>Scripts</key>
+		<dict>
+			<key>Start</key>
+			<array>
+				<string>js/safari.js</string>
+				<string>js/promise.js</string>
+				<string>js/utilities.js</string>
+				<string>js/store.js</string>
+				<string>js/injected/compiled.js</string>
+			</array>
+		</dict>
+		<key>Stylesheets</key>
+		<array>
+			<string>css/injected.css</string>
+		</array>
+	</dict>
+	<key>Description</key>
+	<string>Controls the loading of external resources on webpages.</string>
+	<key>ExtensionInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>Permissions</key>
+	<dict>
+		<key>Website Access</key>
+		<dict>
+			<key>Include Secure Pages</key>
+			<true/>
+			<key>Level</key>
+			<string>All</string>
+		</dict>
+	</dict>
+	<key>Update Manifest URL</key>
+	<string>http://dl.dropbox.com/u/11967/extupdates.plist</string>
+	<key>Website</key>
+	<string>http://javascript-blocker.toggleable.com/</string>
+</dict>
+</plist>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+   <key>Extension Updates</key>
+   <array>
+     <dict>
+       <key>CFBundleIdentifier</key>
+       <string>com.toggleable.JavaScriptBlocker</string>
+       <key>Developer Identifier</key>
+       <string>6S8J5HV3H4</string>
+       <key>CFBundleVersion</key>
+       <string>184</string>
+       <key>CFBundleShortVersionString</key>
+       <string>4.1.6</string>
+       <key>URL</key>
+       <string>http://dl.dropbox.com/u/11967/JS%20Blocker.safariextz</string>
+     </dict>
+     <dict>
+       <key>CFBundleIdentifier</key>
+       <string>com.toggleable.JavaScriptBlockerBeta</string>
+       <key>Developer Identifier</key>
+       <string>6S8J5HV3H4</string>
+       <key>CFBundleVersion</key>
+       <string>184</string>
+       <key>CFBundleShortVersionString</key>
+       <string>4.1.6</string>
+       <key>URL</key>
+       <string>http://dl.dropbox.com/u/11967/JS%20BlockerBeta.safariextz</string>
+     </dict>
+   </array>
+</dict>
+</plist>
