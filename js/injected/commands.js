@@ -33,7 +33,7 @@ var Command = {
 			type: 'global',
 			command: event.name,
 			data: event.message
-		});
+		}, event);
 	},
 	
 	performWindow: function (event) {
@@ -54,7 +54,7 @@ var Command = {
 	},
 
 	sendCallback: function (sourceID, callbackID, result) {
-		document.dispatchEvent(new CustomEvent('JSBCallback-' + sourceID + TOKEN.EVENT, {
+		document.dispatchEvent(new CustomEvent(['JSBCallback', sourceID, TOKEN.EVENT].join(':'), {
 			detail: {
 				callbackID: callbackID,
 				result: result
@@ -62,7 +62,7 @@ var Command = {
 		}));
 	},
 
-	perform: function (object) {
+	perform: function (object, originalEvent) {
 		if (typeof object !== 'object')
 			throw new TypeError(object + ' is not an object');
 
@@ -80,7 +80,7 @@ var Command = {
 		else if (canExecute) {
 			if (commands.hasOwnProperty(detail.command)) {
 				try {
-					return commands[detail.command](detail);
+					return commands[detail.command](detail, originalEvent ? originalEvent : (object instanceof CustomEvent ? object : undefined));
 				} catch (error) {
 					LogError(['command processing error', detail.sourceName + ' => ' + detail.command, detail], error);
 
@@ -109,21 +109,30 @@ var Command = {
 				sendPage();
 			},
 
-			messageTopExtension: function (detail) {
+			messageTopExtension: function (detail, event) {
 				if (!Utilities.Page.isTop)
 					return;
 
-				var data = detail.data.meta;
+				var data = detail.data.meta,
+						foundSourceID = false;
 
-				if (!TOKEN.INJECTED[data.originSourceName])
+				for (var token in TOKEN.INJECTED)
+					if (TOKEN.INJECTED[token] === data.originSourceName) {
+						foundSourceID = true;
+
+						break;
+					}
+
+				if (!foundSourceID)
 					return LogError(['cannot execute command on top since the calling script is not injected here.', data.originSourceName]);
 
 				delete data.meta.args.meta;
 
 				var result = Special.JSBCommanderHandler({
+					type: detail.data.originalEvent.type,
+
 					detail: {
 						sourceName: data.originSourceName,
-						sourceID: TOKEN.INJECTED[data.originSourceName],
 						commandToken: Command.requestToken(data.command, data.preserve),
 						command: data.command,
 						viaFrame: detail.data.viaFrame,
@@ -132,21 +141,25 @@ var Command = {
 				});
 
 				if (data.callback) {
-					var callback = new DeepInject(null, data.callback),
-							fn = (new Function('return ' + callback.asFunction()))();
+					var callback = new DeepInject(null, data.callback);
 
-					var event = new CustomEvent('JSBCallback-' + TOKEN.INJECTED[data.originSourceName] + TOKEN.EVENT, {
+					callback.setArguments({
 						detail: {
-							perform: fn,
-							sourceID: data.originSourceID,
-							result: {
-								result: result,
-								meta: data.meta.meta
-							}
+							origin: data.originSourceID,
+							result: result,
+							meta: data.meta.meta
 						}
 					});
 
-					document.dispatchEvent(event);
+					UserScript.inject({
+						attributes: {
+							meta: {
+								name: ['Callback', data.originSourceName, Utilities.id()].join()
+							},
+
+							script: callback.executable()
+						}
+					}, true);
 				}
 			},
 
@@ -206,16 +219,20 @@ var Command = {
 				};
 			},
 
-			registerDeepInjectedScript: function (detail) {
-				if (TOKEN.INJECTED[detail.sourceName])
-					throw new Error('cannot register a script more than once.');
+			registerDeepInjectedScript: function (detail, event) {
+				if (TOKEN.REGISTERED[detail.sourceID])
+					throw new Error('cannot register a script more than once - ' + TOKEN.INJECTED[detail.sourceID]);
 
 				var newSourceID = Utilities.Token.create(detail.sourceName, true);
 
-				document.removeEventListener('JSBCommander-' + detail.sourceID + TOKEN.EVENT, Special.JSBCommanderHandler, true);
-				document.addEventListener('JSBCommander-' + newSourceID + TOKEN.EVENT, Special.JSBCommanderHandler, true);
+				document.removeEventListener(['JSBCommander', detail.sourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
+				document.addEventListener(['JSBCommander', newSourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
 
-				TOKEN.INJECTED[detail.sourceName] = newSourceID;
+				TOKEN.INJECTED[newSourceID] = TOKEN.INJECTED[detail.sourceID];
+
+				delete TOKEN.INJECTED[detail.sourceID];
+
+				TOKEN.REGISTERED[newSourceID] = true;
 
 				return {
 					sourceID: detail.sourceID,
@@ -238,7 +255,14 @@ var Command = {
 				});
 			},
 
-			messageTopExtension: function (detail) {
+			messageTopExtension: function (detail, event) {
+				detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID];
+				detail.meta.originSourceID = detail.sourceID;
+
+				detail.originalEvent = {
+					type: event.type
+				};
+
 				GlobalPage.message('bounce', {
 					command: 'messageTopExtension',
 					detail: detail

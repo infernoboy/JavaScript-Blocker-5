@@ -37,7 +37,7 @@ DeepInject.prototype.prepare = function () {
 	this.pieces = {
 		args: {},
 		header: header,
-		inner: inner.replace(/^\n|\s+$/g, '') .split(/\n/g)
+		inner: inner.replace(/^\n|\s+$/g, '').split(/\n/g)
 	};
 
 	this.setArguments();
@@ -143,7 +143,7 @@ DeepInject.prototype.injectable = function (useURL) {
 		var URL = window.URL || window.webkitURL;
 
 		if (window.Blob && URL) {
-			var	url = URL.createObjectURL(new Blob([executable], {
+			var url = URL.createObjectURL(new Blob([executable], {
 				type: 'text/javascript'
 			}));
 		} else

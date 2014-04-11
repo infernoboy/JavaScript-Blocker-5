@@ -44,7 +44,7 @@ Rule.withLocationRules = function (allRules, callback) {
 	for (ruleList in allRules) {
 		for (ruleKind in allRules[ruleList]) {
 			for (ruleType in allRules[ruleList][ruleKind]) {
-				domains = allRules[ruleList][ruleKind][ruleType].data._sort(Rules._prioritize);
+				domains = allRules[ruleList][ruleKind][ruleType].data._sort(Rules.__prioritize);
 
 				for (domain in domains)
 					if (callback(ruleList, ruleKind, ruleType, domain, domains[domain].value))
@@ -64,7 +64,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 
 		rule.rule = [rule.rule.protocols.join(','), ':', rule.rule.domain].join('');
 	} else if (typeof rule.rule !== 'string')
-		throw new TypeError(rule.rule + ' does not contain a valid rule');
+		throw new TypeError(rule.rule + ' is not a valid rule');
 
 	if (!Rules.kindSupported(kind))
 		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
@@ -90,8 +90,6 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 };
 
 Rule.prototype.__remove = function (type, kind, domain, rule) {
-	var types;
-
 	if (typeof kind === 'undefined') {
 		var self = this;
 
@@ -99,7 +97,7 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 			self.__remove(type, kind);
 		});
 	} else {
-		types = this.kind(kind);
+		var types = this.kind(kind);
 
 		if (!types.hasOwnProperty(type))
 			throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
@@ -133,9 +131,12 @@ Rule.prototype.kind = function (kindName, hide) {
 
 		var rules;
 
-		var	domains = this.getStore(type);
+		var domains = this.getStore(type);
 
-		if (Array.isArray(domain)) {			
+		if (Array.isArray(domain)) {
+			if (domain.length === 1)
+				return this.__rules(type, [domain[0], null]);
+
 			rules = new Store([domains.name, domain.join()].join(), {
 				selfDestruct: TIME.ONE_HOUR,
 				ignoreSave: true
@@ -292,14 +293,11 @@ var Rules = {
 
 	// Used to sort rules so that they are applied based on if the full host is matched or just a sub-domain.
 	// lion.toggleable.com > .lion.toggleable.com > .toggleable.com > *
-	_prioritize: function (a, b) {
-		if (a === '*' || b === '*')
+	__prioritize: function (a, b) {
+		if (a === '*' || b.length > a.length || b[0] !== '.')
 			return 1;
 
-		if (a.charAt(0) === '.' || b.charAt(0) === '^' || b > a)
-			return 1;
-
-		if (a.charAt(0) === '^' || b.charAt(0) === '.' || a > b)
+		if (b === '*' || a.length > b.length || a[0] !== '.')
 			return -1;
 
 		return 0;

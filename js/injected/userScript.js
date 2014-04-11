@@ -52,6 +52,8 @@ var UserScript = {
 
 		userScript.prepend([setup.executable(), 'var unsafeWindow, GM_info, GM_resources;']);
 
+		TOKEN.INJECTED[userScript.id] = userScript.name;
+
 		Special.setup(userScript).inject();
 
 		if (script.before && DeepInject.useURL)

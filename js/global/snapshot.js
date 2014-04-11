@@ -31,13 +31,13 @@ Snapshot.prototype.cleanStore = function () {
 };
 
 Snapshot.prototype.latest = function (returnID) {
-	var ids = this.snapshots.ids().sort().reverse();
+	var ids = this.snapshots.keys().sort().reverse();
 
 	return returnID ? ids[0] : this.snapshots.get(ids[0]);
 };
 
 Snapshot.prototype.first = function (returnID) {
-	var ids = this.snapshots.ids().sort();
+	var ids = this.snapshots.keys().sort();
 
 	return returnID ? ids[0] : this.snapshots.get(ids[0]);
 };

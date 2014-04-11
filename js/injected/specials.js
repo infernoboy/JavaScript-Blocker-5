@@ -8,8 +8,24 @@ Special.specials = {
 		messageExtension('inlineScriptsAllowed');
 	},
 
+	preserveCrucialDefaults: function () {
+		if (window[JSB.eventToken])
+			return;
+		
+		Object.defineProperty(window, JSB.eventToken, {
+			value: Object.freeze({
+				window$addEventListener: window.addEventListener.bind(window),
+				window$removeEventListener: window.removeEventListener.bind(window),
+				document$addEventListener: document.addEventListener.bind(document),
+				document$removeEventListener: document.removeEventListener.bind(document),
+				document$createEvent: document.createEvent.bind(document),
+				document$dispatchEvent: document.dispatchEvent.bind(document)
+			})
+		});
+	},
+
 	zoom: function () {
-		document.addEventListener('DOMContentLoaded', function () {
+		window[JSB.eventToken].document$addEventListener('DOMContentLoaded', function () {
 			document.body.style.setProperty('zoom', JSB.value + '%', 'important');
 		}, true);
 	},
@@ -41,15 +57,15 @@ Special.specials = {
 			window.oncontextmenu = null;
 			document.oncontextmenu = null;
 			
-			window.removeEventListener('contextmenu', stopPropagation);
-			window.removeEventListener('mousedown', stopMouseDown);
-			document.removeEventListener('contextmenu', stopPropagation);
-			document.removeEventListener('mousedown', stopMouseDown);
+			window[JSB.eventToken].window$removeEventListener('contextmenu', stopPropagation);
+			window[JSB.eventToken].window$removeEventListener('mousedown', stopMouseDown);
+			window[JSB.eventToken].document$removeEventListener('contextmenu', stopPropagation);
+			window[JSB.eventToken].document$removeEventListener('mousedown', stopMouseDown);
 			
-			window.addEventListener('contextmenu', stopPropagation, true);
-			window.addEventListener('mousedown', stopMouseDown, true);
-			document.addEventListener('contextmenu', stopPropagation, true);
-			document.addEventListener('mousedown', stopMouseDown, true);
+			window[JSB.eventToken].window$addEventListener('contextmenu', stopPropagation, true);
+			window[JSB.eventToken].window$addEventListener('mousedown', stopMouseDown, true);
+			window[JSB.eventToken].document$addEventListener('contextmenu', stopPropagation, true);
+			window[JSB.eventToken].document$addEventListener('mousedown', stopMouseDown, true);
 		};
 		
 		setInterval(blockContextMenuOverrides, 20000);
@@ -65,7 +81,7 @@ Special.specials = {
 				node.setAttribute('autocomplete', 'on');
 		}
 
-		document.addEventListener('DOMContentLoaded', function () {
+		window[JSB.eventToken].document$addEventListener('DOMContentLoaded', function () {
 			var inputs = document.getElementsByTagName('input');
 			
 			for (var i = 0; i < inputs.length; i++)
@@ -86,12 +102,13 @@ Special.specials = {
 				subtree: true
 			});
 		} else
-			document.addEventListener('DOMNodeInserted', function (event) {
+			window[JSB.eventToken].document$addEventListener('DOMNodeInserted', function (event) {
 				withNode(event.target);
 			}, true);
 	}
 };
 
 Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
+Special.specials.preserveCrucialDefaults.ignoreHelpers = true;
 
 Special.begin();

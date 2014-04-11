@@ -33,7 +33,7 @@ var Command = {
 			type: 'global',
 			command: event.name,
 			data: event.message
-		});
+		}, event);
 	},
 	
 	performWindow: function (event) {
@@ -54,7 +54,7 @@ var Command = {
 	},
 
 	sendCallback: function (sourceID, callbackID, result) {
-		document.dispatchEvent(new CustomEvent('JSBCallback-' + sourceID + TOKEN.EVENT, {
+		document.dispatchEvent(new CustomEvent(['JSBCallback', sourceID, TOKEN.EVENT].join(':'), {
 			detail: {
 				callbackID: callbackID,
 				result: result
@@ -62,7 +62,7 @@ var Command = {
 		}));
 	},
 
-	perform: function (object) {
+	perform: function (object, originalEvent) {
 		if (typeof object !== 'object')
 			throw new TypeError(object + ' is not an object');
 
@@ -80,7 +80,7 @@ var Command = {
 		else if (canExecute) {
 			if (commands.hasOwnProperty(detail.command)) {
 				try {
-					return commands[detail.command](detail);
+					return commands[detail.command](detail, originalEvent ? originalEvent : (object instanceof CustomEvent ? object : undefined));
 				} catch (error) {
 					LogError(['command processing error', detail.sourceName + ' => ' + detail.command, detail], error);
 
@@ -109,21 +109,30 @@ var Command = {
 				sendPage();
 			},
 
-			messageTopExtension: function (detail) {
+			messageTopExtension: function (detail, event) {
 				if (!Utilities.Page.isTop)
 					return;
 
-				var data = detail.data.meta;
+				var data = detail.data.meta,
+						foundSourceID = false;
 
-				if (!TOKEN.INJECTED[data.originSourceName])
+				for (var token in TOKEN.INJECTED)
+					if (TOKEN.INJECTED[token] === data.originSourceName) {
+						foundSourceID = true;
+
+						break;
+					}
+
+				if (!foundSourceID)
 					return LogError(['cannot execute command on top since the calling script is not injected here.', data.originSourceName]);
 
 				delete data.meta.args.meta;
 
 				var result = Special.JSBCommanderHandler({
+					type: detail.data.originalEvent.type,
+
 					detail: {
 						sourceName: data.originSourceName,
-						sourceID: TOKEN.INJECTED[data.originSourceName],
 						commandToken: Command.requestToken(data.command, data.preserve),
 						command: data.command,
 						viaFrame: detail.data.viaFrame,
@@ -132,21 +141,25 @@ var Command = {
 				});
 
 				if (data.callback) {
-					var callback = new DeepInject(null, data.callback),
-							fn = (new Function('return ' + callback.asFunction()))();
+					var callback = new DeepInject(null, data.callback);
 
-					var event = new CustomEvent('JSBCallback-' + TOKEN.INJECTED[data.originSourceName] + TOKEN.EVENT, {
+					callback.setArguments({
 						detail: {
-							perform: fn,
-							sourceID: data.originSourceID,
-							result: {
-								result: result,
-								meta: data.meta.meta
-							}
+							origin: data.originSourceID,
+							result: result,
+							meta: data.meta.meta
 						}
 					});
 
-					document.dispatchEvent(event);
+					UserScript.inject({
+						attributes: {
+							meta: {
+								name: ['Callback', data.originSourceName, Utilities.id()].join()
+							},
+
+							script: callback.executable()
+						}
+					}, true);
 				}
 			},
 
@@ -206,16 +219,20 @@ var Command = {
 				};
 			},
 
-			registerDeepInjectedScript: function (detail) {
-				if (TOKEN.INJECTED[detail.sourceName])
-					throw new Error('cannot register a script more than once.');
+			registerDeepInjectedScript: function (detail, event) {
+				if (TOKEN.REGISTERED[detail.sourceID])
+					throw new Error('cannot register a script more than once - ' + TOKEN.INJECTED[detail.sourceID]);
 
 				var newSourceID = Utilities.Token.create(detail.sourceName, true);
 
-				document.removeEventListener('JSBCommander-' + detail.sourceID + TOKEN.EVENT, Special.JSBCommanderHandler, true);
-				document.addEventListener('JSBCommander-' + newSourceID + TOKEN.EVENT, Special.JSBCommanderHandler, true);
+				document.removeEventListener(['JSBCommander', detail.sourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
+				document.addEventListener(['JSBCommander', newSourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
 
-				TOKEN.INJECTED[detail.sourceName] = newSourceID;
+				TOKEN.INJECTED[newSourceID] = TOKEN.INJECTED[detail.sourceID];
+
+				delete TOKEN.INJECTED[detail.sourceID];
+
+				TOKEN.REGISTERED[newSourceID] = true;
 
 				return {
 					sourceID: detail.sourceID,
@@ -238,7 +255,14 @@ var Command = {
 				});
 			},
 
-			messageTopExtension: function (detail) {
+			messageTopExtension: function (detail, event) {
+				detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID];
+				detail.meta.originSourceID = detail.sourceID;
+
+				detail.originalEvent = {
+					type: event.type
+				};
+
 				GlobalPage.message('bounce', {
 					command: 'messageTopExtension',
 					detail: detail
@@ -909,7 +933,7 @@ DeepInject.prototype.prepare = function () {
 	this.pieces = {
 		args: {},
 		header: header,
-		inner: inner.replace(/^\n|\s+$/g, '') .split(/\n/g)
+		inner: inner.replace(/^\n|\s+$/g, '').split(/\n/g)
 	};
 
 	this.setArguments();
@@ -1015,7 +1039,7 @@ DeepInject.prototype.injectable = function (useURL) {
 		var URL = window.URL || window.webkitURL;
 
 		if (window.Blob && URL) {
-			var	url = URL.createObjectURL(new Blob([executable], {
+			var url = URL.createObjectURL(new Blob([executable], {
 				type: 'text/javascript'
 			}));
 		} else
@@ -1053,6 +1077,7 @@ if (!window.safari)
 	throw new Error('preventing execution.');
 
 TOKEN.INJECTED = {};
+TOKEN.REGISTERED = {};
 
 var Special = {
 	__injected: [],
@@ -1063,15 +1088,20 @@ var Special = {
 		return (this.enabled.hasOwnProperty(special) && this.enabled[special] !== false);
 	},
 
-	JSBCommanderHandler: function (event) {
+	JSBCommanderHandler: function (event) {		
+		var pieces = event.type.split(':');
+
+		event.detail.sourceID = pieces[1];
+		event.detail.sourceName = TOKEN.INJECTED[pieces[1]];
+
 		var response = Command.perform(event);
 
 		if (response instanceof Error)
 			return;
 
-		var action = (response && response.command) ? 'JSBCommander-' : 'JSBCallback-';
+		var action = (response && response.command) ? 'JSBCommander' : 'JSBCallback';
 
-		var newEvent = new CustomEvent(action + (response && response.sourceID || event.detail.sourceID) + TOKEN.EVENT, {
+		var newEvent = new CustomEvent([action, (response && response.sourceID || event.detail.sourceID), TOKEN.EVENT].join(':'), {
 			detail: response
 		});
 
@@ -1081,6 +1111,9 @@ var Special = {
 	},
 
 	injectHelpers: function (deepInject, helpers) {
+		if (deepInject.script.ignoreHelpers)
+			return deepInject;
+
 		if (helpers.__cache)
 			return deepInject.prepend(helpers.__cache);
 
@@ -1112,8 +1145,12 @@ var Special = {
 	},
 
 	setup: function (deepInject) {
-		deepInject.setArguments({
-			JSB: {
+		if (deepInject.name === 'preserveCrucialDefaults')
+			var JSB = {
+				eventToken: TOKEN.EVENT
+			};
+		else
+			var JSB = {
 				eventCallback: {},
 				commandGeneratorToken: Utilities.Token.create('commandGeneratorToken'),
 				eventToken: TOKEN.EVENT,
@@ -1121,10 +1158,13 @@ var Special = {
 				name: deepInject.name,
 				data: deepInject.script.data,
 				value: deepInject.script.value
-			}
+			};
+
+		deepInject.setArguments({
+			JSB: JSB
 		});
 
-		document.addEventListener('JSBCommander-' + deepInject.id + TOKEN.EVENT, this.JSBCommanderHandler, true);
+		document.addEventListener(['JSBCommander', deepInject.id, TOKEN.EVENT].join(':'), this.JSBCommanderHandler, true);
 
 		return deepInject;
 	},
@@ -1133,7 +1173,7 @@ var Special = {
 		if (!this.specials.hasOwnProperty(name))
 			throw new Error('special not found.');
 
-		if (this.__injected._contains(name))
+		if (typeof useURL === 'undefined' && this.__injected._contains(name))
 			return;
 
 		var special = new DeepInject(name, this.specials[name]);
@@ -1142,6 +1182,8 @@ var Special = {
 		this.setup(special);
 
 		this.__injected.push(name);
+
+		TOKEN.INJECTED[special.id] = special.name;
 
 		special.inject(useURL);
 
@@ -1153,6 +1195,9 @@ var Special = {
 	},
 
 	begin: function () {
+		this.inject('preserveCrucialDefaults', false);
+		this.inject('preserveCrucialDefaults', true);
+
 		this.inject('inlineScriptsCheck', false);
 
 		this.enabled = GlobalCommand('enabledSpecials', {
@@ -1196,8 +1241,6 @@ var Special = {
 
 		messageTopExtension: function (command, meta, callback) {
 			messageExtension('messageTopExtension', {
-				originSourceName: JSB.name,
-				originSourceID: JSB.sourceID,
 				command: command,
 				meta: {
 					args: meta,
@@ -1242,7 +1285,7 @@ var Special = {
 				detail: undefined
 			};
 
-			var evt = document.createEvent('CustomEvent');
+			var evt = window[JSB.eventToken].document$createEvent('CustomEvent');
 
 			evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
 
@@ -1250,15 +1293,17 @@ var Special = {
 		},
 
 		JSBCallbackSetup: function (event) {
-			document.removeEventListener('JSBCallback-' + JSB.sourceID + JSB.eventToken, JSBCallbackSetup, true);
-			document.addEventListener('JSBCallback-' + JSB.sourceID + JSB.eventToken, JSBCallbackHandler, true);
+			window[JSB.eventToken].document$removeEventListener(['JSBCallback', JSB.sourceID, JSB.eventToken].join(':'), JSBCallbackSetup, true);
+			window[JSB.eventToken].document$addEventListener(['JSBCallback', JSB.sourceID, JSB.eventToken].join(':'), JSBCallbackHandler, true);
 
 			messageExtension('registerDeepInjectedScript', null, function (result) {
-				document.removeEventListener('JSBCallback-' + JSB.sourceID + JSB.eventToken, JSBCallbackHandler, true);
+				window[JSB.eventToken].document$removeEventListener(['JSBCallback', JSB.sourceID, JSB.eventToken].join(':'), JSBCallbackHandler, true);
 
-				JSB.sourceID = result.newSourceID;
+				Object.defineProperty(JSB, 'sourceID', {
+					value: result.newSourceID
+				});
 
-				document.addEventListener('JSBCallback-' + JSB.sourceID + JSB.eventToken, JSBCallbackHandler, true);
+				window[JSB.eventToken].document$addEventListener(['JSBCallback', JSB.sourceID, JSB.eventToken].join(':'), JSBCallbackHandler, true);
 			});
 		},
 
@@ -1266,8 +1311,15 @@ var Special = {
 			if (!event.detail)
 				return;
 
-			if (event.detail.perform)
-				return event.detail.perform(event.detail.result, executeCallback.bind(null, event.detail.sourceID), messageExtension);
+			if (event.detail.perform) {
+				try {
+					var perform = new Function('return ' + event.detail.perform);
+
+					return perform()(event.detail.result, executeCallback.bind(null, event.detail.sourceID), messageExtension);
+				} catch (error) {
+					return console.log('FAIL')
+				}
+			}
 
 			executeLocalCallback(event.detail.callbackID, event.detail.result);
 		},
@@ -1275,10 +1327,8 @@ var Special = {
 		JSBCommander: function (detail, meta, callback, preserve) {
 			var callbackID = registerCallback(callback, preserve);
 
-			document.dispatchEvent(new JSBCustomEvent('JSBCommander-' + JSB.sourceID + JSB.eventToken, {
+			window[JSB.eventToken].document$dispatchEvent(new JSBCustomEvent(['JSBCommander', JSB.sourceID, JSB.eventToken].join(':'), {
 				detail: {
-					sourceName: JSB.name,
-					sourceID: JSB.sourceID,
 					commandToken: detail.commandToken,
 					command: detail.command,
 					callbackID: callbackID ? callbackID : null,
@@ -1301,8 +1351,24 @@ Special.specials = {
 		messageExtension('inlineScriptsAllowed');
 	},
 
+	preserveCrucialDefaults: function () {
+		if (window[JSB.eventToken])
+			return;
+		
+		Object.defineProperty(window, JSB.eventToken, {
+			value: Object.freeze({
+				window$addEventListener: window.addEventListener.bind(window),
+				window$removeEventListener: window.removeEventListener.bind(window),
+				document$addEventListener: document.addEventListener.bind(document),
+				document$removeEventListener: document.removeEventListener.bind(document),
+				document$createEvent: document.createEvent.bind(document),
+				document$dispatchEvent: document.dispatchEvent.bind(document)
+			})
+		});
+	},
+
 	zoom: function () {
-		document.addEventListener('DOMContentLoaded', function () {
+		window[JSB.eventToken].document$addEventListener('DOMContentLoaded', function () {
 			document.body.style.setProperty('zoom', JSB.value + '%', 'important');
 		}, true);
 	},
@@ -1334,15 +1400,15 @@ Special.specials = {
 			window.oncontextmenu = null;
 			document.oncontextmenu = null;
 			
-			window.removeEventListener('contextmenu', stopPropagation);
-			window.removeEventListener('mousedown', stopMouseDown);
-			document.removeEventListener('contextmenu', stopPropagation);
-			document.removeEventListener('mousedown', stopMouseDown);
+			window[JSB.eventToken].window$removeEventListener('contextmenu', stopPropagation);
+			window[JSB.eventToken].window$removeEventListener('mousedown', stopMouseDown);
+			window[JSB.eventToken].document$removeEventListener('contextmenu', stopPropagation);
+			window[JSB.eventToken].document$removeEventListener('mousedown', stopMouseDown);
 			
-			window.addEventListener('contextmenu', stopPropagation, true);
-			window.addEventListener('mousedown', stopMouseDown, true);
-			document.addEventListener('contextmenu', stopPropagation, true);
-			document.addEventListener('mousedown', stopMouseDown, true);
+			window[JSB.eventToken].window$addEventListener('contextmenu', stopPropagation, true);
+			window[JSB.eventToken].window$addEventListener('mousedown', stopMouseDown, true);
+			window[JSB.eventToken].document$addEventListener('contextmenu', stopPropagation, true);
+			window[JSB.eventToken].document$addEventListener('mousedown', stopMouseDown, true);
 		};
 		
 		setInterval(blockContextMenuOverrides, 20000);
@@ -1358,7 +1424,7 @@ Special.specials = {
 				node.setAttribute('autocomplete', 'on');
 		}
 
-		document.addEventListener('DOMContentLoaded', function () {
+		window[JSB.eventToken].document$addEventListener('DOMContentLoaded', function () {
 			var inputs = document.getElementsByTagName('input');
 			
 			for (var i = 0; i < inputs.length; i++)
@@ -1379,13 +1445,14 @@ Special.specials = {
 				subtree: true
 			});
 		} else
-			document.addEventListener('DOMNodeInserted', function (event) {
+			window[JSB.eventToken].document$addEventListener('DOMNodeInserted', function (event) {
 				withNode(event.target);
 			}, true);
 	}
 };
 
 Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
+Special.specials.preserveCrucialDefaults.ignoreHelpers = true;
 
 Special.begin();
 "use strict";
@@ -1441,6 +1508,8 @@ var UserScript = {
 		});
 
 		userScript.prepend([setup.executable(), 'var unsafeWindow, GM_info, GM_resources;']);
+
+		TOKEN.INJECTED[userScript.id] = userScript.name;
 
 		Special.setup(userScript).inject();
 
