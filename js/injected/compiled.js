@@ -4,321 +4,358 @@ if (!window.safari)
 	throw new Error('preventing execution.');
 
 var COMMAND = {
-	UNAUTHORIZED: -195,
-	NOT_FOUND: -196,
-	EXECUTION_FAILED: -197
+	SUCCESS: 0,
+	UNAUTHORIZED: -1,
+	NOT_FOUND: -2,
+	EXECUTION_FAILED: -3,
+	WAITING: -4
 };
 
 COMMAND._createReverseMap();
 
-var Command = {
-	requestToken: function (command) {
-		return Utilities.Token.create(command);
-	},
+var Command = function (type, event) {
+	switch (type) {
+		case 'global':
+			var detail = {
+				sourceName: 'Page',
+				sourceID: TOKEN.PAGE,
+				commandToken: Command.requestToken(event.name),
+				command: event.name,
+				data: event.message
+			};
+		break;
 
-	performGlobal: function (event) {
-		// This somehow prevents the "Blocked a frame with origin..." error messages. They are completely harmless
-		// and do not affect the functionality of JSB.
-		console.log;
+		case 'window':
+			var detail = {
+				sourceName: 'Page',
+				sourceID: TOKEN.PAGE,
+				commandToken: Command.requestToken(event.data.command),
+				command: event.data.command,
+				data: event.data.data
+			};
+		break;
 
-		if (event.message)
-			try {
-				event.message = JSON.parse(event.message);
-			} catch (e) {}
-
-		Command.perform({
-			sourceName: 'Page',
-			sourceID: TOKEN.PAGE,
-			commandToken: Command.requestToken(event.name),
-			type: 'global',
-			command: event.name,
-			data: event.message
-		}, event);
-	},
-	
-	performWindow: function (event) {
-		if (!(event.data instanceof Object) || !event.data.command)
-			return;
-
-		Command.perform({
-			sourceName: 'Page',
-			sourceID: TOKEN.PAGE,
-			commandToken: Command.requestToken(event.data.command),
-			type: 'window',
-			command: event.data.command,
-			data: {
-				message: event.data.data,
-				event: event
-			}
-		});
-	},
-
-	sendCallback: function (sourceID, callbackID, result) {
-		document.dispatchEvent(new CustomEvent(['JSBCallback', sourceID, TOKEN.EVENT].join(':'), {
-			detail: {
-				callbackID: callbackID,
-				result: result
-			}
-		}));
-	},
-
-	perform: function (object, originalEvent) {
-		if (typeof object !== 'object')
-			throw new TypeError(object + ' is not an object');
-
-		var detail = object.detail || object,
-				type = Utilities.Token.valid(detail.sourceID, 'Page') ? (detail.type || 'injected') : 'injected',
-				commands = Command.commands[type];
-
-		var canExecute = (detail.command && Utilities.Token.valid(detail.commandToken, detail.command) &&
-			(Utilities.Token.valid(detail.sourceID, detail.sourceName)));
-
-		Utilities.Token.expire(detail.commandToken, true);
-
-		if (!commands)
-			return new Error(['command type not found', type]);
-		else if (canExecute) {
-			if (commands.hasOwnProperty(detail.command)) {
-				try {
-					return commands[detail.command](detail, originalEvent ? originalEvent : (object instanceof CustomEvent ? object : undefined));
-				} catch (error) {
-					LogError(['command processing error', detail.sourceName + ' => ' + detail.command, detail], error);
-
-					return new Error(COMMAND.EXECUTION_FAILED);
-				}
-			} else {
-				LogError(['command not found', detail.sourceName + ' => ' + detail.command]);
-
-				return new Error(COMMAND.NOT_FOUND);
-			}
-		} else {
-			LogError(['command authorization failed', detail.sourceName + ' => ' + detail.command]);
-
-			return new Error(COMMAND.UNAUTHORIZED);
-		}
-	},
-
-	commands: {
-		global: {
-			reload: function () {
-				if (Utilities.Page.isTop)
-					document.location.reload();
-			},
-
-			sendPage: function () {
-				sendPage();
-			},
-
-			messageTopExtension: function (detail, event) {
-				if (!Utilities.Page.isTop)
-					return;
-
-				var data = detail.data.meta,
-						foundSourceID = false;
-
-				for (var token in TOKEN.INJECTED)
-					if (TOKEN.INJECTED[token] === data.originSourceName) {
-						foundSourceID = true;
-
-						break;
-					}
-
-				if (!foundSourceID)
-					return LogError(['cannot execute command on top since the calling script is not injected here.', data.originSourceName]);
-
-				delete data.meta.args.meta;
-
-				var result = Special.JSBCommanderHandler({
-					type: detail.data.originalEvent.type,
-
-					detail: {
-						sourceName: data.originSourceName,
-						commandToken: Command.requestToken(data.command, data.preserve),
-						command: data.command,
-						viaFrame: detail.data.viaFrame,
-						meta: data.meta.args
-					}
-				});
-
-				if (data.callback) {
-					var callback = new DeepInject(null, data.callback);
-
-					callback.setArguments({
-						detail: {
-							origin: data.originSourceID,
-							result: result,
-							meta: data.meta.meta
-						}
-					});
-
-					UserScript.inject({
-						attributes: {
-							meta: {
-								name: ['Callback', data.originSourceName, Utilities.id()].join()
-							},
-
-							script: callback.executable()
-						}
-					}, true);
-				}
-			},
-
-			executeCommanderCallback: function (detail) {
-				Command.sendCallback(detail.data.sourceID, detail.data.callbackID, detail.data.result);
-			},
-
-			executeMenuCommand: function (detail) {
-				if (detail.data.pageID === TOKEN.PAGE)
-					Command.sendCallback(detail.data.sourceID, detail.data.callbackID);
-			}
-		},
-
-		window: {
-			requestFrameURL: function (detail) {				
-				window.parent.postMessage({
-					command: 'receiveFrameURL',
-					data: {
-						id: detail.data.message.id,
-						url: page.location
-					}
-				}, detail.data.event.origin);
-			},
-			receiveFrameURL: function (detail) {
-				var message = detail.data.message,
-						frame = document.getElementById(message.id);
-
-				if (!frame)
-					return LogError(['received frame URL, but frame does not exist', message.id]);
-
-				var previousURL = frame.getAttribute('data-jsbFrameURL');
-
-				Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
-
-				if (previousURL && previousURL !== message.url) {
-					canLoadResource({
-						target: frame,
-						url: message.url,
-						unblockable: !!previousURL
-					});
-				}
-
-				frame.setAttribute('data-jsbFrameURL', message.url);
-			}
-		},
-
-		injected: {
-			commandGeneratorToken: function (detail) {
-				return {
-					sourceID: detail.sourceID,
-					callbackID: detail.callbackID,
-					result: {
-						commandGeneratorToken: Command.requestToken('commandGeneratorToken'),
-						commandToken: Command.requestToken(detail.meta.command),
-						command: detail.meta.command
-					}
-				};
-			},
-
-			registerDeepInjectedScript: function (detail, event) {
-				if (TOKEN.REGISTERED[detail.sourceID])
-					throw new Error('cannot register a script more than once - ' + TOKEN.INJECTED[detail.sourceID]);
-
-				var newSourceID = Utilities.Token.create(detail.sourceName, true);
-
-				document.removeEventListener(['JSBCommander', detail.sourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
-				document.addEventListener(['JSBCommander', newSourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
-
-				TOKEN.INJECTED[newSourceID] = TOKEN.INJECTED[detail.sourceID];
-
-				delete TOKEN.INJECTED[detail.sourceID];
-
-				TOKEN.REGISTERED[newSourceID] = true;
-
-				return {
-					sourceID: detail.sourceID,
-					callbackID: detail.callbackID,
-					result: {
-						previousSourceID: detail.sourceID,
-						newSourceID: newSourceID
-					}
-				};
-			},
-
-			executeCommanderCallback: function (detail) {
-				GlobalPage.message('bounce', {
-					command: 'executeCommanderCallback',
-					detail: {
-						sourceID: detail.meta.sourceID,
-						callbackID: detail.meta.callbackID,
-						result: detail.meta.result
-					}
-				});
-			},
-
-			messageTopExtension: function (detail, event) {
-				detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID];
-				detail.meta.originSourceID = detail.sourceID;
-
-				detail.originalEvent = {
-					type: event.type
-				};
-
-				GlobalPage.message('bounce', {
-					command: 'messageTopExtension',
-					detail: detail
-				});
-			},
-
-			inlineScriptsAllowed: function (detail) {
-				DeepInject.useURL = false;
-			},
-
-			registerMenuCommand: function (detail) {
-				if (UserScript.menuCommand[detail.meta.caption])
-					return LogError(['menu item with caption already exist', detail.meta.caption]);
-
-				UserScript.menuCommand[detail.meta.caption] = {
-					sourceID: detail.sourceID,
-					callbackID: detail.callbackID
-				};
-			},
-
-			notification: Utilities.noop,
-
-			canLoadXHR: function (detail) {
-				var info = {
-					id: detail.id,
-					meta: detail,
-					canLoad:  GlobalCommand('canLoadResource', {
-						kind: detail.kind,
-						pageLocation: page.location,
-						source: detail.source,
-						isFrame: page.isFrame
-					})
-				};
-
-				if (info.canLoad.action < 0 && enabled_specials.ajax_intercept.value === 1) {
-					info.str = detail.str;
-					info.kind = detail.kind;
-					info.source = detail.source;
-					info.data = detail.data;
-					info.rule = detail.source._escapeRegExp();
-					info.domain_parts = ResourceCanLoad(beforeLoad, ['arbitrary', 'domain_parts', parseURL(pageHost()).host]);
-				}
-
-				sendCallback(sourceID, detail.callback, o);
-			},
-
-			testCommand: function (detail) {
-				return 3;
-			}
-		}
+		case 'injected':
+			var detail = event.detail;
+		break;
 	}
+
+	detail.type = type;
+
+	var InternalCommand = function (detail, event) {
+		this.status = COMMAND.WAITING;
+
+		detail.type = Utilities.Token.valid(detail.sourceID, 'Page') ? (detail.type || 'injected') : 'injected';
+
+		this.commands = Commands[detail.type];
+
+		if (!this.commands) {
+			this.status = COMMAND.NOT_FOUND;
+
+			return LogError(['command type not found', detail.type]);
+		}
+
+		if (!this.commands.hasOwnProperty(detail.command)) {
+			this.status = COMMAND.NOT_FOUND;
+
+			return LogError('command not found - ' + detail.command);
+		}
+
+		if (detail.command._startsWith('__')) {
+			this.status = COMMAND.NOT_FOUND;
+
+			return LogError('cannot call commands that begin with __');
+		}
+
+		var canExecute = (detail.command && Utilities.Token.valid(detail.commandToken, detail.command, true) &&
+			Utilities.Token.valid(detail.sourceID, detail.sourceName));
+
+		if (!canExecute) {
+			this.status = COMMAND.UNAUTHORIZED;
+
+			return LogError(['command authorization failed', detail.sourceName + ' => ' + detail.command]);
+		}
+
+		try {
+			this.result = this.commands[detail.command](detail, event);
+
+			this.status = COMMAND.SUCCESS;
+		} catch (error) {
+			this.status = COMMAND.EXECUTION_FAILED;
+
+			return LogError(['command processing error', detail.sourceName + ' => ' + detail.command, detail], error);
+		}
+	};
+
+	var Commands = {};
+
+	Commands.global = {
+		reload: function () {
+			if (Utilities.Page.isTop)
+				document.location.reload();
+		},
+
+		sendPage: function () {
+			sendPage();
+		},
+
+		messageTopExtension: function (detail, event) {
+			if (!Utilities.Page.isTop)
+				return;
+
+			var data = detail.data.meta,
+					foundSourceID = false;
+
+			for (var token in TOKEN.INJECTED)
+				if (TOKEN.INJECTED[token].name === data.originSourceName) {
+					foundSourceID = true;
+
+					break;
+				}
+
+			if (!foundSourceID)
+				return LogError(['cannot execute command on top since the calling script is not injected here.', data.originSourceName, document.location.href]);
+
+			delete data.meta.args.meta;
+
+			var result = Special.JSBCommanderHandler({
+				type: detail.data.originalEvent.type,
+
+				detail: {
+					commandToken: Command.requestToken(data.command, data.preserve),
+					command: data.command,
+					viaFrame: detail.data.viaFrame,
+					meta: data.meta.args
+				}
+			});
+
+			if (data.callback) {
+				var callback = new DeepInject(null, data.callback),
+						name = ['TopCallback', data.originSourceName, Utilities.id()].join();
+
+				callback.setArguments({
+					detail: {
+						origin: data.originSourceID,
+						result: result,
+						meta: data.meta.meta
+					}
+				});
+
+				UserScript.inject({
+					attributes: {
+						meta: {
+							name: name,
+							trueNamespace: name
+						},
+
+						script: callback.executable()
+					}
+				}, true);
+			}
+		},
+
+		executeCommanderCallback: function (detail) {
+			Command.sendCallback(detail.data.sourceID, detail.data.callbackID, detail.data.result);
+		},
+
+		executeMenuCommand: function (detail) {
+			if (detail.data.pageID === TOKEN.PAGE)
+				Command.sendCallback(detail.data.sourceID, detail.data.callbackID);
+		}
+	};
+
+	Commands.window = {
+		requestFrameURL: function (detail, event) {				
+			window.parent.postMessage({
+				command: 'receiveFrameURL',
+				data: {
+					id: detail.data.id,
+					url: page.location
+				}
+			}, event.origin);
+		},
+		receiveFrameURL: function (detail) {
+			var message = detail.data,
+					frame = document.getElementById(message.id);
+
+			if (!frame)
+				return LogError(['received frame URL, but frame does not exist', message.id]);
+
+			var previousURL = frame.getAttribute('data-jsbFrameURL');
+
+			Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
+
+			if (previousURL && previousURL !== message.url) {
+				canLoadResource({
+					target: frame,
+					url: message.url,
+					unblockable: !!previousURL
+				});
+			}
+
+			frame.setAttribute('data-jsbFrameURL', message.url);
+		}
+	};
+
+	Commands.injected = {
+		commandGeneratorToken: function (detail) {
+			return {
+				sourceID: detail.sourceID,
+				callbackID: detail.callbackID,
+				result: {
+					commandGeneratorToken: Command.requestToken('commandGeneratorToken'),
+					commandToken: Command.requestToken(detail.meta.command),
+					command: detail.meta.command
+				}
+			};
+		},
+
+		registerDeepInjectedScript: function (detail, event) {
+			if (TOKEN.REGISTERED[detail.sourceID])
+				throw new Error('cannot register a script more than once - ' + TOKEN.INJECTED[detail.sourceID].namespace);
+
+			var newSourceID = Utilities.Token.create(detail.sourceName, true);
+
+			document.removeEventListener(['JSBCommander', detail.sourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
+			document.addEventListener(['JSBCommander', newSourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
+
+			TOKEN.INJECTED[newSourceID] = TOKEN.INJECTED[detail.sourceID];
+
+			delete TOKEN.INJECTED[detail.sourceID];
+
+			TOKEN.REGISTERED[newSourceID] = true;
+
+			return {
+				sourceID: detail.sourceID,
+				callbackID: detail.callbackID,
+				result: {
+					previousSourceID: detail.sourceID,
+					newSourceID: newSourceID
+				}
+			};
+		},
+
+		executeCommanderCallback: function (detail) {
+			GlobalPage.message('bounce', {
+				command: 'executeCommanderCallback',
+				detail: {
+					sourceID: detail.meta.sourceID,
+					callbackID: detail.meta.callbackID,
+					result: detail.meta.result
+				}
+			});
+		},
+
+		messageTopExtension: function (detail, event) {
+			detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].name;
+			detail.meta.originSourceID = detail.sourceID;
+
+			detail.originalEvent = {
+				type: event.type
+			};
+
+			GlobalPage.message('bounce', {
+				command: 'messageTopExtension',
+				detail: detail
+			});
+		},
+
+		storageSetItem: function (detail) {
+			detail.meta.namespace = TOKEN.INJECTED[detail.sourceID].namespace;
+
+			GlobalPage.message(detail.command, detail.meta);
+		},
+
+		inlineScriptsAllowed: function (detail) {				
+			DeepInject.useURL = false;
+		},
+
+		registerMenuCommand: function (detail) {
+			if (UserScript.menuCommand[detail.meta.caption])
+				return LogError(['menu item with caption already exist', detail.meta.caption]);
+
+			UserScript.menuCommand[detail.meta.caption] = {
+				sourceID: detail.sourceID,
+				callbackID: detail.callbackID
+			};
+		},
+
+		notification: Utilities.noop,
+
+		canLoadXHR: function (detail) {
+			var info = {
+				id: detail.id,
+				meta: detail,
+				canLoad:  GlobalCommand('canLoadResource', {
+					kind: detail.kind,
+					pageLocation: page.location,
+					source: detail.source,
+					isFrame: page.isFrame
+				})
+			};
+
+			if (info.canLoad.action < 0 && enabled_specials.ajax_intercept.value === 1) {
+				info.str = detail.str;
+				info.kind = detail.kind;
+				info.source = detail.source;
+				info.data = detail.data;
+				info.rule = detail.source._escapeRegExp();
+				info.domain_parts = ResourceCanLoad(beforeLoad, ['arbitrary', 'domain_parts', parseURL(pageHost()).host]);
+			}
+
+			sendCallback(sourceID, detail.callback, o);
+		},
+
+		testCommand: function (detail) {
+			return 3;
+		}
+	};
+
+	var command = new InternalCommand(detail, event);
+
+	if (command.status === COMMAND.SUCCESS)
+		return command.result;
+	else
+		return new Error(command.status);
 };
 
-Events.addTabListener('message', Command.performGlobal, true);
+Command.requestToken = function (command) {
+	return Utilities.Token.create(command);
+};
 
-window.addEventListener('message', Command.performWindow, true);
+Command.sendCallback = function (sourceID, callbackID, result) {
+	document.dispatchEvent(new CustomEvent(['JSBCallback', sourceID, TOKEN.EVENT].join(':'), {
+		detail: {
+			callbackID: callbackID,
+			result: result
+		}
+	}));
+};
+
+Command.global = function (event) {
+	// Somehow prevents excessive "Blocked a frame with origin..." errors. While it does not affect functionality, it does
+	// look ugly.
+	console.log;
+
+	if (event.message)
+		try {
+			event.message = JSON.parse(event.message);
+		} catch (error) {}
+
+	Command('global', event);
+};
+
+Command.window = function (event) {
+	if (!(event.data instanceof Object) || !event.data.command)
+		return;
+
+	Command('window', event);
+};
+
+
+Events.addTabListener('message', Command.global, true);
+
+window.addEventListener('message', Command.window, true);
 "use strict";
 
 if (!window.safari)
@@ -406,7 +443,7 @@ var ifSetting = (function () {
 		return new Promise(function (resolve, reject) {
 			for (var i = 0; i < checkSettings.length; i++) {
 				if (typeof checkSettings[i] !== 'string')
-					return reject(TypeError('setting is not a string'));
+					return reject(TypeError(checkSettings[i] + ' is not a string'));
 
 				if (!(checkSettings[i] in settings))
 					settings[checkSettings[i]] = GlobalCommand('getSetting', checkSettings[i]);
@@ -763,9 +800,7 @@ function canLoadResource (event, excludeFromPage, meta) {
 	} else {
 		Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
 
-		if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'Placeholder')) {
-			Utilities.Token.expire(element.getAttribute('data-jsbWasPlaceholder'));
-		
+		if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'WasPlaceholder', true)) {		
 			element.removeAttribute('data-jsbWasPlaceholder');
 			element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
 		}
@@ -903,17 +938,21 @@ function DeepInject (name, script) {
 	if (typeof name !== 'string')
 		name = '';
 
-	this.name = name.replace(/([^a-zA-Z_0-9])/g, '_');
-	this.fnName = this.name;
+	this.name = name;
+	this.cleanName = name.replace(/([^a-zA-Z_0-9])/g, '_');
+	this.fnName = this.cleanName;
 	this.script = script;
 	this.scriptString = script.toString();
 	this.id = Utilities.Token.create(this.name);
+
+	if (!DeepInject.fnHeaderRegExp.test(this.scriptString))
+		this.scriptString = 'function () {' + this.scriptString + '}';
 
 	this.prepare();
 };
 
 DeepInject.useURL = true;
-DeepInject.fnHeaderRegExp = /(function +)(\(([^\)]+)?\))/;
+DeepInject.fnHeaderRegExp = /^(function +)(\(([^\)]+)?\)) +{/;
 
 DeepInject.prototype.anonymize = function () {
 	this.fnName = '';
@@ -923,8 +962,8 @@ DeepInject.prototype.anonymize = function () {
 
 DeepInject.prototype.prepare = function () {
 	var self = this,
-			header =  this.scriptString.substr(0, this.scriptString.indexOf('{')),
-			inner = this.scriptString.substring(header.length + 1, this.scriptString.lastIndexOf('}'));
+			header =  this.scriptString.substr(0, this.scriptString.indexOf('{') + 1),
+			inner = this.scriptString.substring(header.length, this.scriptString.lastIndexOf('}'));
 
 	header = header.replace(DeepInject.fnHeaderRegExp, function (complete, fn, argString) {
 		return 'function ' + self.fnName + ' ' + argString + ' {';
@@ -1048,7 +1087,8 @@ DeepInject.prototype.injectable = function (useURL) {
 		scriptElement.src = url;
 
 		scriptElement.onload = function () {
-			// document.documentElement.removeChild(this);
+			if (!globalInfo('debugMode'))
+				document.documentElement.removeChild(this);
 
 			URL.revokeObjectURL(url);
 		};
@@ -1068,8 +1108,8 @@ DeepInject.prototype.inject = function (useURL) {
 	else
 		document.documentElement.appendChild(injectable);
 
-	// if (!DeepInject.useURL)
-		// document.documentElement.removeChild(injectable);
+	if ((useURL === false || DeepInject.useURL === false) && !globalInfo('debugMode'))
+		document.documentElement.removeChild(injectable);
 };
 "use strict";
 
@@ -1091,13 +1131,16 @@ var Special = {
 	JSBCommanderHandler: function (event) {		
 		var pieces = event.type.split(':');
 
-		event.detail.sourceID = pieces[1];
-		event.detail.sourceName = TOKEN.INJECTED[pieces[1]];
+		if (pieces.length !== 3 || !TOKEN.INJECTED.hasOwnProperty(pieces[1]) || pieces[2] !== TOKEN.EVENT)
+			return;
 
-		var response = Command.perform(event);
+		event.detail.sourceID = pieces[1];
+		event.detail.sourceName = TOKEN.INJECTED[pieces[1]].name;
+
+		var response = Command('injected', event);
 
 		if (response instanceof Error)
-			return;
+			return console.error('command error', response.message, '-', COMMAND[response.message]);
 
 		var action = (response && response.command) ? 'JSBCommander' : 'JSBCallback';
 
@@ -1145,17 +1188,16 @@ var Special = {
 	},
 
 	setup: function (deepInject) {
-		if (deepInject.name === 'preserveCrucialDefaults')
+		if (deepInject.script.ignoreHelpers)
 			var JSB = {
 				eventToken: TOKEN.EVENT
 			};
 		else
 			var JSB = {
 				eventCallback: {},
-				commandGeneratorToken: Utilities.Token.create('commandGeneratorToken'),
+				commandGeneratorToken: Command.requestToken('commandGeneratorToken'),
 				eventToken: TOKEN.EVENT,
 				sourceID: deepInject.id,
-				name: deepInject.name,
 				data: deepInject.script.data,
 				value: deepInject.script.value
 			};
@@ -1181,9 +1223,12 @@ var Special = {
 		this.injectHelpers(special, this.helpers);
 		this.setup(special);
 
-		this.__injected.push(name);
+		this.__injected._pushMissing(name);
 
-		TOKEN.INJECTED[special.id] = special.name;
+		TOKEN.INJECTED[special.id] = {
+			namespace: special.name,
+			name: special.name
+		};
 
 		special.inject(useURL);
 
@@ -1310,16 +1355,6 @@ var Special = {
 		JSBCallbackHandler: function (event) {
 			if (!event.detail)
 				return;
-
-			if (event.detail.perform) {
-				try {
-					var perform = new Function('return ' + event.detail.perform);
-
-					return perform()(event.detail.result, executeCallback.bind(null, event.detail.sourceID), messageExtension);
-				} catch (error) {
-					return console.log('FAIL')
-				}
-			}
 
 			executeLocalCallback(event.detail.callbackID, event.detail.result);
 		},
@@ -1470,51 +1505,71 @@ var UserScript = {
 	},
 
 	inject: function (script, excludeFromPage) {
-		var attributes = script.attributes;
+		var isSafe = false,
+				attributes = script.attributes;
 
 		if (typeof attributes.script === 'string') {
 			try {
-				attributes.script = (new Function('return function () {' + attributes.script + '}'))();
+				attributes.script = (new Function("return function () {\n" + attributes.script + "\n}"))();
+
+				isSafe = true
 			} catch (error) {
-				return LogError(['unable to inject user script', attributes.meta.name], error);
+				if (error.message._contains('unsafe-eval') || error instanceof EvalError) {
+					isSafe = GlobalCommand('verifyScriptSafety', attributes.script);
+
+					LogError(['received an unsafe-eval error from within an injected script.', attributes.meta.name]);
+				} else
+					LogError(['unable to inject user script', attributes.meta.name], error);
+
+				if (!isSafe)
+					return;
 			}
 		}
 
-		if (typeof attributes.script !== 'function')
+		if (typeof attributes.script !== 'function' && !isSafe)
 			return LogError(['user script did not transform into a function', attributes.meta.name]);
 
-		var userScript = new DeepInject(attributes.meta.name, attributes.script);
+		var userScript = new DeepInject(attributes.meta.trueNamespace, attributes.script);
 
 		userScript.anonymize();
 
 		Special.injectHelpers(userScript, this.helpers);
 		Special.injectHelpers(userScript, Special.helpers);
 
-		var setup = new DeepInject('userScriptSetup', function (info, resources) {
+		var userScriptSetup = new DeepInject('userScriptSetup', function (setup) {
 			unsafeWidnow = window;
+
+			JSB.storage = setup.storage;
 			
-			GM_info = info;
-			GM_resources = resources;
+			GM_info = setup.info;
+			GM_resources = setup.resources;
 		});
 
-		setup.setArguments({
-			info: {
-				scriptMetaStr: attributes.metaStr,
-				scriptWillUpdate: attributes.autoUpdate,
-				version: null,
-				script: attributes.meta
-			},
-			resources: script.resources || {}
+		userScriptSetup.setArguments({
+			setup: {
+				info: {
+					scriptMetaStr: attributes.metaStr,
+					scriptWillUpdate: attributes.autoUpdate,
+					version: 5,
+					script: attributes.meta
+				},
+
+				resources: script.resources || {},
+				storage: script.storage || {}
+			}
 		});
 
-		userScript.prepend([setup.executable(), 'var unsafeWindow, GM_info, GM_resources;']);
+		userScript.prepend([userScriptSetup.executable(), 'var unsafeWindow, GM_info, GM_resources;']);
 
-		TOKEN.INJECTED[userScript.id] = userScript.name;
+		TOKEN.INJECTED[userScript.id] = {
+			namespace: attributes.meta.trueNamespace,
+			name: userScript.name
+		};
 
 		Special.setup(userScript).inject();
 
-		if (script.before && DeepInject.useURL)
-			console.warn('This page does not allow inline scripts.', attributes.meta.name, 'may not function as expected.');
+		if (attributes.before && DeepInject.useURL)
+			console.warn('This page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
 
 		if (excludeFromPage !== true)
 			allowedItems.getStore('user_script').get('all', [], true).push({
@@ -1565,20 +1620,28 @@ var UserScript = {
 
 	helpers: {
 		GM_getValue: function (key, defaultValue) {
-			var value = window.localStorage.getItem(GM_info.script.trueNamespace + key);
+			if (!JSB.storage.hasOwnProperty(key))
+				return defaultValue;
 
-			return value === null ? (defaultValue !== undefined ? defaultValue : null) : value;
+			return JSB.storage[key];
 		},
 		GM_setValue: function (key, value) {
-			window.localStorage.setItem(GM_info.script.trueNamespace + key, value);
+			JSB.storage[key] = value;
+
+			messageExtension('storageSetItem', {
+				key: key,
+				value: value
+			});
 		},
 		GM_deleteValue: function (key) {
-			window.localStorage.removeItem(GM_info.script.trueNamespace + key);
+			delete JSB.storage[key];
+
+			messageExtension('storageRemoveItem', {
+				key: key
+			});
 		},
 		GM_listValues: function () {
-			return Object.keys(window.localStorage).filter(function (key) {
-				return key.indexOf(GM_info.script.trueNamespace) === 0;
-			});		
+			return Object.keys(JSB.storage);		
 		},
 
 		// RESOURCES

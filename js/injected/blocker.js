@@ -85,7 +85,7 @@ var ifSetting = (function () {
 		return new Promise(function (resolve, reject) {
 			for (var i = 0; i < checkSettings.length; i++) {
 				if (typeof checkSettings[i] !== 'string')
-					return reject(TypeError('setting is not a string'));
+					return reject(TypeError(checkSettings[i] + ' is not a string'));
 
 				if (!(checkSettings[i] in settings))
 					settings[checkSettings[i]] = GlobalCommand('getSetting', checkSettings[i]);
@@ -442,9 +442,7 @@ function canLoadResource (event, excludeFromPage, meta) {
 	} else {
 		Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
 
-		if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'Placeholder')) {
-			Utilities.Token.expire(element.getAttribute('data-jsbWasPlaceholder'));
-		
+		if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'WasPlaceholder', true)) {		
 			element.removeAttribute('data-jsbWasPlaceholder');
 			element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
 		}

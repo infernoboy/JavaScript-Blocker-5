@@ -260,8 +260,11 @@ var Utilities = {
 			create: function (value, keep) {
 				var token = this.generate();
 
+				if (tokens[token])
+					return this.create(value, keep);
+
 				tokens[token] = {
-					value: value || undefined,
+					value: value,
 					keep: !!keep
 				};
 
@@ -513,7 +516,7 @@ var LogError = function () {
 				.join(' - ');
 
 		if (error instanceof Error) {
-			errorStack = error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/');
+			errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
 
 			if (error.sourceURL)
 				errorMessage = error.message + ' - ' + error.sourceURL.replace(ExtensionURL(), '/') +  ' line ' + error.line;
@@ -522,16 +525,21 @@ var LogError = function () {
 		} else
 			errorMessage = error;
 
-		console.error('(JSB)', errorMessage);
+		if (!Utilities.Page.isGlobal)
+			GlobalPage.message('logError', {
+				source: document.location.href,
+				message: errorMessage
+			});
 
-		if (errorStack) {
-			console.groupCollapsed('(JSB) Stack');
-			console.error(errorStack);
-			console.groupEnd();
+		if (Utilities.Page.isGlobal || globalInfo('debugMode')) {
+			console.error('(JSB)', errorMessage);
+
+			if (errorStack) {
+				console.groupCollapsed('(JSB) Stack');
+				console.error(errorStack);
+				console.groupEnd();
+			}
 		}
-
-		if (!SettingStore.available())
-			GlobalPage.message('logError', errorMessage);
 	}
 };
 

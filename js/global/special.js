@@ -3,7 +3,7 @@
 var Special = {
 	__enabled: null,
 
-	__locationEnabled: function (specials, kind, location, isFrame) {
+	__forLocation: function (specials, kind, location, isFrame) {
 		var rule,
 				special;
 
@@ -31,8 +31,8 @@ var Special = {
 		return enabled;
 	},
 
-	locationEnabled: function (location, isFrame) {
-		return this.__locationEnabled(this.enabled, 'special', location, isFrame);
+	forLocation: function (location, isFrame) {
+		return this.__forLocation(this.enabled, 'special', location, isFrame);
 	},
 
 	get enabled () {

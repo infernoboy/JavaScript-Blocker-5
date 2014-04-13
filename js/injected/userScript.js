@@ -13,51 +13,71 @@ var UserScript = {
 	},
 
 	inject: function (script, excludeFromPage) {
-		var attributes = script.attributes;
+		var isSafe = false,
+				attributes = script.attributes;
 
 		if (typeof attributes.script === 'string') {
 			try {
-				attributes.script = (new Function('return function () {' + attributes.script + '}'))();
+				attributes.script = (new Function("return function () {\n" + attributes.script + "\n}"))();
+
+				isSafe = true
 			} catch (error) {
-				return LogError(['unable to inject user script', attributes.meta.name], error);
+				if (error.message._contains('unsafe-eval') || error instanceof EvalError) {
+					isSafe = GlobalCommand('verifyScriptSafety', attributes.script);
+
+					LogError(['received an unsafe-eval error from within an injected script.', attributes.meta.name]);
+				} else
+					LogError(['unable to inject user script', attributes.meta.name], error);
+
+				if (!isSafe)
+					return;
 			}
 		}
 
-		if (typeof attributes.script !== 'function')
+		if (typeof attributes.script !== 'function' && !isSafe)
 			return LogError(['user script did not transform into a function', attributes.meta.name]);
 
-		var userScript = new DeepInject(attributes.meta.name, attributes.script);
+		var userScript = new DeepInject(attributes.meta.trueNamespace, attributes.script);
 
 		userScript.anonymize();
 
 		Special.injectHelpers(userScript, this.helpers);
 		Special.injectHelpers(userScript, Special.helpers);
 
-		var setup = new DeepInject('userScriptSetup', function (info, resources) {
+		var userScriptSetup = new DeepInject('userScriptSetup', function (setup) {
 			unsafeWidnow = window;
+
+			JSB.storage = setup.storage;
 			
-			GM_info = info;
-			GM_resources = resources;
+			GM_info = setup.info;
+			GM_resources = setup.resources;
 		});
 
-		setup.setArguments({
-			info: {
-				scriptMetaStr: attributes.metaStr,
-				scriptWillUpdate: attributes.autoUpdate,
-				version: null,
-				script: attributes.meta
-			},
-			resources: script.resources || {}
+		userScriptSetup.setArguments({
+			setup: {
+				info: {
+					scriptMetaStr: attributes.metaStr,
+					scriptWillUpdate: attributes.autoUpdate,
+					version: 5,
+					script: attributes.meta
+				},
+
+				resources: script.resources || {},
+				storage: script.storage || {}
+			}
 		});
 
-		userScript.prepend([setup.executable(), 'var unsafeWindow, GM_info, GM_resources;']);
+		userScript.prepend([userScriptSetup.executable(), 'var unsafeWindow, GM_info, GM_resources;']);
 
-		TOKEN.INJECTED[userScript.id] = userScript.name;
+		TOKEN.INJECTED[userScript.id] = {
+			namespace: attributes.meta.trueNamespace,
+			name: userScript.name
+		};
 
 		Special.setup(userScript).inject();
 
-		if (script.before && DeepInject.useURL)
-			console.warn('This page does not allow inline scripts.', attributes.meta.name, 'may not function as expected.');
+		if (attributes.before && DeepInject.useURL)
+			console.warn('This page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
 
 		if (excludeFromPage !== true)
 			allowedItems.getStore('user_script').get('all', [], true).push({
@@ -108,20 +128,28 @@ var UserScript = {
 
 	helpers: {
 		GM_getValue: function (key, defaultValue) {
-			var value = window.localStorage.getItem(GM_info.script.trueNamespace + key);
+			if (!JSB.storage.hasOwnProperty(key))
+				return defaultValue;
 
-			return value === null ? (defaultValue !== undefined ? defaultValue : null) : value;
+			return JSB.storage[key];
 		},
 		GM_setValue: function (key, value) {
-			window.localStorage.setItem(GM_info.script.trueNamespace + key, value);
+			JSB.storage[key] = value;
+
+			messageExtension('storageSetItem', {
+				key: key,
+				value: value
+			});
 		},
 		GM_deleteValue: function (key) {
-			window.localStorage.removeItem(GM_info.script.trueNamespace + key);
+			delete JSB.storage[key];
+
+			messageExtension('storageRemoveItem', {
+				key: key
+			});
 		},
 		GM_listValues: function () {
-			return Object.keys(window.localStorage).filter(function (key) {
-				return key.indexOf(GM_info.script.trueNamespace) === 0;
-			});		
+			return Object.keys(JSB.storage);		
 		},
 
 		// RESOURCES

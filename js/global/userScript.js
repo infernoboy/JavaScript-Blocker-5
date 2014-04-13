@@ -79,8 +79,8 @@ var UserScript = {
 		}
 	},
 
-	locationEnabled: function (location, isFrame) {
-		var scripts = Special.__locationEnabled(this.scripts.data, 'user_script', location, isFrame);
+	forLocation: function (location, isFrame) {
+		var scripts = Special.__forLocation(this.scripts.data, 'user_script', location, isFrame);
 
 		for (var namespace in scripts) {
 			if (!scripts[namespace])
@@ -135,7 +135,8 @@ var UserScript = {
 							self.add(script, true);
 						});
 					}
-				}
+				} else
+					LogError(['attempted to update user script, but updated name is not equal to current name.', currentMeta.trueNamespace, updateMeta.trueNamespace]);
 			});
 		}
 	},
@@ -237,6 +238,10 @@ var UserScript = {
 		};
 	},
 
+	exist: function (namespace) {
+		return !!this.scripts.get(namespace, false);
+	},
+
 	add: function (script, isAutoUpdate) {
 		var parsed = this.parse(script),
 				detail = parsed.parsed;
@@ -247,7 +252,7 @@ var UserScript = {
 		var canBeUpdated = this.canBeUpdated(detail);
 
 		if (isAutoUpdate && !canBeUpdated)
-			return LogError('attempted to update a script but the new version will no longer be able to auto update. this is not allowed.');
+			return LogError('attempted to update a script, but the new version will no longer be able to auto update.');
 
 		var namespace = detail.trueNamespace,
 				userScript = this.scripts.getStore(namespace),

@@ -18,13 +18,16 @@ var Special = {
 	JSBCommanderHandler: function (event) {		
 		var pieces = event.type.split(':');
 
-		event.detail.sourceID = pieces[1];
-		event.detail.sourceName = TOKEN.INJECTED[pieces[1]];
+		if (pieces.length !== 3 || !TOKEN.INJECTED.hasOwnProperty(pieces[1]) || pieces[2] !== TOKEN.EVENT)
+			return;
 
-		var response = Command.perform(event);
+		event.detail.sourceID = pieces[1];
+		event.detail.sourceName = TOKEN.INJECTED[pieces[1]].name;
+
+		var response = Command('injected', event);
 
 		if (response instanceof Error)
-			return;
+			return console.error('command error', response.message, '-', COMMAND[response.message]);
 
 		var action = (response && response.command) ? 'JSBCommander' : 'JSBCallback';
 
@@ -72,17 +75,16 @@ var Special = {
 	},
 
 	setup: function (deepInject) {
-		if (deepInject.name === 'preserveCrucialDefaults')
+		if (deepInject.script.ignoreHelpers)
 			var JSB = {
 				eventToken: TOKEN.EVENT
 			};
 		else
 			var JSB = {
 				eventCallback: {},
-				commandGeneratorToken: Utilities.Token.create('commandGeneratorToken'),
+				commandGeneratorToken: Command.requestToken('commandGeneratorToken'),
 				eventToken: TOKEN.EVENT,
 				sourceID: deepInject.id,
-				name: deepInject.name,
 				data: deepInject.script.data,
 				value: deepInject.script.value
 			};
@@ -108,9 +110,12 @@ var Special = {
 		this.injectHelpers(special, this.helpers);
 		this.setup(special);
 
-		this.__injected.push(name);
+		this.__injected._pushMissing(name);
 
-		TOKEN.INJECTED[special.id] = special.name;
+		TOKEN.INJECTED[special.id] = {
+			namespace: special.name,
+			name: special.name
+		};
 
 		special.inject(useURL);
 
@@ -237,16 +242,6 @@ var Special = {
 		JSBCallbackHandler: function (event) {
 			if (!event.detail)
 				return;
-
-			if (event.detail.perform) {
-				try {
-					var perform = new Function('return ' + event.detail.perform);
-
-					return perform()(event.detail.result, executeCallback.bind(null, event.detail.sourceID), messageExtension);
-				} catch (error) {
-					return console.log('FAIL')
-				}
-			}
 
 			executeLocalCallback(event.detail.callbackID, event.detail.result);
 		},

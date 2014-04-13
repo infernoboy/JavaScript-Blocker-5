@@ -7,17 +7,21 @@ function DeepInject (name, script) {
 	if (typeof name !== 'string')
 		name = '';
 
-	this.name = name.replace(/([^a-zA-Z_0-9])/g, '_');
-	this.fnName = this.name;
+	this.name = name;
+	this.cleanName = name.replace(/([^a-zA-Z_0-9])/g, '_');
+	this.fnName = this.cleanName;
 	this.script = script;
 	this.scriptString = script.toString();
 	this.id = Utilities.Token.create(this.name);
+
+	if (!DeepInject.fnHeaderRegExp.test(this.scriptString))
+		this.scriptString = 'function () {' + this.scriptString + '}';
 
 	this.prepare();
 };
 
 DeepInject.useURL = true;
-DeepInject.fnHeaderRegExp = /(function +)(\(([^\)]+)?\))/;
+DeepInject.fnHeaderRegExp = /^(function +)(\(([^\)]+)?\)) +{/;
 
 DeepInject.prototype.anonymize = function () {
 	this.fnName = '';
@@ -27,8 +31,8 @@ DeepInject.prototype.anonymize = function () {
 
 DeepInject.prototype.prepare = function () {
 	var self = this,
-			header =  this.scriptString.substr(0, this.scriptString.indexOf('{')),
-			inner = this.scriptString.substring(header.length + 1, this.scriptString.lastIndexOf('}'));
+			header =  this.scriptString.substr(0, this.scriptString.indexOf('{') + 1),
+			inner = this.scriptString.substring(header.length, this.scriptString.lastIndexOf('}'));
 
 	header = header.replace(DeepInject.fnHeaderRegExp, function (complete, fn, argString) {
 		return 'function ' + self.fnName + ' ' + argString + ' {';
@@ -152,7 +156,8 @@ DeepInject.prototype.injectable = function (useURL) {
 		scriptElement.src = url;
 
 		scriptElement.onload = function () {
-			// document.documentElement.removeChild(this);
+			if (!globalInfo('debugMode'))
+				document.documentElement.removeChild(this);
 
 			URL.revokeObjectURL(url);
 		};
@@ -172,6 +177,6 @@ DeepInject.prototype.inject = function (useURL) {
 	else
 		document.documentElement.appendChild(injectable);
 
-	// if (!DeepInject.useURL)
-		// document.documentElement.removeChild(injectable);
+	if ((useURL === false || DeepInject.useURL === false) && !globalInfo('debugMode'))
+		document.documentElement.removeChild(injectable);
 };

@@ -5,9 +5,12 @@ var Command = function (command, data, event) {
 		if (!Commands.hasOwnProperty(command))
 			throw new Error('command not found - ' + command);
 
+		if (command._startsWith('__'))
+			throw new Error('cannot call commands that begin with __');
+
 		this.event = event;
 
-		this.isEvent = (event.name && event.message);
+		this.isEvent = !!(event.name && event.message);
 		this.data = Array.isArray(data) ? data : [data];
 
 		Commands[command].apply(this, this.data);
@@ -29,9 +32,30 @@ var Command = function (command, data, event) {
 	});
 
 	var Commands = {
-		logError: function (errorMessage) {
-			if (typeof errorMessage === 'string')
-				LogError(this.event.target.url, errorMessage, '-----');
+		__storage: function (isSet, detail) {
+			if (!UserScript.exist(detail.namespace))
+				throw new Error(detail.namespace + ' does not exist.');
+
+			if (typeof detail.key !== 'string' || !detail.key.length)
+				throw new TypeError(detail.key + ' is not a string.');
+
+			var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage');
+
+			if (isSet)
+				storage.set(detail.key, detail.value, true);
+			else
+				storage.remove(detail.key);
+		},
+
+		logError: function (error) {
+			if (typeof error.message === 'string') {
+				if (this.event.target.url !== error.source)
+					LogError([error.source, 'via', event.target.url]);
+				else
+					LogError(event.target.url);
+
+				LogError(error.message, '--------------');
+			}
 		},
 
 		bounce: function () {
@@ -51,6 +75,11 @@ var Command = function (command, data, event) {
 					value: false,
 				},
 
+				debugMode: {
+					cache: true,
+					value: false
+				},
+
 				topPageURL: {
 					cache: true,
 					value: this.event.target.url
@@ -66,11 +95,11 @@ var Command = function (command, data, event) {
 		},
 
 		enabledSpecials: function (detail) {
-			this.message = Special.locationEnabled(detail.location, detail.isFrame);
+			this.message = Special.forLocation(detail.location, detail.isFrame);
 		},
 
 		enabledUserScripts: function (detail) {
-			this.message = UserScript.locationEnabled(detail.location, detail.isFrame);
+			this.message = UserScript.forLocation(detail.location, detail.isFrame);
 		},
 
 		receivePage: function (thePage) {
@@ -109,6 +138,26 @@ var Command = function (command, data, event) {
 				page.badge('blocked');
 
 				UI.renderPopover(page);
+			}
+		},
+
+		storageSetItem: function (detail) {
+			return this.__storage(true, detail);
+		},
+
+		storageRemoveItem: function (detail) {
+			return this.__storage(false, detail);
+		},
+
+		verifyScriptSafety: function (script) {
+			try {
+				var fn = (new Function("return function () {\n" + script + "\n}"))();
+
+				fn = undefined;
+
+				this.message = true;
+			} catch (error) {
+				this.message = false;
 			}
 		}
 	};

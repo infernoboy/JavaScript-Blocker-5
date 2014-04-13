@@ -693,6 +693,9 @@ var Store = (function () {
 			} else
 				finalValue = value;
 
+			if (finalValue === undefined)
+				continue;
+
 			object[key] = finalValue;
 		}
 
