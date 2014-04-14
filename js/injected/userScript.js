@@ -160,9 +160,10 @@ var UserScript = {
 			if (!GM_resources[name])
 				return '';
 
-			if (window.Blob) {
-				var URL = window.URL || window.webkitURL,
-						text = GM_getResourceText(name),
+			var URL = window.webkitURL || window.URL;
+
+			if (window.Blob && typeof URL.createObjectURL === 'function') {
+				var text = GM_getResourceText(name),
 						textArray = new Array(text.length);
 
 				for (var i = 0; i < text.length; i++)
@@ -207,40 +208,28 @@ var UserScript = {
 		GM_setClipboard: function () { },
 
 		GM_xmlhttpRequest: function (details) {
-			var key,
-					stringed;
-
-			var serializable = {},
+			var serializable = JSON.parse(JSON.stringify(details)),
 					anchor = document.createElement('a');
 
-			for (key in details)
-				try {
-					stringed = JSON.stringify(details[key]);
-
-					if (typeof stringed !== 'undefined')
-						serializable[key] = details[key];
-				} catch (e) {}
-
+			// Converts a relative URL into an absolute URL.
 			anchor.href = serializable.url;
 			serializable.url = anchor.href;
 
-			var returnResult = null;
+			var response = null;
 
 			messageExtension('XMLHttpRequest', serializable, function (result) {
 				if (result.action === 'XHRComplete') {
-					complete = true;
+					delete JSB.eventCallback[result.callbackID];
 
-					delete JSB.eventCallback[result.callback];
-
-					details = serializable = anchor = key = stringed = undefined;
+					details = serializable = anchor = undefined;
 				}	else if (result.action in details) {
 					details[result.action](result.response);
 
-					returnResult = result.response;
+					response = result.response;
 				}
 			}, true);
 
-			return returnResult;
+			return response;
 		}
 	}
 };

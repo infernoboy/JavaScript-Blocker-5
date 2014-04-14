@@ -171,12 +171,11 @@ var Command = function (command, data, event) {
 
 		XMLHttpRequest: function (detail) {
 			var self = this,
-					meta = detail.meta,
-					referenceID = Utilities.id();
+					meta = detail.meta;
 
 			var done = function (action, response, status, request) {
 				var result = {
-					referenceID: referenceID,
+					callbackID: detail.callbackID,
 					action: action,
 
 					response: {
