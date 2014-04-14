@@ -107,7 +107,7 @@ var Command = function (type, event) {
 					foundSourceID = false;
 
 			for (var token in TOKEN.INJECTED)
-				if (TOKEN.INJECTED[token].name === data.originSourceName) {
+				if (TOKEN.INJECTED[token].namespace === data.originSourceName) {
 					foundSourceID = true;
 
 					break;
@@ -247,7 +247,7 @@ var Command = function (type, event) {
 		},
 
 		messageTopExtension: function (detail, event) {
-			detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].name;
+			detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].namespace;
 			detail.meta.originSourceID = detail.sourceID;
 
 			detail.originalEvent = {
@@ -271,10 +271,15 @@ var Command = function (type, event) {
 		},
 
 		registerMenuCommand: function (detail) {
-			if (UserScript.menuCommand[detail.meta.caption])
-				return LogError(['menu item with caption already exist', detail.meta.caption]);
+			if (typeof detail.meta !== 'string' || !detail.meta.length)
+				return LogError(['caption is not a valid string', detail.meta]);
 
-			UserScript.menuCommand[detail.meta.caption] = {
+			detail.meta = [TOKEN.INJECTED[detail.sourceID].name, detail.meta].join(' - ');
+
+			if (UserScript.menuCommand[detail.meta])
+				return LogError(['menu item with caption already exist', detail.meta]);
+
+			UserScript.menuCommand[detail.meta] = {
 				sourceID: detail.sourceID,
 				callbackID: detail.callbackID
 			};

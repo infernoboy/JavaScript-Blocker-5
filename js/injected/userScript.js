@@ -71,7 +71,7 @@ var UserScript = {
 
 		TOKEN.INJECTED[userScript.id] = {
 			namespace: attributes.meta.trueNamespace,
-			name: userScript.name
+			name: attributes.meta.name
 		};
 
 		Special.setup(userScript).inject();
@@ -200,9 +200,7 @@ var UserScript = {
 		},
 
 		GM_registerMenuCommand: function (caption, fn, accessKey) {
-			messageExtension('registerMenuCommand', {
-				caption: GM_info.script.name + ' - ' + caption
-			}, fn, true);
+			messageExtension('registerMenuCommand', caption, fn, true);
 		},
 
 		GM_setClipboard: function () { },

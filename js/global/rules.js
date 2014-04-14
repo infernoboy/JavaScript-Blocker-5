@@ -431,13 +431,15 @@ Object.defineProperty(Rules, 'list', {
 		}),
 
 		whitelist: new Rule('Whitelist', {
-			save: true
+			save: true,
+			private: true
 		}, {
 			action: 5
 		}),
 
 		blacklist: new Rule('Blacklist', {
-			save: true
+			save: true,
+			private: true
 		}, {
 			action: 4
 		})

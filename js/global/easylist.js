@@ -34,8 +34,11 @@ EasyList.fetch = function () {
 
 EasyList.prototype.merge = function () {
 	Utilities.setImmediateTimeout(function () {
-		Rules.list.blacklist.rules.merge(EasyList.blacklist.rules, true);
-		Rules.list.whitelist.rules.merge(EasyList.whitelist.rules, true);
+		Rules.list.blacklist.rules.clear();
+		Rules.list.whitelist.rules.clear();
+
+		Rules.list.blacklist.rules.data = EasyList.blacklist.rules.toJSON().data._clone(true);
+		Rules.list.whitelist.rules.data = EasyList.whitelist.rules.toJSON().data._clone(true);
 
 		Predefined();
 

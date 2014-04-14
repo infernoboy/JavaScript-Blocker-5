@@ -319,7 +319,7 @@ function onElementProcessed (kind, element, source) {
 
 function processUnblockableElement (kind, element) {
 	if (!element.getAttribute('src') || element.src.length < 1) {
-		if (element.innerHTML.length && !Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element.innerHTML)) {
+		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element.innerHTML)) {
 			var kindStore = unblockedItems.getStore(kind);
 
 			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element.innerHTML, true));
@@ -340,6 +340,8 @@ function processUnblockableElement (kind, element) {
 	}
 
 	sendPage();
+
+	return true;
 };
 
 function canLoadResource (event, excludeFromPage, meta) {
@@ -452,7 +454,6 @@ function canLoadResource (event, excludeFromPage, meta) {
 		return true;
 	}
 };
-
 
 if (!globalInfo('disabled')) {
 	if (Utilities.safariBuildVersion > 535) {

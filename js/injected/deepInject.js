@@ -156,9 +156,6 @@ DeepInject.prototype.injectable = function (useURL) {
 		scriptElement.src = url;
 
 		scriptElement.onload = function () {
-			if (!globalInfo('debugMode'))
-				document.documentElement.removeChild(this);
-
 			URL.revokeObjectURL(url);
 		};
 	} else
@@ -178,5 +175,5 @@ DeepInject.prototype.inject = function (useURL) {
 		document.documentElement.appendChild(injectable);
 
 	if ((useURL === false || DeepInject.useURL === false) && !globalInfo('debugMode'))
-		document.documentElement.removeChild(injectable);
+		injectable.innerText = '';
 };

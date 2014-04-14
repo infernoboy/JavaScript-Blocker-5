@@ -803,8 +803,6 @@ var Extension = {
 	Object: {
 		_deepFreeze: {
 			value: function () {
-				Log('Freezing', this);
-
 				Object.freeze(this);
 
 				for (var key in this)

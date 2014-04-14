@@ -22,7 +22,7 @@ var Special = {
 			return;
 
 		event.detail.sourceID = pieces[1];
-		event.detail.sourceName = TOKEN.INJECTED[pieces[1]].name;
+		event.detail.sourceName = TOKEN.INJECTED[pieces[1]].namespace;
 
 		var response = Command('injected', event);
 
