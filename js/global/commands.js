@@ -2,7 +2,7 @@
 
 var Command = function (command, data, event) {
 	var InternalCommand = function () {
-		if (!Commands.hasOwnProperty(command))
+		if (!this.commands.hasOwnProperty(command))
 			throw new Error('command not found - ' + command);
 
 		if (command._startsWith('__'))
@@ -13,7 +13,7 @@ var Command = function (command, data, event) {
 		this.isEvent = !!(event.name && event.message);
 		this.data = Array.isArray(data) ? data : [data];
 
-		Commands[command].apply(this, this.data);
+		this.commands[command].apply(this, this.data);
 	};
 
 	Object.defineProperty(InternalCommand.prototype, 'message', {
@@ -31,22 +31,30 @@ var Command = function (command, data, event) {
 		}
 	});
 
-	var Commands = {
-		__storage: function (isSet, detail) {
-			if (!UserScript.exist(detail.namespace))
-				throw new Error(detail.namespace + ' does not exist.');
+	InternalCommand.prototype.storage = function (isSet, detail) {
+		if (!UserScript.exist(detail.namespace))
+			throw new Error(detail.namespace + ' does not exist.');
 
-			if (typeof detail.key !== 'string' || !detail.key.length)
-				throw new TypeError(detail.key + ' is not a string.');
+		if (typeof detail.key !== 'string' || !detail.key.length)
+			throw new TypeError(detail.key + ' is not a string.');
 
-			var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage');
+		var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage');
 
-			if (isSet)
-				storage.set(detail.key, detail.value, true);
-			else
-				storage.remove(detail.key);
-		},
+		if (isSet)
+			storage.set(detail.key, detail.value, true);
+		else
+			storage.remove(detail.key);
+	};
 
+	InternalCommand.prototype.sendCallback = function (sourceID, callbackID, result) {		
+		MessageTarget(this.event, 'executeCommanderCallback', {
+			sourceID: sourceID,
+			callbackID: callbackID,
+			result: result
+		});
+	},
+
+	InternalCommand.prototype.commands = {
 		logError: function (error) {
 			if (typeof error.message === 'string') {
 				if (this.event.target.url !== error.source)
@@ -142,11 +150,11 @@ var Command = function (command, data, event) {
 		},
 
 		storageSetItem: function (detail) {
-			return this.__storage(true, detail);
+			return this.storage(true, detail);
 		},
 
 		storageRemoveItem: function (detail) {
-			return this.__storage(false, detail);
+			return this.storage(false, detail);
 		},
 
 		verifyScriptSafety: function (script) {
@@ -159,12 +167,115 @@ var Command = function (command, data, event) {
 			} catch (error) {
 				this.message = false;
 			}
+		},
+
+		XMLHttpRequest: function (detail) {
+			var self = this,
+					meta = detail.meta,
+					referenceID = Utilities.id();
+
+			var done = function (action, response, status, request) {
+				var result = {
+					referenceID: referenceID,
+					action: action,
+
+					response: {
+						readyState: request.readyState,
+						responseHeaders: (function (headers) {
+							var line;
+
+							var lines = headers.split(/\n/),
+									headerList = {};
+
+							for (var i = 0; i < lines.length; i++) {
+								line = lines[i].split(': ');
+								
+								if (line[0].length)
+									headerList[line.shift()] = line.join(': ');
+							}
+
+							return headerList;
+						})(request.getAllResponseHeaders ? request.getAllResponseHeaders() : ''),
+
+						responseText: response,
+						status: request.status,
+						statusText: status,
+						lengthComputable: request.lengthComputable,
+						loaded: request.loaded,
+						total: request.total
+					}
+				};
+
+				if (meta.async || action === 'onprogress' || action === 'XHRComplete')
+					self.sendCallback(detail.sourceID, detail.callbackID, result);
+				else
+					self.message = result;
+			};
+
+			meta.async = !meta.synchronous;
+
+			if (meta.async)
+				this.message = false;
+
+			meta.xhr = function () {
+				var xhr = new XMLHttpRequest();
+
+				xhr.upload.addEventListener('progress', function (event) {
+					xhr.lengthComputable = event.lengthComputable;
+					xhr.loaded = event.loaded;
+					xhr.total = event.total;
+
+					done('onprogress', '', '', xhr);
+				});
+
+				xhr.addEventListener('progress', function (event) {
+					xhr.lengthComputable = event.lengthComputable;
+					xhr.loaded = event.loaded;
+					xhr.total = event.total;
+
+					done('onprogress', '', '', xhr);
+				});
+
+				xhr.addEventListener('loadend', function (event) {
+					done('XHRComplete', '', '', xhr);
+				});
+
+				return xhr;
+			};
+
+			meta.beforeSend = (function (headers) {
+				return function (req) {
+					for (var header in headers)
+						req.setRequestHeader(header, headers[header]);
+				};
+			})(meta.headers ? meta.headers : {});
+
+			meta.cache = !meta.ignoreCache;
+
+			meta.success = function (response, status, request) {
+				done('onload', response, status, request);
+			};
+
+			meta.type = meta.method || meta.type || 'GET';
+
+			meta.error = function (request, status, response) {
+				if (response === 'timeout')
+					done('ontimeout', response, status, request);
+				else if (response === 'abort')
+					done('onabort', response, status, request);
+				else
+					done('onerror', res.message ? res.message : response, status, request);
+			};
+
+			meta.dataType = 'text';
+
+			$.ajax(meta);
 		}
 	};
 
 	new InternalCommand();
 
-	InternalCommand = Commands = command = data = event = undefined;
+	InternalCommand = command = data = event = undefined;
 };
 
 Command.messageReceived = function (event) {

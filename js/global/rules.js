@@ -13,9 +13,18 @@ var ACTION = Object.freeze({
 	UNBLOCKABLE: -87
 });
 
-var Rule = function (store, props) {
+var Rule = function (store, storeProps, ruleProps) {
+	this.props = {
+		action: null
+	};
+
+	if (ruleProps instanceof Object)
+		for (var key in ruleProps)
+			if (this.props.hasOwnProperty(key))
+				this.props[key] = ruleProps[key];
+
 	if (typeof store === 'string')
-		this.rules = new Store(store, props);
+		this.rules = new Store(store, storeProps);
 	else if (store instanceof Store)
 		this.rules = store;
 	else if (store instanceof Object)
@@ -24,7 +33,7 @@ var Rule = function (store, props) {
 			lock: true
 		});
 	else
-		this.rules = new Store(null, props);
+		this.rules = new Store(null, storeProps);
 
 	this.addDomain = this.__add.bind(this, 'domain');
 	this.addPage = this.__add.bind(this, 'page');
@@ -83,7 +92,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 
 	rules.set(rule.rule, {
 		regexp: Rules.isRegExp(rule.rule),
-		action: rule.action
+		action: this.props.action === null ? rule.action : this.props.action
 	});
 
 	return rules;
@@ -184,8 +193,7 @@ Rule.prototype.addMany = function (kinds) {
 			types,
 			type,
 			domain,
-			rules,
-			ruleType;
+			rule;
 
 	for (kind in kinds) {
 		if (!Rules.kindSupported(kind)) {
@@ -203,12 +211,15 @@ Rule.prototype.addMany = function (kinds) {
 				continue;
 			}
 
-			for (domain in kinds[kind][type]) {
-				rules = types[type](domain);
+			for (domain in kinds[kind][type])
+				for (rule in kinds[kind][type][domain]) {
+					if (!(kinds[kind][type][domain][rule] instanceof Object))
+						continue;
 
-				for (ruleType in kinds[kind][type][ruleType])
-					rules.setMany(kinds[kind][type][domain][ruleType]);
-			}
+					kinds[kind][type][domain][rule].rule = rule;
+
+					this.__add(type, kind, domain, kinds[kind][type][domain][rule]);
+				}
 		}
 	}
 
@@ -413,15 +424,22 @@ Object.defineProperty(Rules, '_kinds', {
 Object.defineProperty(Rules, 'list', {
 	value: Object.freeze({
 		temporary: new Rule('TemporaryRules'),
+
 		user: new Rule('Rules', {
 			save: true,
 			snapshot: true
 		}),
+
 		whitelist: new Rule('Whitelist', {
 			save: true
+		}, {
+			action: 5
 		}),
+
 		blacklist: new Rule('Blacklist', {
 			save: true
+		}, {
+			action: 4
 		})
 	})
 });

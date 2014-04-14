@@ -107,14 +107,14 @@ Resource.prototype.__addRule = function (action, domain, rule, framed) {
 };
 
 Resource.prototype.allowedBySettings = function () {
-	var enabledKinds = Settings.getStore('enabledKinds'),
+	var enabledKinds = Settings.getJSON('enabledKinds'),
 			canLoad = {
 				isAllowed: true,
 				action: ACTION.ALLOW_WITHOUT_RULE,
 				pageRule: false
 			};
 
-	if (!enabledKinds.get(this.kind))
+	if (!enabledKinds[this.kind])
 		return canLoad;
 
 	var blockFrom = Settings.getStore('alwaysBlock').get(this.kind),
@@ -162,7 +162,7 @@ Resource.prototype.canLoad = function () {
 		return canLoad;
 	}
 
-	if (!Settings.getStore('enabledKinds').get(this.kind)) {
+	if (!Settings.getJSON('enabledKinds')[this.kind]) {
 		canLoad.action = ACTION.KIND_DISABLED;
 
 		return canLoad;

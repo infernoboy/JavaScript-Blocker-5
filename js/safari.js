@@ -173,6 +173,9 @@ var ToolbarItems = {
 			if (value === null)
 				return typeof defaultValue === 'undefined' ? value : defaultValue;
 
+			if (typeof value !== 'string')
+				return value;
+
 			try {
 				return JSON.parse(value);
 			} catch (error) {

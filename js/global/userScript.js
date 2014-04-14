@@ -25,9 +25,10 @@ var UserScript = {
 
 		for (var resourceName in resources) {
 			Utilities.setImmediateTimeout(function (self, resources, resourceName, addResource) {
-				var xhr = new XMLHttpRequest();
+				var xhr = new XMLHttpRequest(),
+						bypassCache = (resources[resourceName]._contains('?') ? '&' : '?') + Date.now();
 
-				xhr.open('GET', resources[resourceName], true);
+				xhr.open('GET', resources[resourceName] + bypassCache, true);
 
 				xhr.responseType = 'arraybuffer';
 
@@ -120,7 +121,7 @@ var UserScript = {
 				attributes = userScript.get('attributes'),
 				isDeveloperMode = attributes.get('developerMode');
 
-		if (isDeveloperMode || (attributes.get('autoUpdate') && (now - attributes.get('lastUpdate', 0) < this.__updateInterval))) {
+		if (isDeveloperMode || (attributes.get('autoUpdate') && (now - attributes.get('lastUpdate', 0) > this.__updateInterval))) {
 			if (!isDeveloperMode)
 				attributes.set('lastUpdate', now);
 
@@ -178,13 +179,13 @@ var UserScript = {
 			trueNamespace: null,
 			description: '',
 			exclude: [],
-			exclude_jsb: [],
+			excludeJSB: [],
 			grant: [],
 			icon: '',
 			include: [],
-			include_jsb: [],
+			includeJSB: [],
 			match: [],
-			match_jsb: [],
+			matchJSB: [],
 			domain: [],
 			require: {},
 			resource: {},
@@ -213,7 +214,7 @@ var UserScript = {
 							parsed[key][value] = value;
 						} else {
 							if (['exclude', 'include', 'match']._contains(key)) {
-								localKey = key + '_jsb';
+								localKey = key + 'JSB';
 								localValue = '^' + value.replace(/\*\./g, '_SUBDOMAINS_').replace(/\*/, '_ANY_')._escapeRegExp().replace(/_SUBDOMAINS_/g, '([^\\/]+\\.)?').replace(/_ANY_/g, '.*') + '$';
 
 								if (localValue === '^.*$' && key !== 'exclude')
@@ -270,7 +271,7 @@ var UserScript = {
 			lastUpdate: Date.now()
 		};
 
-		var allowPages = detail.match_jsb.concat(detail.include_jsb),
+		var allowPages = detail.matchJSB.concat(detail.includeJSB),
 				allowDomains = detail.domain;
 
 		this.removeRules(namespace);
@@ -287,8 +288,8 @@ var UserScript = {
 				action: 3
 			});
 
-		for (var i = 0; i < detail.exclude_jsb.length; i++)
-			Rules.active.addPage('user_script', detail.exclude_jsb[i], {
+		for (var i = 0; i < detail.excludeJSB.length; i++)
+			Rules.active.addPage('user_script', detail.excludeJSB[i], {
 				rule: namespace,
 				action: 2
 			});

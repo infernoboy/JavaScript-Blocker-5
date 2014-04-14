@@ -280,6 +280,13 @@ var Command = function (type, event) {
 			};
 		},
 
+		XMLHttpRequest: function (detail) {
+			var result = GlobalCommand(detail.command, detail);
+
+			if (result !== false)
+				Command.sendCallback(detail.sourceID, detail.callbackID, result);
+		},
+
 		notification: Utilities.noop,
 
 		canLoadXHR: function (detail) {

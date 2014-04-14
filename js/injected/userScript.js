@@ -206,7 +206,7 @@ var UserScript = {
 
 		GM_setClipboard: function () { },
 
-		NOT_IMPLEMENTED_GM_xmlhttpRequest: function (details) {
+		GM_xmlhttpRequest: function (details) {
 			var key,
 					stringed;
 
@@ -224,16 +224,23 @@ var UserScript = {
 			anchor.href = serializable.url;
 			serializable.url = anchor.href;
 
-			messageExtension('XMLHttpRequest', {
-				details: serializable
-			}, function (result) {
+			var returnResult = null;
+
+			messageExtension('XMLHttpRequest', serializable, function (result) {
 				if (result.action === 'XHRComplete') {
+					complete = true;
+
 					delete JSB.eventCallback[result.callback];
 
 					details = serializable = anchor = key = stringed = undefined;
-				}	else if (result.action in details)
+				}	else if (result.action in details) {
 					details[result.action](result.response);
+
+					returnResult = result.response;
+				}
 			}, true);
+
+			return returnResult;
 		}
 	}
 };

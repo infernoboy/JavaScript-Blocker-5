@@ -305,12 +305,12 @@ var Store = (function () {
 
 	Store.prototype.merge = function (store, deep) {
 		if (!(store instanceof Store))
-			throw new TypeError('Store is not an instance of Store');
+			throw new TypeError(store + ' is not an instance of Store');
 
 		var currentValue,
 				storeValue;
 
-		for (var key in store.data) {
+		for (var key in store.data) {			
 			currentValue = this.get(key);
 			storeValue = store.get(key);
 
@@ -611,7 +611,7 @@ var Store = (function () {
 					if (store.data[key].value instanceof Store)
 						store.data[key].value.destroy();
 
-					delete store.data[key];
+					store.remove(key);
 				}
 			}, [this, key, now]);
 	};

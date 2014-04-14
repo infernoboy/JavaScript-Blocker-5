@@ -123,6 +123,9 @@ Settings.settings = {
 		},
 		userScripts: {
 			default: {}
+		},
+		EasyListLastUpdate: {
+			default: 0
 		}
 	},
 	ui: {
@@ -222,7 +225,7 @@ Settings.settings = {
 	},
 	predefined: {
 		enabledKinds: {
-			setting: {},
+			type: 'multi-boolean',
 			default: {
 				disable: true,
 				script: true,
@@ -233,6 +236,14 @@ Settings.settings = {
 				ajax_get: true,
 				ajax_put: true,
 				special: true
+			}
+		},
+		easyLists: {
+			type: 'multi-boolean-map',
+			default: {
+				list: [true, 'https://easylist-downloads.adblockplus.org/easylist.txt'],
+				privacy: [true, 'https://easylist-downloads.adblockplus.org/easyprivacy.txt'],
+				malware: [true, 'https://easylist-downloads.adblockplus.org/malwaredomains_full.txt']
 			}
 		},
 		alwaysBlock: {

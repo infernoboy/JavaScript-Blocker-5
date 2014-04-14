@@ -449,7 +449,8 @@ var Utilities = {
 			var split = host.split(/\./g).reverse(),
 					part = split[0],
 					parts = [],
-					eTLDLength = EffectiveTLDs.length;
+					eTLDLength = EffectiveTLDs.length,
+					sTLDLength = SimpleTLDs.length;
 
 			var part,
 					j;
@@ -457,6 +458,10 @@ var Utilities = {
 			hostLoop:
 			for (var i = 1; i < split.length; i++) {
 				part = split[i] + '.' + part;
+
+				for (j = 0; j < sTLDLength; j++)
+					if (SimpleTLDs[j] === part)
+						continue hostLoop;
 
 				for (j = 0; j < eTLDLength; j++)
 					if (EffectiveTLDs[j].test(part))
@@ -586,7 +591,7 @@ var Struct = (function () {
 
 	Struct.prototype.forEach = function (callback) {
 		if (typeof callback !== 'function')
-			throw new TypeError('callback is not a function');
+			throw new TypeError(callback + ' is not a function');
 
 		for (var i = 0, b = this.struct.length; i < b; i++)
 			if (callback(this.struct[i][0], this.struct[i][1]) === Struct.BREAK)
@@ -597,7 +602,7 @@ var Struct = (function () {
 
 	Struct.prototype.add = function (object) {
 		if (!(object instanceof Object))
-			throw new TypeError('object is not an instance of Object');
+			throw new TypeError(object + ' is not an instance of Object');
 
 		for (var key in object)
 			if (object.hasOwnProperty(key)) {
@@ -634,7 +639,7 @@ var Extension = {
 		__contains: {
 			value: function (matchType, needle, returnMissingItems) {
 				if (typeof matchType !== 'number')
-					throw new TypeError('matchType is not a number');
+					throw new TypeError(matchType + ' is not a number');
 				
 				switch(matchType) {
 					case ARRAY.CONTAINS.ONE:
@@ -643,7 +648,7 @@ var Extension = {
 
 					case ARRAY.CONTAINS.ANY:
 						if (!Array.isArray(needle))
-							throw new TypeError('needle is not an array');
+							throw new TypeError(needle + ' is not an array');
 
 						for (var i = 0, b = needle.length; i < b; i++)
 							if (this._contains(needle[i]))
@@ -654,7 +659,7 @@ var Extension = {
 
 					case ARRAY.CONTAINS.ALL:
 						if (!Array.isArray(needle))
-							throw new TypeError('needle is not an array');
+							throw new TypeError(needle + ' is not an array');
 
 						var missingItems = [];
 
@@ -854,7 +859,7 @@ var Extension = {
 					object = objects[i];
 
 					if (typeof object !== 'object')
-						throw new TypeError('object is not an object');
+						throw new TypeError(object + ' is not an object');
 
 					for (var key in object)
 						if (object.hasOwnProperty(key)) {
@@ -888,7 +893,7 @@ var Extension = {
 			value: function (pieces) {
 				var size = 0,
 						chunk = 0,
-						chunks = { '0': {} };
+						chunks = { 0: {} };
 
 				for (var key in this) {
 					if (pieces > 0 && size >= pieces) {
