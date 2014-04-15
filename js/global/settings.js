@@ -6,11 +6,11 @@ var Settings = {
 	getItem: function (setting, JSON) {
 		var getMethod = JSON ? 'getJSON' : 'getItem',
 				setMethod = JSON ? 'setJSON' : 'setItem',
-				storedValue = SettingStore.available() ? SettingStore[getMethod](setting) : Settings.current_value(setting);
+				storedValue = SettingStore.available ? SettingStore[getMethod](setting) : Settings.current_value(setting);
 
 		var value = storedValue === null ? ((setting in Settings.items) ? Settings.items[setting].default : null) : storedValue;
 
-		if (storedValue === null && SettingStore.available())
+		if (storedValue === null && SettingStore.available)
 			SettingStore[setMethod](setting, value);
 
 		return value;
@@ -31,7 +31,7 @@ var Settings = {
 	},
 
 	setItem: function (setting, value) {
-		if (SettingStore.available())
+		if (SettingStore.available)
 			SettingStore.setItem(setting, value);
 	},
 
@@ -40,7 +40,7 @@ var Settings = {
 	},
 
 	removeItem: function (setting) {
-		if (SettingStore.available())
+		if (SettingStore.available)
 			SettingStore.removeItem(setting);
 	}
 };

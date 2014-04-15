@@ -135,6 +135,8 @@ var ToolbarItems = {
 	SettingStore = {
 		__cache: {},
 
+		available:  !!(window.safari && safari.extension && safari.extension.settings),
+
 		__setCache: function (key, value) {
 			if (key._startsWith('Storage-') || typeof value === 'object')
 				return;
@@ -147,9 +149,6 @@ var ToolbarItems = {
 			});
 		},
 
-		available: function () {
-			return !!(window.safari && safari.extension && safari.extension.settings);
-		},
 		getItem: function (key, defaultValue) {
 			if (this.__cache.hasOwnProperty(key))
 				return this.__cache[key];

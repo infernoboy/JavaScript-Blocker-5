@@ -37,7 +37,7 @@ function Resource (kind, pageLocation, source, isFrame, unblockable) {
 Resource.longRegExps = new Store('LongRegExps');
 Resource.canLoadCache = new Store('ResourceCanLoad', {
 	save: true,
-	maxLife: TIME.ONE_HOUR
+	maxLife: TIME.ONE_DAY
 });
 
 Resource.__many = function (action, resources, domain, rule, frame) {
@@ -176,7 +176,7 @@ Resource.prototype.canLoad = function () {
 	var storeKind = this.isFrame ? this.framedKind : this.kind,
 			store = Resource.canLoadCache.getStore(storeKind),
 			hostSources = store.getStore(this.pageHost, {
-				maxLife: TIME.ONE_HOUR
+				maxLife: TIME.ONE_DAY
 			}),
 			cached = hostSources.get(this.source);
 
@@ -184,7 +184,7 @@ Resource.prototype.canLoad = function () {
 		return cached;
 
 	var pageSources = store.getStore(this.pageLocation, {
-				maxLife: TIME.ONE_HOUR
+				maxLife: TIME.ONE_DAY
 			}),
 			cached = pageSources.get(this.source);
 
@@ -286,3 +286,7 @@ Resource.prototype.toJSON = function () {
 		source: this.source
 	};
 };
+
+setInterval(function () {
+	console.log('CanLoadCacheSize:', Utilities.byteSize(SettingStore.getItem('Storage-ResourceCanLoad').length));
+}, TIME.ONE_MINUTE * 30);

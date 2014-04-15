@@ -120,7 +120,7 @@ var _ = (function () {
 var sendPage = (function () {
 	var timeout;
 
-	return function sendPage (quickTimeout) {
+	return function sendPage () {
 		clearTimeout(timeout);
 
 		timeout = setTimeout(function () {
@@ -134,7 +134,7 @@ var sendPage = (function () {
 					LogError('JavaScript Blocker broke! This is an issue with Safari itself. Reloading the page should fix things.', error);
 				}
 			}
-		}, quickTimeout ? 0 : 100);
+		}, 100);
 	};
 })();
 
@@ -333,9 +333,6 @@ function processUnblockableElement (kind, element) {
 					}.bind(null, element));
 			} else
 				kindStore.get('all', [], true).push(element.innerHTML);
-			
-			if (BLOCKABLE[element.nodeName][1])
-				onElementProcessed(kind, element, 1);
 		}
 	}
 
@@ -353,9 +350,13 @@ function canLoadResource (event, excludeFromPage, meta) {
 	if (!(element.nodeName in BLOCKABLE))
 		return true;
 
+	var kind = BLOCKABLE[element.nodeName][0];
+
+	if (!globalSetting('enabledKinds')[kind])
+		return true;
+
 	var source = Utilities.URL.getAbsolutePath(event.url ? event.url : element.getAttribute('src')),
-			sourceHost = (source && source.length) ? Utilities.URL.extractHost(source) : null,
-			kind = BLOCKABLE[element.nodeName][0];
+			sourceHost = (source && source.length) ? Utilities.URL.extractHost(source) : null;
 
 	if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad')) {
 		if (kind in staticActions) {
@@ -406,14 +407,6 @@ function canLoadResource (event, excludeFromPage, meta) {
 			if (!canLoad.isAllowed && event.preventDefault)
 				event.preventDefault();
 
-			if (canLoad.action === -85) {
-				staticActions[kind] = canLoad.isAllowed;
-
-				sendPage();
-
-				return canLoad.isAllowed;
-			}
-
 			Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind) {
 				if (!meta && ['EMBED', 'OBJECT', 'FRAME', 'IFRAME']._contains(element.nodeName))
 					meta = element.getAttribute('type');
@@ -425,7 +418,7 @@ function canLoadResource (event, excludeFromPage, meta) {
 						unblockable: !!event.unblockable,
 						meta: meta
 					});
-			
+
 					kindStore.getStore('hosts').increment(sourceHost);
 				}
 
@@ -471,7 +464,7 @@ if (!globalSetting('disabled')) {
 							if (node.nodeName === 'IFRAME' || node.nodeName === 'FRAME')
 								Handler.frame(node);
 
-							if (!node.src)
+							if (!node.src && !node.srcset && !node.getAttribute('data-src'))
 								canLoadResource(node);
 						}
 					}

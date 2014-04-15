@@ -20,7 +20,7 @@ var Store = (function () {
 		this.myChildren = this.private ? {} : children;
 		this.myParent = this.private ? {} : parent;
 
-		if (SettingStore.available() && typeof name === 'string' && name.length)
+		if (SettingStore.available && typeof name === 'string' && name.length)
 			this.id = (props.save ? 'Storage-' : 'Cache-') + name;
 		else
 			this.id = Utilities.id();
@@ -362,9 +362,6 @@ var Store = (function () {
 	};
 
 	Store.prototype.forEach = function (fn) {
-		if (typeof fn !== 'function')
-			throw new TypeError('fn is not a function');
-
 		var value,
 				result;
 
@@ -432,16 +429,18 @@ var Store = (function () {
 				return value;
 			}
 
-			return null;
+			return this;
 		}
 
-		this.prolongDestruction();
+		Utilities.setImmediateTimeout(function (store) {
+			store.prolongDestruction();
+		}, [this]);
 
-		if (this.data[key] && !this.data.hasOwnProperty(key))
-			throw new Error('key is in the prototype chain of data');
+		if (typeof key !== 'string' || (this.data[key] && !this.data.hasOwnProperty(key)))
+			throw new Error(key + ' cannot be used as key.');
 
 		if (typeof overwrite !== 'boolean')
-			overwrite = (typeof value !== 'function');
+			overwrite = true;
 
 		if (!overwrite && (key in this.data))
 			return this.get(key);
@@ -547,7 +546,7 @@ var Store = (function () {
 
 			defaultProps.private = defaultProps.private || this.private;
 
-			return this.set(key, new Store(requiredName, defaultProps), true);
+			return this.set(key, new Store(requiredName, defaultProps));
 		}
 
 		return store;
@@ -605,7 +604,7 @@ var Store = (function () {
 
 		for (var key in this.data)
 			Utilities.setImmediateTimeout(function (store, key, now) {
-				if (now - store.data[key].accessed > store.maxLife) {
+				if (store.data[key] && now - store.data[key].accessed > store.maxLife) {
 					if (store.data[key].value instanceof Store)
 						store.data[key].value.destroy();
 

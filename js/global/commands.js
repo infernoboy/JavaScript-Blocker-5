@@ -11,9 +11,8 @@ var Command = function (command, data, event) {
 		this.event = event;
 
 		this.isEvent = !!(event.name && event.message);
-		this.data = Array.isArray(data) ? data : [data];
 
-		this.commands[command].apply(this, this.data);
+		this.commands[command].apply(this, Array.isArray(data) ? data : [data]);
 	};
 
 	Object.defineProperty(InternalCommand.prototype, 'message', {
@@ -41,7 +40,7 @@ var Command = function (command, data, event) {
 		var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage');
 
 		if (isSet)
-			storage.set(detail.key, detail.value, true);
+			storage.set(detail.key, detail.value);
 		else
 			storage.remove(detail.key);
 	};
@@ -88,9 +87,9 @@ var Command = function (command, data, event) {
 					value: true
 				},
 
-				topPageURL: {
+				enabledKinds: {
 					cache: true,
-					value: this.event.target.url
+					value: Settings.getJSON('enabledKinds')
 				}
 			};
 		},
@@ -118,7 +117,7 @@ var Command = function (command, data, event) {
 						tab = this.event.target;
 				
 				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
-					if (parent.top && parent.tab === tab) {
+					if (parent.isTop && parent.tab === tab) {
 						parent.addFrame(page);
 
 						return true;
@@ -126,14 +125,14 @@ var Command = function (command, data, event) {
 				});
 
 				if (!pageParent)
-					if (page.retries < 5)
-						return Utilities.Timer.timeout('WaitForParent-' + page.info.id, function (page) {
+					if (page.retries < 2)
+						return Utilities.Timer.timeout('WaitForParent' + page.info.id, function (page) {
 							page.retries++;
 
-							MessageTarget({
+							Page.requestPage({
 								target: tab
-							}, 'sendPage');
-						}, 250, [page]);
+							});
+						}, 500, [page]);
 					else
 						return LogError(['frame does not seem to have a parent', page.info.id]);
 

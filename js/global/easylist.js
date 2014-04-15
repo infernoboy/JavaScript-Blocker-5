@@ -53,7 +53,7 @@ EasyList.prototype.download = function () {
 EasyList.prototype.process = function (list) {
 	var	lines = list.split(/\n/);
 
-	var typeMap = {
+	var kindMap = {
 		script: ['script'],
 		image: ['image'],
 		object: ['embed'],
@@ -66,7 +66,7 @@ EasyList.prototype.process = function (list) {
 			if (line._contains('##') || line._contains('#@#') || !line.length)
 				return; // Ignore element hiding rules and empty lines.
 
-			var useRuleList;
+			var addType;
 
 			var ruleList = line._startsWith('@@') ? EasyList.whitelist : EasyList.blacklist,
 					oppositeRuleList = ruleList === EasyList.whitelist ? EasyList.blacklist : EasyList.whitelist,
@@ -78,7 +78,7 @@ EasyList.prototype.process = function (list) {
 			var dollar = line.indexOf('$'),
 					subLine = line.substr(0, ~dollar ? dollar : line.length),
 					argCheck = line.split(/\$/),
-					useType = false,
+					useKind = false,
 					domains = ['*'];
 
 			rule = subLine.replace(/\//g, '\\/')
@@ -116,8 +116,8 @@ EasyList.prototype.process = function (list) {
 						domains = args[j].substr(7).split('|').map(function (domain) {
 							return '.' + domain;
 						});
-					else if (args[j] in typeMap)
-						useType = typeMap[args[j]];
+					else if (args[j] in kindMap)
+						useKind = kindMap[args[j]];
 				}
 			}
 
@@ -131,18 +131,18 @@ EasyList.prototype.process = function (list) {
 			for (var g = 0; g < domains.length; g++) {
 				if (domains[g]._startsWith('.~')) {
 					domains[g] = '.' + domains[g].substr(2);
-					useRuleList = oppositeRuleList;
 
+					addType = 'addNotDomain';
 				} else
-					useRuleList = ruleList;
+					addType = 'addDomain';
 
-				if (useType)
-					for (var h = 0; h < useType.length; h++)
-						useRuleList.addDomain(useType[h], domains[g], {
+				if (useKind)
+					for (var h = 0; h < useKind.length; h++)
+						ruleList[addType](useKind[h], domains[g], {
 							rule: rule
 						});
 				else
-					useRuleList.addDomain('*', domains[g], {
+					ruleList[addType]('*', domains[g], {
 						rule: rule
 					});
 			}
