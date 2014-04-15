@@ -174,7 +174,8 @@ Page.prototype.badge = function (state) {
 
 		for (var frame in tree.frames)
 			for (kind in tree.frames[frame].state[state])
-				withState(kind, tree.frames[frame].state[state][kind]);
+				if (Rules.kindShouldBadge(kind))
+					withState(kind, tree.frames[frame].state[state][kind]);
 
 		ToolbarItems.badge(count, self.tab);
 	}, 50, [this]);

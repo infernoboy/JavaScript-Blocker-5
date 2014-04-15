@@ -36,9 +36,11 @@ var Rule = function (store, storeProps, ruleProps) {
 		this.rules = new Store(null, storeProps);
 
 	this.addDomain = this.__add.bind(this, 'domain');
+	this.addNotDomain = this.__add.bind(this, 'notDomain');
 	this.addPage = this.__add.bind(this, 'page');
 
 	this.removeDomain = this.__remove.bind(this, 'domain');
+	this.removeNotDomain = this.__remove.bind(this, 'notDomain');
 	this.removePage = this.__remove.bind(this, 'page');
 };
 
@@ -166,6 +168,7 @@ Rule.prototype.kind = function (kindName, hide) {
 
 	kind.page = kind.__rules.bind(kind, 'page');
 	kind.domain = kind.__rules.bind(kind, 'domain');
+	kind.notDomain = kind.__rules.bind(kind, 'notDomain');
 
 	return kind;
 };
@@ -260,16 +263,17 @@ Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDoma
 
 				return false;
 			}
-		}, ['PageFilter', this.rules.name, kind, location].join()),
+		}),
 
-		domain: types.domain(hostParts)
+		domain: types.domain(hostParts),
+
+		notDomain: types.notDomain().filter(function (domain) {
+			return !hostParts._contains(domain);
+		})
 	};
 
 	if (typeof isAllowed === 'boolean') {
 		var withEach = function (domain, rules, domainStore) {
-			if (typeof isAllowed !== 'boolean')
-				return rules;
-
 			return rules.filter(function (rule, value, ruleStore) {
 				return (!!(value.action % 2) === isAllowed);
 			});
@@ -277,6 +281,7 @@ Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDoma
 
 		rules.page = rules.page.map(withEach);
 		rules.domain = rules.domain.map(withEach);
+		rules.notDomain = rules.notDomain.map(withEach);
 	}
 
 	return rules;
@@ -346,8 +351,12 @@ var Rules = {
 		return this._kinds._contains(kind);
 	},
 
+	kindShouldBadge: function (kind) {
+		return !['special', 'user_script']._contains(kind);
+	},
+
 	isRegExp: function (rule) {
-		return (rule._startsWith('^') && rule._endsWith('$'));
+		return (typeof rule === 'string' && rule._startsWith('^') && rule._endsWith('$'));
 	},
 
 	// Splits a simple rule (e.g. HTTP:.google.com) into its protocol and domain parts.

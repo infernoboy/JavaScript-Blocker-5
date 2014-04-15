@@ -22,7 +22,7 @@ var Predefined = function () {
 				's1\\.wp\\.com'
 			],
 			'.amazon.com': ['(ssl\\-)?images\\-amazon\\.com'],
-			'.reddit.com': ['www\\.redditstatic\\.com'],
+			'.reddit.com': ['www\\.redditstatic\\.com', 'redditstatic.s3.amazonaws.com'],
 			'.paypal.com': ['www\\.paypalobjects\\.com'],
 			'.google.com': ['gstatic\\.com'],
 			'.youtube.com': ['ytimg\\.com', 'clients[0-9]+\\.google\\.com'],
@@ -173,7 +173,7 @@ var Predefined = function () {
 				['Layers', 'live.spokenlayer.com'],
 				['Tracks users', 'linksalpha.com'],
 				['ShareThis', 'sharethis.com'],
-				['AddThis', 'AddThis.com']
+				['AddThis', 'addthis.com']
 			]
 		},
 		frame: {
@@ -199,7 +199,6 @@ var Predefined = function () {
 
 				Rules.list.blacklist.addDomain(kind, domain, {
 					rule: rule,
-					action: 4
 				});
 			}
 		}

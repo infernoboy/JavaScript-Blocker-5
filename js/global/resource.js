@@ -62,17 +62,31 @@ Resource.prototype.__addRule = function (action, domain, rule, framed) {
 	if (this.unblockable)
 		return false;
 
-	var pageParts = Utilities.URL.hostParts(this.pageHost, true);
+	domain = this.__mapDomain(this.pageHost, domain);
+
+	if (this.sourceIsURL)
+		rule = this.__mapDomain(this.sourceHost, rule);
+	else if (!Rules.isRegExp(rule))
+		rule = this.source;
+
+	return Rules.active.__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, {
+		rule: rule,
+		action: action
+	});
+};
+
+Resource.prototype.__mapDomain = function (host, domain) {
+	var parts = Utilities.URL.hostParts(host, true);
 
 	switch (domain) {
 		case RESOURCE.DOMAIN:
-			domain = pageParts[pageParts.length - 1];
+			domain = parts[parts.length - 1];
 		break;
 
 		case RESOURCE.HOST:
 		case undefined:
 		case null:
-			domain = pageParts[0];
+			domain = parts[0];
 		break;
 
 		case RESOURCE.ALL:
@@ -80,30 +94,21 @@ Resource.prototype.__addRule = function (action, domain, rule, framed) {
 		break;
 	}
 
-	if (this.sourceIsURL) {
-		var sourceParts = Utilities.URL.hostParts(this.sourceHost, true);
-		switch (rule) {
-			case RESOURCE.DOMAIN:
-				rule = sourceParts[sourceParts.length - 1];
-			break;
+	return domain;
+};
 
-			case RESOURCE.HOST:
-			case undefined:
-			case null:
-				rule = sourceParts[0];
-			break;
+Resource.prototype.__humanize = function (allow, rule, framed, temporary) {
+	if (this.sourceIsURL)
+		rule = this.__mapDomain(this.sourceHost, rule);
+	else
+		rule = Rules.isRegExp(rule) ? rule : this.source;
 
-			case RESOURCE.ALL:
-				rule = '*';
-			break;
-		}
-	} else if (!Rules.isRegExp(rule))
-		rule = this.source;
+	var action = allow ? 'allow' : 'block',
+			from = (this.sourceIsURL && rule._startsWith('.')) ? 'within' : (Rules.isRegExp(rule) ? 'matching' : 'from'),
+			rule = (this.sourceIsURL && rule._startsWith('.')) ? rule.substr(1) : rule,
+			message = [temporary ? 'Temporarily ' + action : action._ucfirst(), framed ? this.framedKind : this.kind, from, rule];
 
-	return Rules.active.__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, {
-		rule: rule,
-		action: action
-	});
+	return message.join(' ');
 };
 
 Resource.prototype.allowedBySettings = function () {
@@ -171,7 +176,7 @@ Resource.prototype.canLoad = function () {
 	var storeKind = this.isFrame ? this.framedKind : this.kind,
 			store = Resource.canLoadCache.getStore(storeKind),
 			hostSources = store.getStore(this.pageHost, {
-				maxLife: TIME.ONE_MINUTE * 30
+				maxLife: TIME.ONE_HOUR
 			}),
 			cached = hostSources.get(this.source);
 
@@ -179,7 +184,7 @@ Resource.prototype.canLoad = function () {
 		return cached;
 
 	var pageSources = store.getStore(this.pageLocation, {
-				maxLife: TIME.ONE_MINUTE * 30
+				maxLife: TIME.ONE_HOUR
 			}),
 			cached = pageSources.get(this.source);
 

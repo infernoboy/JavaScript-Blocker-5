@@ -151,13 +151,14 @@ DeepInject.prototype.injectable = function (useURL) {
 				type: 'text/javascript'
 			}));
 		} else
-			var url = 'data:text/javascript,' + encodeURI(executable);
+			var url = 'data:text/javascript;base64,' + Utilities.encode(executable);
 
 		scriptElement.src = url;
 
-		scriptElement.onload = function () {
-			URL.revokeObjectURL(url);
-		};
+		if (!globalSetting('debugMode'))
+			scriptElement.onload = function () {
+				URL.revokeObjectURL(url);
+			};
 	} else
 		scriptElement.appendChild(document.createTextNode(executable));
 
@@ -174,6 +175,6 @@ DeepInject.prototype.inject = function (useURL) {
 	else
 		document.documentElement.appendChild(injectable);
 
-	if ((useURL === false || DeepInject.useURL === false) && !globalInfo('debugMode'))
+	if ((useURL === false || DeepInject.useURL === false) && !globalSetting('debugMode'))
 		injectable.innerText = '';
 };

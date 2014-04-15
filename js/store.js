@@ -391,7 +391,7 @@ var Store = (function () {
 		var results = this.forEach(fn);
 
 		var store = new Store(null, {
-			selfDestruct: TIME.ONE_MINUTE * 5
+			selfDestruct: TIME.ONE_SECOND * 30
 		});
 
 		for (var i = 0; i < results.length; i++)
@@ -400,14 +400,12 @@ var Store = (function () {
 		return store;
 	};
 
-	Store.prototype.filter = function (fn, name) {
+	Store.prototype.filter = function (fn) {
 		var results = this.forEach(fn);
 
-		var store = new Store(name, {
-			selfDestruct: TIME.ONE_MINUTE * 5
+		var store = new Store(null, {
+			selfDestruct: TIME.ONE_SECOND * 30
 		});
-
-		store.clear();
 
 		for (var i = 0; i < results.length; i++)
 			if (results[i].result)
@@ -616,6 +614,20 @@ var Store = (function () {
 			}, [this, key, now]);
 	};
 
+	Store.prototype.replaceWith = function (store) {
+		if (!(store instanceof Store))
+			throw new TypeError(store + ' is not an instance of Store.');
+
+		if (store === this)
+			throw new Error('cannot replace a store with itself.');
+
+		var swapPrefix = this.name ? this.name.split(',')[0] : null;
+
+		this.clear();
+
+		this.data = store.toJSON(swapPrefix).data;
+	};
+
 	Store.prototype.clear = function () {
 		if (this.lock)
 			return;
@@ -706,12 +718,22 @@ var Store = (function () {
 		return JSON.stringify(this.all(), null, 2);
 	};
 
-	Store.prototype.toJSON = function () {
+	Store.prototype.toJSON = function (swapPrefix) {
 		var value,
 				finalValue;
 
+		var name = this.name ? this.name.toString() : null;
+
+		if (name && typeof swapPrefix === 'string' && swapPrefix.length) {
+			var split = this.name.split(',');
+
+			split[0] = swapPrefix;
+
+			name = split.join(',');
+		}
+
 		var stringable = {
-			name: this.name,
+			name: name,
 			save: this.save,
 			props: this.props,
 			lock: this.lock,
@@ -726,7 +748,7 @@ var Store = (function () {
 				if (value.isEmpty())
 					continue;
 				else {
-					finalValue = value.toJSON();
+					finalValue = value.toJSON(swapPrefix);
 
 					if (finalValue.data._isEmpty())
 						continue;

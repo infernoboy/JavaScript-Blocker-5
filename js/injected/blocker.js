@@ -55,12 +55,12 @@ var allowedItems = page.state.getStore('allowed'),
 		blockedItems = page.state.getStore('blocked'),
 		unblockedItems = page.state.getStore('unblocked');
 
-var globalInfo = (function () {
-	var infoCache = new Store('GlobalInfo', {
-		defaultValue: GlobalCommand('globalInfo')
+var globalSetting = (function () {
+	var infoCache = new Store('GlobalSetting', {
+		defaultValue: GlobalCommand('globalSetting')
 	});
 
-	return function globalInfo (infoKey, bypassCache) {
+	return function globalSetting (infoKey, bypassCache) {
 		if (typeof infoKey !== 'string')
 			throw new TypeError('infoKey is not a string');
 
@@ -69,7 +69,7 @@ var globalInfo = (function () {
 		if (info && (info.cache || bypassCache === true))
 			return info.value;
 		else
-			return infoCache.set(infoKey, GlobalCommand('globalInfo', infoKey)).get(infoKey).value;
+			return infoCache.set(infoKey, GlobalCommand('globalSetting', infoKey)).get(infoKey).value;
 	}
 })();
 
@@ -455,7 +455,7 @@ function canLoadResource (event, excludeFromPage, meta) {
 	}
 };
 
-if (!globalInfo('disabled')) {
+if (!globalSetting('disabled')) {
 	if (Utilities.safariBuildVersion > 535) {
 		var observer = new WebKitMutationObserver(function (mutations) {
 			mutations.forEach(function (mutation) {

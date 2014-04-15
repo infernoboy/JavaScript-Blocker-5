@@ -536,7 +536,7 @@ var LogError = function () {
 				message: errorMessage
 			});
 
-		if (Utilities.Page.isGlobal || globalInfo('debugMode')) {
+		if (Utilities.Page.isGlobal || globalSetting('debugMode')) {
 			console.error('(JSB)', errorMessage);
 
 			if (errorStack) {

@@ -76,7 +76,7 @@ var Command = function (command, data, event) {
 			this.message = resource.canLoad();
 		},
 
-		globalInfo: function () {
+		globalSetting: function () {
 			this.message = {
 				disabled: {
 					cache: true,
@@ -85,7 +85,7 @@ var Command = function (command, data, event) {
 
 				debugMode: {
 					cache: true,
-					value: false
+					value: true
 				},
 
 				topPageURL: {
@@ -114,8 +114,8 @@ var Command = function (command, data, event) {
 			var page = new Page(thePage, this.event.target);
 
 			if (thePage.isFrame) {
-				var tab = this.event.target,
-						self = this;
+				var self = this,
+						tab = this.event.target;
 				
 				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
 					if (parent.top && parent.tab === tab) {
