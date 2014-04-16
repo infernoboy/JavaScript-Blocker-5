@@ -5,13 +5,10 @@ var Settings = {
 
 	getItem: function (setting, JSON) {
 		var getMethod = JSON ? 'getJSON' : 'getItem',
-				setMethod = JSON ? 'setJSON' : 'setItem',
 				storedValue = SettingStore.available ? SettingStore[getMethod](setting) : Settings.current_value(setting);
 
 		var value = storedValue === null ? ((setting in Settings.items) ? Settings.items[setting].default : null) : storedValue;
 
-		if (storedValue === null && SettingStore.available)
-			SettingStore[setMethod](setting, value);
 
 		return value;
 	},
@@ -108,9 +105,6 @@ Settings.settings = {
 		},
 		popoverHeight: {
 			default: 400
-		},
-		simpleReferrer: { // DEPRECATED.
-			default: true
 		},
 		settingsPageTab: {
 			default: 'for-welcome'
@@ -230,7 +224,7 @@ Settings.settings = {
 				disable: true,
 				script: true,
 				frame: true,
-				embed: false,
+				embed: true,
 				video: false,
 				image: false,
 				ajax_get: true,
@@ -239,7 +233,7 @@ Settings.settings = {
 			}
 		},
 		easyLists: {
-			type: 'multi-boolean-map',
+			type: 'multi-map-boolean',
 			default: {
 				list: [true, 'https://easylist-downloads.adblockplus.org/easylist.txt'],
 				privacy: [true, 'https://easylist-downloads.adblockplus.org/easyprivacy.txt'],
@@ -252,12 +246,21 @@ Settings.settings = {
 				disable: 'trueNowhere',
 				script: 'nowhere',
 				frame: 'nowhere',
-				embed: 'everywhere',
-				video: 'everywhere',
+				embed: 'nowhere',
+				video: 'nowhere',
 				image: 'everywhere',
 				ajax_get: 'nowhere',
 				ajax_put: 'nowhere',
 				special: 'everywhere'
+			}
+		},
+		showPlaceholder: {
+			type: 'multi-boolean',
+			default: {
+				frame: true,
+				embed: true,
+				video: true,
+				image: true,
 			}
 		},
 

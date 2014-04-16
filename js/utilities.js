@@ -411,7 +411,7 @@ var Utilities = {
 			var url = (typeof url !== 'string') ? Utilities.Page.getCurrentLocation() : url;
 
 			if (/^about:/.test(url))
-				return 'blank';
+				return url.substr(6);
 
 			if (/^javascript:/.test(url))
 				return 'javascript';
@@ -493,6 +493,11 @@ var Log = function () {
 	console.log.apply(console, ['(JSB)'].concat(Utilities.makeArray(arguments)));
 };
 
+var LogDebug = function () {
+	if (globalSetting.debugMode)
+		console.debug.apply(console, ['(JSB)'].concat(Utilities.makeArray(arguments)));
+};
+
 var LogError = function () {
 	var	error,
 			errorMessage,
@@ -536,7 +541,7 @@ var LogError = function () {
 				message: errorMessage
 			});
 
-		if (Utilities.Page.isGlobal || globalSetting('debugMode')) {
+		if (Utilities.Page.isGlobal || globalSetting.debugMode) {
 			console.error('(JSB)', errorMessage);
 
 			if (errorStack) {
@@ -808,6 +813,8 @@ var Extension = {
 				for (var key in this)
 					if (this[key] !== null && typeof this[key] === 'object')
 						this[key]._deepFreeze();
+
+				return this;
 			}
 		},
 

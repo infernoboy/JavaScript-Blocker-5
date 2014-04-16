@@ -96,7 +96,7 @@ var Command = function (type, event) {
 		},
 
 		sendPage: function () {
-			sendPage();
+			Page.send();
 		},
 
 		messageTopExtension: function (detail, event) {
@@ -165,12 +165,12 @@ var Command = function (type, event) {
 	};
 
 	Commands.window = {
-		requestFrameURL: function (detail, event) {				
+		requestFrameURL: function (detail, event) {
 			window.parent.postMessage({
 				command: 'receiveFrameURL',
 				data: {
 					id: detail.data.id,
-					url: page.location
+					url: Page.info.location
 				}
 			}, event.origin);
 		},
@@ -178,22 +178,44 @@ var Command = function (type, event) {
 			var message = detail.data,
 					frame = document.getElementById(message.id);
 
+			Utilities.Timer.remove('timeout', 'FrameURLRequestFailed' + message.id);
+
 			if (!frame)
-				return LogError(['received frame URL, but frame does not exist', message.id]);
+				LogDebug('received frame URL, but frame does not exist - ' + message.id);
+			else {
+				Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
 
-			var previousURL = frame.getAttribute('data-jsbFrameURL');
+				var host;
 
-			Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
+				var allowedFrames = Page.allowed.getStore('frame'),
+						all = allowedFrames.get('all', [], true),
+						allClone = Utilities.makeArray(all),
+						hosts = allowedFrames.getStore('hosts');
 
-			if (previousURL && previousURL !== message.url) {
-				canLoadResource({
-					target: frame,
+				for (var i = 0; i < allClone.length; i++)
+					if (allClone[i].meta && allClone[i].meta.id === message.id) {
+						LogDebug('frame did not vanish - ' + message.id);
+
+						all.splice(i, 1);
+
+						hosts.decrement(Utilities.URL.extractHost(allClone[i].source));
+					} 
+			}
+
+			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank';
+
+			if (previousURL !== message.url) {
+				Resource.canLoad({
+					target: document.createElement('iframe'),
 					url: message.url,
-					unblockable: !!previousURL
+					unblockable: true,
+				}, false, {
+					previousURL: previousURL
 				});
 			}
 
-			frame.setAttribute('data-jsbFrameURL', message.url);
+			if (frame)
+				frame.setAttribute('data-jsbFrameURL', message.url);
 		}
 	};
 
@@ -300,9 +322,9 @@ var Command = function (type, event) {
 				meta: detail,
 				canLoad:  GlobalCommand('canLoadResource', {
 					kind: detail.kind,
-					pageLocation: page.location,
+					pageLocation: Page.info.location,
 					source: detail.source,
-					isFrame: page.isFrame
+					isFrame: Page.info.isFrame
 				})
 			};
 

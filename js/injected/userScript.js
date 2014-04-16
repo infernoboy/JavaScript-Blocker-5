@@ -80,7 +80,7 @@ var UserScript = {
 			console.warn('This page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
 
 		if (excludeFromPage !== true)
-			allowedItems.getStore('user_script').get('all', [], true).push({
+			Page.allowed.getStore('user_script').get('all', [], true).push({
 				source: attributes.meta.trueNamespace,
 				ruleAction: -1
 			});
@@ -91,13 +91,13 @@ var UserScript = {
 				requirement;
 
 		var enabledUserScripts = GlobalCommand('enabledUserScripts', {
-			location: page.location,
-			isFrame: page.isFrame
+			location: Page.info.location,
+			isFrame: Page.info.isFrame
 		});
 
 		for (var userScript in enabledUserScripts) {	
 			if (enabledUserScripts[userScript] === false)
-				blockedItems.getStore('user_script').get('all', [], true).push({
+				Page.blocked.getStore('user_script').get('all', [], true).push({
 					source: userScript,
 					ruleAction: -1
 				});

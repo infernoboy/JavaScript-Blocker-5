@@ -436,7 +436,7 @@ var Store = (function () {
 			store.prolongDestruction();
 		}, [this]);
 
-		if (typeof key !== 'string' || (this.data[key] && !this.data.hasOwnProperty(key)))
+		if ((typeof key !== 'string' && typeof key !== 'number') || (this.data[key] && !this.data.hasOwnProperty(key)))
 			throw new Error(key + ' cannot be used as key.');
 
 		if (typeof overwrite !== 'boolean')

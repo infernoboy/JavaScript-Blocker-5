@@ -155,7 +155,7 @@ DeepInject.prototype.injectable = function (useURL) {
 
 		scriptElement.src = url;
 
-		if (!globalSetting('debugMode'))
+		if (!globalSetting.debugMode)
 			scriptElement.onload = function () {
 				URL.revokeObjectURL(url);
 			};
@@ -175,6 +175,6 @@ DeepInject.prototype.inject = function (useURL) {
 	else
 		document.documentElement.appendChild(injectable);
 
-	if ((useURL === false || DeepInject.useURL === false) && !globalSetting('debugMode'))
+	if ((useURL === false || DeepInject.useURL === false) && !globalSetting.debugMode)
 		injectable.innerText = '';
 };

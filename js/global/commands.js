@@ -76,26 +76,16 @@ var Command = function (command, data, event) {
 		},
 
 		globalSetting: function (setting) {
-			Log('OK', Settings.getJSON('enabledKinds'));
+			this.message = {
+				disabled: false,
+				debugMode: true,
 
-			var settings = {
-				disabled: {
-					cache: true,
-					value: false,
-				},
-
-				debugMode: {
-					cache: true,
-					value: true
-				},
-
-				enabledKinds: {
-					cache: true,
-					value: Settings.getJSON('enabledKinds')
-				}
+				enabledKinds: Settings.getJSON('enabledKinds'),
+				showPlaceholder: Settings.getJSON('showPlaceholder'),
+				hideInjected: Settings.getItem('hideInjected'),
+				confirmShortURL: Settings.getItem('confirmShortURL'),
+				blockReferrer: Settings.getItem('blockReferrer')
 			};
-
-			this.message = setting ? settings[setting] : settings;
 		},
 
 		getSetting: function (setting, getJSON, defaultValue) {

@@ -90,7 +90,10 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 
 	var rules = types[type](domain);
 
-	Resource.canLoadCache.clear();
+	if (kind === '*')
+		Resource.canLoadCache.clear();
+	else
+		Resource.canLoadCache.getStore(kind).clear();
 
 	rules.set(rule.rule, {
 		regexp: Rules.isRegExp(rule.rule),
@@ -121,7 +124,10 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 			types[type](domain).remove(rule);
 	}
 
-	Resource.canLoadCache.clear();
+	if (kind === '*')
+		Resource.canLoadCache.clear();
+	else
+		Resource.canLoadCache.getStore(kind).clear();
 };
 
 Rule.prototype.kind = function (kindName, hide) {

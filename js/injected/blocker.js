@@ -6,7 +6,7 @@ if (!window.safari)
 if (typeof document.hidden === 'undefined')
 	document.hidden = false;
 
-if (!window.CustomEvent) {
+if (!window.CustomEvent)
 	(function () {
 		function CustomEvent (event, params) {
 			params = params || { bubbles: false, cancelable: false, detail: undefined };
@@ -17,11 +17,14 @@ if (!window.CustomEvent) {
 
 		window.CustomEvent = CustomEvent;
 	})();
-}
+
+if (!window.MutationObserver)
+	window.MutationObserver = window.WebKitMutationObserver;
 
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
-	EVENT: Utilities.id()
+	EVENT: Utilities.id(),
+	BLOCKED_ELEMENTS: []
 };
 
 var BLOCKABLE = {
@@ -34,74 +37,47 @@ var BLOCKABLE = {
 	IMG: ['image', true],
 	AJAX_POST: ['ajax_post'],
 	AJAX_PUT: ['ajax_put'],
-	AJAX_GET: ['ajax_get'],
-	special: ['special'],
-	disable: ['disable']
+	AJAX_GET: ['ajax_get']
 };
 
-var	broken = false,
-		onDocumentVisible = [],
-		staticActions = {};
+var	broken = false;
 
-var page = {
-	id: TOKEN.PAGE,
-	state: new Store(TOKEN.PAGE),
-	location: Utilities.Page.getCurrentLocation(),
-	host: Utilities.Page.isBlank ? 'blank' : (document.location.host || 'blank'),
-	isFrame: !Utilities.Page.isTop
+var Page = {
+	send: (function () {
+		var timeout;
+
+		return function sendPage () {
+			clearTimeout(timeout);
+
+			timeout = setTimeout(function () {
+				try {
+					if (!document.hidden)
+						GlobalPage.message('receivePage', Page.info);
+				} catch(error) {
+					if (!broken) {
+						broken = true;
+
+						console.error('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error.message);
+					}
+				}
+			}, 100);
+		};
+	})(),
+
+	info: {
+		id: TOKEN.PAGE,
+		state: new Store(TOKEN.PAGE),
+		location: Utilities.Page.getCurrentLocation(),
+		host: Utilities.Page.isBlank ? 'blank' : (document.location.host || 'blank'),
+		isFrame: !Utilities.Page.isTop
+	}
 };
 
-var allowedItems = page.state.getStore('allowed'),
-		blockedItems = page.state.getStore('blocked'),
-		unblockedItems = page.state.getStore('unblocked');
+Page.allowed = Page.info.state.getStore('allowed'),
+Page.blocked = Page.info.state.getStore('blocked'),
+Page.unblocked = Page.info.state.getStore('unblocked');
 
-var globalSetting = (function () {
-	var infoCache = new Store('GlobalSetting', {
-		defaultValue: GlobalCommand('globalSetting')
-	});
-
-	return function globalSetting (infoKey, bypassCache) {
-		if (typeof infoKey !== 'string')
-			throw new TypeError(infoKey + ' is not a string');
-
-		var info = infoCache.get(infoKey);
-
-		if (info && (info.cache || bypassCache === true))
-			return info.value;
-		else
-			return infoCache.set(infoKey, GlobalCommand('globalSetting', infoKey)).get(infoKey).value;
-	}
-})();
-
-var ifSetting = (function () {
-	var settings = {};
-
-	return function ifSetting (setting, checkValue, matchType) {
-		var checkSettings = Array.isArray(setting) ? setting : [setting];
-
-		if (typeof matchType === 'undefined')
-			matchType = ARRAY.CONTAINS.ONE;
-		
-		return new Promise(function (resolve, reject) {
-			for (var i = 0; i < checkSettings.length; i++) {
-				if (typeof checkSettings[i] !== 'string')
-					return reject(TypeError(checkSettings[i] + ' is not a string'));
-
-				if (!(checkSettings[i] in settings))
-					settings[checkSettings[i]] = GlobalCommand('getSetting', checkSettings[i]);
-
-				var settingValue = settings[checkSettings[i]];
-
-				if ((Array.isArray(settingValue) && settingValue.__contains(matchType, checkValue)) || settingValue === checkValue) {
-					resolve();
-
-					break;
-				} else if (i === (checkSettings.length - 1))
-					reject();
-			}
-		});
-	}
-})();
+var globalSetting = GlobalCommand('globalSetting');
 
 var _ = (function () {
 	var stringCache = new Store('Strings');
@@ -117,28 +93,9 @@ var _ = (function () {
 	}
 })();
 
-var sendPage = (function () {
-	var timeout;
-
-	return function sendPage () {
-		clearTimeout(timeout);
-
-		timeout = setTimeout(function () {
-			try {
-				if (!document.hidden)
-					GlobalPage.message('receivePage', page);
-			} catch(error) {
-				if (!broken) {
-					broken = true;
-
-					LogError('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error);
-				}
-			}
-		}, 100);
-	};
-})();
-
 var Handler = {
+	onDocumentVisible: [],
+
 	DOMContentLoaded: function () {
 		var i,
 				b;
@@ -148,7 +105,7 @@ var Handler = {
 				forms = document.getElementsByTagName('form'),
 				iframes = document.getElementsByTagName('iframe'),
 				frames = document.getElementsByTagName('frame'),
-				unblockedScripts = unblockedItems.getStore('script').get('all', [], true);
+				unblockedScripts = Page.unblocked.getStore('script').get('all', [], true);
 
 		for (i = 0, b = scripts.length; i < b; i++)
 			if (!Element.triggersBeforeLoad(scripts[i]))
@@ -163,31 +120,31 @@ var Handler = {
 		for (i = 0, b = frames.length; i < b; i++)
 			Element.handle.frame(frames[i]);
 
-		ifSetting('blockReferrer', true)
-			.then(function (forms) {
-				var method;
+		if (globalSetting.blockReferrer) {
+			var method;
 
-				for (var i = 0, b = forms.length; i < b; i++) {
-					method = forms[y].getAttribute('method');
+			for (var i = 0, b = forms.length; i < b; i++) {
+				method = forms[y].getAttribute('method');
 
-					if (method && method.toLowerCase() === 'post')
-						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
-				}
-			}.bind(null, forms))
-			.finally(sendPage);
+				if (method && method.toLowerCase() === 'post')
+					GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
+			}
+		}
+
+		Page.send();
 	},
 
 	hash: function (event) {
-		page.location = Utilities.Page.getCurrentLocation();
+		Page.info.location = Utilities.Page.getCurrentLocation();
 		
 		if (event)
-			sendPage();
+			Page.send();
 	},
 
 	visibilityChange: function (event) {
 		if (!document.hidden) {
-			for (var i = 0, b = onDocumentVisible.length; i < b; i++) {
-				var fn = onDocumentVisible.shift();
+			for (var i = 0, b = Handler.onDocumentVisible.length; i < b; i++) {
+				var fn = Handler.onDocumentVisible.shift();
 
 				if (typeof fn === 'function')
 					fn();
@@ -195,7 +152,7 @@ var Handler = {
 					throw new TypeError(fn + ' is not a function');
 			}
 
-			sendPage();
+			Page.send();
 		}
 	},
 
@@ -215,18 +172,10 @@ var Handler = {
 
 var Element = {
 	hide: function (kind, element, source) {
-		ifSetting('showPlaceholder', [kind])
-			.then(function () {
-				createPlaceholder(element, source);
-			}, function () {
-				Element.collapse(element);
-			})
-			.catch(function (error) {
-				LogError(error);
-			})
-			.finally(function () {
-				kind = element = source = undefined;
-			});
+		if (globalSetting.showPlaceholder[kind]) {
+				// Element.createPlaceholder(element, source);
+		} else
+			Element.collapse(element);
 	},
 
 	collapse: function (element) {		
@@ -249,19 +198,18 @@ var Element = {
 		if (!elementBased)
 			return false;
 
-		return !!(element.src || element.srcset);
+		return !!(element.src || element.srcset) || ['FRAME', 'IFRAME']._contains(element.nodeName);
 	},
 
 	processUnblockable: function (kind, element) {
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {
-			var kindStore = unblockedItems.getStore(kind),
-					hideInjected = ifSetting('hideInjected', false);
+			var kindStore = Page.unblocked.getStore(kind);
 
 			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element, true));
 
-			if (Element.triggersBeforeLoad(element))
-				hideInjected.then(function (element) {
-					allowedItems.getStore(kind).get('all', [], true).push({
+			if (Element.triggersBeforeLoad(element)) {
+				if (!globalSetting.hideInjected)
+					Page.allowed.getStore(kind).get('all', [], true).push({
 						source: element.src || element.srcset,
 						ruleAction: -1,
 						unblockable: true,
@@ -270,17 +218,15 @@ var Element = {
 							name: element.getAttribute('data-jsbInjectedScript')
 						}
 					});
-				}.bind(null, element));
-			else if (Element.shouldIgnore(element)) {
+			} else if (Element.shouldIgnore(element)) {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
-				hideInjected.then(function (element) {
-					kindStore.get('all', [], true).push(element.innerHTML);
-				}.bind(null, element));
+				if (!globalSetting.hideInjected)
+					kindStore.get('all', [], true).push(element.innerHTML || element.src);
 			} else
-				kindStore.get('all', [], true).push(element.innerHTML);
+				kindStore.get('all', [], true).push(element.innerHTML || element.src || element.outerHTML);
 
-			sendPage();
+			Page.send();
 				
 			return true;
 		}
@@ -295,12 +241,12 @@ var Element = {
 			if (node.nodeName === 'A')
 				Element.handle.anchor(node);
 			else if (BLOCKABLE[node.nodeName]) {
-				if (node.nodeName === 'IFRAME' || node.nodeName === 'FRAME')
+				if (node.nodeName._endsWith('FRAME'))
 					Element.handle.frame(node);
 
 				var kind = BLOCKABLE[node.nodeName][0];
 
-				if (globalSetting('enabledKinds')[kind] && !Element.triggersBeforeLoad(node))
+				if (globalSetting.enabledKinds[kind] && !Element.triggersBeforeLoad(node))
 					Element.processUnblockable(kind, node);
 			}
 		},
@@ -334,36 +280,32 @@ var Element = {
 							anchor.setAttribute('rel', 'noreferrer');
 				}
 
-				ifSetting('confirmShortURL', true)
-					.then(function () {
-						this.addEventListener('click', function () {
-							var target = this.getAttribute('target');
+				if (globalSetting.confirmShortURL)
+					anchor.addEventListener('click', function () {
+						var target = this.getAttribute('target');
 
-							if (target !== '_blank' && target !== '_top' && !GlobalCommand('confirmShortURL', {
-								shortURL: this.href,
-								pageLocation: page.location
-							})) {
-								event.preventDefault();
-								event.stopPropagation();
-							}
-						});
-					}.bind(anchor));
+						if (target !== '_blank' && target !== '_top' && !GlobalCommand('confirmShortURL', {
+							shortURL: this.href,
+							pageLocation: Page.info.location
+						})) {
+							event.preventDefault();
+							event.stopPropagation();
+						}
+					});
 				
-				ifSetting('blockReferrer', true)
-					.then(function (href) {
-						if (href && href.charAt(0) === '#')
-							GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
-						else	
-							this.addEventListener('mousedown', function (event) {
-								var key = /Win/.test(window.navigator.platform) ? event.ctrlKey : event.metaKey;
-							
-								GlobalPage.message('anonymousNewTab', key || event.which === 2 ? 1 : 0);
-							
-								setTimeout(function () {
-									GlobalPage.message('anonymousNewTab', 0);
-								}, 1000);
-							}, true);
-					}.bind(anchor, href));
+				if (globalSetting.blockReferrer)
+					if (href && href.charAt(0) === '#')
+						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
+					else	
+						anchor.addEventListener('mousedown', function (event) {
+							var key = /Win/.test(window.navigator.platform) ? event.ctrlKey : event.metaKey;
+						
+							GlobalPage.message('anonymousNewTab', key || event.which === 2 ? 1 : 0);
+						
+							setTimeout(function () {
+								GlobalPage.message('anonymousNewTab', 0);
+							}, 1000);
+						}, true);
 			}
 		},
 
@@ -381,7 +323,21 @@ var Element = {
 
 			frame.setAttribute('data-jsbFrameProcessed', Utilities.Token.create(id, true));
 
-			frame.addEventListener('load', function () {						
+			Utilities.Timer.timeout('FrameURLRequestFailed' + frame.id, function (frame) {
+				if (TOKEN.BLOCKED_ELEMENTS._contains(frame))
+					return;
+
+				LogDebug(['frame vanished or is slow to load', frame.id, !!document.getElementById(frame.id)].join(' - '));
+
+				Resource.canLoad({
+					target: frame,
+					unblockable: !!frame.src
+				}, false, {
+					id: frame.id
+				});
+			}, 2000, [frame]);
+
+			frame.addEventListener('load', function () {
 				this.contentWindow.postMessage({
 					command: 'requestFrameURL',
 					data: {
@@ -393,114 +349,124 @@ var Element = {
 	}
 };
 
-function canLoadResource (event, excludeFromPage, meta) {
-	if (event.type === 'DOMNodeInserted' && event.target.src)
-		return;
+var Resource = {
+	staticActions: {},
 
-	var element = event.target || event;
+	canLoad: function (event, excludeFromPage, meta) {
+		if (event.type === 'DOMNodeInserted' && event.target.src)
+			return;
 
-	if (!(element.nodeName in BLOCKABLE))
-		return true;
+		var element = event.target || event;
 
-	var kind = BLOCKABLE[element.nodeName][0];
+		if (!(element.nodeName in BLOCKABLE))
+			return true;
 
-	if (!globalSetting('enabledKinds')[kind])
-		return true;
+		var kind = BLOCKABLE[element.nodeName][0];
 
-	var source = Utilities.URL.getAbsolutePath(event.url || element.getAttribute('src')),
-			sourceHost = (source && source.length) ? Utilities.URL.extractHost(source) : null;
+		if (!globalSetting.enabledKinds[kind])
+			return true;
 
-	if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad')) {
-		if (kind in staticActions) {
-			if (!staticActions[kind] && event.preventDefault)
-				event.preventDefault();
+		var source = Utilities.URL.getAbsolutePath(event.url || element.getAttribute('src')),
+				sourceHost = (source && source.length) ? Utilities.URL.extractHost(source) : null;
 
-			return staticActions[kind];
-		} else {
-			if (!sourceHost && element.nodeName !== 'OBJECT') {
-				source = 'about:blank';
-				sourceHost = 'blank';
-			} else if (!sourceHost)
-				return true;
+		if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad')) {
+			if (kind in Resource.staticActions) {
+				if (!Resource.staticActions[kind] && event.preventDefault)
+					event.preventDefault();
 
-			if (Element.shouldIgnore(element))
-				return Element.processUnblockable(kind, element);
+				return Resource.staticActions[kind];
+			} else {
+				if (!sourceHost && element.nodeName !== 'OBJECT') {
+					source = 'about:blank';
+					sourceHost = 'blank';
+				} else if (!sourceHost)
+					return true;
 
-			if (element.nodeName._endsWith('FRAME'))
-				element.setAttribute('data-jsbFrameURL', source);
+				if (Element.shouldIgnore(element))
+					return Element.processUnblockable(kind, element);
 
-			if (event.unblockable)
-				var canLoad = {
-					isAllowed: true,
-					action: -1
+				if (element.nodeName._endsWith('FRAME'))
+					element.setAttribute('data-jsbFrameURL', source);
+
+				if (event.unblockable)
+					var canLoad = {
+						isAllowed: true,
+						action: -1
+					}
+				else
+					var canLoad = GlobalCommand('canLoadResource', {
+						kind: kind,
+						pageLocation: Page.info.location,
+						source: source,
+						isFrame: !Utilities.Page.isTop
+					});
+				
+				var stateItems = (canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked,
+						kindStore = stateItems.getStore(kind);
+
+				if (!canLoad.isAllowed && event.preventDefault)
+					event.preventDefault();
+
+				if (!canLoad.isAllowed)
+					TOKEN.BLOCKED_ELEMENTS.push(element);
+
+				if (canLoad.action === -85) {
+					Resource.staticActions[kind] = canLoad.isAllowed;
+
+					Page.send();
+
+					return canLoad.isAllowed;
 				}
-			else
-				var canLoad = GlobalCommand('canLoadResource', {
-					kind: kind,
-					pageLocation: page.location,
-					source: source,
-					isFrame: !Utilities.Page.isTop
-				});
-			
-			var stateItems = (canLoad.isAllowed || !event.preventDefault) ? allowedItems : blockedItems,
-					kindStore = stateItems.getStore(kind);
 
-			if (!canLoad.isAllowed && event.preventDefault)
-				event.preventDefault();
+				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind) {
+					if (['EMBED', 'OBJECT']._contains(element.nodeName)) {
+						if (!meta)
+							meta = {};
 
-			if (canLoad.action === -85) {
-				staticActions[kind] = canLoad.isAllowed;
+						meta.type = element.getAttribute('type');
+					}
 
-				sendPage();
+					if (excludeFromPage !== true || canLoad.action >= 0) {
+						kindStore.get('all', [], true).push({
+							source: source,
+							ruleAction: canLoad.action,
+							unblockable: !!event.unblockable,
+							meta: meta
+						});
 
+						kindStore.getStore('hosts').increment(sourceHost);
+					}
+
+					if (BLOCKABLE[element.nodeName][1] && !canLoad.isAllowed)
+						Element.hide(kind, element, source);
+
+					Page.send();
+				}, [meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind]);
+				
 				return canLoad.isAllowed;
 			}
+		} else {
+			Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
 
-			Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind) {
-				if (!meta && ['EMBED', 'OBJECT', 'FRAME', 'IFRAME']._contains(element.nodeName))
-					meta = element.getAttribute('type');
+			if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'WasPlaceholder', true)) {		
+				element.removeAttribute('data-jsbWasPlaceholder');
+				element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
+			}
 
-				if (excludeFromPage !== true || canLoad.action >= 0) {
-					kindStore.get('all', [], true).push({
-						source: source,
-						ruleAction: canLoad.action,
-						unblockable: !!event.unblockable,
-						meta: meta
-					});
+			Page.send();
 
-					kindStore.getStore('hosts').increment(sourceHost);
-				}
-
-				if (BLOCKABLE[element.nodeName][1] && !canLoad.isAllowed)
-					Element.hide(kind, element, source);
-
-				sendPage();
-			}, [meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind]);
-			
-			return canLoad.isAllowed;
+			return true;
 		}
-	} else {
-		Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
-
-		if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'WasPlaceholder', true)) {		
-			element.removeAttribute('data-jsbWasPlaceholder');
-			element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
-		}
-
-		sendPage();
-
-		return true;
 	}
 };
 
-if (!globalSetting('disabled')) {
+if (!globalSetting.disabled) {
 	if (Utilities.safariBuildVersion > 535) {
-		var observer = new WebKitMutationObserver(function (mutations) {
-			mutations.forEach(function (mutation) {
-				if (mutation.type === 'childList')
-					for (var i = 0; i < mutation.addedNodes.length; i++)
-						Element.handle.node(mutation.addedNodes[i]);
-			});
+		var observer = new MutationObserver(function (mutations) {
+			for (var i = 0; i < mutations.length; i++)
+				if (mutations[i].type === 'childList')
+					for (var j = 0; j < mutations[i].addedNodes.length; j++)
+						Element.handle.node(mutations[i].addedNodes[j]);
 		});
 
 		observer.observe(document, {
@@ -514,7 +480,7 @@ if (!globalSetting('disabled')) {
 	document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
 	document.addEventListener('visibilitychange', Handler.visibilityChange, true);
 	document.addEventListener('keyup', Handler.keyUp, true);
-	document.addEventListener('beforeload', canLoadResource, true);
+	document.addEventListener('beforeload', Resource.canLoad, true);
 
 	window.addEventListener('hashchange', Handler.hash, true);
 

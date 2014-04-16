@@ -285,10 +285,11 @@ Resource.prototype.toJSON = function () {
 	return {
 		location: this.pageLocation,
 		source: this.source,
+		unblockable: this.unblockable || undefined,
 		meta: this.meta || undefined
 	};
 };
 
 setInterval(function () {
 	console.log('CanLoadCacheSize:', Utilities.byteSize(SettingStore.getItem('Storage-ResourceCanLoad').length));
-}, TIME.ONE_MINUTE * 30);
+}, TIME.ONE_MINUTE * 1);

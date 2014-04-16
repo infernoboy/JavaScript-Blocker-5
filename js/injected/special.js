@@ -120,7 +120,7 @@ var Special = {
 		special.inject(useURL);
 
 		if (typeof useURL === 'undefined')
-			blockedItems.getStore('special').get('all', [], true).push({
+			Page.blocked.getStore('special').get('all', [], true).push({
 				source: name,
 				ruleAction: -1
 			});
@@ -133,13 +133,13 @@ var Special = {
 		this.inject('inlineScriptsCheck', false);
 
 		this.enabled = GlobalCommand('enabledSpecials', {
-			location: page.location,
-			isFrame: page.isFrame
+			location: Page.info.location,
+			isFrame: Page.info.isFrame
 		});
 
 		for (var special in this.enabled) {
 			if (this.enabled[special] === false)
-				allowedItems.getStore('special').get('all', [], true).push({
+				Page.allowed.getStore('special').get('all', [], true).push({
 					source: special,
 					ruleAction: -1
 				});

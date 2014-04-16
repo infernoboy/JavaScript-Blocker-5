@@ -89,12 +89,11 @@ Special.specials = {
 		}, true);
 
 		if (build >= 536) {
-			var observer = new WebKitMutationObserver(function (mutations) {
-				mutations.forEach(function (mutation) {
-					if (mutation.type === 'childList')
-						for (var i = 0; i < mutation.addedNodes.length; i++)
-							withNode(mutation.addedNodes[i]);
-				});
+			var observer = new MutationObserver(function (mutations) {
+				for (var i = 0; i < mutations.length; i++)
+					if (mutations[i].type === 'childList')
+						for (var j = 0; j < mutations[i].addedNodes.length; j++)
+							withNode(mutations[i].addedNodes[j]);
 			});
 
 			observer.observe(document, {
