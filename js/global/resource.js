@@ -6,7 +6,7 @@ var RESOURCE = {
 	ALL: 3
 };
 
-function Resource (kind, pageLocation, source, isFrame, unblockable) {
+function Resource (kind, pageLocation, source, isFrame, unblockable, meta) {
 	this.sourceIsURL = Utilities.URL.isURL(source);
 	this.kind = kind;
 	this.framedKind = 'framed:' + this.kind;
@@ -17,6 +17,7 @@ function Resource (kind, pageLocation, source, isFrame, unblockable) {
 	this.sourceHost = Utilities.URL.extractHost(this.source);
 	this.isFrame = isFrame;
 	this.unblockable = unblockable;
+	this.meta = meta;
 
 	this.block = this.__addRule.bind(this, 0);
 	this.allow = this.__addRule.bind(this, 1);
@@ -122,7 +123,7 @@ Resource.prototype.allowedBySettings = function () {
 	if (!enabledKinds[this.kind])
 		return canLoad;
 
-	var blockFrom = Settings.getStore('alwaysBlock').get(this.kind),
+	var blockFrom = Settings.getJSON('alwaysBlock')[this.kind],
 			sourceProtocol = Utilities.URL.protocol(this.source);
 
 	if (blockFrom === 'trueNowhere' || (Settings.getItem('allowExtensions') && sourceProtocol === 'SAFARI-EXTENSION'))
@@ -283,7 +284,8 @@ Resource.prototype.canLoad = function () {
 Resource.prototype.toJSON = function () {
 	return {
 		location: this.pageLocation,
-		source: this.source
+		source: this.source,
+		meta: this.meta || undefined
 	};
 };
 

@@ -70,13 +70,15 @@ var Command = function (command, data, event) {
 		},
 
 		canLoadResource: function (resource) {
-			var resource = new Resource(resource.kind, resource.pageLocation, resource.source, resource.isFrame, resource.unblockable);
+			var resource = new Resource(resource.kind, resource.pageLocation, resource.source, resource.isFrame, resource.unblockable, resource.meta);
 
 			this.message = resource.canLoad();
 		},
 
-		globalSetting: function () {
-			this.message = {
+		globalSetting: function (setting) {
+			Log('OK', Settings.getJSON('enabledKinds'));
+
+			var settings = {
 				disabled: {
 					cache: true,
 					value: false,
@@ -92,6 +94,8 @@ var Command = function (command, data, event) {
 					value: Settings.getJSON('enabledKinds')
 				}
 			};
+
+			this.message = setting ? settings[setting] : settings;
 		},
 
 		getSetting: function (setting, getJSON, defaultValue) {

@@ -247,14 +247,14 @@ Settings.settings = {
 			}
 		},
 		alwaysBlock: {
-			setting: {},
+			type: 'multi-string',
 			default: {
 				disable: 'trueNowhere',
 				script: 'nowhere',
 				frame: 'nowhere',
 				embed: 'everywhere',
 				video: 'everywhere',
-				image: 'nowhere',
+				image: 'everywhere',
 				ajax_get: 'nowhere',
 				ajax_put: 'nowhere',
 				special: 'everywhere'

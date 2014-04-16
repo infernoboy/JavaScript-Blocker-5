@@ -45,7 +45,7 @@ var	broken = false,
 
 var page = {
 	id: TOKEN.PAGE,
-	state: (new Store('Page')).getStore(TOKEN.PAGE),
+	state: new Store(TOKEN.PAGE),
 	location: Utilities.Page.getCurrentLocation(),
 	host: Utilities.Page.isBlank ? 'blank' : (document.location.host || 'blank'),
 	isFrame: !Utilities.Page.isTop
@@ -62,7 +62,7 @@ var globalSetting = (function () {
 
 	return function globalSetting (infoKey, bypassCache) {
 		if (typeof infoKey !== 'string')
-			throw new TypeError('infoKey is not a string');
+			throw new TypeError(infoKey + ' is not a string');
 
 		var info = infoCache.get(infoKey);
 
@@ -104,7 +104,7 @@ var ifSetting = (function () {
 })();
 
 var _ = (function () {
-	var stringCache = new Store;
+	var stringCache = new Store('Strings');
 
 	return function _ (string, args) {
 		if (Array.isArray(args))
@@ -131,7 +131,7 @@ var sendPage = (function () {
 				if (!broken) {
 					broken = true;
 
-					LogError('JavaScript Blocker broke! This is an issue with Safari itself. Reloading the page should fix things.', error);
+					LogError('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error);
 				}
 			}
 		}, 100);
@@ -151,16 +151,17 @@ var Handler = {
 				unblockedScripts = unblockedItems.getStore('script').get('all', [], true);
 
 		for (i = 0, b = scripts.length; i < b; i++)
-			processUnblockableElement('script', scripts[i]);
+			if (!Element.triggersBeforeLoad(scripts[i]))
+				Element.processUnblockable('script', scripts[i]);
 
 		for (i = 0, b = anchors.length; i < b; i++)
-			Handler.anchor(anchors[i]);
+			Element.handle.anchor(anchors[i]);
 
 		for (i = 0, b = iframes.length; i < b; i++)
-			Handler.frame(iframes[i]);
+			Element.handle.frame(iframes[i]);
 
 		for (i = 0, b = frames.length; i < b; i++)
-			Handler.frame(frames[i]);
+			Element.handle.frame(frames[i]);
 
 		ifSetting('blockReferrer', true)
 			.then(function (forms) {
@@ -173,7 +174,7 @@ var Handler = {
 						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
 				}
 			}.bind(null, forms))
-			.finally(sendPage.bind(null, true));
+			.finally(sendPage);
 	},
 
 	hash: function (event) {
@@ -206,146 +207,197 @@ var Handler = {
 		});
 	},
 
-	anchor: function (anchor) {
-		var hasTarget = !!anchor.target;
-
-		anchor = hasTarget ? anchor.target : anchor;
-
-		var isAnchor = anchor.nodeName && anchor.nodeName === 'A';
-		
-		if (hasTarget && !isAnchor) {
-			if (anchor.querySelectorAll) {
-				var anchors = anchor.querySelectorAll('a', anchor);
-
-				for (var i = 0, b = anchors.length; i < b; i++)
-					Handler.anchor(anchors[i]);
-			}
-			
-			return false;
-		}
-
-		if (isAnchor && !Utilities.Token.valid(anchor.getAttribute('data-jsbAnchorPrepared'), 'AnchorPrepared')) {
-			var href = anchor.getAttribute('href');
-
-			anchor.setAttribute('data-jsbAnchorPrepared', Utilities.Token.create('AnchorPrepared', true));
-			
-			if (Special.isEnabled('simple_referrer')) {
-				if (href && href.length && href.charAt(0) !== '#')
-					if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length))
-						anchor.setAttribute('rel', 'noreferrer');
-			}
-
-			ifSetting('confirmShortURL', true)
-				.then(function () {
-					this.addEventListener('click', function () {
-						var target = this.getAttribute('target');
-
-						if (target !== '_blank' && target !== '_top' && !GlobalCommand('confirmShortURL', {
-							shortURL: this.href,
-							pageLocation: page.location
-						})) {
-							event.preventDefault();
-							event.stopPropagation();
-						}
-					});
-				}.bind(anchor));
-			
-			ifSetting('blockReferrer', true)
-				.then(function (href) {
-					if (href && href.charAt(0) === '#')
-						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
-					else	
-						this.addEventListener('mousedown', function (event) {
-							var key = /Win/.test(window.navigator.platform) ? event.ctrlKey : event.metaKey;
-						
-							GlobalPage.message('anonymousNewTab', key || event.which === 2 ? 1 : 0);
-						
-							setTimeout(function () {
-								GlobalPage.message('anonymousNewTab', 0);
-							}, 1000);
-						}, true);
-				}.bind(anchor, href));
-		}
-	},
-
-	frame: function (frame) {
-		var frame = frame.target ? frame.target : frame;
-
-		if (!['FRAME', 'IFRAME']._contains(frame.nodeName))
-			return false;
-
-		var id = frame.getAttribute('id'),
-				token = frame.getAttribute('data-jsbFrameProcessed');
-
-		if (Utilities.Token.valid(token, 'FrameProcessed'))
-			return;
-
-		frame.setAttribute('data-jsbFrameProcessed', Utilities.Token.create('FrameProcessed', true));
-
-		if (!id || !id.length)
-			frame.setAttribute('id', Utilities.id());
-
-		frame.addEventListener('load', function () {						
-			this.contentWindow.postMessage({
-				command: 'requestFrameURL',
-				data: {
-					id: this.id
-				}
-			}, '*');
-		}, false);
-	},
-
 	keyUp: function (event) {
 		if (event.ctrlKey && event.altKey && event.which === 74)
 			GlobalPage.message('openPopover');
 	}
 };
 
-function onElementProcessed (kind, element, source) {
-	ifSetting('showPlaceholder', [kind])
-		.then(function () {
-			createPlaceholder(element, source);
-		}, function () {
-			if (element.parentNode)
-				element.parentNode.removeChild(element);
-		})
-		.catch(function (error) {
-			LogError(error);
-		})
-		.finally(function () {
-			kind = element = source = undefined;
-		});
-};
+var Element = {
+	hide: function (kind, element, source) {
+		ifSetting('showPlaceholder', [kind])
+			.then(function () {
+				createPlaceholder(element, source);
+			}, function () {
+				Element.collapse(element);
+			})
+			.catch(function (error) {
+				LogError(error);
+			})
+			.finally(function () {
+				kind = element = source = undefined;
+			});
+	},
 
-function processUnblockableElement (kind, element) {
-	if (!element.getAttribute('src') || element.src.length < 1) {
-		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element.innerHTML)) {
-			var kindStore = unblockedItems.getStore(kind);
+	collapse: function (element) {		
+		var collapsible = ['height', 'width', 'padding', 'margin'];
 
-			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element.innerHTML, true));
+		for (var i = 0; i < collapsible.length; i++)
+			element.style.setProperty(collapsible[i], 0, 'important');
 
-			if (Utilities.Token.valid(element.getAttribute('data-jsbAllowAndIgnore'), 'AllowAndIgnore', true)) {
+		element.style.setProperty('display', 'none', 'important');
+		element.style.setProperty('visibility', 'hidden', 'important');
+	},
+
+	shouldIgnore: function (element) {
+		return Utilities.Token.valid(element.getAttribute('data-jsbAllowAndIgnore'), 'AllowAndIgnore', true)
+	},
+
+	triggersBeforeLoad: function (element) {
+		var elementBased = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG']._contains(element.nodeName);
+
+		if (!elementBased)
+			return false;
+
+		return !!(element.src || element.srcset);
+	},
+
+	processUnblockable: function (kind, element) {
+		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {
+			var kindStore = unblockedItems.getStore(kind),
+					hideInjected = ifSetting('hideInjected', false);
+
+			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element, true));
+
+			if (Element.triggersBeforeLoad(element))
+				hideInjected.then(function (element) {
+					allowedItems.getStore(kind).get('all', [], true).push({
+						source: element.src || element.srcset,
+						ruleAction: -1,
+						unblockable: true,
+						meta: {
+							injected: true,
+							name: element.getAttribute('data-jsbInjectedScript')
+						}
+					});
+				}.bind(null, element));
+			else if (Element.shouldIgnore(element)) {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
-				ifSetting('hideInjected', false)
-					.then(function (element) {
-						kindStore.get('all', [], true).push(element.innerHTML);
-					}.bind(null, element));
+				hideInjected.then(function (element) {
+					kindStore.get('all', [], true).push(element.innerHTML);
+				}.bind(null, element));
 			} else
 				kindStore.get('all', [], true).push(element.innerHTML);
+
+			sendPage();
+				
+			return true;
+		}
+
+		return false;
+	},
+
+	handle: {
+		node: function (node) {
+			var node = node.target || node;
+
+			if (node.nodeName === 'A')
+				Element.handle.anchor(node);
+			else if (BLOCKABLE[node.nodeName]) {
+				if (node.nodeName === 'IFRAME' || node.nodeName === 'FRAME')
+					Element.handle.frame(node);
+
+				var kind = BLOCKABLE[node.nodeName][0];
+
+				if (globalSetting('enabledKinds')[kind] && !Element.triggersBeforeLoad(node))
+					Element.processUnblockable(kind, node);
+			}
+		},
+
+		anchor: function (anchor) {
+			var hasTarget = !!anchor.target;
+
+			anchor = anchor.target || anchor;
+
+			var isAnchor = anchor.nodeName && anchor.nodeName === 'A';
+			
+			if (hasTarget && !isAnchor) {
+				if (anchor.querySelectorAll) {
+					var anchors = anchor.querySelectorAll('a', anchor);
+
+					for (var i = 0, b = anchors.length; i < b; i++)
+						Element.handle.anchor(anchors[i]);
+				}
+				
+				return false;
+			}
+
+			if (isAnchor && !Utilities.Token.valid(anchor.getAttribute('data-jsbAnchorPrepared'), 'AnchorPrepared')) {
+				var href = anchor.getAttribute('href');
+
+				anchor.setAttribute('data-jsbAnchorPrepared', Utilities.Token.create('AnchorPrepared', true));
+				
+				if (Special.isEnabled('simple_referrer')) {
+					if (href && href.length && href.charAt(0) !== '#')
+						if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length))
+							anchor.setAttribute('rel', 'noreferrer');
+				}
+
+				ifSetting('confirmShortURL', true)
+					.then(function () {
+						this.addEventListener('click', function () {
+							var target = this.getAttribute('target');
+
+							if (target !== '_blank' && target !== '_top' && !GlobalCommand('confirmShortURL', {
+								shortURL: this.href,
+								pageLocation: page.location
+							})) {
+								event.preventDefault();
+								event.stopPropagation();
+							}
+						});
+					}.bind(anchor));
+				
+				ifSetting('blockReferrer', true)
+					.then(function (href) {
+						if (href && href.charAt(0) === '#')
+							GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
+						else	
+							this.addEventListener('mousedown', function (event) {
+								var key = /Win/.test(window.navigator.platform) ? event.ctrlKey : event.metaKey;
+							
+								GlobalPage.message('anonymousNewTab', key || event.which === 2 ? 1 : 0);
+							
+								setTimeout(function () {
+									GlobalPage.message('anonymousNewTab', 0);
+								}, 1000);
+							}, true);
+					}.bind(anchor, href));
+			}
+		},
+
+		frame: function (frame) {
+			var frame = frame.target || frame,
+					id = frame.getAttribute('id');
+
+			if (!id || !id.length)
+				frame.setAttribute('id', (id = Utilities.id()));
+			
+			var idToken = frame.getAttribute('data-jsbFrameProcessed');
+
+			if (Utilities.Token.valid(idToken, id))
+				return;
+
+			frame.setAttribute('data-jsbFrameProcessed', Utilities.Token.create(id, true));
+
+			frame.addEventListener('load', function () {						
+				this.contentWindow.postMessage({
+					command: 'requestFrameURL',
+					data: {
+						id: this.id
+					}
+				}, '*');
+			}, false);
 		}
 	}
-
-	sendPage();
-
-	return true;
 };
 
 function canLoadResource (event, excludeFromPage, meta) {
 	if (event.type === 'DOMNodeInserted' && event.target.src)
 		return;
 
-	var element = event.target ? event.target : event;
+	var element = event.target || event;
 
 	if (!(element.nodeName in BLOCKABLE))
 		return true;
@@ -355,7 +407,7 @@ function canLoadResource (event, excludeFromPage, meta) {
 	if (!globalSetting('enabledKinds')[kind])
 		return true;
 
-	var source = Utilities.URL.getAbsolutePath(event.url ? event.url : element.getAttribute('src')),
+	var source = Utilities.URL.getAbsolutePath(event.url || element.getAttribute('src')),
 			sourceHost = (source && source.length) ? Utilities.URL.extractHost(source) : null;
 
 	if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad')) {
@@ -364,26 +416,15 @@ function canLoadResource (event, excludeFromPage, meta) {
 				event.preventDefault();
 
 			return staticActions[kind];
-		} else if (event.target) {
+		} else {
 			if (!sourceHost && element.nodeName !== 'OBJECT') {
 				source = 'about:blank';
 				sourceHost = 'blank';
 			} else if (!sourceHost)
 				return true;
 
-			if (Utilities.Token.valid(element.getAttribute('data-jsbAllowAndIgnore'), 'AllowAndIgnore', true)) {
-				element.removeAttribute('data-jsbAllowAndIgnore');
-
-				ifSetting('hideInjected', false)
-					.then(function (kind, element) {
-						unblockedItems.getStore(kind).get('all', [], true)
-							.push('JSB Injected Script (' + element.getAttribute('data-jsbInjectedScript') + '): ' + element.src);
-
-						sendPage();
-					}.bind(null, kind, element));
-
-				return true;
-			}
+			if (Element.shouldIgnore(element))
+				return Element.processUnblockable(kind, element);
 
 			if (element.nodeName._endsWith('FRAME'))
 				element.setAttribute('data-jsbFrameURL', source);
@@ -407,6 +448,14 @@ function canLoadResource (event, excludeFromPage, meta) {
 			if (!canLoad.isAllowed && event.preventDefault)
 				event.preventDefault();
 
+			if (canLoad.action === -85) {
+				staticActions[kind] = canLoad.isAllowed;
+
+				sendPage();
+
+				return canLoad.isAllowed;
+			}
+
 			Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind) {
 				if (!meta && ['EMBED', 'OBJECT', 'FRAME', 'IFRAME']._contains(element.nodeName))
 					meta = element.getAttribute('type');
@@ -423,16 +472,12 @@ function canLoadResource (event, excludeFromPage, meta) {
 				}
 
 				if (BLOCKABLE[element.nodeName][1] && !canLoad.isAllowed)
-					onElementProcessed(kind, element, source);
+					Element.hide(kind, element, source);
 
 				sendPage();
 			}, [meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind]);
 			
 			return canLoad.isAllowed;
-		} else if ((!source || source.length === 0) && !event.target) {
-			Utilities.setImmediateTimeout(processUnblockableElement, [kind, element]);
-
-			return true;
 		}
 	} else {
 		Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
@@ -452,23 +497,9 @@ if (!globalSetting('disabled')) {
 	if (Utilities.safariBuildVersion > 535) {
 		var observer = new WebKitMutationObserver(function (mutations) {
 			mutations.forEach(function (mutation) {
-				if (mutation.type === 'childList') {
-					var node;
-
-					for (var i = 0; i < mutation.addedNodes.length; i++) {
-						node = mutation.addedNodes[i];
-
-						if (node.nodeName === 'A')
-							Handler.anchor(node);
-						else if (BLOCKABLE[node.nodeName]) {
-							if (node.nodeName === 'IFRAME' || node.nodeName === 'FRAME')
-								Handler.frame(node);
-
-							if (!node.src && !node.srcset && !node.getAttribute('data-src'))
-								canLoadResource(node);
-						}
-					}
-				}
+				if (mutation.type === 'childList')
+					for (var i = 0; i < mutation.addedNodes.length; i++)
+						Element.handle.node(mutation.addedNodes[i]);
 			});
 		});
 
@@ -476,11 +507,8 @@ if (!globalSetting('disabled')) {
 			childList: true,
 			subtree: true
 		});
-	} else {
-		document.addEventListener('DOMNodeInserted', Handler.frame, true);
-		document.addEventListener('DOMNodeInserted', Handler.anchor, true);
-		document.addEventListener('DOMNodeInserted', canLoadResource, true);
-	}
+	} else
+		document.addEventListener('DOMNodeInserted', Element.handle.node, true);
 
 	document.addEventListener('contextmenu', Handler.contextMenu, false);
 	document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
