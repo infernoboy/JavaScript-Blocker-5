@@ -90,6 +90,9 @@ var UserScript = {
 			this.update(namespace);
 
 			scripts[namespace] = this.scripts.get(namespace).all();
+
+			delete scripts[namespace].resources;
+			delete scripts[namespace].storage;
 		}
 
 		return scripts;

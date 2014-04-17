@@ -45,28 +45,6 @@ var Command = function (type, event) {
 	var InternalCommand = function (detail, event) {
 		this.status = COMMAND.WAITING;
 
-		detail.type = Utilities.Token.valid(detail.sourceID, 'Page') ? (detail.type || 'injected') : 'injected';
-
-		this.commands = Commands[detail.type];
-
-		if (!this.commands) {
-			this.status = COMMAND.NOT_FOUND;
-
-			return LogError(['command type not found', detail.type]);
-		}
-
-		if (!this.commands.hasOwnProperty(detail.command)) {
-			this.status = COMMAND.NOT_FOUND;
-
-			return LogError('command not found - ' + detail.command);
-		}
-
-		if (detail.command._startsWith('__')) {
-			this.status = COMMAND.NOT_FOUND;
-
-			return LogError('cannot call commands that begin with __');
-		}
-
 		var canExecute = (detail.command && Utilities.Token.valid(detail.commandToken, detail.command, true) &&
 			Utilities.Token.valid(detail.sourceID, detail.sourceName));
 
@@ -76,8 +54,53 @@ var Command = function (type, event) {
 			return LogError(['command authorization failed', detail.sourceName + ' => ' + detail.command]);
 		}
 
+		detail.type = Utilities.Token.valid(detail.sourceID, 'Page') ? (detail.type || 'injected') : 'injected';
+
+		var commands = Commands[detail.type];
+
+		if (!commands) {
+			this.status = COMMAND.NOT_FOUND;
+
+			return LogError(['command type not found', detail.type]);
+		}
+
+		var part;
+
+		var commandParts = detail.command.split(/\./g);	
+
+		if (commandParts.length > 1) {
+			while (true) {
+				if (commands.hasOwnProperty((part = commandParts.shift())))
+					commands = commands[part];
+
+				if (!(commands instanceof Object)) {
+					this.status = COMMAND.NOT_FOUND;
+
+					return LogError('command path not found - ' + detail.command);
+				}
+
+				if (commandParts.length === 1)
+					break;
+			}
+		}
+
+		if (commands !== Commands[detail.type])
+			commands.__proto__ = Commands[detail.type];
+
+		if (!commands.hasOwnProperty(commandParts[0])) {
+			this.status = COMMAND.NOT_FOUND;
+
+			return LogError('command not found - ' + commandParts[0]);
+		}
+
+		if (commandParts[0]._startsWith('__')) {
+			this.status = COMMAND.NOT_FOUND;
+
+			return LogError('cannot call commands that begin with __');
+		}
+
 		try {
-			this.result = this.commands[detail.command](detail, event);
+			this.result = commands[commandParts[0]].call(commands, detail, event);
 
 			this.status = COMMAND.SUCCESS;
 		} catch (error) {
@@ -226,6 +249,18 @@ var Command = function (type, event) {
 	};
 
 	Commands.injected = {
+		__userScriptAction: function (detail) {
+			detail.meta = {
+				namespace: TOKEN.INJECTED[detail.sourceID].namespace,
+				meta: detail.meta
+			};
+
+			return {
+				callbackID: detail.callbackID,
+				result: GlobalCommand(detail.command, detail.meta)
+			};
+		},
+
 		commandGeneratorToken: function (detail) {
 			return {
 				sourceID: detail.sourceID,
@@ -288,12 +323,6 @@ var Command = function (type, event) {
 			});
 		},
 
-		storageSetItem: function (detail) {
-			detail.meta.namespace = TOKEN.INJECTED[detail.sourceID].namespace;
-
-			GlobalPage.message(detail.command, detail.meta);
-		},
-
 		inlineScriptsAllowed: function (detail) {				
 			if (TOKEN.INJECTED[detail.sourceID].usedURL)
 				throw new Error('script was injected via URL.')
@@ -320,7 +349,10 @@ var Command = function (type, event) {
 			var result = GlobalCommand(detail.command, detail);
 
 			if (result !== false)
-				Command.sendCallback(detail.sourceID, detail.callbackID, result);
+				return {
+					callbackID: detail.callbackID,
+					result: result
+				};
 		},
 
 		notification: Utilities.noop,
@@ -351,6 +383,28 @@ var Command = function (type, event) {
 
 		testCommand: function (detail) {
 			return 3;
+		},
+
+		storage: {
+			getItem: function (detail) {
+				return this.__userScriptAction(detail);
+			},
+
+			setItem: function (detail) {
+				return this.__userScriptAction(detail);
+			},
+
+			keys: function (detail) {
+				return this.__userScriptAction(detail);
+			}
+		},
+
+		userScript: {
+			resource: {
+				getItem: function (detail) {
+					return this.__userScriptAction(detail);
+				}
+			}
 		}
 	};
 

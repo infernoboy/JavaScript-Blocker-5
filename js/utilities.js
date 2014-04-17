@@ -162,6 +162,10 @@ var Utilities = {
 		return (bVersion > aVersion || (bVersion === aVersion && bModifier[1] > aModifier[1]));
 	},
 
+	typeOf: function(object) {
+		return ({}).toString.call(object).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+	},
+
 	Timer: {
 		timers: {
 			intervals: {},

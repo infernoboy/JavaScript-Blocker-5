@@ -2,7 +2,25 @@
 
 var Command = function (command, data, event) {
 	var InternalCommand = function () {
-		if (!this.commands.hasOwnProperty(command))
+		var part;
+
+		var commands = this.commands,
+				commandParts = command.split(/\./g);	
+
+		if (commandParts.length > 1) {
+			while (true) {
+				if (commands.hasOwnProperty((part = commandParts.shift())))
+					commands = commands[part];
+
+				if (!(commands instanceof Object))
+					throw new Error('command path not found - ' + command);
+
+				if (commandParts.length === 1)
+					break;
+			}
+		}
+
+		if (!commands.hasOwnProperty(commandParts[0]))
 			throw new Error('command not found - ' + command);
 
 		if (command._startsWith('__'))
@@ -12,7 +30,9 @@ var Command = function (command, data, event) {
 
 		this.isEvent = !!(event.name && event.message);
 
-		this.commands[command].apply(this, Array.isArray(data) ? data : [data]);
+		this.commands = commands;
+
+		commands[commandParts[0]].apply(this, Array.isArray(data) ? data : [data]);
 	};
 
 	Object.defineProperty(InternalCommand.prototype, 'message', {
@@ -29,21 +49,6 @@ var Command = function (command, data, event) {
 				this.event(message);
 		}
 	});
-
-	InternalCommand.prototype.storage = function (isSet, detail) {
-		if (!UserScript.exist(detail.namespace))
-			throw new Error(detail.namespace + ' does not exist.');
-
-		if (typeof detail.key !== 'string' || !detail.key.length)
-			throw new TypeError(detail.key + ' is not a string.');
-
-		var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage');
-
-		if (isSet)
-			storage.set(detail.key, detail.value);
-		else
-			storage.remove(detail.key);
-	};
 
 	InternalCommand.prototype.sendCallback = function (sourceID, callbackID, result) {		
 		MessageTarget(this.event, 'executeCommanderCallback', {
@@ -143,14 +148,6 @@ var Command = function (command, data, event) {
 
 				UI.renderPopover(page);
 			}
-		},
-
-		storageSetItem: function (detail) {
-			return this.storage(true, detail);
-		},
-
-		storageRemoveItem: function (detail) {
-			return this.storage(false, detail);
 		},
 
 		verifyScriptSafety: function (script) {
@@ -265,6 +262,63 @@ var Command = function (command, data, event) {
 			meta.dataType = 'text';
 
 			$.ajax(meta);
+		},
+
+		storage: {
+			__storage: function (method, detail) {
+				if (!UserScript.exist(detail.namespace)) {
+					this.message = null;
+
+					return LogError(detail.namespace + ' does not exist.');
+				}
+
+				if (method !== 'keys' && (typeof detail.meta.key !== 'string' || !detail.meta.key.length)) {
+					this.message = null;
+
+					return LogError([detail.meta.key + ' is not a string', method, detail.namespace]);
+				}
+
+				var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage'),
+						result = storage[method](detail.meta && detail.meta.key, detail.meta && detail.meta.value);
+
+				this.message = ['keys', 'get']._contains(method) ? result : null;
+			},
+
+			getItem: function (detail) {
+				this.commands.__storage.call(this, 'get', detail);
+			},
+
+			setItem: function (detail) {
+				this.commands.__storage.call(this, 'set', detail);
+			},
+
+			removeItem: function (detail) {
+				this.commands.__storage.call(this, 'remove', detail);
+			},
+
+			keys: function (detail) {
+				this.commands.__storage.call(this, 'keys', detail);
+			}
+		},
+
+		userScript: {
+			resource: {
+				getItem: function (detail) {
+					if (!UserScript.exist(detail.namespace)) {
+						this.message = null;
+
+						return LogError(detail.namespace + ' does not exist.');
+					}
+
+					if (typeof detail.meta !== 'string') {
+						this.message = null;
+
+						return LogError([detail.meta + ' is not a string', detail.namespace]);
+					}
+
+					this.message = UserScript.scripts.getStore(detail.namespace).getStore('resources').get(detail.meta, null);
+				}
+			}
 		}
 	};
 

@@ -46,11 +46,8 @@ var UserScript = {
 
 		var userScriptSetup = new DeepInject('userScriptSetup', function (setup) {
 			unsafeWidnow = window;
-
-			JSB.storage = setup.storage;
 			
 			GM_info = setup.info;
-			GM_resources = setup.resources;
 		});
 
 		userScriptSetup.setArguments({
@@ -60,14 +57,11 @@ var UserScript = {
 					scriptWillUpdate: attributes.autoUpdate,
 					version: 5,
 					script: attributes.meta
-				},
-
-				resources: script.resources || {},
-				storage: script.storage || {}
+				}
 			}
 		});
 
-		userScript.prepend([userScriptSetup.executable(), 'var unsafeWindow, GM_info, GM_resources;']);
+		userScript.prepend([userScriptSetup.executable(), 'var unsafeWindow, GM_info;']);
 
 		TOKEN.INJECTED[userScript.id] = {
 			namespace: attributes.meta.trueNamespace,
@@ -129,15 +123,17 @@ var UserScript = {
 
 	helpers: {
 		GM_getValue: function (key, defaultValue) {
-			if (!JSB.storage.hasOwnProperty(key))
+			var result = messageExtensionSync('storage.getItem', {
+				key: key
+			});
+
+			if (typeof result === 'undefined')
 				return defaultValue;
 
-			return JSB.storage[key];
+			return result;
 		},
 		GM_setValue: function (key, value) {
-			JSB.storage[key] = value;
-
-			messageExtension('storageSetItem', {
+			messageExtension('storage.setItem', {
 				key: key,
 				value: value
 			});
@@ -145,36 +141,40 @@ var UserScript = {
 		GM_deleteValue: function (key) {
 			delete JSB.storage[key];
 
-			messageExtension('storageRemoveItem', {
+			messageExtension('storage.removeItem', {
 				key: key
 			});
 		},
 		GM_listValues: function () {
-			return Object.keys(JSB.storage);		
+			return messageExtensionSync('storage.keys');
 		},
 
 		// RESOURCES
 		GM_getResourceText: function (name) {
-			return GM_resources[name] ? atob(GM_resources[name].data) : '';
+			var resource = messageExtensionSync('userScript.resource.getItem', name);
+
+			return resource ? atob(resource.data) : '';
 		},
 		GM_getResourceURL: function (name) {
-			if (!GM_resources[name])
+			var resource = messageExtensionSync('userScript.resource.getItem', name);
+
+			if (!resource)
 				return '';
 
 			var URL = window.webkitURL || window.URL;
-
+					
 			if (window.Blob && typeof URL.createObjectURL === 'function') {
-				var text = GM_getResourceText(name),
+				var text = atob(resource.data),
 						textArray = new Array(text.length);
 
 				for (var i = 0; i < text.length; i++)
 					textArray[i] = text.charCodeAt(i);
 
 				return URL.createObjectURL(new Blob([new Uint8Array(textArray)], {
-					type: GM_resources[name].type
+					type: resource.type
 				}));
 			} else
-				return 'data:' + GM_resources[name].type + ';base64,' + GM_resources[name].data;
+				return 'data:' + resource.type + ';base64,' + resource.data;
 		},
 
 		// OTHER

@@ -162,14 +162,19 @@ var Special = {
 		},
 
 		executeLocalCallback: function (callbackID, result) {
-			try {
-				var callback = JSB.eventCallback[callbackID];
+			var callback = JSB.eventCallback[callbackID];
 
+			if (!callback)
+				return;
+
+			try {
 				callback.fn(result);
 
 				if (!callback.preserve)
 					delete JSB.eventCallback[callbackID];
-			} catch (error) {}
+			} catch (error) {
+				console.error('error in callback', '-', error.message);
+			}
 		},
 
 		messageTopExtension: function (command, meta, callback) {
@@ -195,7 +200,17 @@ var Special = {
 			}
 
 			return id;
-		},		
+		},
+
+		messageExtensionSync: function (command, meta) {
+			var result;
+
+			messageExtension(command, meta, function (response) {
+				result = response;
+			});
+
+			return result;
+		},
 
 		messageExtension: function (command, meta, callback, preserve) {
 			JSBCommander({
