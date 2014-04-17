@@ -355,7 +355,7 @@ var Utilities = {
 	Page: {
 		isGlobal: GlobalPage.page() === window,
 		isTop: window === window.top,
-		isBlank: document.location.href === 'about:blank',
+		isAbout: document.location.protocol === 'about:',
 
 		getCurrentLocation: function () {
 			if (['http:', 'https:', 'file:']._contains(document.location.protocol)) {
@@ -382,11 +382,12 @@ var Utilities = {
 	},
 
 	URL: {
-		_structure: /^(blob:)?(https?|s?ftp|file|safari\-extension):\/\/([^\/]+)\//,
-		_IPv4: /^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})(:[0-9]{1,7})?$/,
+		__structure: /^(blob:)?(https?|s?ftp|file|safari\-extension):\/\/([^\/]+)\//,
+		__IPv4: /^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})(:[0-9]{1,7})?$/,
+		__IPv6: /^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/,
 
 		isURL: function (url) {
-			return url && this._structure.test(url);
+			return typeof url === 'string' && (this.__structure.test(url) || this.protocol(url) === 'about:');
 		},
 
 		createAnchor: function (path) {
@@ -419,7 +420,7 @@ var Utilities = {
 			if (/^data:/.test(url))
 				return 'data';
 
-			var matched = url.match(this._structure);
+			var matched = url.match(this.__structure);
 
 			if (matched && matched.length > 2)
 				return matched[3];
@@ -433,18 +434,16 @@ var Utilities = {
 				});
 
 			var cacheKey = prefixed ? 'prefixed' : 'unprefixed',
-					cached = this.hostParts.cache.getStore(host, {
+					hostStore =  this.hostParts.cache.getStore(host, {
 						selfDestruct: TIME.ONE_HOUR
-					}).get(cacheKey);
+					}),
+					cached = hostStore.get(cacheKey);
 
 			if (cached)
 				return cached;
 
-			if (host === 'blank')
-				return ['blank'];
-
-			if (this._IPv4.test(host))
-				return [host];
+			if (!host._contains('.') || this.__IPv4.test(host) || this.__IPv6.test(host))
+				return hostStore.set(cacheKey, [host]).get(cacheKey);
 
 			var split = host.split(/\./g).reverse(),
 					part = split[0],
@@ -478,7 +477,7 @@ var Utilities = {
 			if (prefixed)
 				parts.splice(1, 0, '.' + parts[0]);
 			
-			return this.hostParts.cache.get(host).set(cacheKey, parts).get(cacheKey);
+			return hostStore.set(cacheKey, parts).get(cacheKey);
 		},
 		protocol: function (url) {
 			return url.substr(0, url.indexOf(':')).toUpperCase();

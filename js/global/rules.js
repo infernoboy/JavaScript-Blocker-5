@@ -378,14 +378,14 @@ var Rules = {
 			protocols: null
 		};
 
-		if (rule._contains(':')) {
-			parts.domain = rule.substr(rule.indexOf(':') + 1);
+		if (rule._contains('|')) {
+			parts.domain = rule.substr(rule.indexOf('|') + 1);
 			parts.protocols = {};
 
-			var protoArray = rule.split(':')[0].split(',');
+			var protoArray = rule.split('|')[0].split(',');
 
 			for (var i = 0; i < protoArray.length; i++)
-				parts.protocols[protoArray[i].toUpperCase()] = 1;
+				parts.protocols[protoArray[i].toLowerCase() + ':'] = 1;
 		}
 
 		return this.__partsCache.set(rule, parts).get(rule);

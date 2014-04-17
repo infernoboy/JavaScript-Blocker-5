@@ -8,7 +8,7 @@ Special.specials = {
 		messageExtension('inlineScriptsAllowed');
 	},
 
-	preserveCrucialDefaults: function () {
+	prepareScript: function () {
 		if (window[JSB.eventToken])
 			return;
 		
@@ -22,6 +22,27 @@ Special.specials = {
 				document$dispatchEvent: document.dispatchEvent.bind(document)
 			})
 		});
+
+		var localHistory = {
+			pushState: window.history.pushState,
+			replaceState: window.history.replaceState
+		};
+
+		window.history.pushState = function () {
+			localHistory.pushState.apply(window.history, arguments);
+
+			window.postMessage({
+				command: 'historyStateChange'
+			}, window.location.href);
+		};
+
+		window.history.replaceState = function () {
+			localHistory.replaceState.apply(window.history, arguments);
+
+			window.postMessage({
+				command: 'historyStateChange'
+			}, window.location.href);
+		};
 	},
 
 	zoom: function () {
@@ -108,6 +129,6 @@ Special.specials = {
 };
 
 Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
-Special.specials.preserveCrucialDefaults.ignoreHelpers = true;
+Special.specials.prepareScript.ignoreHelpers = true;
 
 Special.begin();

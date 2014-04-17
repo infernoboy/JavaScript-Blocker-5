@@ -7,7 +7,7 @@ var RESOURCE = {
 };
 
 function Resource (kind, pageLocation, source, isFrame, unblockable, meta) {
-	this.sourceIsURL = Utilities.URL.isURL(source);
+	this.sourceIsURL = Rules.kindShouldBadge(kind) ? Utilities.URL.isURL(source) : false;
 	this.kind = kind;
 	this.framedKind = 'framed:' + this.kind;
 	this.searchKinds = isFrame ? [this.framedKind, 'framed:*', this.kind, '*'] : [this.kind, '*'];
@@ -23,7 +23,7 @@ function Resource (kind, pageLocation, source, isFrame, unblockable, meta) {
 	this.allow = this.__addRule.bind(this, 1);
 
 	if (this.sourceIsURL) {
-		var protos = ['HTTP', 'HTTPS', 'FTP', 'SFTP', 'SAFARI-EXTENSION'],
+		var protos = ['http:', 'https:', 'ftp:', 'sftp:', 'safari-extension:'],
 				sourceProto = Utilities.URL.protocol(this.source),
 				locationProto = Utilities.URL.protocol(this.pageLocation);
 
@@ -124,21 +124,21 @@ Resource.prototype.allowedBySettings = function () {
 		return canLoad;
 
 	var blockFrom = Settings.getJSON('alwaysBlock')[this.kind],
-			sourceProtocol = Utilities.URL.protocol(this.source);
+			sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
 
-	if (blockFrom === 'trueNowhere' || (Settings.getItem('allowExtensions') && sourceProtocol === 'SAFARI-EXTENSION'))
+	if (blockFrom === 'trueNowhere' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
 		return canLoad;
 	else if (blockFrom !== 'nowhere') {
 		var pageProtocol = Utilities.URL.protocol(this.pageLocation),
 				pageParts = Utilities.URL.hostParts(this.pageHost),
 				sourceParts = Utilities.URL.hostParts(this.sourceHost);
 				
-		if (sourceParts[0] === 'blank' && blockFrom !== 'everywhere')
+		if (sourceProtocol === 'about:' && blockFrom !== 'everywhere')
 			return canLoad;
 		else if ((blockFrom === 'topLevel' && pageParts[0] !== sourceParts[0]) || 
 			(blockFrom === 'domain' && pageParts[pageParts.length - 1] !== sourceParts[sourceParts.length - 1]) ||
 			(blockFrom === 'everywhere') ||
-			(pageProtocol === 'HTTPS' && (Settings.getItem('secureOnly') && sourceProtocol !== pageProtocol))) {
+			(pageProtocol === 'https:' && (Settings.getItem('secureOnly') && sourceProtocol !== pageProtocol))) {
 
 			canLoad.action = ACTION.BLOCK_WITHOUT_RULE;
 			canLoad.isAllowed = false;

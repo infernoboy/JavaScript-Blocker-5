@@ -68,7 +68,8 @@ var Page = {
 		id: TOKEN.PAGE,
 		state: new Store(TOKEN.PAGE),
 		location: Utilities.Page.getCurrentLocation(),
-		host: Utilities.Page.isBlank ? 'blank' : (document.location.host || 'blank'),
+		host: Utilities.Page.isAbout ? document.location.href.substr(document.location.protocol.length) : (document.location.host || 'blank'),
+		protocol: document.location.protocol,
 		isFrame: !Utilities.Page.isTop
 	}
 };
@@ -397,6 +398,7 @@ var Resource = {
 					var canLoad = GlobalCommand('canLoadResource', {
 						kind: kind,
 						pageLocation: Page.info.location,
+						pageProtocol: Page.info.protocol,
 						source: source,
 						isFrame: !Utilities.Page.isTop
 					});

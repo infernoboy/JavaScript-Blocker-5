@@ -70,6 +70,9 @@ var Command = function (command, data, event) {
 		},
 
 		canLoadResource: function (resource) {
+			if (resource.pageProtocol === 'about:')		
+				resource.pageLocation = this.event.target.url;
+
 			var resource = new Resource(resource.kind, resource.pageLocation, resource.source, resource.isFrame, resource.unblockable, resource.meta);
 
 			this.message = resource.canLoad();

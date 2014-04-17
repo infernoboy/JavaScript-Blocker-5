@@ -127,8 +127,8 @@ var Special = {
 	},
 
 	begin: function () {
-		this.inject('preserveCrucialDefaults', false);
-		this.inject('preserveCrucialDefaults', true);
+		this.inject('prepareScript', false);
+		this.inject('prepareScript', true);
 
 		this.inject('inlineScriptsCheck', false);
 

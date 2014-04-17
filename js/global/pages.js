@@ -116,7 +116,7 @@ Page.prototype.addFrame = function (frame) {
 	if (this.info.id === frame.info.id)
 		throw new Error('a page cannot be its own frame');
 
-	if (frame.info.host === 'blank' || this.info.host === frame.info.host) {
+	if (frame.info.protocol === 'about:' || this.info.host === frame.info.host) {		
 		frame.merged = true;
 
 		var myState,

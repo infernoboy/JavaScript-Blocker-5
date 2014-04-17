@@ -216,6 +216,12 @@ var Command = function (type, event) {
 
 			if (frame)
 				frame.setAttribute('data-jsbFrameURL', message.url);
+		},
+
+		historyStateChange: function (detail, event) {
+			Page.info.location = document.location.href;
+
+			Page.send();
 		}
 	};
 
