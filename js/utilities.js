@@ -40,8 +40,8 @@ var Utilities = {
 	},
 
 	setImmediateTimeout: function (fn, args) {
-		if (!this.Type.isFunction(fn))
-			throw new TypeError('fn is not a function');
+		if (typeof fn !== 'function')
+			throw new TypeError(fn + ' is not a function');
 
 		this.__immediateTimeouts.push({
 			fn: fn,
@@ -288,27 +288,6 @@ var Utilities = {
 		}
 	})(),
 
-	Type: {
-		isUndefined: function (subject) {
-			return typeof subject === 'undefined';
-		},
-		isObject: function (subject) {
-			return subject instanceof Object;
-		},
-		isString: function (subject) {
-			return typeof subject === 'string';
-		},
-		isFunction: function (subject) {
-			return typeof subject === 'function';
-		},
-		isError: function (subject) {
-			if (subject && subject.constructor && subject.constructor.name._endsWith('Error'))
-				return true;
-
-			return false;
-		},
-	},
-
 	Element: {
 		_adjustmentProperties: ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
 		
@@ -398,6 +377,10 @@ var Utilities = {
 
 			a.href = path;
 
+			setTimeout(function () {
+				a = undefined;
+			});
+
 			return a;
 		},
 		getAbsolutePath: function (url) {
@@ -480,7 +463,12 @@ var Utilities = {
 			return hostStore.set(cacheKey, parts).get(cacheKey);
 		},
 		protocol: function (url) {
-			return url.substr(0, url.indexOf(':')).toUpperCase();
+			var anchor = this.createAnchor(url);
+
+			if (!anchor)
+				return '';
+
+			return anchor.protocol;
 		}
 	}
 };

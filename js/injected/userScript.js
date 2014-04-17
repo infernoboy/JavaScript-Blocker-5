@@ -71,7 +71,8 @@ var UserScript = {
 
 		TOKEN.INJECTED[userScript.id] = {
 			namespace: attributes.meta.trueNamespace,
-			name: attributes.meta.name
+			name: attributes.meta.name,
+			usedURL: DeepInject.useURL
 		};
 
 		Special.setup(userScript).inject();

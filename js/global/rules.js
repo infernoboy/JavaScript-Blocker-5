@@ -14,14 +14,11 @@ var ACTION = Object.freeze({
 });
 
 var Rule = function (store, storeProps, ruleProps) {
-	this.props = {
-		action: null
-	};
+	var props = ['action'];
 
 	if (ruleProps instanceof Object)
-		for (var key in ruleProps)
-			if (this.props.hasOwnProperty(key))
-				this.props[key] = ruleProps[key];
+		for (var i = 0; i < props.length; i++)
+			this[props[i]] = ruleProps[props[i]];
 
 	if (typeof store === 'string')
 		this.rules = new Store(store, storeProps);
@@ -99,7 +96,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 
 	rules.set(rule.rule, {
 		regexp: Rules.isRegExp(rule.rule),
-		action: this.props.action === null ? rule.action : this.props.action
+		action: typeof this.action === 'number' ? this.action : rule.action
 	});
 
 	return rules;
@@ -430,6 +427,12 @@ var Rules = {
 		if (this.list.active !== this.list.user)
 			excludeLists.push('temporary');
 
+		if (Settings.getItem('ignoreWhitelist'))
+			excludeLists.push('whitelist');
+
+		if (Settings.getItem('ignoreBlacklist'))
+			excludeLists.push('blacklist');
+
 		for (var list in lists)
 			if (!excludeLists._contains(list))
 				lists[list] = this.list[list].forLocation.apply(this.list[list], arguments)
@@ -474,9 +477,10 @@ Object.defineProperty(Rules, 'list', {
 				if (this.active !== this.user && this.active.autoDestruct)
 					this.active.destroy();
 
-				this.__active = rules;
+				if (this.__active instanceof Rule)
+					Resource.canLoadCache.clear();
 
-				Resource.canLoadCache.clear();
+				this.__active = rules;
 			}
 		},
 

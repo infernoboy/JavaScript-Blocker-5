@@ -25,7 +25,7 @@ var Command = function (command, data, event) {
 		set: function (message) {
 			if (this.isEvent)
 				this.event.message = message;
-			else if (Utilities.Type.isFunction(this.event))
+			else if (typeof this.event === 'function')
 				this.event(message);
 		}
 	});
@@ -69,11 +69,11 @@ var Command = function (command, data, event) {
 			MessageTarget(this.event, this.event.message.command, this.event.message.detail);
 		},
 
-		canLoadResource: function (resource) {
-			if (resource.pageProtocol === 'about:')		
-				resource.pageLocation = this.event.target.url;
+		canLoadResource: function (info) {
+			if (info.pageProtocol === 'about:')		
+				info.pageLocation = this.event.target.url;
 
-			var resource = new Resource(resource.kind, resource.pageLocation, resource.source, resource.isFrame, resource.unblockable, resource.meta);
+			var resource = new Resource(info);
 
 			this.message = resource.canLoad();
 		},

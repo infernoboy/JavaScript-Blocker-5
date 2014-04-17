@@ -219,7 +219,7 @@ var Command = function (type, event) {
 		},
 
 		historyStateChange: function (detail, event) {
-			Page.info.location = document.location.href;
+			Page.info.location = Utilities.Page.getCurrentLocation();
 
 			Page.send();
 		}
@@ -295,6 +295,9 @@ var Command = function (type, event) {
 		},
 
 		inlineScriptsAllowed: function (detail) {				
+			if (TOKEN.INJECTED[detail.sourceID].usedURL)
+				throw new Error('script was injected via URL.')
+
 			DeepInject.useURL = false;
 		},
 

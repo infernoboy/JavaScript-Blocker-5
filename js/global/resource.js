@@ -6,18 +6,18 @@ var RESOURCE = {
 	ALL: 3
 };
 
-function Resource (kind, pageLocation, source, isFrame, unblockable, meta) {
-	this.sourceIsURL = Rules.kindShouldBadge(kind) ? Utilities.URL.isURL(source) : false;
-	this.kind = kind;
+function Resource (resource) {	
+	this.kind = resource.kind;
 	this.framedKind = 'framed:' + this.kind;
-	this.searchKinds = isFrame ? [this.framedKind, 'framed:*', this.kind, '*'] : [this.kind, '*'];
-	this.pageLocation = pageLocation.toLowerCase();
+	this.sourceIsURL = Rules.kindShouldBadge(this.kind) ? Utilities.URL.isURL(resource.source) : false;
+	this.isFrame = resource.isFrame;
+	this.searchKinds = this.isFrame ? [this.framedKind, 'framed:*', this.kind, '*'] : [this.kind, '*'];
+	this.pageLocation = resource.pageLocation.toLowerCase();
 	this.pageHost = Utilities.URL.extractHost(this.pageLocation);
-	this.source = this.sourceIsURL ? source.toLowerCase() : source;
+	this.source = this.sourceIsURL ? resource.source.toLowerCase() : resource.source;
 	this.sourceHost = Utilities.URL.extractHost(this.source);
-	this.isFrame = isFrame;
-	this.unblockable = unblockable;
-	this.meta = meta;
+	this.unblockable = resource.unblockable;
+	this.meta = resource.meta;
 
 	this.block = this.__addRule.bind(this, 0);
 	this.allow = this.__addRule.bind(this, 1);
@@ -47,7 +47,7 @@ Resource.__many = function (action, resources, domain, rule, frame) {
 
 	for (var i = 0; i < resources.length; i++) {
 		if (!(resources[i] instanceof Resource)) {
-			LogError('resource is not an instance of Resource');
+			LogError(resources[i] + ' is not an instance of Resource');
 
 			continue;
 		}

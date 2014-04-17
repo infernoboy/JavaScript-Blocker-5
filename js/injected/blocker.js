@@ -485,6 +485,7 @@ if (!globalSetting.disabled) {
 	document.addEventListener('beforeload', Resource.canLoad, true);
 
 	window.addEventListener('hashchange', Handler.hash, true);
+	window.addEventListener('popstate', Handler.hash, true);
 
 	window.onerror = function (d, p, l, c) {
 		if (typeof p === 'string' && p._contains('JavaScriptBlocker')) {

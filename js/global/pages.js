@@ -17,7 +17,14 @@ function Page (page, tab) {
 
 		kinds.forEach(function (kind, resources, store) {
 			resources.set('all', resources.get('all', []).map(function (resource) {
-				return new Resource(kind, page.location, resource.source, page.isFrame, resource.unblockable, resource.meta);
+				return new Resource({
+					kind: kind,
+					pageLocation: page.location,
+					source: resource.source,
+					isFrame: page.isFrame,
+					unblockable: resource.unblockable,
+					meta: resource.meta
+				});
 			}), true);
 		});
 	});

@@ -524,7 +524,7 @@ Settings.settings = {
 	other: {
 		specials: {
 			setting: {},
-			isStore: true,
+			type: 'store',
 			default: {
 				simple_referrer: {
 					value: true
@@ -551,7 +551,7 @@ Settings.settings = {
 					value: false
 				},
 				zoom: {
-					value: 80,
+					value: false,
 					allowCustom: true,
 					options: [
 						[false, 'Webpage default'],

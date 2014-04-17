@@ -274,25 +274,25 @@ var UserScript = {
 		var allowPages = detail.matchJSB.concat(detail.includeJSB),
 				allowDomains = detail.domain;
 
-		this.removeRules(namespace);
+		// this.removeRules(namespace);
 
-		for (var i = 0; i < allowPages.length; i++)
-			Rules.list.active.addPage('user_script', allowPages[i], {
-				rule: namespace,
-				action: 3
-			});
+		// for (var i = 0; i < allowPages.length; i++)
+		// 	Rules.list.active.addPage('user_script', allowPages[i], {
+		// 		rule: namespace,
+		// 		action: 3
+		// 	});
 
-		for (var i = 0; i < allowDomains.length; i++)
-			Rules.list.active.addDomain('user_script', allowDomains[i], {
-				rule: namespace,
-				action: 3
-			});
+		// for (var i = 0; i < allowDomains.length; i++)
+		// 	Rules.list.active.addDomain('user_script', allowDomains[i], {
+		// 		rule: namespace,
+		// 		action: 3
+		// 	});
 
-		for (var i = 0; i < detail.excludeJSB.length; i++)
-			Rules.list.active.addPage('user_script', detail.excludeJSB[i], {
-				rule: namespace,
-				action: 2
-			});
+		// for (var i = 0; i < detail.excludeJSB.length; i++)
+		// 	Rules.list.active.addPage('user_script', detail.excludeJSB[i], {
+		// 		rule: namespace,
+		// 		action: 2
+		// 	});
 
 		setTimeout(function (self, userScript, detail) {
 			// If a script is in developer mode or just updated normally, the resources and
