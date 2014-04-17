@@ -70,7 +70,7 @@ Resource.prototype.__addRule = function (action, domain, rule, framed) {
 	else if (!Rules.isRegExp(rule))
 		rule = this.source;
 
-	return Rules.active.__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, {
+	return Rules.list.active.__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, {
 		rule: rule,
 		action: action
 	});

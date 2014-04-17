@@ -35,13 +35,15 @@ var Rule = function (store, storeProps, ruleProps) {
 	else
 		this.rules = new Store(null, storeProps);
 
+	this.addPage = this.__add.bind(this, 'page');
+	this.addNotPage = this.__add.bind(this, 'notPage');
 	this.addDomain = this.__add.bind(this, 'domain');
 	this.addNotDomain = this.__add.bind(this, 'notDomain');
-	this.addPage = this.__add.bind(this, 'page');
-
+	
+	this.removePage = this.__remove.bind(this, 'page');
+	this.removeNotPage = this.__remove.bind(this, 'notPage');
 	this.removeDomain = this.__remove.bind(this, 'domain');
 	this.removeNotDomain = this.__remove.bind(this, 'notDomain');
-	this.removePage = this.__remove.bind(this, 'page');
 };
 
 Rule.withLocationRules = function (allRules, callback) {
@@ -85,12 +87,12 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	if (!types.hasOwnProperty(type))
 		throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
 
-	if (type === 'page' && !Rules.isRegExp(domain))
+	if (type.toLowerCase()._endsWith('page') && !Rules.isRegExp(domain))
 		throw new TypeError(Rules.ERROR.TYPE.PAGE_NOT_REGEXP);
 
 	var rules = types[type](domain);
 
-	if (kind === '*')
+	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
 	else
 		Resource.canLoadCache.getStore(kind).clear();
@@ -124,7 +126,7 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 			types[type](domain).remove(rule);
 	}
 
-	if (kind === '*')
+	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
 	else
 		Resource.canLoadCache.getStore(kind).clear();
@@ -174,6 +176,7 @@ Rule.prototype.kind = function (kindName, hide) {
 
 	kind.page = kind.__rules.bind(kind, 'page');
 	kind.domain = kind.__rules.bind(kind, 'domain');
+	kind.notPage = kind.__rules.bind(kind, 'notPage');
 	kind.notDomain = kind.__rules.bind(kind, 'notDomain');
 
 	return kind;
@@ -258,12 +261,19 @@ Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDoma
 		return rules;
 	}
 
+	var regExp,
+			lowerPage;
+
 	var types = this.kind(kind);
 	
 	var rules = {
-		page: types.page().filter(function (key) {
+		page: types.page().filter(function (page) {
 			try {
-				return (new RegExp(key.toLowerCase())).test(location);
+				lowerPage = page.toLowerCase();
+
+				regExp = Rules.__regExpCache[lowerPage] || (Rules.__regExpCache[lowerPage] = new RegExp(lowerPage));
+
+				return regExp.test(location);
 			} catch (error) {
 				LogError(error);
 
@@ -273,31 +283,39 @@ Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDoma
 
 		domain: types.domain(hostParts),
 
+		notPage: types.notPage().filter(function (page) {
+			try {
+				lowerPage = page.toLowerCase();
+
+				regExp = Rules.__regExpCache[lowerPage] || (Rules.__regExpCache[lowerPage] = new RegExp(lowerPage));
+
+				return !regExp.test(location);
+			} catch (error) {
+				LogError(error);
+
+				return false;
+			}
+		}),
+
 		notDomain: types.notDomain().filter(function (domain) {
 			return !hostParts._contains(domain);
 		})
 	};
 
-	if (typeof isAllowed === 'boolean') {
-		var withEach = function (domain, rules, domainStore) {
-			return rules.filter(function (rule, value, ruleStore) {
-				return (!!(value.action % 2) === isAllowed);
-			});
-		};
-
-		rules.page = rules.page.map(withEach);
-		rules.domain = rules.domain.map(withEach);
-		rules.notDomain = rules.notDomain.map(withEach);
-	}
+	if (typeof isAllowed === 'boolean')
+		for (var type in rules)
+			rules[type] = rules[type].map(function (domain, rules, domainStore) {
+				return rules.filter(function (rule, value, ruleStore) {
+					return (!!(value.action % 2) === isAllowed);
+				});
+			})
 
 	return rules;
 };
 
 var Rules = {
-	__ruleRegExps: {},
+	__regExpCache: {},
 	__partsCache: new Store('RuleParts'),
-
-	active: null,
 
 	ERROR: {
 		RULES: {
@@ -325,25 +343,8 @@ var Rules = {
 		return 0;
 	},
 
-	setActive: function (rules) {
-		if (!(rules instanceof Rule))
-			throw new TypeError('rules is not an instance of Rule');
-
-		if (rules.rules.name && ['Blacklist', 'Whitelist', 'TemporaryRules']._contains(rules.rules.name))
-			throw new Error('rules cannot be set to Blacklist, Whitelist, or TemporaryRules');
-
-		if (this.active !== this.list.user && this.active.autoDestruct)
-			this.active.destroy();
-
-		this.active = rules;
-
-		Resource.canLoadCache.clear();
-
-		return this;
-	},
-
 	useCurrent: function () {
-		this.active = this.list.user;
+		this.list.active = this.list.user;
 
 		return this;
 	},
@@ -354,7 +355,7 @@ var Rules = {
 
 		kind = kind.substr(kind.lastIndexOf(':') + 1);
 
-		return this._kinds._contains(kind);
+		return this.__kinds._contains(kind);
 	},
 
 	kindShouldBadge: function (kind) {
@@ -393,10 +394,7 @@ var Rules = {
 	// Check if the specified rule should be used on the source.
 	matches: function (rule, regexp, source) {
 		if (regexp) {
-			var regExp = this.__ruleRegExps[rule];
-
-			if (!regExp)
-				regExp = this.__ruleRegExps[rule] = new RegExp(rule.toLowerCase());
+			var regExp = this.__regExpCache[rule] || (this.__regExpCache[rule] = new RegExp(rule.toLowerCase()));
 
 			return regExp.test(source);
 		} else {
@@ -417,48 +415,102 @@ var Rules = {
 	},
 
 	// Load all rules contained in each list for a given location.
+	// If the last argument is an array, it will be used to determine which lists to exclude.
 	// Temporary rules are only included if the active set is the saved set.
 	forLocation: function () {
-		var list = this.list;
+		var excludeLists = Array.isArray(arguments[arguments.length - 1]) ? arguments[arguments.length - 1] : [];
 
-		return {
-			temporary: (this.active === list.user) ? list.temporary.forLocation.apply(list.temporary, arguments) : {},
-			active: this.active.forLocation.apply(this.active, arguments),
-			whitelist: list.whitelist.forLocation.apply(list.whitelist, arguments),
-			blacklist: list.blacklist.forLocation.apply(list.blacklist, arguments)
+		var lists = {
+			temporary: {},
+			active: {},
+			whitelist: {},
+			blacklist: {}
 		};
+
+		if (this.list.active !== this.list.user)
+			excludeLists.push('temporary');
+
+		for (var list in lists)
+			if (!excludeLists._contains(list))
+				lists[list] = this.list[list].forLocation.apply(this.list[list], arguments)
+
+		return lists;
 	}
 };
 
-Object.defineProperty(Rules, '_kinds', {
+Object.defineProperty(Rules, '__kinds', {
 	value: Object.freeze([
 		'*', 'disable', 'script', 'frame', 'embed', 'video', 'image', 'ajax_get', 'ajax_post', 'ajax_put', 'special', 'user_script'
 	])
 });
 
 Object.defineProperty(Rules, 'list', {
-	value: Object.freeze({
-		temporary: new Rule('TemporaryRules'),
+	value: Object.create({}, {
+		temporary: {
+			enumerable: true,
 
-		user: new Rule('Rules', {
-			save: true,
-			snapshot: true
-		}),
+			value: new Rule('TemporaryRules')
+		},
 
-		whitelist: new Rule('Whitelist', {
-			save: true,
-			private: true
-		}, {
-			action: 5
-		}),
+		__active: {
+			writable: true,
+			value: {}
+		},
 
-		blacklist: new Rule('Blacklist', {
-			save: true,
-			private: true
-		}, {
-			action: 4
-		})
+		active: {
+			enumerable: true,
+
+			get: function () {
+				return this.__active;
+			},
+
+			set: function (rules) {
+				if (!(rules instanceof Rule))
+					throw new TypeError(rules + ' is not an instance of Rule.');
+
+				if (rules.rules.name && ['Blacklist', 'Whitelist', 'TemporaryRules']._contains(rules.rules.name))
+					throw new Error('active rules cannot be set to Blacklist, Whitelist, or TemporaryRules.');
+
+				if (this.active !== this.user && this.active.autoDestruct)
+					this.active.destroy();
+
+				this.__active = rules;
+
+				Resource.canLoadCache.clear();
+			}
+		},
+
+		user: {
+			enumerable: true,
+
+			value: new Rule('Rules', {
+				save: true,
+				snapshot: true
+			})
+		},
+
+		whitelist: {
+			enumerable: true,
+
+			value: new Rule('Whitelist', {
+				save: true,
+				private: true
+			}, {
+				action: 5
+			})
+		},
+
+		blacklist: {
+			enumerable: true,
+
+			value: new Rule('Blacklist', {
+				save: true,
+				private: true
+			}, {
+				action: 4
+			})
+		}
 	})
 });
 
-Rules.active = Rules.list.user;
+Rules.list.active = Rules.list.user;

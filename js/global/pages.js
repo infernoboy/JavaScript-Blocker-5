@@ -133,10 +133,7 @@ Page.prototype.addFrame = function (frame) {
 		this.info.state.replaceWith(this.originalState);
 
 		frame.info.state.forEach(function (state, kinds, stateStore) {
-			myState = self.info.state.get(state);
-
-			if (!myState)
-				return LogError(['myState does not have', state], self.info.state, JSON.stringify(self.info.state, null, 2));
+			myState = self.info.state.getStore(state);
 
 			kinds.forEach(function (kind, resources, kindStore) {
 				if (!myState.keyExist(kind))

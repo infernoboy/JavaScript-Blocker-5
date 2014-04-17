@@ -98,7 +98,7 @@ var UserScript = {
 	removeRules: function (namespace) {
 		var domain;
 
-		var types = Rules.active.kind('user_script'),
+		var types = Rules.list.active.kind('user_script'),
 				allTypes = types.all();
 
 		for (var ruleType in allTypes)
@@ -277,19 +277,19 @@ var UserScript = {
 		this.removeRules(namespace);
 
 		for (var i = 0; i < allowPages.length; i++)
-			Rules.active.addPage('user_script', allowPages[i], {
+			Rules.list.active.addPage('user_script', allowPages[i], {
 				rule: namespace,
 				action: 3
 			});
 
 		for (var i = 0; i < allowDomains.length; i++)
-			Rules.active.addDomain('user_script', allowDomains[i], {
+			Rules.list.active.addDomain('user_script', allowDomains[i], {
 				rule: namespace,
 				action: 3
 			});
 
 		for (var i = 0; i < detail.excludeJSB.length; i++)
-			Rules.active.addPage('user_script', detail.excludeJSB[i], {
+			Rules.list.active.addPage('user_script', detail.excludeJSB[i], {
 				rule: namespace,
 				action: 2
 			});
