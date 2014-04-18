@@ -14,21 +14,12 @@ var ACTION = Object.freeze({
 });
 
 var Rule = function (store, storeProps, ruleProps) {
-	var props = ['action'];
-
-	if (ruleProps instanceof Object)
-		for (var i = 0; i < props.length; i++)
-			this[props[i]] = ruleProps[props[i]];
+	this.action = (ruleProps && typeof ruleProps.action === 'number') ? ruleProps.action : null;
 
 	if (typeof store === 'string')
 		this.rules = new Store(store, storeProps);
 	else if (store instanceof Store)
 		this.rules = store;
-	else if (store instanceof Object)
-		this.rules = new Store(null, {
-			defaultValue: store,
-			lock: true
-		});
 	else
 		this.rules = new Store(null, storeProps);
 
@@ -72,7 +63,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 		if (typeof rule.rule.domain !== 'string' || !Array.isArray(rule.rule.protocols))
 			throw new Error(rule.rule + ' does not contain a valid domain or protocols definition');
 
-		rule.rule = [rule.rule.protocols.join(','), ':', rule.rule.domain].join('');
+		rule.rule = [rule.rule.protocols.join(','), '|', rule.rule.domain].join('');
 	} else if (typeof rule.rule !== 'string')
 		throw new TypeError(rule.rule + ' is not a valid rule');
 
@@ -363,7 +354,7 @@ var Rules = {
 		return (typeof rule === 'string' && rule._startsWith('^') && rule._endsWith('$'));
 	},
 
-	// Splits a simple rule (e.g. HTTP:.google.com) into its protocol and domain parts.
+	// Splits a simple rule (e.g. HTTP|.google.com) into its protocol and domain parts.
 	parts: function (rule) {
 		var cached = this.__partsCache.get(rule);
 
@@ -500,7 +491,7 @@ Object.defineProperty(Rules, 'list', {
 				save: true,
 				private: true
 			}, {
-				action: 5
+				action: ACTION.WHITELIST
 			})
 		},
 
@@ -511,7 +502,7 @@ Object.defineProperty(Rules, 'list', {
 				save: true,
 				private: true
 			}, {
-				action: 4
+				action: ACTION.BLACKLIST
 			})
 		}
 	})

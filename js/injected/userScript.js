@@ -25,7 +25,7 @@ var UserScript = {
 				if (error.message._contains('unsafe-eval') || error instanceof EvalError) {
 					isSafe = GlobalCommand('verifyScriptSafety', attributes.script);
 
-					LogError(['received an unsafe-eval error from within an injected script.', attributes.meta.name]);
+					LogDebug('received an unsafe-eval error from within an injected script - ' + attributes.meta.name);
 				} else
 					LogError(['unable to inject user script', attributes.meta.name], error);
 
@@ -83,7 +83,8 @@ var UserScript = {
 
 	begin: function () {
 		var url,
-				requirement;
+				requirement,
+				requirementName;
 
 		var enabledUserScripts = GlobalCommand('enabledUserScripts', {
 			location: Page.info.location,
@@ -101,12 +102,16 @@ var UserScript = {
 					for (url in enabledUserScripts[userScript].requirements) {
 						requirement = enabledUserScripts[userScript].requirements[url];
 
+						requirementName = ['Requirement', userScript, url].join();
+
 						UserScript.inject({
 							before: true,
+
 							attributes: {
 								script: Utilities.decode(requirement.data),
 								meta: {
-									name: ['Requirement', userScript, url].join()
+									name: requirementName,
+									trueNamespace: requirementName
 								}
 							}
 						}, true);
@@ -139,8 +144,6 @@ var UserScript = {
 			});
 		},
 		GM_deleteValue: function (key) {
-			delete JSB.storage[key];
-
 			messageExtension('storage.removeItem', {
 				key: key
 			});
@@ -183,13 +186,12 @@ var UserScript = {
 
 			style.setAttribute('type', 'text/css');
 
-			style.innerHTML = css;
+			style.innerText = css;
 
-			if (document.head) {
+			if (document.head)
 				document.head.appendChild(style);
-			} else {
+			else
 				document.documentElement.appendChild(style);
-			}
 		},
 
 		GM_log: function () {

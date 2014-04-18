@@ -81,6 +81,8 @@ var UserScript = {
 	},
 
 	forLocation: function (location, isFrame) {
+		var script;
+
 		var scripts = Special.__forLocation(this.scripts.data, 'user_script', location, isFrame);
 
 		for (var namespace in scripts) {
@@ -89,10 +91,12 @@ var UserScript = {
 
 			this.update(namespace);
 
-			scripts[namespace] = this.scripts.get(namespace).all();
+			script = this.scripts.get(namespace);
 
-			delete scripts[namespace].resources;
-			delete scripts[namespace].storage;
+			scripts[namespace] = {
+				attributes: script.getStore('attributes').all(),
+				requirements: script.getStore('requirements').all(),
+			}
 		}
 
 		return scripts;

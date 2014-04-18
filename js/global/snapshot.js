@@ -6,7 +6,7 @@ var Snapshots = new Store('Snapshots', {
 
 function Snapshot (store, props) {
 	if (!(store instanceof Store))
-		throw new TypeError('store is not an instance of Store');
+		throw new TypeError(store + ' is not an instance of Store');
 
 	if (!(props instanceof Object))
 		props = {};
@@ -101,5 +101,5 @@ Snapshot.prototype.add = function (kept) {
 	store.set(id, cloned);
 
 	if (this.unkept.keys().length > this.maxUnkept)
-		this.unkept.remove(this.first(true));
+		this.unkept.remove(this.firstUnkept(true));
 };

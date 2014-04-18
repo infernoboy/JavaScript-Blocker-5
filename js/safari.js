@@ -1,4 +1,6 @@
-var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false};
+var beforeLoad = { 
+	currentTarget: null
+};
 
 var ToolbarItems = {
 		badge: function (number, tab) {

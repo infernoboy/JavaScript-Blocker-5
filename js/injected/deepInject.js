@@ -102,7 +102,7 @@ DeepInject.prototype.executable = function () {
 		}
 	}
 
-	return ['(', this.asFunction(), ')(', args.join(', '), ')'].join('');
+	return ['//# sourceURL=', this.cleanName, "\n", '(', this.asFunction(), ')(', args.join(', '), ')'].join('');
 };
 
 DeepInject.prototype.prepend = function (script) {

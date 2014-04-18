@@ -204,7 +204,7 @@ Resource.prototype.canLoad = function () {
 			b;
 
 	Rule.withLocationRules(this.matchingRules(), function (ruleList, ruleKind, ruleType, domain, rules) {
-		pageRule = (ruleType === 'page');
+		pageRule = (ruleType === 'page' || ruleType === 'notPage');
 		longAllowed = (!pageRule && (ruleList in ACTION));
 
 		if (longAllowed) {

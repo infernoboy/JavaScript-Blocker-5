@@ -80,7 +80,7 @@ var Store = (function () {
 	};
 
 	Store.promote = function (object) {
-		if (typeof object.data !== 'object')
+		if (typeof object.data !== 'object' || typeof object.props !== 'object')
 			throw new TypeError('cannot create store from object');
 
 		var store = new Store(object.name, object.props);
@@ -121,15 +121,15 @@ var Store = (function () {
 
 		for (var side in compare) {
 			for (key in compare[side].data) {
-				thisValue = compare[side].get(key);
-				oppositeValue = compare[swap[side]].get(key);
+				thisValue = compare[side].get(key, null, null, true);
+				oppositeValue = compare[swap[side]].get(key, null, null, true);
 
 				if (typeof thisValue === 'undefined' && typeof oppositeValue === 'undefined')
 					sides.both.set(key, undefined)
 				else if (typeof oppositeValue === 'undefined')
 					sides[side].set(key, thisValue);
 				else if (thisValue instanceof Store) {
-					compared = Store.compare(compare.left.getStore(key), compare.right.getStore(key));
+					compared = Store.compare(compare.left.getStore(key, null, null, true), compare.right.getStore(key, null, null, true));
 
 					compared.store.parent = store;
 
@@ -284,7 +284,7 @@ var Store = (function () {
 				newData = {};
 
 		for (var key in this.data) {
-			value = this.get(key);
+			value = this.get(key, null, null, true);
 
 			if (value instanceof Store)
 				newData[key] = {
@@ -311,8 +311,8 @@ var Store = (function () {
 				storeValue;
 
 		for (var key in store.data) {			
-			currentValue = this.get(key);
-			storeValue = store.get(key);
+			currentValue = this.get(key, null, null, true);
+			storeValue = store.get(key, null, null, true);
 
 			if (deep && (currentValue instanceof Store) && (storeValue instanceof Store))
 				currentValue.merge(storeValue, true);
@@ -476,18 +476,18 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.get = function (key, defaultValue, asReference) {
+	Store.prototype.get = function (key, defaultValue, asReference, noAccess) {
 		this.prolongDestruction();
 
 		if (this.data.hasOwnProperty(key)) {
-			this.data[key].accessed = Date.now();
+			if (!noAccess)
+				this.data[key].accessed = Date.now();
 
 			var cached = this.data[key].value;
 
 			if (!(cached instanceof Store))
-				try {
-					if (cached.props)
-						cached.props.private = cached.props.private || this.private;
+				if (cached.data && cached.props) {
+					cached.props.private = cached.props.private || this.private;
 
 					var value = Store.promote(cached);
 
@@ -499,7 +499,7 @@ var Store = (function () {
 					};
 
 					return value;
-				} catch (error) {
+				} else {
 					switch (true) {
 						case asReference:
 							return cached;
@@ -513,7 +513,7 @@ var Store = (function () {
 							return cached.toString();
 						break;
 
-						case cached && cached.constructor.name === 'Object':
+						case cached && Utilities.typeOf(cached) === 'object':
 							return cached._clone();
 						break;
 
@@ -690,7 +690,7 @@ var Store = (function () {
 		var object = {};
 
 		for (var key in this.data) {
-			value = this.get(key);
+			value = this.get(key, null, null, true);
 
 			if (value instanceof Store) {
 				if (value.isEmpty())
@@ -741,7 +741,7 @@ var Store = (function () {
 		};
 
 		for (var key in this.data) {
-			value = this.get(key);
+			value = this.get(key, null, null, true);
 
 			if (value instanceof Store) {
 				if (value.isEmpty())

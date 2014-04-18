@@ -27,7 +27,7 @@ var Special = {
 								enabled[special] = false;
 						}
 
-						if ([0, 1]._contains(rules.data[rule].value.action))
+						if ([ACTION.BLOCK, ACTION.ALLOW]._contains(rules.data[rule].value.action))
 							return true;
 					}
 		});

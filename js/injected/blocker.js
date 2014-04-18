@@ -78,7 +78,14 @@ Page.allowed = Page.info.state.getStore('allowed'),
 Page.blocked = Page.info.state.getStore('blocked'),
 Page.unblocked = Page.info.state.getStore('unblocked');
 
-var globalSetting = GlobalCommand('globalSetting');
+// Sometimes the global page isn't ready when a page is loaded. This can happen
+// when Safari is first launched or after reloading the extension. This loop
+// ensures that it is ready before allowing the page to continue loading.
+var globalSetting = {};
+
+do
+	globalSetting = GlobalCommand('globalSetting');
+while (globalSetting.command);
 
 var _ = (function () {
 	var stringCache = new Store('Strings');
@@ -354,7 +361,7 @@ var Resource = {
 	staticActions: {},
 
 	canLoad: function (event, excludeFromPage, meta) {
-		if (event.type === 'DOMNodeInserted' && event.target.src)
+		if (event.type === 'DOMNodeInserted' && Element.triggersBeforeLoad(event.target))
 			return;
 
 		var element = event.target || event;
@@ -367,27 +374,29 @@ var Resource = {
 		if (!globalSetting.enabledKinds[kind])
 			return true;
 
-		var source = Utilities.URL.getAbsolutePath(event.url || element.getAttribute('src')),
-				sourceHost = (source && source.length) ? Utilities.URL.extractHost(source) : null;
+		var sourceHost;
+
+		var source = Utilities.URL.getAbsolutePath(event.url || element.getAttribute('src'));
 
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad')) {
 			if (kind in Resource.staticActions) {
 				if (!Resource.staticActions[kind] && event.preventDefault)
 					event.preventDefault();
 
+				Page.send();
+
 				return Resource.staticActions[kind];
 			} else {
-				if (!sourceHost && element.nodeName !== 'OBJECT') {
-					source = 'about:blank';
-					sourceHost = 'blank';
-				} else if (!sourceHost)
-					return true;
+				if (!source || !source.length) {
+					if (element.nodeName !== 'OBJECT') {
+						source = 'about:blank';
+						sourceHost = 'blank';
+					} else
+						return true;
+				}
 
 				if (Element.shouldIgnore(element))
 					return Element.processUnblockable(kind, element);
-
-				if (element.nodeName._endsWith('FRAME'))
-					element.setAttribute('data-jsbFrameURL', source);
 
 				if (event.unblockable)
 					var canLoad = {
@@ -403,14 +412,12 @@ var Resource = {
 						isFrame: !Utilities.Page.isTop
 					});
 				
-				var stateItems = (canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked,
-						kindStore = stateItems.getStore(kind);
+				if (!canLoad.isAllowed) {
+					if (event.preventDefault)
+						event.preventDefault();
 
-				if (!canLoad.isAllowed && event.preventDefault)
-					event.preventDefault();
-
-				if (!canLoad.isAllowed)
 					TOKEN.BLOCKED_ELEMENTS.push(element);
+				}
 
 				if (canLoad.action === -85) {
 					Resource.staticActions[kind] = canLoad.isAllowed;
@@ -420,7 +427,14 @@ var Resource = {
 					return canLoad.isAllowed;
 				}
 
-				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind) {
+				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
+					if (element.nodeName._endsWith('FRAME'))
+						element.setAttribute('data-jsbFrameURL', source);
+
+					var kindStore = ((canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked).getStore(kind);
+
+					sourceHost = sourceHost || ((source && source.length) ? Utilities.URL.extractHost(source) : null);
+
 					if (['EMBED', 'OBJECT']._contains(element.nodeName)) {
 						if (!meta)
 							meta = {};
@@ -443,7 +457,7 @@ var Resource = {
 						Element.hide(kind, element, source);
 
 					Page.send();
-				}, [meta, element, excludeFromPage, canLoad, kindStore, source, event, sourceHost, kind]);
+				}, [meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind]);
 				
 				return canLoad.isAllowed;
 			}

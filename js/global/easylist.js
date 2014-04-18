@@ -60,7 +60,6 @@ EasyList.prototype.process = function (list) {
 		xmlhttprequest: ['ajax_get', 'ajax_post', 'ajax_put']
 	};
 
-	lineLoop:
 	for (var i = 0, b = lines.length; i < b; i++) {
 		Utilities.setImmediateTimeout(function (line) {
 			if (line._contains('##') || line._contains('#@#') || !line.length)
