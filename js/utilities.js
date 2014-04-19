@@ -421,9 +421,7 @@ var Utilities = {
 				});
 
 			var cacheKey = prefixed ? 'prefixed' : 'unprefixed',
-					hostStore =  this.hostParts.cache.getStore(host, {
-						selfDestruct: TIME.ONE_HOUR
-					}),
+					hostStore =  this.hostParts.cache.getStore(host),
 					cached = hostStore.get(cacheKey);
 
 			if (cached)

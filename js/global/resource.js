@@ -176,17 +176,13 @@ Resource.prototype.canLoad = function () {
 
 	var storeKind = this.isFrame ? this.framedKind : this.kind,
 			store = Resource.canLoadCache.getStore(storeKind),
-			hostSources = store.getStore(this.pageHost, {
-				maxLife: TIME.ONE_DAY
-			}),
+			hostSources = store.getStore(this.pageHost),
 			cached = hostSources.get(this.source);
 
 	if (cached)
 		return cached;
 
-	var pageSources = store.getStore(this.pageLocation, {
-				maxLife: TIME.ONE_DAY
-			}),
+	var pageSources = store.getStore(this.pageLocation),
 			cached = pageSources.get(this.source);
 
 	if (cached)

@@ -42,17 +42,6 @@ var Store = (function () {
 				}
 			});
 
-		if (this.maxLife < Infinity) {
-			var cleanupName = 'StoreCleanup-' + this.id;
-
-			Utilities.Timer.interval(cleanupName, function (store, cleanupName) {
-				if (store.destroyed)
-					Utilities.Timer.remove('interval', cleanupName);
-				else
-					store.removeExpired();
-			}, this.maxLife, [this, cleanupName]);
-		}
-
 		this.prolongDestruction();		
 
 		var defaultValue = {};
@@ -69,6 +58,17 @@ var Store = (function () {
 		
 		if (this.useSnapshot)
 			this.snapshot = new Snapshot(this);
+
+		if (this.maxLife < Infinity) {
+			var cleanupName = 'StoreCleanup-' + this.id;
+
+			Utilities.Timer.interval(cleanupName, function (store, cleanupName) {
+				if (store.destroyed)
+					Utilities.Timer.remove('interval', cleanupName);
+				else
+					store.removeExpired();
+			}, this.maxLife, [this, cleanupName]);
+		}
 
 		props = name = undefined;
 	};
@@ -288,12 +288,12 @@ var Store = (function () {
 
 			if (value instanceof Store)
 				newData[key] = {
-					accessed: Date.now(),
+					accessed: this.data[key].accessed,
 					value: value.clone(prefix, props)
 				};
 			else if (typeof value !== 'undefined')
 				newData[key] = {
-					accessed: Date.now(),
+					accessed: this.data[key].accessed,
 					value: value
 				};
 		}
@@ -432,6 +432,12 @@ var Store = (function () {
 			return this;
 		}
 
+		if (value === null || value === undefined) {
+			LogError(['refusing to set value', this.id, key, value]);
+
+			return this;
+		}
+
 		Utilities.setImmediateTimeout(function (store) {
 			store.prolongDestruction();
 		}, [this]);
@@ -446,7 +452,7 @@ var Store = (function () {
 			return this.get(key);
 
 		this.data[key] = {
-			accessed: Date.now(),
+			accessed: this.data[key] ? this.data[key].accessed : Date.now(),
 			value: value,
 		};
 
@@ -486,7 +492,7 @@ var Store = (function () {
 			var cached = this.data[key].value;
 
 			if (!(cached instanceof Store))
-				if (cached.data && cached.props) {
+				if (cached && cached.data && cached.props) {
 					cached.props.private = cached.props.private || this.private;
 
 					var value = Store.promote(cached);
@@ -524,10 +530,8 @@ var Store = (function () {
 				}
 			else if (!cached.destroyed)
 				return cached;
-		} else if (typeof defaultValue === 'function')
-			return this.set(key, defaultValue);
-		else if (typeof defaultValue !== 'undefined')
-			return this.set(key, defaultValue).get(key, undefined, asReference);
+		} else if (typeof defaultValue !== 'undefined' && defaultValue !== null)
+			return this.set(key, defaultValue).get(key, null, asReference);
 	};
 
 	Store.prototype.getMany = function (keys) {
@@ -545,6 +549,7 @@ var Store = (function () {
 				defaultProps = {};
 
 			defaultProps.private = defaultProps.private || this.private;
+			defaultProps.maxLife = defaultProps.maxLife || this.maxLife;
 
 			return this.set(key, new Store(requiredName, defaultProps));
 		}
@@ -588,8 +593,14 @@ var Store = (function () {
 			return this;
 		}
 
-		if (this.data.hasOwnProperty(key))
+		if (this.data.hasOwnProperty(key)) {
+			var value = this.get(key, null, null, true);
+
+			if (value instanceof Store)
+				value.destroy(true, null, true);
+
 			delete this.data[key];
+		}
 
 		this.__save();
 
@@ -600,16 +611,21 @@ var Store = (function () {
 		if (this.lock)
 			return;
 
+		var value;
+
 		var now = Date.now();
 
 		for (var key in this.data)
 			Utilities.setImmediateTimeout(function (store, key, now) {
+				value = store.get(key, null, null, true);
+
 				if (store.data[key] && now - store.data[key].accessed > store.maxLife) {
-					if (store.data[key].value instanceof Store)
-						store.data[key].value.destroy();
+					if (value instanceof Store)
+						value.destroy();
 
 					store.remove(key);
-				}
+				} else if (value instanceof Store)
+					value.removeExpired();
 			}, [this, key, now]);
 	};
 
@@ -641,7 +657,7 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.destroy = function (deep, unlock) {
+	Store.prototype.destroy = function (deep, unlock, ignoreParent) {
 		if (this.destroyed)
 			return;
 
@@ -656,7 +672,7 @@ var Store = (function () {
 				delete this.children[child];
 			}
 
-		if (this.parent) {
+		if (!ignoreParent && this.parent) {
 			this.parent.only(function (key, value) {
 				return value !== self;
 			});

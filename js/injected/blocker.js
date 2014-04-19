@@ -21,10 +21,11 @@ if (!window.CustomEvent)
 if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
 
+var BLOCKED_ELEMENTS = [];
+
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
 	EVENT: Utilities.id(),
-	BLOCKED_ELEMENTS: []
 };
 
 var BLOCKABLE = {
@@ -74,8 +75,8 @@ var Page = {
 	}
 };
 
-Page.allowed = Page.info.state.getStore('allowed'),
-Page.blocked = Page.info.state.getStore('blocked'),
+Page.allowed = Page.info.state.getStore('allowed');
+Page.blocked = Page.info.state.getStore('blocked');
 Page.unblocked = Page.info.state.getStore('unblocked');
 
 // Sometimes the global page isn't ready when a page is loaded. This can happen
@@ -156,8 +157,6 @@ var Handler = {
 
 				if (typeof fn === 'function')
 					fn();
-				else
-					throw new TypeError(fn + ' is not a function');
 			}
 
 			Page.send();
@@ -332,7 +331,7 @@ var Element = {
 			frame.setAttribute('data-jsbFrameProcessed', Utilities.Token.create(id, true));
 
 			Utilities.Timer.timeout('FrameURLRequestFailed' + frame.id, function (frame) {
-				if (TOKEN.BLOCKED_ELEMENTS._contains(frame))
+				if (BLOCKED_ELEMENTS._contains(frame))
 					return;
 
 				LogDebug(['frame vanished or is slow to load', frame.id, !!document.getElementById(frame.id)].join(' - '));
@@ -416,7 +415,7 @@ var Resource = {
 					if (event.preventDefault)
 						event.preventDefault();
 
-					TOKEN.BLOCKED_ELEMENTS.push(element);
+					BLOCKED_ELEMENTS.push(element);
 				}
 
 				if (canLoad.action === -85) {
