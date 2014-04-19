@@ -59,12 +59,12 @@ var UserScript = {
 			return;
 
 		for (var caption in event.userInfo.menuCommand)
-			event.contextMenu.appendContextMenuItem([
-				'contextMenu',
-				event.userInfo.pageID,
-				event.userInfo.menuCommand[caption].sourceID,
-				event.userInfo.menuCommand[caption].callbackID
-			].join(':'), caption);
+			event.contextMenu.appendContextMenuItem(
+				'contextMenu:' +
+				event.userInfo.pageID + ':' +
+				event.userInfo.menuCommand[caption].sourceID + ':' +
+				event.userInfo.menuCommand[caption].callbackID,
+			caption);
 
 	},
 
@@ -102,15 +102,19 @@ var UserScript = {
 		return scripts;
 	},
 
-	removeRules: function (namespace) {
+	removeRules: function (namespace, includeUserDefined) {
 		var domain;
 
-		var types = Rules.list.active.kind('user_script'),
+		var removeAction = [ACTION.AUTO_BLOCK_USER_SCRIPT, ACTION.AUTO_ALLOW_USER_SCRIPT],
+				types = Rules.list.active.kind('user_script'),
 				allTypes = types.all();
+
+		if (includeUserDefined)
+			removeAction.push(ACTION.ALLOW, ACTION.BLOCK);
 
 		for (var ruleType in allTypes)
 			for (domain in allTypes[ruleType])
-				if (allTypes[ruleType][domain][namespace] && [2, 3]._contains(allTypes[ruleType][domain][namespace].action))
+				if (allTypes[ruleType][domain][namespace] && removeAction._contains(allTypes[ruleType][domain][namespace].action))
 					types[ruleType](domain).remove(namespace);
 	},
 
@@ -238,7 +242,7 @@ var UserScript = {
 			}
 		}
 
-		parsed.trueNamespace = [parsed.name, parsed.namespace].join(':');
+		parsed.trueNamespace = parsed.name + ':' + parsed.namespace;
 
 		return {
 			parsed: parsed,
@@ -248,6 +252,12 @@ var UserScript = {
 
 	exist: function (namespace) {
 		return !!this.scripts.get(namespace, false);
+	},
+
+	remove: function (namespace) {
+		this.removeRules(namespace, true);
+
+		this.scripts.remove(namespace);
 	},
 
 	add: function (script, isAutoUpdate) {
@@ -281,25 +291,25 @@ var UserScript = {
 		var allowPages = detail.matchJSB.concat(detail.includeJSB),
 				allowDomains = detail.domain;
 
-		// this.removeRules(namespace);
+		this.removeRules(namespace);
 
-		// for (var i = 0; i < allowPages.length; i++)
-		// 	Rules.list.active.addPage('user_script', allowPages[i], {
-		// 		rule: namespace,
-		// 		action: 3
-		// 	});
+		for (var i = 0; i < allowPages.length; i++)
+			Rules.list.active.addPage('user_script', allowPages[i], {
+				rule: namespace,
+				action: 3
+			});
 
-		// for (var i = 0; i < allowDomains.length; i++)
-		// 	Rules.list.active.addDomain('user_script', allowDomains[i], {
-		// 		rule: namespace,
-		// 		action: 3
-		// 	});
+		for (var i = 0; i < allowDomains.length; i++)
+			Rules.list.active.addDomain('user_script', allowDomains[i], {
+				rule: namespace,
+				action: 3
+			});
 
-		// for (var i = 0; i < detail.excludeJSB.length; i++)
-		// 	Rules.list.active.addPage('user_script', detail.excludeJSB[i], {
-		// 		rule: namespace,
-		// 		action: 2
-		// 	});
+		for (var i = 0; i < detail.excludeJSB.length; i++)
+			Rules.list.active.addPage('user_script', detail.excludeJSB[i], {
+				rule: namespace,
+				action: 2
+			});
 
 		setTimeout(function (self, userScript, detail) {
 			// If a script is in developer mode or just updated normally, the resources and

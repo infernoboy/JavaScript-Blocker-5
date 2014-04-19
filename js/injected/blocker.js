@@ -3,7 +3,7 @@
 if (!window.safari)
 	throw new Error('preventing execution.');
 
-if (typeof document.hidden === 'undefined')
+if (document.hidden === undefined)
 	document.hidden = false;
 
 if (!window.CustomEvent)

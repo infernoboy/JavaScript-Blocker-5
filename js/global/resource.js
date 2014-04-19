@@ -27,11 +27,11 @@ function Resource (resource) {
 				sourceProto = Utilities.URL.protocol(this.source),
 				locationProto = Utilities.URL.protocol(this.pageLocation);
 
-		if (protos._contains(sourceProto) && this.source._contains('?'))
-			this.source = this.source.substr(0, this.source.indexOf('?'));
+		if (protos._contains(sourceProto))
+			this.source = Utilities.URL.strip(this.source);
 
-		if (protos._contains(locationProto) && this.pageLocation._contains('?'))
-			this.pageLocation = this.pageLocation.substr(0, this.pageLocation.indexOf('?'));
+		if (protos._contains(locationProto))
+			this.pageLocation = Utilities.URL.strip(this.pageLocation);
 	}
 };
 

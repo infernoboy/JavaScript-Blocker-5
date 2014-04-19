@@ -93,7 +93,7 @@ var Special = {
 			JSB: JSB
 		});
 
-		document.addEventListener(['JSBCommander', deepInject.id, TOKEN.EVENT].join(':'), this.JSBCommanderHandler, true);
+		document.addEventListener('JSBCommander:' + deepInject.id + ':' + TOKEN.EVENT, this.JSBCommanderHandler, true);
 
 		return deepInject;
 	},
@@ -102,7 +102,7 @@ var Special = {
 		if (!this.specials.hasOwnProperty(name))
 			throw new Error('special not found.');
 
-		if (typeof useURL === 'undefined' && this.__injected._contains(name))
+		if (useURL === undefined && this.__injected._contains(name))
 			return;
 
 		var special = new DeepInject(name, this.specials[name]);
@@ -120,7 +120,7 @@ var Special = {
 
 		special.inject(useURL);
 
-		if (typeof useURL === 'undefined')
+		if (useURL === undefined)
 			Page.blocked.getStore('special').get('all', [], true).push({
 				source: name,
 				ruleAction: -1
@@ -241,17 +241,17 @@ var Special = {
 		},
 
 		JSBCallbackSetup: function (event) {
-			window[JSB.eventToken].document$removeEventListener(['JSBCallback', JSB.sourceID, JSB.eventToken].join(':'), JSBCallbackSetup, true);
-			window[JSB.eventToken].document$addEventListener(['JSBCallback', JSB.sourceID, JSB.eventToken].join(':'), JSBCallbackHandler, true);
+			window[JSB.eventToken].document$removeEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackSetup, true);
+			window[JSB.eventToken].document$addEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackHandler, true);
 
 			messageExtension('registerDeepInjectedScript', null, function (result) {
-				window[JSB.eventToken].document$removeEventListener(['JSBCallback', JSB.sourceID, JSB.eventToken].join(':'), JSBCallbackHandler, true);
+				window[JSB.eventToken].document$removeEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackHandler, true);
 
 				Object.defineProperty(JSB, 'sourceID', {
 					value: result.newSourceID
 				});
 
-				window[JSB.eventToken].document$addEventListener(['JSBCallback', JSB.sourceID, JSB.eventToken].join(':'), JSBCallbackHandler, true);
+				window[JSB.eventToken].document$addEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackHandler, true);
 			});
 		},
 
@@ -265,7 +265,7 @@ var Special = {
 		JSBCommander: function (detail, meta, callback, preserve) {
 			var callbackID = registerCallback(callback, preserve);
 
-			window[JSB.eventToken].document$dispatchEvent(new JSBCustomEvent(['JSBCommander', JSB.sourceID, JSB.eventToken].join(':'), {
+			window[JSB.eventToken].document$dispatchEvent(new JSBCustomEvent('JSBCommander:' + JSB.sourceID + ':' + JSB.eventToken, {
 				detail: {
 					commandToken: detail.commandToken,
 					command: detail.command,

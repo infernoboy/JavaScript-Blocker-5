@@ -102,7 +102,7 @@ var UserScript = {
 					for (url in enabledUserScripts[userScript].requirements) {
 						requirement = enabledUserScripts[userScript].requirements[url];
 
-						requirementName = ['Requirement', userScript, url].join();
+						requirementName = 'Requirement,' + userScript + ',' + url;
 
 						UserScript.inject({
 							before: true,
@@ -132,7 +132,7 @@ var UserScript = {
 				key: key
 			});
 
-			if (typeof result === 'undefined')
+			if (result === undefined)
 				return defaultValue;
 
 			return result;

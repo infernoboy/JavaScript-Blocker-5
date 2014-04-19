@@ -11,7 +11,7 @@ var Store = (function () {
 
 		this.maxLife = (typeof props.maxLife === 'number') ? props.maxLife : Infinity;
 		this.selfDestruct = (typeof props.selfDestruct === 'number') ? props.selfDestruct : 0;
-		this.deepDestruction = !!props.deepDestruction;
+		this.destroyChildren = !!props.destroyChildren;
 		this.lock = !!props.lock;
 		this.save = !!props.save;
 		this.useSnapshot = !!props.snapshot;
@@ -67,7 +67,7 @@ var Store = (function () {
 					Utilities.Timer.remove('interval', cleanupName);
 				else
 					store.removeExpired();
-			}, this.maxLife, [this, cleanupName]);
+			}, this.maxLife * .25, [this, cleanupName]);
 		}
 
 		props = name = undefined;
@@ -111,7 +111,7 @@ var Store = (function () {
 			right: right
 		};
 
-		var store = Store.compareCache.getStore([left.name, right.name].join('-'));
+		var store = Store.compareCache.getStore(left.name + '-' + right.name);
 
 		var sides = {
 			left: store.getStore('left'),
@@ -124,9 +124,9 @@ var Store = (function () {
 				thisValue = compare[side].get(key, null, null, true);
 				oppositeValue = compare[swap[side]].get(key, null, null, true);
 
-				if (typeof thisValue === 'undefined' && typeof oppositeValue === 'undefined')
+				if (thisValue === undefined && oppositeValue === undefined)
 					sides.both.set(key, undefined)
-				else if (typeof oppositeValue === 'undefined')
+				else if (oppositeValue === undefined)
 					sides[side].set(key, thisValue);
 				else if (thisValue instanceof Store) {
 					compared = Store.compare(compare.left.getStore(key, null, null, true), compare.right.getStore(key, null, null, true));
@@ -141,13 +141,13 @@ var Store = (function () {
 					}
 				} else if (JSON.stringify(thisValue) === JSON.stringify(oppositeValue))
 					sides.both.set(key, thisValue);
-				else if (typeof thisValue !== 'undefined')
+				else if (thisValue !== undefined)
 					sides[side].set(key, thisValue);
 			}
 		}
 
-		sides.left = sides.left.toJSON();
-		sides.right = sides.right.toJSON();
+		sides.left = sides.left.readyJSON();
+		sides.right = sides.right.readyJSON();
 
 		return {
 			store: store,
@@ -280,7 +280,7 @@ var Store = (function () {
 	Store.prototype.clone = function (prefix, props) {
 		var value;
 
-		var store = new Store([prefix, this.name].join(), props),
+		var store = new Store(prefix + ',' + this.name, props),
 				newData = {};
 
 		for (var key in this.data) {
@@ -291,7 +291,7 @@ var Store = (function () {
 					accessed: this.data[key].accessed,
 					value: value.clone(prefix, props)
 				};
-			else if (typeof value !== 'undefined')
+			else if (value !== undefined)
 				newData[key] = {
 					accessed: this.data[key].accessed,
 					value: value
@@ -387,7 +387,7 @@ var Store = (function () {
 	Store.prototype.map = function (fn) {
 		var results = this.forEach(fn);
 
-		var store = new Store(null, {
+		var store = new Store('Map-' + Utilities.id(), {
 			selfDestruct: TIME.ONE_SECOND * 30
 		});
 
@@ -400,7 +400,7 @@ var Store = (function () {
 	Store.prototype.filter = function (fn) {
 		var results = this.forEach(fn);
 
-		var store = new Store(null, {
+		var store = new Store('Filter-' + Utilities.id(), {
 			selfDestruct: TIME.ONE_SECOND * 30
 		});
 
@@ -461,7 +461,7 @@ var Store = (function () {
 				value.parent = this;
 
 				setTimeout(function (store, value) {
-					if (!value.toJSON().data._isEmpty())
+					if (!value.readyJSON().data._isEmpty())
 						store.__save();
 				}, 100, this, value);
 			} else
@@ -530,7 +530,7 @@ var Store = (function () {
 				}
 			else if (!cached.destroyed)
 				return cached;
-		} else if (typeof defaultValue !== 'undefined' && defaultValue !== null)
+		} else if (defaultValue !== undefined && defaultValue !== null)
 			return this.set(key, defaultValue).get(key, null, asReference);
 	};
 
@@ -542,7 +542,7 @@ var Store = (function () {
 
 	Store.prototype.getStore = function (key, defaultProps) {
 		var store = this.get(key),
-				requiredName = [this.name || this.id, key].join();
+				requiredName = (this.name || this.id) + ',' + key;
 
 		if (!(store instanceof Store)) {
 			if (!(defaultProps instanceof Object))
@@ -550,6 +550,7 @@ var Store = (function () {
 
 			defaultProps.private = defaultProps.private || this.private;
 			defaultProps.maxLife = defaultProps.maxLife || this.maxLife;
+			defaultProps.selfDestruct = defaultProps.selfDestruct || this.selfDestruct;
 
 			return this.set(key, new Store(requiredName, defaultProps));
 		}
@@ -583,7 +584,7 @@ var Store = (function () {
 		if (this.lock)
 			return;
 
-		if (typeof key === 'undefined') {
+		if (key === undefined) {
 			if (this.parent)
 				this.parent.forEach(function (key, value, store) {
 					if (value === this)
@@ -597,7 +598,7 @@ var Store = (function () {
 			var value = this.get(key, null, null, true);
 
 			if (value instanceof Store)
-				value.destroy(true, null, true);
+				value.destroy(false, false, true);
 
 			delete this.data[key];
 		}
@@ -636,11 +637,11 @@ var Store = (function () {
 		if (store === this)
 			throw new Error('cannot replace a store with itself.');
 
-		var swapPrefix = this.name ? this.name.split(',')[0] : null;
+		var swapPrefix = this.name ? this.name.split(',')[0] : undefined;
 
 		this.clear();
 
-		this.data = store.toJSON(swapPrefix).data;
+		this.data = store.readyJSON(swapPrefix).data;
 	};
 
 	Store.prototype.clear = function () {
@@ -665,18 +666,17 @@ var Store = (function () {
 
 		var self = this;
 
-		if (this.deepDestruction || deep)
+		if (this.destroyChildren || deep)
 			for (var child in this.children) {
 				this.children[child].destroy(true);
 
 				delete this.children[child];
 			}
 
-		if (!ignoreParent && this.parent) {
+		if (!ignoreParent && this.parent)
 			this.parent.only(function (key, value) {
 				return value !== self;
 			});
-		}
 
 		this.lock = this.lock || !unlock;
 		this.data = undefined;
@@ -733,7 +733,7 @@ var Store = (function () {
 		return JSON.stringify(this.all(), null, 2);
 	};
 
-	Store.prototype.toJSON = function (swapPrefix) {
+	Store.prototype.readyJSON = function (swapPrefix) {
 		var value,
 				finalValue;
 
@@ -763,7 +763,7 @@ var Store = (function () {
 				if (value.isEmpty())
 					continue;
 				else {
-					finalValue = value.toJSON(swapPrefix);
+					finalValue = value.readyJSON(swapPrefix);
 
 					if (finalValue.data._isEmpty())
 						continue;
@@ -771,7 +771,7 @@ var Store = (function () {
 			} else
 				finalValue = value;
 
-			if (typeof finalValue !== 'undefined')
+			if (finalValue !== undefined)
 				stringable.data[key] = {
 					accessed: this.data[key].accessed,
 					value: finalValue
@@ -779,6 +779,10 @@ var Store = (function () {
 		}
 
 		return stringable;
+	};
+
+	Store.prototype.toJSON = function () {
+		return this.readyJSON();
 	};
 
 	Store.prototype.dump = function  () {

@@ -7,6 +7,8 @@ var ACTION = Object.freeze({
 	whitelist: 5,
 	ALLOW: 1,
 	BLOCK: 0,
+	AUTO_ALLOW_USER_SCRIPT: 3,
+	AUTO_BLOCK_USER_SCRIPT: 2,
 	ALLOW_WITHOUT_RULE: -1,
 	BLOCK_WITHOUT_RULE: -2,
 	KIND_DISABLED: -85,
@@ -63,7 +65,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 		if (typeof rule.rule.domain !== 'string' || !Array.isArray(rule.rule.protocols))
 			throw new Error(rule.rule + ' does not contain a valid domain or protocols definition');
 
-		rule.rule = [rule.rule.protocols.join(','), '|', rule.rule.domain].join('');
+		rule.rule = rule.rule.protocols.join(','), + '|' + rule.rule.domain;
 	} else if (typeof rule.rule !== 'string')
 		throw new TypeError(rule.rule + ' is not a valid rule');
 
@@ -94,7 +96,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 };
 
 Rule.prototype.__remove = function (type, kind, domain, rule) {
-	if (typeof kind === 'undefined') {
+	if (kind === undefined) {
 		var self = this;
 
 		this.rules.forEach(function (kind) {
@@ -106,9 +108,9 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 		if (!types.hasOwnProperty(type))
 			throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
 
-		if (typeof domain === 'undefined')
+		if (domain === undefined)
 			types[type]().clear();
-		else if (typeof rule === 'undefined')
+		else if (rule === undefined)
 			types[type]().remove(domain);
 		else
 			types[type](domain).remove(rule);
@@ -144,7 +146,7 @@ Rule.prototype.kind = function (kindName, hide) {
 			if (domain.length === 1)
 				return this.__rules(type, [domain[0], null]);
 
-			rules = new Store([domains.name, domain.join()].join(), {
+			rules = new Store(domains.name + ',' + domain.join(), {
 				selfDestruct: TIME.ONE_HOUR,
 				ignoreSave: true
 			});
@@ -253,7 +255,7 @@ Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDoma
 			lowerPage;
 
 	var types = this.kind(kind);
-	
+
 	var rules = {
 		page: types.page().filter(function (page) {
 			try {
@@ -466,7 +468,7 @@ Object.defineProperty(Rules, 'list', {
 					throw new Error('active rules cannot be set to Blacklist, Whitelist, or TemporaryRules.');
 
 				if (this.active !== this.user && this.active.autoDestruct)
-					this.active.destroy();
+					this.active.destroy(true);
 
 				if (this.__active instanceof Rule)
 					Resource.canLoadCache.clear();

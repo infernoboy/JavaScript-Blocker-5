@@ -130,8 +130,8 @@ var Utilities = {
 				bSimpleModifier = b.split(/[0-9\.]+/),
 				aVersionPieces = aModifier[0].split(/\./),
 				bVersionPieces = bModifier[0].split(/\./),
-				aModifierCheck = typeof aModifier[1] !== 'undefined' ? parseInt(aModifier[1], 10) : Infinity,
-				bModifierCheck = typeof bModifier[1] !== 'undefined' ? parseInt(bModifier[1], 10) : Infinity;
+				aModifierCheck = aModifier[1] !== undefined ? parseInt(aModifier[1], 10) : Infinity,
+				bModifierCheck = bModifier[1] !== undefined ? parseInt(bModifier[1], 10) : Infinity;
 
 		if (isNaN(aModifierCheck))
 			aModifier[1] = aSimpleModifier[1];
@@ -280,7 +280,7 @@ var Utilities = {
 
 				var isValid = tokens[token].value === value;
 
-				if (typeof expire !== 'undefined')
+				if (expire !== undefined)
 					this.expire(token, expire);
 
 				return isValid;
@@ -371,6 +371,19 @@ var Utilities = {
 
 		isURL: function (url) {
 			return typeof url === 'string' && (this.__structure.test(url) || this.protocol(url) === 'about:');
+		},
+
+		strip: function (url) {
+			if (typeof url !== 'string')
+				throw new TypeError(url + ' is not a string.');
+
+			if (url._contains('?'))
+				url = url.substr(0, url.indexOf('?'));
+
+			if (url._contains('#'))
+				url = url.substr(0, url.indexOf('#'));
+
+			return url;
 		},
 
 		createAnchor: function (path) {
@@ -500,7 +513,7 @@ var LogError = function () {
 		if (Array.isArray(error))
 			error = error
 				.filter(function (currentValue) {
-					return (typeof currentValue !== 'undefined');
+					return currentValue !== undefined;
 				})
 				.map(function (currentValue) {
 					if (typeof currentValue === 'object')

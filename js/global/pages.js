@@ -5,7 +5,7 @@ function Page (page, tab) {
 		throw new TypeError('page state is not an instance of Object');
 
 	page.state.props = {
-		deepDestruction: true,
+		destroyChildren: true,
 		selfDestruct: TIME.ONE_MINUTE * 5
 	};
 

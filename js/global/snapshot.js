@@ -41,7 +41,12 @@ Snapshot.prototype.__outerMost = function (latest, kept, returnID) {
 	if (latest)
 		ids.reverse();
 
-	return returnID ? ids[0] : store.get(ids[0]);
+	var snapshot = returnID ? ids[0] : store.get(ids[0]);
+
+	if (!returnID && snapshot)
+		snapshot.snapshot = Store.promote(snapshot.snapshot);
+
+	return snapshot;
 };
 
 Snapshot.prototype.latest = function (returnID) {
@@ -51,7 +56,12 @@ Snapshot.prototype.latest = function (returnID) {
 	if (returnID)
 		return Math.max(latestKept, latestUnkept);
 	
-	return latestKept > latestUnkept ? this.kept.get(latestKept) : this.unkept.get(latestUnkept);
+	var snapshot = latestKept > latestUnkept ? this.kept.get(latestKept) : this.unkept.get(latestUnkept);
+
+	if (snapshot)
+		snapshot.snapshot = Store.promote(snapshot.snapshot);
+
+	return snapshot;
 };
 
 Snapshot.prototype.first = function (returnID) {
@@ -61,11 +71,16 @@ Snapshot.prototype.first = function (returnID) {
 	if (returnID)
 		return Math.min(firstKept, firstUnkept);
 	
-	return firstKept < firstUnkept ? this.kept.get(firstKept) : this.unkept.get(firstUnkept);
+	var snapshot = firstKept < firstUnkept ? this.kept.get(firstKept) : this.unkept.get(firstUnkept);
+
+	if (snapshot)
+		snapshot.snapshot = Store.promote(snapshot.snapshot);
+
+	return snapshot;
 };
 
 Snapshot.prototype.cleanStore = function () {
-	return Store.promote(this.store.toJSON());
+	return Store.promote(this.store.readyJSON());
 };
 
 Snapshot.prototype.checkForChanges = function () {
@@ -77,7 +92,7 @@ Snapshot.prototype.checkForChanges = function () {
 	if (cleanStore.isEmpty())
 		return;
 
-	var comparison = Store.compare(cleanStore, this.latest());
+	var comparison = Store.compare(cleanStore, this.latest().snapshot);
 
 	if (!comparison.equal)		
 		this.add();
@@ -85,20 +100,49 @@ Snapshot.prototype.checkForChanges = function () {
 	comparison.store.destroy(true);
 };
 
-Snapshot.prototype.add = function (kept) {
-	var id = Date.now(),
-			store = kept ? this.kept : this.unkept;
+Snapshot.prototype.keep = function (id) {
+	var unkeptSnapshot = this.unkept.get(id),
+			keptSnapshot = this.kept.get(id);
 
-	var cloned = this.store.clone([this.snapshots.name, id].join(), {
-		lock: true
-	}).toJSON();
+	if (!unkeptSnapshot || keptSnapshot)
+		return null;
+
+	this.kept.set(snapshot, unkeptSnapshot);
+	this.unkept.remove(id);
+};
+
+Snapshot.prototype.unkeep = function (id) {
+	var unkeptSnapshot = this.unkept.get(id),
+			keptSnapshot = this.kept.get(id);
+
+	if (unkeptSnapshot || !keptSnapshot)
+		return null;
+
+	this.unkept.set(snapshot, keptSnapshot);
+	this.kept.remove(id);
+};
+
+Snapshot.prototype.add = function (keep, name) {
+	if (typeof name !== 'string')
+		name = null;
+
+	var id = Date.now(),
+			store = keep ? this.kept : this.unkept;
+
+	var cloned = this.store.clone(this.snapshots.name + ',' + id, {
+		lock: true,
+		private: true
+	}).readyJSON();
 
 	if (cloned.data._isEmpty())
 		return;
 
-	Log('New snapshot:', id)
+	Log('New snapshot:', id, name)
 
-	store.set(id, cloned);
+	store.set(id, {
+		name: name,
+		snapshot: cloned
+	});
 
 	if (this.unkept.keys().length > this.maxUnkept)
 		this.unkept.remove(this.firstUnkept(true));

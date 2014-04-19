@@ -154,7 +154,7 @@ var Command = function (type, event) {
 
 			if (data.callback) {
 				var callback = new DeepInject(null, data.callback),
-						name = ['TopCallback', data.originSourceName, Utilities.id()].join();
+						name = 'TopCallback-' + data.originSourceName + Utilities.id();
 
 				callback.setArguments({
 					detail: {
@@ -279,8 +279,8 @@ var Command = function (type, event) {
 
 			var newSourceID = Utilities.Token.create(detail.sourceName, true);
 
-			document.removeEventListener(['JSBCommander', detail.sourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
-			document.addEventListener(['JSBCommander', newSourceID, TOKEN.EVENT].join(':'), Special.JSBCommanderHandler, true);
+			document.removeEventListener('JSBCommander:' + detail.sourceID + ':' + TOKEN.EVENT, Special.JSBCommanderHandler, true);
+			document.addEventListener('JSBCommander:' + newSourceID + ':' + TOKEN.EVENT, Special.JSBCommanderHandler, true);
 
 			TOKEN.INJECTED[newSourceID] = TOKEN.INJECTED[detail.sourceID];
 
@@ -334,10 +334,10 @@ var Command = function (type, event) {
 			if (typeof detail.meta !== 'string' || !detail.meta.length)
 				return LogError(['caption is not a valid string', detail.meta]);
 
-			detail.meta = [TOKEN.INJECTED[detail.sourceID].name, detail.meta].join(' - ');
+			detail.meta = TOKEN.INJECTED[detail.sourceID].name + ' - ' + detail.meta;
 
 			if (UserScript.menuCommand[detail.meta])
-				return LogError(['menu item with caption already exist', detail.meta]);
+				return LogDebug('menu item with caption already exist - ' + detail.meta);
 
 			UserScript.menuCommand[detail.meta] = {
 				sourceID: detail.sourceID,
@@ -421,7 +421,7 @@ Command.requestToken = function (command) {
 };
 
 Command.sendCallback = function (sourceID, callbackID, result) {
-	document.dispatchEvent(new CustomEvent(['JSBCallback', sourceID, TOKEN.EVENT].join(':'), {
+	document.dispatchEvent(new CustomEvent('JSBCallback:' + sourceID + ':' + TOKEN.EVENT, {
 		detail: {
 			callbackID: callbackID,
 			result: result

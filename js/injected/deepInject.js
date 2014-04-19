@@ -70,7 +70,7 @@ DeepInject.prototype.setArguments = function (args) {
 		this.setHeader(Object.keys(args));
 
 		for (var arg in args)
-			this.pieces.args[arg] = typeof args[arg] === 'undefined' ? null : args[arg];
+			this.pieces.args[arg] = args[arg] === undefined ? null : args[arg];
 	}
 
 	return this;
@@ -93,7 +93,7 @@ DeepInject.prototype.executable = function () {
 		try {
 			str = JSON.stringify(this.pieces.args[arg]);
 
-			if (typeof str === 'undefined')
+			if (str === undefined)
 				throw new Error;
 			
 			args.push(JSON.stringify(this.pieces.args[arg]));

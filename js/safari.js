@@ -158,7 +158,7 @@ var ToolbarItems = {
 			var value = safari.extension.settings.getItem(key);
 
 			if (value === null)
-				return typeof defaultValue === 'undefined' ? value : defaultValue;
+				return defaultValue === undefined ? value : defaultValue;
 
 			try {
 				value = Utilities.decode(value);
@@ -172,7 +172,7 @@ var ToolbarItems = {
 			var value = this.getItem(key);
 
 			if (value === null)
-				return typeof defaultValue === 'undefined' ? value : defaultValue;
+				return defaultValue === undefined ? value : defaultValue;
 
 			if (typeof value !== 'string')
 				return value;
