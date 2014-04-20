@@ -184,6 +184,11 @@ var Command = function (type, event) {
 		executeMenuCommand: function (detail) {
 			if (detail.data.pageID === TOKEN.PAGE)
 				Command.sendCallback(detail.data.sourceID, detail.data.callbackID);
+		},
+
+		pageVanished: function (detail) {
+			if (Utilities.Page.isTop)
+				VANISHED_PAGES.push(detail.data);
 		}
 	};
 
@@ -216,7 +221,7 @@ var Command = function (type, event) {
 						hosts = allowedFrames.getStore('hosts');
 
 				for (var i = 0; i < allClone.length; i++)
-					if (allClone[i].meta && allClone[i].meta.id === message.id) {
+					if (allClone[i].meta && allClone[i].meta.waiting && allClone[i].meta.id === message.id) {
 						LogDebug('frame did not vanish - ' + message.id);
 
 						all.splice(i, 1);
@@ -229,7 +234,7 @@ var Command = function (type, event) {
 
 			if (previousURL !== message.url) {
 				Resource.canLoad({
-					target: document.createElement('iframe'),
+					target: frame ? frame : document.createElement('iframe'),
 					url: message.url,
 					unblockable: true,
 				}, false, {
@@ -259,6 +264,23 @@ var Command = function (type, event) {
 				callbackID: detail.callbackID,
 				result: GlobalCommand(detail.command, detail.meta)
 			};
+		},
+
+		__addPageItem: function (isAllowed, detail) {
+			var info = detail.meta,
+					kindStore = (isAllowed ? Page.allowed : Page.blocked).getStore(info.kind);
+
+			info.source = Utilities.URL.getAbsolutePath(info.source);
+			info.host = Utilities.URL.extractHost(info.source);
+
+			kindStore.get('all', [], true).push({
+				source: info.source,
+				ruleAction: info.canLoad.action,
+				unblockable: false,
+				meta: info.meta
+			});
+
+			kindStore.getStore('hosts').increment(info.host);
 		},
 
 		commandGeneratorToken: function (detail) {
@@ -357,16 +379,27 @@ var Command = function (type, event) {
 
 		notification: Utilities.noop,
 
-		canLoadXHR: function (detail) {
-			var info = {
-				id: detail.id,
-				meta: detail,
-				canLoad:  GlobalCommand('canLoadResource', {
-					kind: detail.kind,
-					pageLocation: Page.info.location,
-					source: detail.source,
-					isFrame: Page.info.isFrame
-				})
+		canLoadResource: function (detail) {
+			return {
+				callbackID: detail.callbackID,
+				result: {
+					action: -1,
+					isAllowed: true
+				}
+			};
+
+			var toCheck = detail.meta;
+
+			toCheck.pageLocation = Page.info.location;
+			toCheck.pageProtocol = Page.info.protocol;
+			toCheck.isFrame = Page.info.isFrame;
+			toCheck.source = Utilities.URL.getAbsolutePath(toCheck.source);
+
+			var canLoad = GlobalCommand('canLoadResource', toCheck);
+
+			return {
+				callbackID: detail.callbackID,
+				result: canLoad
 			};
 
 			if (info.canLoad.action < 0 && enabled_specials.ajax_intercept.value === 1) {
@@ -404,6 +437,15 @@ var Command = function (type, event) {
 				getItem: function (detail) {
 					return this.__userScriptAction(detail);
 				}
+			}
+		},
+
+		page: {
+			addBlockedItem: function (detail) {
+				return this.__addPageItem(false, detail);
+			},
+			addAllowedItem: function (detail) {
+				return this.__addPageItem(true, detail);
 			}
 		}
 	};

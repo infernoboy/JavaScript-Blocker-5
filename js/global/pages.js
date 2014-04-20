@@ -33,7 +33,6 @@ function Page (page, tab) {
 	this.info = page;
 	this.tab = tab;
 	this.isTop = !page.isFrame;
-	this.originalState = page.state.clone('Original');
 
 	Page.pages.set(page.state.name, this);
 
@@ -136,8 +135,6 @@ Page.prototype.addFrame = function (frame) {
 			this.info.locations = [this.info.location];
 
 		this.info.locations._pushMissing(frame.info.location);			
-
-		this.info.state.replaceWith(this.originalState);
 
 		frame.info.state.forEach(function (state, kinds, stateStore) {
 			myState = self.info.state.getStore(state);

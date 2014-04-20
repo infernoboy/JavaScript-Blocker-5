@@ -88,6 +88,7 @@ var UserScript = {
 
 		var enabledUserScripts = GlobalCommand('enabledUserScripts', {
 			location: Page.info.location,
+			protocol: Page.info.protocol,
 			isFrame: Page.info.isFrame
 		});
 

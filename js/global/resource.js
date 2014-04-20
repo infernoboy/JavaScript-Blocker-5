@@ -41,7 +41,11 @@ Resource.canLoadCache = new Store('ResourceCanLoad', {
 	maxLife: TIME.ONE_DAY
 });
 
-Resource.__many = function (action, resources, domain, rule, frame) {
+Resource.canLoadCache.addEventListener('save', function () {
+	LogDebug('ResourceCanLoad Size: ' + Utilities.byteSize(SettingStore.getItem('Storage-ResourceCanLoad').length));
+});
+
+Resource.__many = function (action, resources, domain, rule, framed) {
 	if (!Array.isArray(resources))
 		throw new TypeError('resources is not an array');
 
@@ -52,7 +56,7 @@ Resource.__many = function (action, resources, domain, rule, frame) {
 			continue;
 		}
 
-		resources[i][action](domain, rule, frame);
+		resources[i][action](domain, rule, framed);
 	}
 };
 
@@ -126,9 +130,9 @@ Resource.prototype.allowedBySettings = function () {
 	var blockFrom = Settings.getJSON('alwaysBlock')[this.kind],
 			sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
 
-	if (blockFrom === 'trueNowhere' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
+	if (blockFrom === 'trueNowhere' || blockFrom === 'nowhere' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
 		return canLoad;
-	else if (blockFrom !== 'nowhere') {
+	else {
 		var pageProtocol = Utilities.URL.protocol(this.pageLocation),
 				pageParts = Utilities.URL.hostParts(this.pageHost),
 				sourceParts = Utilities.URL.hostParts(this.sourceHost);
@@ -285,7 +289,3 @@ Resource.prototype.toJSON = function () {
 		meta: this.meta || undefined
 	};
 };
-
-setInterval(function () {
-	console.log('CanLoadCacheSize:', Utilities.byteSize(SettingStore.getItem('Storage-ResourceCanLoad').length));
-}, TIME.ONE_MINUTE * 1);

@@ -27,7 +27,7 @@ function Snapshot (store, props) {
 	this.firstKept = this.__outerMost.bind(this, false, true);
 	this.firstUnkept = this.__outerMost.bind(this, false, false);
 
-	store.addListener('save', function () {
+	store.addEventListener('save', function () {
 		Utilities.Timer.timeout('CheckForChanges' + this.snapshots.name, function (snapshot) {
 			snapshot.checkForChanges();
 		}, TIME.ONE_SECOND * 30, [this]);
@@ -137,7 +137,7 @@ Snapshot.prototype.add = function (keep, name) {
 	if (cloned.data._isEmpty())
 		return;
 
-	Log('New snapshot:', id, name)
+	LogDebug('New snapshot: ' + id + '-' + name);
 
 	store.set(id, {
 		name: name,

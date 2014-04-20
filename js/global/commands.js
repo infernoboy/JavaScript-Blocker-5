@@ -104,10 +104,16 @@ var Command = function (command, data, event) {
 		},
 
 		enabledSpecials: function (detail) {
+			if (detail.protocol === 'about:')
+				detail.location = this.event.target.url;
+
 			this.message = Special.forLocation(detail.location, detail.isFrame);
 		},
 
 		enabledUserScripts: function (detail) {
+			if (detail.protocol === 'about:')
+				detail.location = this.event.target.url;
+			
 			this.message = UserScript.forLocation(detail.location, detail.isFrame);
 		},
 

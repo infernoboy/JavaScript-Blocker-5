@@ -195,7 +195,7 @@ var Store = (function () {
 
 		if (this.save)
 			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
-				Log('Save', store.id);
+				LogDebug('Save ' + store.id);
 
 				store.trigger('save');
 
@@ -221,7 +221,7 @@ var Store = (function () {
 			});
 	};
 
-	Store.prototype.addListener = function (name, fn) {
+	Store.prototype.addEventListener = function (name, fn) {
 		return this.__listener(true, name, fn);
 	};
 

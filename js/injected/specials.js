@@ -125,10 +125,130 @@ Special.specials = {
 			window[JSB.eventToken].document$addEventListener('DOMNodeInserted', function (event) {
 				withNode(event.target);
 			}, true);
+	},
+
+	ajax_intercept: function () {
+		var XHR = {
+			open: XMLHttpRequest.prototype.open,
+			send: XMLHttpRequest.prototype.send
+		};
+
+		var supportedMethods = ['get', 'post', 'put'],
+				storeToken = Math.random().toString(36);
+
+		XMLHttpRequest.prototype.open = function () {
+			if (!this[storeToken])
+				Object.defineProperty(this, storeToken, {
+					value: {}
+				});
+
+			this[storeToken].method = arguments[0].toLowerCase();
+			this[storeToken].path = (arguments[1] && arguments[1].path) ? arguments[1].path : arguments[1].toString();
+
+			Object.freeze(this[storeToken]);
+
+			XHR.open.apply(this, arguments);
+		};
+
+		XMLHttpRequest.prototype.send = function () {
+			var detail = this[storeToken],
+					isAllowed = (supportedMethods.indexOf(detail.method) === -1);
+
+			if (isAllowed)
+				return XHR.send.apply(this, arguments);
+
+			var JSONsendArguments = JSON.stringify(arguments);
+
+			if (detail.previousJSONsendArguments === JSONsendArguments)
+				try {
+					console.debug('Oh google....');
+
+					return detail.isAllowed ? XHR.send.apply(this, arguments) : this.abort();
+				} catch (error) {
+					console.debug(error);
+				} finally {
+					return;
+				}
+
+			detail.previousJSONsendArguments = JSONsendArguments;
+
+			var	pageAction = 'addBlockedItem',
+					kind = 'ajax_' + detail.method,
+					info = {
+						meta: null,
+						kind: kind,
+						source: detail.path,
+						canLoad: {}
+					};
+
+			if (detail.method === 'get' || detail.method === 'post') {
+				var toSend = detail.method === 'post' ? arguments[0] : detail.path.split('?')[1];
+
+				if (typeof toSend === 'string') {
+					info.meta = {
+						type: 'params',
+						data: {}
+					};
+
+					var splitParam;
+
+					var params = toSend.split(/&/g);
+
+					for (var i = 0; i < params.length; i++) {
+						splitParam = params[i].split('=');
+
+						info.meta.data[splitParam[0]] = decodeURIComponent(splitParam[1]);
+					}
+				} else if (toSend instanceof window.Blob) {
+					var URL = window.webkitURL || window.URL;
+
+					if (typeof URL.createObjectURL === 'function')
+						info.meta = {
+							type: 'blob',
+							data: URL.createObjectURL(toSend)
+						};
+				} else if (toSend instanceof window.FormData) {
+					// There is no way to retrieve the values of a FormData object.
+					info.meta = {
+						type: 'formdata',
+						data: null
+					};
+				}
+			}
+
+			var result;
+
+			var canLoad = messageExtensionSync('canLoadResource', info);
+
+			try {
+				isAllowed = canLoad.isAllowed;
+			} catch (error) {
+				console.error('failed to retrieve canLoadResource response.', document);
+
+				isAllowed = true;
+			}
+
+			info.canLoad = canLoad;
+
+			if (isAllowed) {
+				pageAction = 'addAllowedItem';
+
+				detail.isAllowed = true;
+
+				try {
+					XHR.send.apply(this, arguments);
+				} catch (error) {
+					console.log('XHR SEND FAIL', error)
+				}
+			}
+			
+			messageExtension('page.' + pageAction, info);
+		};
 	}
 };
 
 Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
 Special.specials.prepareScript.ignoreHelpers = true;
+Special.specials.ajax_intercept.excludeFromPage = true;
 
 Special.begin();

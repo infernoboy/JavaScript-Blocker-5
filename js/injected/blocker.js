@@ -21,7 +21,8 @@ if (!window.CustomEvent)
 if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
 
-var BLOCKED_ELEMENTS = [];
+var BLOCKED_ELEMENTS = [],
+		VANISHED_PAGES = [];
 
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
@@ -52,8 +53,12 @@ var Page = {
 
 			timeout = setTimeout(function () {
 				try {
-					if (!document.hidden)
+					if (!document.hidden) {
 						GlobalPage.message('receivePage', Page.info);
+
+						for (var i = 0; i < VANISHED_PAGES.length; i++)
+							GlobalPage.message('receivePage', VANISHED_PAGES[i]);
+					}
 				} catch(error) {
 					if (!broken) {
 						broken = true;
@@ -104,6 +109,15 @@ var _ = (function () {
 
 var Handler = {
 	onDocumentVisible: [],
+
+	beforeunload: function () {
+		Page.info.state = Page.info.state.readyJSON();
+
+		GlobalPage.message('bounce', {
+			command: 'pageVanished',
+			detail: Page.info
+		});
+	},
 
 	DOMContentLoaded: function () {
 		var i,
@@ -334,14 +348,16 @@ var Element = {
 				if (BLOCKED_ELEMENTS._contains(frame))
 					return;
 
-				LogDebug(['frame vanished or is slow to load', frame.id, !!document.getElementById(frame.id)].join(' - '));
-
-				Resource.canLoad({
-					target: frame,
-					unblockable: !!frame.src
-				}, false, {
-					id: frame.id
-				});
+				if (document.getElementById(frame.id))
+					Resource.canLoad({
+						target: frame,
+						unblockable: !!frame.src
+					}, false, {
+						id: frame.id,
+						waiting: true
+					});
+				else
+					LogDebug(['frame vanished', frame.id].join(' - '));
 			}, 2000, [frame]);
 
 			frame.addEventListener('load', function () {
@@ -427,19 +443,21 @@ var Resource = {
 				}
 
 				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
-					if (element.nodeName._endsWith('FRAME'))
+					if (!meta)
+							meta = {};
+
+					if (element.nodeName._endsWith('FRAME')) {
+						meta.id = element.id;
+
 						element.setAttribute('data-jsbFrameURL', source);
+					}
 
 					var kindStore = ((canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked).getStore(kind);
 
 					sourceHost = sourceHost || ((source && source.length) ? Utilities.URL.extractHost(source) : null);
 
-					if (['EMBED', 'OBJECT']._contains(element.nodeName)) {
-						if (!meta)
-							meta = {};
-
+					if (['EMBED', 'OBJECT']._contains(element.nodeName))
 						meta.type = element.getAttribute('type');
-					}
 
 					if (excludeFromPage !== true || canLoad.action >= 0) {
 						kindStore.get('all', [], true).push({
@@ -499,6 +517,9 @@ if (!globalSetting.disabled) {
 
 	window.addEventListener('hashchange', Handler.hash, true);
 	window.addEventListener('popstate', Handler.hash, true);
+
+	if (Page.info.isFrame)
+		window.addEventListener('beforeunload', Handler.beforeunload, true);
 
 	window.onerror = function (d, p, l, c) {
 		if (typeof p === 'string' && p._contains('JavaScriptBlocker')) {

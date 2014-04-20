@@ -29,9 +29,9 @@ var Special = {
 		if (response instanceof Error)
 			return console.error('command error', response.message, '-', COMMAND[response.message]);
 
-		var action = (response && response.command) ? 'JSBCommander' : 'JSBCallback';
+		var action = (response && response.command) ? 'JSBCommander:' : 'JSBCallback:';
 
-		var newEvent = new CustomEvent([action, (response && response.sourceID || event.detail.sourceID), TOKEN.EVENT].join(':'), {
+		var newEvent = new CustomEvent(action + (response && response.sourceID || event.detail.sourceID) + ':' + TOKEN.EVENT, {
 			detail: response
 		});
 
@@ -120,7 +120,7 @@ var Special = {
 
 		special.inject(useURL);
 
-		if (useURL === undefined)
+		if (useURL === undefined && !this.specials[name].excludeFromPage)
 			Page.blocked.getStore('special').get('all', [], true).push({
 				source: name,
 				ruleAction: -1
@@ -135,16 +135,18 @@ var Special = {
 
 		this.enabled = GlobalCommand('enabledSpecials', {
 			location: Page.info.location,
+			protocol: Page.info.protocol,
 			isFrame: Page.info.isFrame
 		});
 
 		for (var special in this.enabled) {
-			if (this.enabled[special] === false)
-				Page.allowed.getStore('special').get('all', [], true).push({
-					source: special,
-					ruleAction: -1
-				});
-			else if (this.specials[special]) {
+			if (this.enabled[special] === false) {
+				if (!this.enabled[special].excludeFromPage)
+					Page.allowed.getStore('special').get('all', [], true).push({
+						source: special,
+						ruleAction: -1
+					});
+			} else if (this.specials[special]) {
 				this.specials[special].value = this.enabled[special].value;
 
 				this.inject(special);
@@ -226,7 +228,7 @@ var Special = {
 			});
 		},
 
-		JSBCustomEvent: function (event, params) {
+		JSBCustomEvent: function (name, params) {
 			params = params || {
 				bubbles: false,
 				cancelable: false,
@@ -235,7 +237,7 @@ var Special = {
 
 			var evt = window[JSB.eventToken].document$createEvent('CustomEvent');
 
-			evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+			evt.initCustomEvent(name, params.bubbles, params.cancelable, params.detail);
 
 			return evt;
 		},

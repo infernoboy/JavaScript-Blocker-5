@@ -1,5 +1,9 @@
 "use strict";
 
+var globalSetting = {
+	debugMode: true
+};
+
 var Settings = {
 	__stores: new Store('SettingAsStore'),
 
@@ -228,6 +232,7 @@ Settings.settings = {
 				video: false,
 				image: false,
 				ajax_get: true,
+				ajax_post: true,
 				ajax_put: true,
 				special: true
 			}
@@ -526,6 +531,9 @@ Settings.settings = {
 			setting: {},
 			type: 'store',
 			default: {
+				ajax_intercept: {
+					value: true
+				},
 				simple_referrer: {
 					value: true
 				},
