@@ -84,8 +84,12 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 
 	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
-	else
+	else {
 		Resource.canLoadCache.getStore(kind).clear();
+
+		if (!kind._startsWith('framed:'))
+			Resource.canLoadCache.getStore('framed:' + kind).clear();
+	}
 
 	rules.set(rule.rule, {
 		regexp: Rules.isRegExp(rule.rule),
@@ -118,8 +122,12 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 
 	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
-	else
+	else {
 		Resource.canLoadCache.getStore(kind).clear();
+
+		if (!kind._startsWith('framed:'))
+			Resource.canLoadCache.getStore('framed:' + kind).clear();
+	}
 };
 
 Rule.prototype.kind = function (kindName, hide) {

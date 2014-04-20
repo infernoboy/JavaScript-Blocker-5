@@ -159,16 +159,17 @@ Special.specials = {
 
 			var JSONsendArguments = JSON.stringify(arguments);
 
-			if (detail.previousJSONsendArguments === JSONsendArguments)
-				try {
-					console.debug('Oh google....');
+			if (detail.previousJSONsendArguments === JSONsendArguments) {
+				console.debug('XHR Resend?', arguments, this[storeToken]);
 
+				try {
 					return detail.isAllowed ? XHR.send.apply(this, arguments) : this.abort();
 				} catch (error) {
-					console.debug(error);
+					console.debug('XHR Resend...Failed?', error);
 				} finally {
 					return;
 				}
+			}
 
 			detail.previousJSONsendArguments = JSONsendArguments;
 
@@ -197,7 +198,7 @@ Special.specials = {
 					for (var i = 0; i < params.length; i++) {
 						splitParam = params[i].split('=');
 
-						info.meta.data[splitParam[0]] = decodeURIComponent(splitParam[1]);
+						info.meta.data[decodeURIComponent(splitParam[0])] = decodeURIComponent(splitParam[1]);
 					}
 				} else if (toSend instanceof window.Blob) {
 					var URL = window.webkitURL || window.URL;
@@ -216,14 +217,12 @@ Special.specials = {
 				}
 			}
 
-			var result;
-
 			var canLoad = messageExtensionSync('canLoadResource', info);
 
 			try {
 				isAllowed = canLoad.isAllowed;
 			} catch (error) {
-				console.error('failed to retrieve canLoadResource response.', document);
+				console.debug('failed to retrieve canLoadResource response.', document);
 
 				isAllowed = true;
 			}
@@ -241,7 +240,7 @@ Special.specials = {
 					console.log('XHR SEND FAIL', error)
 				}
 			}
-			
+
 			messageExtension('page.' + pageAction, info);
 		};
 	}

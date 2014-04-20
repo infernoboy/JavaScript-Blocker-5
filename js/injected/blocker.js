@@ -22,7 +22,7 @@ if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
 
 var BLOCKED_ELEMENTS = [],
-		VANISHED_PAGES = [];
+		FRAMED_PAGES = {};
 
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
@@ -47,27 +47,34 @@ var	broken = false;
 var Page = {
 	send: (function () {
 		var timeout;
-
+		
 		return function sendPage () {
-			clearTimeout(timeout);
+			try {
+				if (!document.hidden) {
+					if (Page.info.isFrame)
+						GlobalPage.message('bounce', {
+							command: 'addFrameInfo',
+							detail: Page.info
+						});
+					else {
+						clearTimeout(timeout);
 
-			timeout = setTimeout(function () {
-				try {
-					if (!document.hidden) {
-						GlobalPage.message('receivePage', Page.info);
+						timeout = setTimeout(function () {
+							GlobalPage.message('receivePage', Page.info);
 
-						for (var i = 0; i < VANISHED_PAGES.length; i++)
-							GlobalPage.message('receivePage', VANISHED_PAGES[i]);
-					}
-				} catch(error) {
-					if (!broken) {
-						broken = true;
-
-						console.error('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error.message);
+							for (var framePageID in FRAMED_PAGES)
+								GlobalPage.message('receivePage', FRAMED_PAGES[framePageID]);
+						}, 100);
 					}
 				}
-			}, 100);
-		};
+			} catch(error) {
+				if (!broken) {
+					broken = true;
+
+					console.error('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error.message);
+				}
+			}
+		}
 	})(),
 
 	info: {
@@ -87,7 +94,7 @@ Page.unblocked = Page.info.state.getStore('unblocked');
 // Sometimes the global page isn't ready when a page is loaded. This can happen
 // when Safari is first launched or after reloading the extension. This loop
 // ensures that it is ready before allowing the page to continue loading.
-var globalSetting = {};
+var globalSetting;
 
 do
 	globalSetting = GlobalCommand('globalSetting');
@@ -109,15 +116,6 @@ var _ = (function () {
 
 var Handler = {
 	onDocumentVisible: [],
-
-	beforeunload: function () {
-		Page.info.state = Page.info.state.readyJSON();
-
-		GlobalPage.message('bounce', {
-			command: 'pageVanished',
-			detail: Page.info
-		});
-	},
 
 	DOMContentLoaded: function () {
 		var i,
@@ -160,8 +158,7 @@ var Handler = {
 	hash: function (event) {
 		Page.info.location = Utilities.Page.getCurrentLocation();
 		
-		if (event)
-			Page.send();
+		Page.send();
 	},
 
 	visibilityChange: function (event) {
@@ -315,7 +312,7 @@ var Element = {
 					});
 				
 				if (globalSetting.blockReferrer)
-					if (href && href.charAt(0) === '#')
+					if (href && href[0] === '#')
 						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
 					else	
 						anchor.addEventListener('mousedown', function (event) {
@@ -444,7 +441,7 @@ var Resource = {
 
 				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
 					if (!meta)
-							meta = {};
+						meta = {};
 
 					if (element.nodeName._endsWith('FRAME')) {
 						meta.id = element.id;
@@ -517,9 +514,6 @@ if (!globalSetting.disabled) {
 
 	window.addEventListener('hashchange', Handler.hash, true);
 	window.addEventListener('popstate', Handler.hash, true);
-
-	if (Page.info.isFrame)
-		window.addEventListener('beforeunload', Handler.beforeunload, true);
 
 	window.onerror = function (d, p, l, c) {
 		if (typeof p === 'string' && p._contains('JavaScriptBlocker')) {

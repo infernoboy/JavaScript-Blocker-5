@@ -186,9 +186,12 @@ var Command = function (type, event) {
 				Command.sendCallback(detail.data.sourceID, detail.data.callbackID);
 		},
 
-		pageVanished: function (detail) {
-			if (Utilities.Page.isTop)
-				VANISHED_PAGES.push(detail.data);
+		addFrameInfo: function (detail, event) {
+			if (Utilities.Page.isTop) {
+				FRAMED_PAGES[detail.data.id] = detail.data;
+
+				Page.send();
+			}
 		}
 	};
 
@@ -281,6 +284,8 @@ var Command = function (type, event) {
 			});
 
 			kindStore.getStore('hosts').increment(info.host);
+
+			Page.send();
 		},
 
 		commandGeneratorToken: function (detail) {
@@ -380,14 +385,6 @@ var Command = function (type, event) {
 		notification: Utilities.noop,
 
 		canLoadResource: function (detail) {
-			return {
-				callbackID: detail.callbackID,
-				result: {
-					action: -1,
-					isAllowed: true
-				}
-			};
-
 			var toCheck = detail.meta;
 
 			toCheck.pageLocation = Page.info.location;

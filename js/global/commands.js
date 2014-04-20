@@ -121,8 +121,7 @@ var Command = function (command, data, event) {
 			var page = new Page(thePage, this.event.target);
 
 			if (thePage.isFrame) {
-				var self = this,
-						tab = this.event.target;
+				var tab = this.event.target;
 				
 				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
 					if (parent.isTop && parent.tab === tab) {
