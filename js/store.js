@@ -622,6 +622,9 @@ var Store = (function () {
 
 		for (var key in this.data)
 			Utilities.setImmediateTimeout(function (store, key, now) {
+				if (store.lock)
+					return;
+				
 				value = store.get(key, null, null, true);
 
 				if (store.data[key] && now - store.data[key].accessed > store.maxLife) {

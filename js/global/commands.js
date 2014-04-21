@@ -70,6 +70,18 @@ var Command = function (command, data, event) {
 			}
 		},
 
+		logDebug: function (message) {
+			if (typeof message.message === 'string') {
+				if (this.event.target.url !== message.source)
+					LogDebug([message.source, 'via', event.target.url]);
+				else
+					LogDebug(event.target.url);
+
+				LogDebug(message.message);
+				LogDebug('--------------');
+			}
+		},
+
 		bounce: function () {
 			MessageTarget(this.event, this.event.message.command, this.event.message.detail);
 		},
@@ -135,7 +147,7 @@ var Command = function (command, data, event) {
 					if (page.retries < 3)
 						return Utilities.Timer.timeout('WaitForParent' + page.info.id, function (page) {
 							Log('Waiting...', page.retries);
-							
+
 							page.retries++;
 
 							Page.requestPage({

@@ -496,8 +496,19 @@ var Log = function () {
 };
 
 var LogDebug = function () {
-	if (globalSetting.debugMode)
+	if (globalSetting.debugMode) {
 		console.debug.apply(console, ['(JSB)'].concat(Utilities.makeArray(arguments)));
+
+		if (!Utilities.Page.isGlobal) {
+			var args = Utilities.makeArray(arguments);
+
+			for (var i = 0; i < args.length; i++)
+				GlobalPage.message('logDebug', {
+					source: document.location.href,
+					message: args[i]
+				});
+		}
+	}
 };
 
 var LogError = function () {

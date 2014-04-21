@@ -66,7 +66,7 @@ var Command = function (type, event) {
 
 		var part;
 
-		var commandParts = detail.command.split(/\./g);	
+		var commandParts = detail.command.split(/\./g);
 
 		if (commandParts.length > 1) {
 			while (true) {
@@ -137,7 +137,7 @@ var Command = function (type, event) {
 				}
 
 			if (!foundSourceID)
-				return LogError(['cannot execute command on top since the calling script is not injected here.', data.originSourceName, document.location.href]);
+				return LogDebug('cannot execute command on top since the calling script is not injected here. - ' + data.originSourceName + ' - ' + document.location.href);
 
 			delete data.meta.args.meta;
 
@@ -230,7 +230,7 @@ var Command = function (type, event) {
 						all.splice(i, 1);
 
 						hosts.decrement(Utilities.URL.extractHost(allClone[i].source));
-					} 
+					}
 			}
 
 			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank';
