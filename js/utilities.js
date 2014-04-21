@@ -934,7 +934,3 @@ window.addEventListener('message', function nextImmediateTimeout (event) {
 	if (event.data === 'nextImmediateTimeout')
 		Utilities.nextImmediateTimeout();
 }, true);
-
-document.addEventListener('DOMContentLoaded', function (event) {
-	Utilities.DOMContentLoaded = true;
-});

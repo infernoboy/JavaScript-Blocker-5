@@ -29,7 +29,9 @@ function Page (page, tab) {
 		});
 	});
 
-	this.retries = 0;
+	var storedPage = Page.pages.get(page.state.name);
+
+	this.retries = storedPage ? storedPage.retries : 0;
 	this.info = page;
 	this.tab = tab;
 	this.isTop = !page.isFrame;

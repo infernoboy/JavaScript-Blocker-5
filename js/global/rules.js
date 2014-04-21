@@ -85,10 +85,8 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
 	else {
-		Resource.canLoadCache.getStore(kind).clear();
-
-		if (!kind._startsWith('framed:'))
-			Resource.canLoadCache.getStore('framed:' + kind).clear();
+		Resource.canLoadCache.remove(kind, true);
+		Resource.canLoadCache.remove('framed:' + kind, true);
 	}
 
 	rules.set(rule.rule, {
@@ -115,7 +113,7 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 		if (domain === undefined)
 			types[type]().clear();
 		else if (rule === undefined)
-			types[type]().remove(domain);
+			types[type]().remove(domain, true);
 		else
 			types[type](domain).remove(rule);
 	}
@@ -123,10 +121,8 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
 	else {
-		Resource.canLoadCache.getStore(kind).clear();
-
-		if (!kind._startsWith('framed:'))
-			Resource.canLoadCache.getStore('framed:' + kind).clear();
+		Resource.canLoadCache.remove(kind, true);
+		Resource.canLoadCache.remove('framed:' + kind, true)
 	}
 };
 

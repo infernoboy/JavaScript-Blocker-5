@@ -51,7 +51,7 @@ var Command = function (type, event) {
 		if (!canExecute) {
 			this.status = COMMAND.UNAUTHORIZED;
 
-			return LogError(['command authorization failed', detail.sourceName + ' => ' + detail.command]);
+			return LogDebug('command authorization failed - ' + detail.sourceName + ' => ' + detail.command);
 		}
 
 		detail.type = Utilities.Token.valid(detail.sourceID, 'Page') ? (detail.type || 'injected') : 'injected';
@@ -61,7 +61,7 @@ var Command = function (type, event) {
 		if (!commands) {
 			this.status = COMMAND.NOT_FOUND;
 
-			return LogError(['command type not found', detail.type]);
+			return LogDebug('command type not found - ' + detail.type);
 		}
 
 		var part;
@@ -76,7 +76,7 @@ var Command = function (type, event) {
 				if (!(commands instanceof Object)) {
 					this.status = COMMAND.NOT_FOUND;
 
-					return LogError('command path not found - ' + detail.command);
+					return LogDebug('command path not found - ' + detail.command);
 				}
 
 				if (commandParts.length === 1)
@@ -90,13 +90,13 @@ var Command = function (type, event) {
 		if (!commands.hasOwnProperty(commandParts[0])) {
 			this.status = COMMAND.NOT_FOUND;
 
-			return LogError('command not found - ' + commandParts[0]);
+			return LogDebug('command not found - ' + commandParts[0]);
 		}
 
 		if (commandParts[0]._startsWith('__')) {
 			this.status = COMMAND.NOT_FOUND;
 
-			return LogError('cannot call commands that begin with __');
+			return LogDebug('cannot call commands that begin with __');
 		}
 
 		try {
@@ -350,9 +350,9 @@ var Command = function (type, event) {
 			});
 		},
 
-		inlineScriptsAllowed: function (detail) {				
+		inlineScriptsAllowed: function (detail) {
 			if (TOKEN.INJECTED[detail.sourceID].usedURL)
-				throw new Error('script was injected via URL.')
+				return;
 
 			DeepInject.useURL = false;
 		},

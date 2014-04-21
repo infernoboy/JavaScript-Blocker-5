@@ -36,10 +36,6 @@
 		<script src="js/global/commands.js"></script>
 
 		<script>
-			var realDomain,
-					domains,
-					rule;
-
 			// Rules.list.blacklist.rules.lock = false;
 
 			// var kinds = Rules.list.blacklist.kind('*');
@@ -61,42 +57,8 @@
 			// var res = new Resource('script', 'http://a.a/', 'http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.a/');
 			// 150
 
-			var resInfo = {"kind":"script","pageLocation":"http://lion.toggleable.com:160/","pageProtocol":"http:","source":"http://www.google-analytics.com/ga.js","isFrame":false};
+			var resInfo = {"kind":"embed","pageLocation":"http://lion.toggleable.com:160/","pageProtocol":"http:","source":"http://www.google-analytics.com/ga.js","isFrame":false};
 
-			var best = {};
-
-			function findBest (chunks) {
-				Resource.longRegExps.clear();
-
-				window.CHUNKS = chunks;
-
-				res.canLoad();
-
-				var times = [], total = 0;
-
-				for (var i = 0; i < 10; i++) {
-					var start = Date.now();
-
-					res.canLoad();
-
-					var end = Date.now() - start;
-
-					total += end;
-
-					times.push(end);
-				}
-
-				best[chunks] = total / times.length;
-
-				// console.log('CHUNKS:', chunks, 'TIME:', total / times.length);
-
-				// if (chunks < 10000)
-				// 	setTimeout(function (chunks) {
-				// 		findBest(chunks);
-				// 	}, 0, chunks + 5);
-				// else
-					console.log('DONE', best[chunks])
-			}
 		</script>
 	</head>
 	<body>

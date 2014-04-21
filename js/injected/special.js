@@ -27,7 +27,7 @@ var Special = {
 		var response = Command('injected', event);
 
 		if (response instanceof Error)
-			return console.error('command error', response.message, '-', COMMAND[response.message]);
+			return LogDebug('command error ' + response.message + ' - ' + COMMAND[response.message]);
 
 		var action = (response && response.command) ? 'JSBCommander:' : 'JSBCallback:';
 
@@ -77,7 +77,8 @@ var Special = {
 	setup: function (deepInject) {
 		if (deepInject.script.ignoreHelpers)
 			var JSB = {
-				eventToken: TOKEN.EVENT
+				eventToken: TOKEN.EVENT,
+				temporarySourceID: deepInject.id
 			};
 		else
 			var JSB = {
@@ -88,6 +89,9 @@ var Special = {
 				data: deepInject.script.data,
 				value: deepInject.script.value
 			};
+
+		if (deepInject.script.commandToken)
+			JSB.commandToken = deepInject.script.commandToken;
 
 		deepInject.setArguments({
 			JSB: JSB
@@ -125,13 +129,21 @@ var Special = {
 				source: name,
 				ruleAction: -1
 			});
+
+		return special;
 	},
 
 	begin: function () {
-		this.inject('prepareScript', false);
-		this.inject('prepareScript', true);
+		var preparation = this.inject('prepareScript', false);
 
-		this.inject('inlineScriptsCheck', false);
+		Utilities.Token.expire(Special.specials.prepareScript.commandToken);
+		Utilities.Token.expire(preparation.id);
+
+		if (DeepInject.useURL) {
+			preparation = this.inject('prepareScript', true);
+
+			Utilities.Token.expire(preparation.id);
+		}
 
 		this.enabled = GlobalCommand('enabledSpecials', {
 			location: Page.info.location,

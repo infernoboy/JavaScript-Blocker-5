@@ -132,8 +132,10 @@ var Command = function (command, data, event) {
 				});
 
 				if (!pageParent)
-					if (page.retries < 2)
+					if (page.retries < 3)
 						return Utilities.Timer.timeout('WaitForParent' + page.info.id, function (page) {
+							Log('Waiting...', page.retries);
+							
 							page.retries++;
 
 							Page.requestPage({

@@ -485,6 +485,7 @@ var Store = (function () {
 	Store.prototype.get = function (key, defaultValue, asReference, noAccess) {
 		this.prolongDestruction();
 
+		try {
 		if (this.data.hasOwnProperty(key)) {
 			if (!noAccess)
 				this.data[key].accessed = Date.now();
@@ -532,6 +533,9 @@ var Store = (function () {
 				return cached;
 		} else if (defaultValue !== undefined && defaultValue !== null)
 			return this.set(key, defaultValue).get(key, null, asReference);
+		} catch (error) {
+			console.error('ERROR IN GET', error, this.id, key, this.destroyed);
+		}
 	};
 
 	Store.prototype.getMany = function (keys) {
@@ -580,7 +584,7 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.remove = function (key) {
+	Store.prototype.remove = function (key, deep) {
 		if (this.lock)
 			return;
 
@@ -598,7 +602,7 @@ var Store = (function () {
 			var value = this.get(key, null, null, true);
 
 			if (value instanceof Store)
-				value.destroy(false, false, true);
+				value.destroy(deep, false, true);
 
 			delete this.data[key];
 		}

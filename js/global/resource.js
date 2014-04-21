@@ -192,16 +192,17 @@ Resource.prototype.canLoad = function () {
 	if (cached)
 		return cached;
 
-	var self = this;
-
 	var pageRule,
 			longAllowed,
+			rule,
 			longRules,
 			longKindStore,
 			longStore,
 			longRegExps,
 			i,
 			b;
+
+	var self = this;
 
 	Rule.withLocationRules(this.matchingRules(), function (ruleList, ruleKind, ruleType, domain, rules) {
 		pageRule = (ruleType === 'page' || ruleType === 'notPage');
@@ -223,8 +224,6 @@ Resource.prototype.canLoad = function () {
 			}
 		} else {
 			longRules = [];
-
-			var count = 0;
 
 			for (rule in rules.data) {
 				if (longAllowed)

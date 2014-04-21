@@ -4,10 +4,6 @@ if (!window.safari)
 	throw new Error('preventing execution.');
 
 Special.specials = {
-	inlineScriptsCheck: function () {
-		messageExtension('inlineScriptsAllowed');
-	},
-
 	prepareScript: function () {
 		if (window[JSB.eventToken])
 			return;
@@ -43,6 +39,15 @@ Special.specials = {
 				command: 'historyStateChange'
 			}, window.location.href);
 		};
+
+		var evt = document.createEvent('CustomEvent');
+
+		evt.initCustomEvent('JSBCommander:' + JSB.temporarySourceID + ':' + JSB.eventToken, false, false, {
+			commandToken: JSB.commandToken,
+			command: 'inlineScriptsAllowed'
+		});
+
+		document.dispatchEvent(evt);
 	},
 
 	zoom: function () {
@@ -248,6 +253,7 @@ Special.specials = {
 
 Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
 Special.specials.prepareScript.ignoreHelpers = true;
+Special.specials.prepareScript.commandToken = Utilities.Token.create('inlineScriptsAllowed');
 Special.specials.ajax_intercept.excludeFromPage = true;
 
 Special.begin();
