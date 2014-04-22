@@ -210,24 +210,17 @@ var UserScript = {
 		GM_setClipboard: function () { },
 
 		GM_xmlhttpRequest: function (details) {
-			var serializable = JSON.parse(JSON.stringify(details)),
-					anchor = document.createElement('a');
+			var serializable = JSON.parse(JSON.stringify(details));
 
-			// Converts a relative URL into an absolute URL.
-			anchor.href = serializable.url;
-			serializable.url = anchor.href;
-
-			var response = null;
-
-			messageExtension('XMLHttpRequest', serializable, function (result) {
+			var response = messageExtensionSync('XMLHttpRequest', serializable, function (result) {
 				if (result.action === 'XHRComplete') {
 					delete JSB.eventCallback[result.callbackID];
 
-					details = serializable = anchor = undefined;
+					details = serializable = undefined;
 				}	else if (result.action in details) {
 					details[result.action](result.response);
 
-					response = result.response;
+					return result.response;
 				}
 			}, true);
 
