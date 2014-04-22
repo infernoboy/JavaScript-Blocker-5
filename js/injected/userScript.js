@@ -86,7 +86,7 @@ var UserScript = {
 				requirement,
 				requirementName;
 
-		var enabledUserScripts = GlobalCommand('enabledUserScripts', {
+		var enabledUserScripts = GlobalCommand('userScriptsForLocation', {
 			location: Page.info.location,
 			protocol: Page.info.protocol,
 			isFrame: Page.info.isFrame

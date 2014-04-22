@@ -145,7 +145,7 @@ var Special = {
 			Utilities.Token.expire(preparation.id);
 		}
 
-		this.enabled = GlobalCommand('enabledSpecials', {
+		this.enabled = GlobalCommand('specialsForLocation', {
 			location: Page.info.location,
 			protocol: Page.info.protocol,
 			isFrame: Page.info.isFrame

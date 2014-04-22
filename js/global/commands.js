@@ -115,18 +115,18 @@ var Command = function (command, data, event) {
 				this.message = Settings.getItem(setting, defaultValue);
 		},
 
-		enabledSpecials: function (detail) {
-			if (detail.protocol === 'about:')
-				detail.location = this.event.target.url;
+		specialsForLocation: function (page) {
+			if (page.protocol === 'about:')
+				page.location = this.event.target.url;
 
-			this.message = Special.forLocation(detail.location, detail.isFrame);
+			this.message = Special.forLocation(page.location, page.isFrame);
 		},
 
-		enabledUserScripts: function (detail) {
-			if (detail.protocol === 'about:')
-				detail.location = this.event.target.url;
+		userScriptsForLocation: function (page) {
+			if (page.protocol === 'about:')
+				page.location = this.event.target.url;
 			
-			this.message = UserScript.forLocation(detail.location, detail.isFrame);
+			this.message = UserScript.forLocation(page.location, page.isFrame);
 		},
 
 		receivePage: function (thePage) {
@@ -185,7 +185,14 @@ var Command = function (command, data, event) {
 			var self = this,
 					meta = detail.meta;
 
-			var done = function (action, response, status, request) {
+			meta.async = !meta.synchronous;
+			meta.cache = !meta.ignoreCache;
+			meta.dataType = 'text';
+
+			if (meta.async)
+				this.message = false;
+
+			function eventCallback (action, response, status, request) {
 				var result = {
 					callbackID: detail.callbackID,
 					action: action,
@@ -196,16 +203,16 @@ var Command = function (command, data, event) {
 							var line;
 
 							var lines = headers.split(/\n/),
-									headerList = {};
+									headerMap = {};
 
 							for (var i = 0; i < lines.length; i++) {
 								line = lines[i].split(': ');
 								
 								if (line[0].length)
-									headerList[line.shift()] = line.join(': ');
+									headerMap[line.shift()] = line.join(': ');
 							}
 
-							return headerList;
+							return headerMap;
 						})(request.getAllResponseHeaders ? request.getAllResponseHeaders() : ''),
 
 						responseText: response,
@@ -223,32 +230,22 @@ var Command = function (command, data, event) {
 					self.message = result;
 			};
 
-			meta.async = !meta.synchronous;
-
-			if (meta.async)
-				this.message = false;
-
 			meta.xhr = function () {
 				var xhr = new XMLHttpRequest();
 
-				xhr.upload.addEventListener('progress', function (event) {
+				function onProgress (event) {
 					xhr.lengthComputable = event.lengthComputable;
 					xhr.loaded = event.loaded;
 					xhr.total = event.total;
 
-					done('onprogress', '', '', xhr);
-				});
+					eventCallback('onprogress', '', '', xhr);
+				}
 
-				xhr.addEventListener('progress', function (event) {
-					xhr.lengthComputable = event.lengthComputable;
-					xhr.loaded = event.loaded;
-					xhr.total = event.total;
-
-					done('onprogress', '', '', xhr);
-				});
+				xhr.upload.addEventListener('progress', onProgress);
+				xhr.addEventListener('progress', onProgress);
 
 				xhr.addEventListener('loadend', function (event) {
-					done('XHRComplete', '', '', xhr);
+					eventCallback('XHRComplete', '', '', xhr);
 				});
 
 				return xhr;
@@ -261,24 +258,20 @@ var Command = function (command, data, event) {
 				};
 			})(meta.headers ? meta.headers : {});
 
-			meta.cache = !meta.ignoreCache;
-
 			meta.success = function (response, status, request) {
-				done('onload', response, status, request);
+				eventCallback('onload', response, status, request);
 			};
 
 			meta.type = meta.method || meta.type || 'GET';
 
 			meta.error = function (request, status, response) {
 				if (response === 'timeout')
-					done('ontimeout', response, status, request);
+					eventCallback('ontimeout', response, status, request);
 				else if (response === 'abort')
-					done('onabort', response, status, request);
+					eventCallback('onabort', response, status, request);
 				else
-					done('onerror', res.message ? res.message : response, status, request);
+					eventCallback('onerror', response.message ? response.message : response, status, request);
 			};
-
-			meta.dataType = 'text';
 
 			$.ajax(meta);
 		},
