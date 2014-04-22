@@ -27,8 +27,6 @@ var Store = (function () {
 
 		this.name = name;
 		this.props = props;
-
-		this.listeners = {};
 		
 		if (!this.private)
 			Object.defineProperty(this, 'data', {
@@ -236,9 +234,7 @@ var Store = (function () {
 
 	Store.prototype.triggerEvent = function (name) {
 		Utilities.Timer.timeout('StoreTrigger' + this.id + name, function (store, name) {
-			if (store.listeners.hasOwnProperty(name))
-				for (var i = 0; i < store.listeners[name].length; i++)
-					store.listeners[name][i](store);
+			store.trigger(name);
 
 			if (store.parent)
 				store.parent.triggerEvent(name);

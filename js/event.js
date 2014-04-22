@@ -1,14 +1,14 @@
 "use strict";
 
 var EventListener = function () {
-	this.listeners = {};
+	this.__listeners = {};
 };
 
-EventListener.prototype.__listener = function (name) {
-	if (!this.listeners.hasOwnProperty(name))
-		this.listeners[name] = [];
+EventListener.prototype.listeners = function (name) {
+	if (!this.__listeners.hasOwnProperty(name))
+		this.__listeners[name] = [];
 
-	return this.listeners[name];
+	return this.__listeners[name];
 };
 
 EventListener.prototype.addEventListener = function (name, fn) {
@@ -18,17 +18,17 @@ EventListener.prototype.addEventListener = function (name, fn) {
 	if (typeof fn !== 'function')
 		throw new TypeError(fn + ' is not a function.');
 
-	this.__listener(name).push(fn);
+	this.listeners(name).push(fn);
 };
 
 EventListener.prototype.removeEventListener = function (name, fn) {
-	this.listeners[name] = this.__listener(name).filter(function (testFn) {
+	this.__listeners[name] = this.listeners(name).filter(function (testFn) {
 		return testFn !== fn;
 	});
 };
 
 EventListener.prototype.trigger = function (name) {
-	var listeners = this.__listener(name);
+	var listeners = this.listeners(name);
 
 	for (var i = 0; i < listeners.length; i++)
 		Utilities.setImmediateTimeout(listeners[i]);
