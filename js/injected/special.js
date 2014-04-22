@@ -216,12 +216,15 @@ var Special = {
 			return id;
 		},
 
-		messageExtensionSync: function (command, meta) {
+		messageExtensionSync: function (command, meta, callback, preserve) {
 			var result;
 
 			messageExtension(command, meta, function (response) {
-				result = response;
-			});
+				if (typeof callback === 'function')
+					result = callback(response);
+				else
+					result = response;
+			}, preserve);
 
 			return result;
 		},

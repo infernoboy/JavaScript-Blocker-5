@@ -373,6 +373,8 @@ var Command = function (type, event) {
 		},
 
 		XMLHttpRequest: function (detail) {
+			detail.url = Utilities.URL.getAbsolutePath(detail.url);
+			
 			var result = GlobalCommand(detail.command, detail);
 
 			if (result !== false)
