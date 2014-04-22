@@ -73,6 +73,9 @@ var Store = (function () {
 		props = name = undefined;
 	};
 
+	Store.prototype = new EventListener();
+	Store.prototype.constructor = Store;
+
 	Store.destroyAll = function () {
 		for (var key in Utilities.Timer.timers.timeouts)
 			if (key._startsWith('SelfDestruct'))
@@ -197,36 +200,13 @@ var Store = (function () {
 			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
 				LogDebug('Save ' + store.id);
 
-				store.trigger('save');
+				store.triggerEvent('save');
 
 				SettingStore.setJSON(store.id, store);
 			}, TIME.ONE_SECOND * 1.5, [this]);
 
 		if (this.parent)
 			this.parent.__save(true);
-	};
-
-	Store.prototype.__listener = function (add, name, fn) {
-		if (!this.listeners[name])
-			this.listeners[name] = [];
-
-		if (typeof fn !== 'function')
-			throw new TypeError('fn is not a function');
-
-		if (add)
-			this.listeners[name].push(fn);
-		else
-			this.listeners[name] = this.listeners[name].filter(function (testFn) {
-				return testFn !== fn;
-			});
-	};
-
-	Store.prototype.addEventListener = function (name, fn) {
-		return this.__listener(true, name, fn);
-	};
-
-	Store.prototype.removeListener = function (name, fn) {
-		return this.__listener(false, name, fn);
 	};
 
 	Store.prototype.load = function (defaultValue) {
@@ -254,14 +234,14 @@ var Store = (function () {
 		this.load(defaultValue);
 	};
 
-	Store.prototype.trigger = function (name) {
+	Store.prototype.triggerEvent = function (name) {
 		Utilities.Timer.timeout('StoreTrigger' + this.id + name, function (store, name) {
 			if (store.listeners.hasOwnProperty(name))
 				for (var i = 0; i < store.listeners[name].length; i++)
 					store.listeners[name][i](store);
 
 			if (store.parent)
-				store.parent.trigger(name);
+				store.parent.triggerEvent(name);
 		}, 500, [this, name]);
 	};
 
