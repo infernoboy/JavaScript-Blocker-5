@@ -47,7 +47,7 @@ Resource.canLoadCache.addEventListener('save', function () {
 
 Resource.__many = function (action, resources, domain, rule, framed) {
 	if (!Array.isArray(resources))
-		throw new TypeError('resources is not an array');
+		throw new TypeError(resources + ' is not an array');
 
 	for (var i = 0; i < resources.length; i++) {
 		if (!(resources[i] instanceof Resource)) {
