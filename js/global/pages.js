@@ -129,7 +129,8 @@ Page.prototype.addFrame = function (frame) {
 
 		var myState,
 				myResources,
-				myHosts;
+				myHosts,
+				mySpecials;
 
 		var self = this;
 
@@ -147,12 +148,15 @@ Page.prototype.addFrame = function (frame) {
 				else {
 					myResources = myState.getStore(kind);
 					myHosts = myResources.getStore('hosts');
+					mySpecials = myResources.getStore('specials');
 
 					Array.prototype.push.apply(myResources.get('all', [], true), resources.get('all', []));
 
 					resources.getStore('hosts').forEach(function (host, count, hostStore) {
 						myHosts.increment(host, count);
 					});
+
+					mySpecials.merge(resources.getStore('specials'));
 				}
 			});
 		});

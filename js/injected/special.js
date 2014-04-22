@@ -125,8 +125,7 @@ var Special = {
 		special.inject(useURL);
 
 		if (useURL === undefined && !this.specials[name].excludeFromPage)
-			Page.blocked.getStore('special').get('all', [], true).push({
-				source: name,
+			Page.blocked.getStore('special').getStore('specials').set(name, {
 				ruleAction: -1
 			});
 
@@ -154,8 +153,7 @@ var Special = {
 		for (var special in this.enabled) {
 			if (this.enabled[special] === false) {
 				if (!this.enabled[special].excludeFromPage)
-					Page.allowed.getStore('special').get('all', [], true).push({
-						source: special,
+					Page.allowed.getStore('special').getStore('specials').set(special, {
 						ruleAction: -1
 					});
 			} else if (this.specials[special]) {

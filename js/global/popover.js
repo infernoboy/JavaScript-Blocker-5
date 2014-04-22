@@ -1,7 +1,7 @@
 "use strict";
 
-var $$ = function (query, lookIn) {
-	return $(query, lookIn ? lookIn : Popover.window().document);
+var $$ = function (query, context) {
+	return $(query, context ? context : Popover.window().document);
 };
 
 var UI = {
