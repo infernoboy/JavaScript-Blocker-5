@@ -94,17 +94,17 @@ Page.requestPage = function (event) {
 	if (event.target instanceof SafariBrowserTab) {
 		MessageTarget(event, 'sendPage');
 
-		Page.await();
+		Page.await(event.target);
 	}
 };
 
 Page.requestPageFromActive = function (event) {
 	Tabs.messageActive('sendPage');
 
-	Page.await();
+	Page.await(Tabs.active());
 };
 
-Page.await = function (done) {
+Page.await = function (awaitTab, done) {
 	var name = 'AwaitingPage';
 
 	if (done)
@@ -112,7 +112,8 @@ Page.await = function (done) {
 
 	Utilities.Timer.timeout(name, function () {
 		Tabs.all(function (tab) {
-			ToolbarItems.badge(0, tab);
+			if (tab === awaitTab)
+				ToolbarItems.badge(0, tab);
 		});
 	}, 300);
 }
@@ -168,7 +169,12 @@ Page.prototype.addFrame = function (frame) {
 };
 
 Page.prototype.badge = function (state) {
-	Utilities.Timer.timeout('badgeToolbar', function (self) {
+	if (!this.isTop)
+		return;
+
+	Page.await(this.tab, true);
+
+	Utilities.Timer.timeout('badgeToolbar' + this.info.state.name, function (self) {
 		var tree = self.tree(),
 				count = 0;
 

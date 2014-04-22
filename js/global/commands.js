@@ -130,11 +130,10 @@ var Command = function (command, data, event) {
 		},
 
 		receivePage: function (thePage) {
-			var page = new Page(thePage, this.event.target);
+			var tab = this.event.target,
+					page = new Page(thePage, tab);
 
-			if (thePage.isFrame) {
-				var tab = this.event.target;
-				
+			if (thePage.isFrame) {				
 				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
 					if (parent.isTop && parent.tab === tab) {
 						parent.addFrame(page);

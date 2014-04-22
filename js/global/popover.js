@@ -9,8 +9,6 @@ var UI = {
 	disabled: false,
 
 	__renderPopover: function (page) {
-		Page.await(true);
-
 		if (!Popover.visible())
 			return;
 
@@ -26,6 +24,9 @@ var UI = {
 	},
 
 	renderPopover: function (page) {
+		if (Tabs.active() !== page.tab)
+			return;
+
 		Utilities.Timer.timeout('RenderPopover', this.__renderPopover.bind(this, page), 50);
 	},
 };

@@ -4,7 +4,7 @@ var beforeLoad = {
 
 var ToolbarItems = {
 		badge: function (number, tab) {
-			safari.extension.toolbarItems.forEach(function (toolbarItem) {				
+			safari.extension.toolbarItems.forEach(function (toolbarItem) {		
 				if (toolbarItem.browserWindow && (tab === null || tab === toolbarItem.browserWindow.activeTab))
 					toolbarItem.badge = number;
 			});
