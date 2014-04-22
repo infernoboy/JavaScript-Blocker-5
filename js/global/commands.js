@@ -62,9 +62,9 @@ var Command = function (command, data, event) {
 		logError: function (error) {
 			if (typeof error.message === 'string') {
 				if (this.event.target.url !== error.source)
-					LogError([error.source, 'via', event.target.url]);
+					LogError([error.source, 'via', this.event.target.url]);
 				else
-					LogError(event.target.url);
+					LogError(this.event.target.url);
 
 				LogError(error.message, '--------------');
 			}
@@ -73,9 +73,9 @@ var Command = function (command, data, event) {
 		logDebug: function (message) {
 			if (typeof message.message === 'string') {
 				if (this.event.target.url !== message.source)
-					LogDebug([message.source, 'via', event.target.url]);
+					LogDebug(message.source + ' via ' + this.event.target.url);
 				else
-					LogDebug(event.target.url);
+					LogDebug(this.event.target.url);
 
 				LogDebug(message.message);
 				LogDebug('--------------');
