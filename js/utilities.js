@@ -938,7 +938,7 @@ for (var object in Extension)
 
 Extension = undefined;
 
-Object.__extend = function () {
+Object._extend = function () {
 	var deep = false,
 			args = Utilities.makeArray(arguments);
 
@@ -955,7 +955,7 @@ Object.__extend = function () {
 	for (var i = 0; i < args.length; i ++)
 		for (key in args[i])
 			if (deep && Utilities.typeOf(base[key]) === 'object' && Utilities.typeOf(args[i][key]) === 'object')
-				Object.__extend(base[key], args[i][key]);
+				Object._extend(base[key], args[i][key]);
 			else
 				base[key] = args[i][key];
 
