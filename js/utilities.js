@@ -172,15 +172,23 @@ var Utilities = {
 			timeouts: {}
 		},
 
-		__run_interval: function (name) {
-			var interval = this.timers.intervals[name];
+		__findReference: function (type, reference) {
+			var timers = this.timers[type];
+
+			for (var timerID in timers)
+				if (timers[timerID].reference === reference)
+					return timerID;
+		},
+
+		__run_interval: function (timerID) {
+			var interval = this.timers.intervals[timerID];
 
 			if (!interval)
-				return this.remove('RunInterval' + name);
+				return this.remove('RunInterval' + timerID);
 
 			interval.script.apply(null, interval.args);
 
-			setTimeout(this.__run_interval.bind(this, name), interval.time);
+			setTimeout(this.__run_interval.bind(this, timerID), interval.time);
 		},
 
 		interval: function () {
@@ -190,27 +198,34 @@ var Utilities = {
 			return this.create.apply(this, ['timeout'].concat(Utilities.makeArray(arguments)));
 		},
 		
-		create: function (type, name, script, time, args) {
-			if (type !== 'interval' && type !== 'timeout')
-				return false;
+		create: function (type, reference, script, time, args) {
+			if (!['timeout', 'interval']._contains(type))
+				throw new TypeError(type + ' is not a supported timer.');
+
+			if (reference === undefined)
+				throw new TypeError('reference cannot be undefined.');
+
+			if (type === 'interval' && typeof reference !== 'string')
+				throw new TypeError(reference + ' cannot be used as an interval reference.');
 			
-			if (typeof args !== 'object')
+			if (!Array.isArray(args))
 				args = [];
 
-			this.remove(type, name);
+			this.remove(type, reference);
+
+			var timer = null,
+					timerID = Utilities.id();
 
 			if (type === 'timeout')
-				var timer = setTimeout(function (type, name, script, args) {
+				timer = setTimeout(function (type, reference, script, args) {
 					script.apply(null, args);
 
 					if (type === 'timeout')
-						Utilities.Timer.remove(type, name);
-				}.bind(null, type, name, script, args), time);
-			else
-				var timer = null;
+						Utilities.Timer.remove(type, reference);
+				}.bind(null, type, reference, script, args), time);
 
-			this.timers[type + 's'][name] = {
-				name: name,
+			this.timers[type + 's'][timerID] = {
+				reference: reference,
 				timer: timer,
 				args: args,
 				time: time,
@@ -218,39 +233,34 @@ var Utilities = {
 			};
 
 			if (type === 'interval')
-				this.__run_interval(name);
+				this.__run_interval(timerID);
 
-			type = name = script = time = args = undefined;
+			type = reference = script = time = args = undefined;
 		},
 		remove: function () {
-			var name;
+			var timerID;
 
 			var args = Utilities.makeArray(arguments),
-					type = args[0] + 's';
+					type = args.shift(),
+					typeS = type + 's';
 
-			if (args.length === 1) {
-				var toRemove = [];
-				
-				for (name in this.timers[type])
-					if (this.timers[type][name])
-						toRemove.push(name);
-				
-				if (toRemove.length)
-					this.remove.apply(this, [args[0]].concat(toRemove));
+			if (!args.length) {
+				for (timerID in this.timers[typeS])
+					this.remove(type, this.timers[typeS][timerID].reference);
 
-				return true;
+				return;
 			}
 	
-			for (var i = 1; (name = args[i]); i++) {
-				try {
-					if (args[0] == 'timeout')
-						clearTimeout(this.timers[type][name].timer);
+			for (var i = 0; i < args.length; i++) {
+				timerID = this.__findReference(typeS, args[i]);
 
-					delete this.timers[type][name];
-				} catch(e) { }
+				if (timerID) {
+					if (type == 'timeout')
+						clearTimeout(this.timers[typeS][timerID].timer);
+
+					delete this.timers[typeS][timerID];
+				}
 			}
-
-			return true;
 		}
 	},
 

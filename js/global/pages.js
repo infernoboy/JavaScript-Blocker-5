@@ -105,12 +105,10 @@ Page.requestPageFromActive = function (event) {
 };
 
 Page.await = function (awaitTab, done) {
-	var name = 'AwaitingPage';
-
 	if (done)
-		return Utilities.Timer.remove('timeout', name);
+		return Utilities.Timer.remove('timeout', awaitTab);
 
-	Utilities.Timer.timeout(name, function () {
+	Utilities.Timer.timeout(awaitTab, function () {
 		Tabs.all(function (tab) {
 			if (tab === awaitTab)
 				ToolbarItems.badge(0, tab);
