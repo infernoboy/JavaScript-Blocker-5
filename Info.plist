@@ -62,6 +62,7 @@
 				<string>js/safari.js</string>
 				<string>js/promise.js</string>
 				<string>js/utilities.js</string>
+				<string>js/event.js</string>
 				<string>js/store.js</string>
 				<string>js/injected/compiled.js</string>
 			</array>
