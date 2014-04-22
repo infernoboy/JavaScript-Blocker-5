@@ -16,16 +16,19 @@ function Page (page, tab) {
 			return;
 
 		kinds.forEach(function (kind, resources, store) {
-			resources.set('all', resources.get('all', []).map(function (resource) {
-				return new Resource({
-					kind: kind,
-					pageLocation: page.location,
-					source: resource.source,
-					isFrame: page.isFrame,
-					unblockable: resource.unblockable,
-					meta: resource.meta
-				});
-			}), true);
+			resources.getStore('source').map(function (sourceName, source) {
+				return source.map(function (location, attributes) {
+					return new Resource({
+						kind: kind,
+						pageLocation: location,
+						source: sourceName,
+						isFrame: attributes.isFrame,
+						ruleAction: attributes.ruleAction,
+						unblockable: attributes.unblockable,
+						meta: attributes.meta
+					});
+				}, true);
+			}, true);
 		});
 	});
 
@@ -128,8 +131,7 @@ Page.prototype.addFrame = function (frame) {
 
 		var myState,
 				myResources,
-				myHosts,
-				mySpecials;
+				myHosts;
 
 		var self = this;
 
@@ -147,15 +149,13 @@ Page.prototype.addFrame = function (frame) {
 				else {
 					myResources = myState.getStore(kind);
 					myHosts = myResources.getStore('hosts');
-					mySpecials = myResources.getStore('specials');
 
-					Array.prototype.push.apply(myResources.get('all', [], true), resources.get('all', []));
+					myResources.getStore('all').merge(resources.getStore('all'), true);
+					myResources.getStore('source').merge(resources.getStore('source'), true);
 
 					resources.getStore('hosts').forEach(function (host, count, hostStore) {
 						myHosts.increment(host, count);
 					});
-
-					mySpecials.merge(resources.getStore('specials'));
 				}
 			});
 		});

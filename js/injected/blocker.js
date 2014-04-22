@@ -125,8 +125,7 @@ var Handler = {
 				anchors = document.getElementsByTagName('a'),
 				forms = document.getElementsByTagName('form'),
 				iframes = document.getElementsByTagName('iframe'),
-				frames = document.getElementsByTagName('frame'),
-				unblockedScripts = Page.unblocked.getStore('script').get('all', [], true);
+				frames = document.getElementsByTagName('frame');
 
 		for (i = 0, b = scripts.length; i < b; i++)
 			if (!Element.triggersBeforeLoad(scripts[i]))
@@ -221,14 +220,13 @@ var Element = {
 
 	processUnblockable: function (kind, element) {
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {
-			var kindStore = Page.unblocked.getStore(kind);
+			var scriptList = Page.unblocked.getStore(kind).getStore('all').get(Page.info.location, [], true);
 
 			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element, true));
 
 			if (Element.triggersBeforeLoad(element)) {
 				if (!globalSetting.hideInjected)
-					Page.allowed.getStore(kind).get('all', [], true).push({
-						source: element.src || element.srcset,
+					Page.allowed.getStore(kind).set(element.src || element.srcset, {
 						ruleAction: -1,
 						unblockable: true,
 						meta: {
@@ -240,9 +238,9 @@ var Element = {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
 				if (!globalSetting.hideInjected)
-					kindStore.get('all', [], true).push(element.innerHTML || element.src);
+					scriptList.push(element.innerHTML || element.src);
 			} else
-				kindStore.get('all', [], true).push(element.innerHTML || element.src || element.outerHTML);
+				scriptList.push(element.innerHTML || element.src || element.outerHTML);
 
 			Page.send();
 				
@@ -457,8 +455,7 @@ var Resource = {
 						meta.type = element.getAttribute('type');
 
 					if (excludeFromPage !== true || canLoad.action >= 0) {
-						kindStore.get('all', [], true).push({
-							source: source,
+						kindStore.getStore('source').getStore(source).set(Page.info.location, {
 							ruleAction: canLoad.action,
 							unblockable: !!event.unblockable,
 							meta: meta

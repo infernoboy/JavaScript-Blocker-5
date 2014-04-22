@@ -16,6 +16,7 @@ function Resource (resource) {
 	this.pageHost = Utilities.URL.extractHost(this.pageLocation);
 	this.source = this.sourceIsURL ? resource.source.toLowerCase() : resource.source;
 	this.sourceHost = Utilities.URL.extractHost(this.source);
+	this.ruleAction = resource.ruleAction;
 	this.unblockable = resource.unblockable;
 	this.meta = resource.meta;
 
@@ -282,8 +283,7 @@ Resource.prototype.canLoad = function () {
 
 Resource.prototype.toJSON = function () {
 	return {
-		location: this.pageLocation,
-		source: this.source,
+		ruleAction: this.ruleAction,
 		unblockable: this.unblockable || undefined,
 		meta: this.meta || undefined
 	};

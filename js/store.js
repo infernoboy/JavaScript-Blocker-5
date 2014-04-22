@@ -360,10 +360,10 @@ var Store = (function () {
 		return results;
 	};
 
-	Store.prototype.map = function (fn) {
+	Store.prototype.map = function (fn, useSelf) {
 		var results = this.forEach(fn);
 
-		var store = new Store('Map-' + Utilities.id(), {
+		var store = useSelf ? this : new Store('Map-' + Utilities.id(), {
 			selfDestruct: TIME.ONE_SECOND * 30
 		});
 

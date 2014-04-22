@@ -276,8 +276,7 @@ var Command = function (type, event) {
 			info.source = Utilities.URL.getAbsolutePath(info.source);
 			info.host = Utilities.URL.extractHost(info.source);
 
-			kindStore.get('all', [], true).push({
-				source: info.source,
+			kindStore.getStore('source').getStore(info.source).set(info.pageLocation, {
 				ruleAction: info.canLoad.action,
 				unblockable: false,
 				meta: info.meta
