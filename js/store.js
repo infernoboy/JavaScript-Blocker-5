@@ -75,9 +75,9 @@ var Store = (function () {
 	Store.prototype.constructor = Store;
 
 	Store.destroyAll = function () {
-		for (var key in Utilities.Timer.timers.timeouts)
+		for (var key in Utilities.Timer.timers.timeout)
 			if (key._startsWith('SelfDestruct'))
-				Utilities.Timer.timers.timeouts[key].script.apply(null, Utilities.Timer.timers.timeouts[key].args);
+				Utilities.Timer.timers.timeout[key].script.apply(null, Utilities.Timer.timers.timeout[key].args);
 	};
 
 	Store.promote = function (object) {

@@ -168,8 +168,8 @@ var Utilities = {
 
 	Timer: {
 		timers: {
-			intervals: {},
-			timeouts: {}
+			interval: {},
+			timeout: {}
 		},
 
 		__findReference: function (type, reference) {
@@ -181,7 +181,7 @@ var Utilities = {
 		},
 
 		__run_interval: function (timerID) {
-			var interval = this.timers.intervals[timerID];
+			var interval = this.timers.interval[timerID];
 
 			if (!interval)
 				return this.remove('RunInterval' + timerID);
@@ -224,7 +224,7 @@ var Utilities = {
 						Utilities.Timer.remove(type, reference);
 				}.bind(null, type, reference, script, args), time);
 
-			this.timers[type + 's'][timerID] = {
+			this.timers[type][timerID] = {
 				reference: reference,
 				timer: timer,
 				args: args,
@@ -241,24 +241,23 @@ var Utilities = {
 			var timerID;
 
 			var args = Utilities.makeArray(arguments),
-					type = args.shift(),
-					typeS = type + 's';
+					type = args.shift();
 
 			if (!args.length) {
-				for (timerID in this.timers[typeS])
-					this.remove(type, this.timers[typeS][timerID].reference);
+				for (timerID in this.timers[type])
+					this.remove(type, this.timers[type][timerID].reference);
 
 				return;
 			}
 	
 			for (var i = 0; i < args.length; i++) {
-				timerID = this.__findReference(typeS, args[i]);
+				timerID = this.__findReference(type, args[i]);
 
 				if (timerID) {
 					if (type == 'timeout')
-						clearTimeout(this.timers[typeS][timerID].timer);
+						clearTimeout(this.timers[type][timerID].timer);
 
-					delete this.timers[typeS][timerID];
+					delete this.timers[type][timerID];
 				}
 			}
 		}
