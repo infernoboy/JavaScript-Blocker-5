@@ -938,6 +938,30 @@ for (var object in Extension)
 
 Extension = undefined;
 
+Object.__extend = function () {
+	var deep = false,
+			args = Utilities.makeArray(arguments);
+
+	if (args[0] === true) {
+		deep = true;
+
+		args.shift();
+	}
+
+	var key;
+
+	var base = args.shift();
+
+	for (var i = 0; i < args.length; i ++)
+		for (key in args[i])
+			if (deep && Utilities.typeOf(base[key]) === 'object' && Utilities.typeOf(args[i][key]) === 'object')
+				Object.__extend(base[key], args[i][key]);
+			else
+				base[key] = args[i][key];
+
+	return base;
+};
+
 
 // Event listeners ======================================================================
 
