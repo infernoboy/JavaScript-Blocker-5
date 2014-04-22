@@ -208,6 +208,9 @@ var UserScript = {
 		GM_setClipboard: function () { },
 
 		GM_xmlhttpRequest: function (details) {
+			var events,
+					action;
+
 			var serializable = JSON.parse(JSON.stringify(details));
 
 			var response = messageExtensionSync('XMLHttpRequest', serializable, function (result) {
@@ -215,10 +218,17 @@ var UserScript = {
 					delete JSB.eventCallback[result.callbackID];
 
 					details = serializable = undefined;
-				}	else if (result.action in details) {
-					details[result.action](result.response);
+				}	else {
+					events = result.action.indexOf('upload.') > -1 ? details.upload || {} : details;
+					action = events === details.upload ? result.action.split('.')[1] : result.action;
 
-					return result.response;
+					if (action in events) {
+						result.response.context = details;
+
+						events[action](result.response);
+
+						return result.response;
+					}
 				}
 			}, true);
 

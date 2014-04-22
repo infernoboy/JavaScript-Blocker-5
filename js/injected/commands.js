@@ -372,7 +372,7 @@ var Command = function (type, event) {
 		},
 
 		XMLHttpRequest: function (detail) {
-			detail.url = Utilities.URL.getAbsolutePath(detail.url);
+			detail.meta.url = Utilities.URL.getAbsolutePath(detail.meta.url);
 			
 			var result = GlobalCommand(detail.command, detail);
 

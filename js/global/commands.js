@@ -184,6 +184,7 @@ var Command = function (command, data, event) {
 			var self = this,
 					meta = detail.meta;
 
+			meta.type = meta.method || meta.type || 'GET';
 			meta.async = !meta.synchronous;
 			meta.cache = !meta.ignoreCache;
 			meta.dataType = 'text';
@@ -191,11 +192,10 @@ var Command = function (command, data, event) {
 			if (meta.async)
 				this.message = false;
 
-			function eventCallback (action, response, status, request) {
+			function eventCallback (action, response, request) {
 				var result = {
 					callbackID: detail.callbackID,
 					action: action,
-
 					response: {
 						readyState: request.readyState,
 						responseHeaders: (function (headers) {
@@ -216,14 +216,11 @@ var Command = function (command, data, event) {
 
 						responseText: response,
 						status: request.status,
-						statusText: status,
-						lengthComputable: request.lengthComputable,
-						loaded: request.loaded,
-						total: request.total
+						statusText: request.statusText
 					}
 				};
 
-				if (meta.async || action === 'onprogress' || action === 'XHRComplete')
+				if (meta.async || action === 'XHRComplete')
 					self.sendCallback(detail.sourceID, detail.callbackID, result);
 				else
 					self.message = result;
@@ -232,19 +229,36 @@ var Command = function (command, data, event) {
 			meta.xhr = function () {
 				var xhr = new XMLHttpRequest();
 
-				function onProgress (event) {
-					xhr.lengthComputable = event.lengthComputable;
-					xhr.loaded = event.loaded;
-					xhr.total = event.total;
-
-					eventCallback('onprogress', '', '', xhr);
+				function onProgress (upload, event) {
+					self.sendCallback(detail.sourceID, detail.callbackID, {
+						callbackID: detail.callbackID,
+						action: (upload ? 'upload.' : '') + 'on' + event.type,
+						response: {
+							lengthComputable: event.lengthComputable,
+							loaded: event.loaded,
+							total: event.total
+						}
+					});
 				}
 
-				xhr.upload.addEventListener('progress', onProgress);
-				xhr.addEventListener('progress', onProgress);
+				xhr.upload.addEventListener('progress', onProgress.bind(null, true));
+
+				xhr.upload.addEventListener('load', function (event) {
+					eventCallback('upload.onload', xhr.responseText, {});
+				});
+
+				xhr.upload.addEventListener('error', function (event) {
+					eventCallback('upload.onerror', xhr.responseText, xhr);
+				});
+
+				xhr.upload.addEventListener('abort', function (event) {
+					eventCallback('upload.onabort', xhr.responseText, xhr);
+				});
+
+				xhr.addEventListener('progress', onProgress.bind(null, false));
 
 				xhr.addEventListener('loadend', function (event) {
-					eventCallback('XHRComplete', '', '', xhr);
+					eventCallback('XHRComplete', '', xhr);
 				});
 
 				return xhr;
@@ -258,18 +272,16 @@ var Command = function (command, data, event) {
 			})(meta.headers ? meta.headers : {});
 
 			meta.success = function (response, status, request) {
-				eventCallback('onload', response, status, request);
+				eventCallback('onload', response, request);
 			};
-
-			meta.type = meta.method || meta.type || 'GET';
 
 			meta.error = function (request, status, response) {
 				if (response === 'timeout')
-					eventCallback('ontimeout', response, status, request);
+					eventCallback('ontimeout', response, request);
 				else if (response === 'abort')
-					eventCallback('onabort', response, status, request);
+					eventCallback('onabort', response, request);
 				else
-					eventCallback('onerror', response.message ? response.message : response, status, request);
+					eventCallback('onerror', response.message ? response.message : response, request);
 			};
 
 			$.ajax(meta);
