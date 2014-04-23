@@ -207,7 +207,7 @@ var Store = (function () {
 		if (this.parent)
 			Utilities.setImmediateTimeout(function (store) {
 				store.parent.__save(true);
-			});
+			}, [store]);
 	};
 
 	Store.prototype.load = function (defaultValue) {
