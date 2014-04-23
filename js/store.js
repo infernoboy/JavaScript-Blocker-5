@@ -6,6 +6,8 @@ var Store = (function () {
 			children = {};
 
 	function Store (name, props) {
+		EventListener.apply(this);
+
 		if (!(props instanceof Object))
 			props = {};
 
@@ -68,12 +70,9 @@ var Store = (function () {
 					store.removeExpired();
 			}, this.maxLife * .25, [this, cleanupName]);
 		}
-
-		props = name = undefined;
 	};
 
-	Store.prototype = new EventListener();
-	Store.prototype.constructor = Store;
+	Store.prototype = Object.create(EventListener.prototype);
 
 	Store.destroyAll = function () {
 		for (var key in Utilities.Timer.timers.timeout)
@@ -470,7 +469,9 @@ var Store = (function () {
 				this.data[key].accessed = Date.now();
 
 				if (this.maxLife < Infinity)
-					this.__save();
+					Utilities.setImmediateTimeout(function (store) {
+						store.__save();
+					}, [this])
 			}
 
 			var cached = this.data[key].value;

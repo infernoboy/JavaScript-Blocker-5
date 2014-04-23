@@ -130,7 +130,7 @@ var UserScript = {
 				now = Date.now(),
 				userScript = this.scripts.get(namespace),
 				attributes = userScript.get('attributes'),
-				isDeveloperMode = attributes.get('developerMode');
+				isDeveloperMode = !!attributes.get('developerMode');
 
 		if (isDeveloperMode || (attributes.get('autoUpdate') && (now - attributes.get('lastUpdate', 0) > this.__updateInterval))) {
 			if (!isDeveloperMode)
@@ -138,12 +138,12 @@ var UserScript = {
 
 			currentMeta = attributes.get('meta');
 
-			this.download(attributes.get('updateURL')).done(function (update) {
+			this.download(attributes.get('updateURL'), !isDeveloperMode).done(function (update) {
 				updateMeta = self.parse(update).parsed;
 
 				if (currentMeta.trueNamespace === updateMeta.trueNamespace) {
 					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && this.canBeUpdated(updateMeta))) {
-						self.download(attributes.get('downloadURL')).done(function (script) {
+						self.download(attributes.get('downloadURL'), !isDeveloperMode).done(function (script) {
 							self.add(script, true);
 						});
 					}
@@ -153,14 +153,14 @@ var UserScript = {
 		}
 	},
 
-	download: function (url) {
+	download: function (url, async) {
 		if (!Utilities.URL.isURL(url))
 			throw new TypeError(url + ' is not a url.');
 
 		return $.ajax({
 			cache: false,
 			dataType: 'text',
-			async: false,
+			async: async,
 			url: url,
 			timeout: 3000,
 			headers: {

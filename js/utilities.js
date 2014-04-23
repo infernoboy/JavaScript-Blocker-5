@@ -188,14 +188,18 @@ var Utilities = {
 
 			interval.script.apply(null, interval.args);
 
-			setTimeout(this.__run_interval.bind(this, timerID), interval.time);
+			setTimeout(this.__run_interval.bind(this), interval.time, timerID);
 		},
 
 		interval: function () {
-			return this.create.apply(this, ['interval'].concat(Utilities.makeArray(arguments)));
+			Utilities.setImmediateTimeout(function (timer, args) {
+				timer.create.apply(timer, ['interval'].concat(Utilities.makeArray(args)));
+			}, [this, arguments]);
 		},
 		timeout: function () {
-			return this.create.apply(this, ['timeout'].concat(Utilities.makeArray(arguments)));
+			Utilities.setImmediateTimeout(function (timer, args) {
+				timer.create.apply(timer, ['timeout'].concat(Utilities.makeArray(args)));
+			}, [this, arguments]);
 		},
 		
 		create: function (type, reference, script, time, args) {
@@ -217,12 +221,11 @@ var Utilities = {
 					timerID = Utilities.id();
 
 			if (type === 'timeout')
-				timer = setTimeout(function (type, reference, script, args) {
+				timer = setTimeout(function (timer, type, reference, script, args) {
 					script.apply(null, args);
 
-					if (type === 'timeout')
-						Utilities.Timer.remove(type, reference);
-				}.bind(null, type, reference, script, args), time);
+					timer.remove(type, reference);
+				}, time, this, type, reference, script, args);
 
 			this.timers[type][timerID] = {
 				reference: reference,
@@ -234,8 +237,6 @@ var Utilities = {
 
 			if (type === 'interval')
 				this.__run_interval(timerID);
-
-			type = reference = script = time = args = undefined;
 		},
 		remove: function () {
 			var timerID;
