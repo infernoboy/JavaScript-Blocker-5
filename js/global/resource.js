@@ -39,7 +39,8 @@ function Resource (resource) {
 Resource.longRegExps = new Store('LongRegExps');
 Resource.canLoadCache = new Store('ResourceCanLoad', {
 	save: true,
-	maxLife: TIME.ONE_DAY
+	maxLife: TIME.ONE_HOUR * 12,
+	saveDelay: TIME.ONE_SECOND * 30
 });
 
 Resource.canLoadCache.addEventListener('save', function () {

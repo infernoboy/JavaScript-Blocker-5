@@ -11,6 +11,7 @@ var Store = (function () {
 
 		this.maxLife = (typeof props.maxLife === 'number') ? props.maxLife : Infinity;
 		this.selfDestruct = (typeof props.selfDestruct === 'number') ? props.selfDestruct : 0;
+		this.saveDelay = (typeof props.saveDelay === 'number') ? props.saveDelay : 2000;
 		this.destroyChildren = !!props.destroyChildren;
 		this.lock = !!props.lock;
 		this.save = !!props.save;
@@ -201,10 +202,12 @@ var Store = (function () {
 				store.triggerEvent('save');
 
 				SettingStore.setJSON(store.id, store);
-			}, TIME.ONE_SECOND * 1.5, [this]);
+			}, this.saveDelay, [this]);
 
 		if (this.parent)
-			this.parent.__save(true);
+			Utilities.setImmediateTimeout(function (store) {
+				store.parent.__save(true);
+			});
 	};
 
 	Store.prototype.load = function (defaultValue) {
@@ -463,8 +466,12 @@ var Store = (function () {
 
 		try {
 		if (this.data.hasOwnProperty(key)) {
-			if (!noAccess)
+			if (!noAccess) {
 				this.data[key].accessed = Date.now();
+
+				if (this.maxLife < Infinity)
+					this.__save();
+			}
 
 			var cached = this.data[key].value;
 
