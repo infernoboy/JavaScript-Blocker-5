@@ -421,7 +421,7 @@ var Resource = {
 						source: source,
 						isFrame: !Utilities.Page.isTop
 					});
-				
+
 				if (!canLoad.isAllowed) {
 					if (event.preventDefault)
 						event.preventDefault();
@@ -437,7 +437,7 @@ var Resource = {
 					return canLoad.isAllowed;
 				}
 
-				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
+				setTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
 					if (!meta)
 						meta = {};
 
@@ -468,7 +468,7 @@ var Resource = {
 						Element.hide(kind, element, source);
 
 					Page.send();
-				}, [meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind]);
+				}, 50, meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind);
 				
 				return canLoad.isAllowed;
 			}

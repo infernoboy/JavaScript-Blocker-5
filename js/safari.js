@@ -143,26 +143,24 @@ var ToolbarItems = {
 			if (key._startsWith('Storage-') || typeof value === 'object')
 				return;
 
-			Object.defineProperty(this.__cache, key, {
-				configurable: true,
-				enumerable: true,
+			setTimeout(function (self, key, value) {
+				Object.defineProperty(self.__cache, key, {
+					configurable: true,
+					enumerable: true,
 
-				value: value
-			});
+					value: value
+				});
+			}, 50, this, key, value);
 		},
 
 		getItem: function (key, defaultValue) {
-			if (this.__cache.hasOwnProperty(key))
+			if (key in this.__cache)
 				return this.__cache[key];
 
 			var value = safari.extension.settings.getItem(key);
 
 			if (value === null)
 				return defaultValue === undefined ? value : defaultValue;
-
-			try {
-				value = Utilities.decode(value);
-			} catch (e) {}
 
 			this.__setCache(key, value);
 
@@ -185,9 +183,6 @@ var ToolbarItems = {
 		},
 		setItem: function (key, value) {
 			this.__setCache(key, value);
-
-			if (typeof value === 'string')
-				value = Utilities.encode(value);
 
 			safari.extension.settings.setItem(key, value);
 		},

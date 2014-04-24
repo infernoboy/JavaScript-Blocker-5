@@ -24,7 +24,7 @@ var UserScript = {
 		};
 
 		for (var resourceName in resources) {
-			Utilities.setImmediateTimeout(function (self, resources, resourceName, addResource) {
+			setTimeout(function (self, resources, resourceName, addResource) {
 				var xhr = new XMLHttpRequest(),
 						bypassCache = (resources[resourceName]._contains('?') ? '&' : '?') + Date.now();
 
@@ -50,7 +50,7 @@ var UserScript = {
 				};
 
 				xhr.send(null);
-			}, [this, resources, resourceName, addResource]);
+			}, 50, this, resources, resourceName, addResource);
 		}
 	},
 
@@ -212,6 +212,10 @@ var UserScript = {
 			else if (parseLine) {
 				lines[line].replace(lineMatch, function (fullLine, key, value) {
 					value = $.trim(value);
+
+					if (!value.length)
+						return;
+
 					metaStr += fullLine + "\n";
 
 					if (parsed.hasOwnProperty(key) && value.length) {

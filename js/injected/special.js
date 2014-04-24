@@ -47,20 +47,18 @@ var Special = {
 		if (helpers.__cache)
 			return deepInject.prepend(helpers.__cache);
 
-		var deepHelper,
-				helperScript,
+		var helperScript,
 				prepend;
 
 		var cache = [];
 
 		for (var helper in helpers) {
-			deepHelper = helpers[helper];
-			helperScript = new DeepInject(helper, deepHelper, true);
+			helperScript = new DeepInject(helper, helpers[helper], true);
 
-			if (deepHelper.args)
-				helperScript.setArguments(deepHelper.args);
+			if (helpers[helper].args)
+				helperScript.setArguments(helpers[helper].args);
 
-			prepend = deepHelper.args ? helperScript.executable() : helperScript.asFunction();
+			prepend = helpers[helper].args ? helperScript.executable() : helperScript.asFunction();
 
 			cache.unshift(prepend);
 

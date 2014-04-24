@@ -61,14 +61,9 @@ var Store = (function () {
 			this.snapshot = new Snapshot(this);
 
 		if (this.maxLife < Infinity) {
-			var cleanupName = 'StoreCleanup-' + this.id;
+			this.cleanupName = 'StoreCleanup-' + this.id;
 
-			Utilities.Timer.interval(cleanupName, function (store, cleanupName) {
-				if (store.destroyed)
-					Utilities.Timer.remove('interval', cleanupName);
-				else
-					store.removeExpired();
-			}, this.maxLife * .25, [this, cleanupName]);
+			Utilities.Timer.interval(this.cleanupName, this.removeExpired.bind(this), this.maxLife * .25);
 		}
 	};
 
@@ -204,9 +199,9 @@ var Store = (function () {
 			}, this.saveDelay, [this]);
 
 		if (this.parent)
-			Utilities.setImmediateTimeout(function (store) {
+			setTimeout(function (store) {
 				store.parent.__save(true);
-			}, [this]);
+			}, 50, this);
 	};
 
 	Store.prototype.load = function (defaultValue) {
@@ -416,9 +411,9 @@ var Store = (function () {
 			return this;
 		}
 
-		Utilities.setImmediateTimeout(function (store) {
+		setTimeout(function (store) {
 			store.prolongDestruction();
-		}, [this]);
+		}, 50, this);
 
 		if ((typeof key !== 'string' && typeof key !== 'number') || (this.data[key] && !this.data.hasOwnProperty(key)))
 			throw new Error(key + ' cannot be used as key.');
@@ -469,9 +464,9 @@ var Store = (function () {
 				this.data[key].accessed = Date.now();
 
 				if (this.maxLife < Infinity)
-					Utilities.setImmediateTimeout(function (store) {
+					setTimeout(function (store) {
 						store.__save();
-					}, [this])
+					}, 50, this);
 			}
 
 			var cached = this.data[key].value;
@@ -605,7 +600,7 @@ var Store = (function () {
 		var now = Date.now();
 
 		for (var key in this.data)
-			Utilities.setImmediateTimeout(function (store, key, now) {
+			setTimeout(function (store, key, now) {
 				if (store.lock)
 					return;
 				
@@ -618,7 +613,7 @@ var Store = (function () {
 					store.remove(key);
 				} else if (value instanceof Store)
 					value.removeExpired();
-			}, [this, key, now]);
+			}, 50, this, key, now);
 	};
 
 	Store.prototype.replaceWith = function (store) {
@@ -652,6 +647,9 @@ var Store = (function () {
 	Store.prototype.destroy = function (deep, unlock, ignoreParent) {
 		if (this.destroyed)
 			return;
+
+		if (this.cleanupName)
+			Utilities.Timer.remove('interval', this.cleanupName);
 
 		var key;
 

@@ -6,7 +6,7 @@ var RESOURCE = {
 	ALL: 3
 };
 
-function Resource (resource) {	
+function Resource (resource) {
 	this.kind = resource.kind;
 	this.framedKind = 'framed:' + this.kind;
 	this.sourceIsURL = Rules.kindShouldBadge(this.kind) ? Utilities.URL.isURL(resource.source) : false;
@@ -275,9 +275,9 @@ Resource.prototype.canLoad = function () {
 	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE)
 		canLoad = this.allowedBySettings.apply(this, arguments);
 
-	Utilities.setImmediateTimeout(function (canLoad, store, source) {
+	setTimeout(function (canLoad, store, source) {
 		store.set(source, canLoad);
-	}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
+	}, 50, canLoad, canLoad.pageRule ? pageSources : hostSources, this.source);
 
 	return canLoad;
 };

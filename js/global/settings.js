@@ -13,7 +13,6 @@ var Settings = {
 
 		var value = storedValue === null ? ((setting in Settings.items) ? Settings.items[setting].default : null) : storedValue;
 
-
 		return value;
 	},
 	getStore: function (setting) {
