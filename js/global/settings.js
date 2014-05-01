@@ -5,25 +5,33 @@ var globalSetting = {
 };
 
 var Settings = {
-	__stores: new Store('SettingAsStore'),
+	__stores: {},
+
+	__defaultValue: function (setting) {
+		return (setting in Settings.items) ? Settings.items[setting].default : null;
+	},
 
 	getItem: function (setting, JSON) {
 		var getMethod = JSON ? 'getJSON' : 'getItem',
 				storedValue = SettingStore.available ? SettingStore[getMethod](setting) : Settings.current_value(setting);
 
-		var value = storedValue === null ? ((setting in Settings.items) ? Settings.items[setting].default : null) : storedValue;
+		var value = storedValue === null ? this.__defaultValue(setting) : storedValue;
 
 		return value;
 	},
+
 	getStore: function (setting) {
-		var cached = this.__stores.get(setting);
+		var storeName = 'Setting-' + setting;
 
-		if (cached)
-			return cached;
+		if (storeName in this.__stores)
+			return this.__stores[storeName];
 
-		return this.__stores.getStore(setting, {
-			defaultValue: this.getItem(setting, true)
+		this.__stores[storeName] = new Store(storeName, {
+			save: true,
+			defaultValue: this.__defaultValue(setting)
 		});
+
+		return this.__stores[storeName];
 	},
 
 	getJSON: function (setting) {

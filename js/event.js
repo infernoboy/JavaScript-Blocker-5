@@ -18,7 +18,7 @@ EventListener.prototype.addEventListener = function (name, fn) {
 	if (typeof fn !== 'function')
 		throw new TypeError(fn + ' is not a function.');
 
-	this.listeners(name).push(fn);
+	this.listeners(name).push(fn.bind(this));
 };
 
 EventListener.prototype.removeEventListener = function (name, fn) {

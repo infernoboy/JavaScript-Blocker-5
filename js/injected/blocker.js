@@ -437,7 +437,7 @@ var Resource = {
 					return canLoad.isAllowed;
 				}
 
-				setTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
+				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
 					if (!meta)
 						meta = {};
 
@@ -468,7 +468,7 @@ var Resource = {
 						Element.hide(kind, element, source);
 
 					Page.send();
-				}, 50, meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind);
+				}, [meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind]);
 				
 				return canLoad.isAllowed;
 			}

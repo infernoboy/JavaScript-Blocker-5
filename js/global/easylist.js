@@ -23,11 +23,11 @@ EasyList.updateCheck = function () {
 };
 
 EasyList.fetch = function () {
-	var lists = Settings.getJSON('easyLists');
+	var lists = Settings.getStore('easyLists');
 
-	for (var list in lists)
-		if (lists[list][0])
-			new EasyList(list, lists[list][1]);
+	for (var list in lists.data)
+		if (lists.data[list].value[0])
+			new EasyList(list, lists.data[list].value[1]);
 
 	Settings.setItem('EasyListLastUpdate', Date.now());
 };

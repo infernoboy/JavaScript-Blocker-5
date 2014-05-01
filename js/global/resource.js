@@ -119,17 +119,16 @@ Resource.prototype.__humanize = function (allow, rule, framed, temporary) {
 };
 
 Resource.prototype.allowedBySettings = function () {
-	var enabledKinds = Settings.getJSON('enabledKinds'),
+	var enabledKinds = Settings.getStore('enabledKinds'),
 			canLoad = {
-				isAllowed: true,
 				action: ACTION.ALLOW_WITHOUT_RULE,
 				pageRule: false
 			};
 
-	if (!enabledKinds[this.kind])
+	if (!enabledKinds.get(this.kind))
 		return canLoad;
 
-	var blockFrom = Settings.getJSON('alwaysBlock')[this.kind],
+	var blockFrom = Settings.getStore('alwaysBlock').get(this.kind),
 			sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
 
 	if (blockFrom === 'trueNowhere' || blockFrom === 'nowhere' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
@@ -147,7 +146,6 @@ Resource.prototype.allowedBySettings = function () {
 			(pageProtocol === 'https:' && (Settings.getItem('secureOnly') && sourceProtocol !== pageProtocol))) {
 
 			canLoad.action = ACTION.BLOCK_WITHOUT_RULE;
-			canLoad.isAllowed = false;
 		}
 	}
 
@@ -163,10 +161,9 @@ Resource.prototype.canLoad = function () {
 		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
 
 	var canLoad = {
-				isAllowed: true,
-				action: ACTION.ALLOW_WITHOUT_RULE,
-				pageRule: false
-			};
+		action: ACTION.ALLOW_WITHOUT_RULE,
+		pageRule: false
+	};
 
 	if (this.unblockable) {
 		canLoad.action = ACTION.UNBLOCKBABLE;
@@ -174,7 +171,7 @@ Resource.prototype.canLoad = function () {
 		return canLoad;
 	}
 
-	if (!Settings.getJSON('enabledKinds')[this.kind]) {
+	if (!Settings.getStore('enabledKinds').get(this.kind)) {
 		canLoad.action = ACTION.KIND_DISABLED;
 
 		return canLoad;
@@ -233,7 +230,6 @@ Resource.prototype.canLoad = function () {
 				else {
 					if (Rules.matches(rule, rules.data[rule].value.regexp, self.source))
 						canLoad = {
-							isAllowed: !!(rules.data[rule].value.action % 2),
 							action: rules.data[rule].value.action,
 							pageRule: pageRule
 						};
@@ -250,7 +246,6 @@ Resource.prototype.canLoad = function () {
 				longStore.set(domain, {
 					regExps: longRegExps,
 					canLoad: {
-						isAllowed: !!(ACTION[ruleList] % 2),
 						action: ACTION[ruleList],
 						pageRule: false
 					}
@@ -275,9 +270,9 @@ Resource.prototype.canLoad = function () {
 	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE)
 		canLoad = this.allowedBySettings.apply(this, arguments);
 
-	setTimeout(function (canLoad, store, source) {
+	Utilities.setImmediateTimeout(function (canLoad, store, source) {
 		store.set(source, canLoad);
-	}, 50, canLoad, canLoad.pageRule ? pageSources : hostSources, this.source);
+	}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
 
 	return canLoad;
 };

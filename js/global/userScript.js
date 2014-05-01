@@ -24,7 +24,7 @@ var UserScript = {
 		};
 
 		for (var resourceName in resources) {
-			setTimeout(function (self, resources, resourceName, addResource) {
+			Utilities.setImmediateTimeout(function (self, resources, resourceName, addResource) {
 				var xhr = new XMLHttpRequest(),
 						bypassCache = (resources[resourceName]._contains('?') ? '&' : '?') + Date.now();
 
@@ -50,7 +50,7 @@ var UserScript = {
 				};
 
 				xhr.send(null);
-			}, 50, this, resources, resourceName, addResource);
+			}, [this, resources, resourceName, addResource]);
 		}
 	},
 

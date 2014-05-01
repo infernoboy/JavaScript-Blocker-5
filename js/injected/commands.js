@@ -395,6 +395,8 @@ var Command = function (type, event) {
 
 			var canLoad = GlobalCommand('canLoadResource', toCheck);
 
+			canLoad.isAllowed = !!(canLoad.action % 2);
+
 			return {
 				callbackID: detail.callbackID,
 				result: canLoad

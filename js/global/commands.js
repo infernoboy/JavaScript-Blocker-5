@@ -90,9 +90,12 @@ var Command = function (command, data, event) {
 			if (info.pageProtocol === 'about:')		
 				info.pageLocation = this.event.target.url;
 
-			var resource = new Resource(info);
+			var resource = new Resource(info),
+					canLoad = resource.canLoad();
 
-			this.message = resource.canLoad();
+			canLoad.isAllowed = !!(canLoad.action % 2);
+
+			this.message = canLoad;
 		},
 
 		globalSetting: function (setting) {
@@ -100,8 +103,8 @@ var Command = function (command, data, event) {
 				disabled: false,
 				debugMode: true,
 
-				enabledKinds: Settings.getJSON('enabledKinds'),
-				showPlaceholder: Settings.getJSON('showPlaceholder'),
+				enabledKinds: Settings.getStore('enabledKinds').all(),
+				showPlaceholder: Settings.getStore('showPlaceholder').all(),
 				hideInjected: Settings.getItem('hideInjected'),
 				confirmShortURL: Settings.getItem('confirmShortURL'),
 				blockReferrer: Settings.getItem('blockReferrer')

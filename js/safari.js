@@ -140,20 +140,20 @@ var ToolbarItems = {
 		available:  !!(window.safari && safari.extension && safari.extension.settings),
 
 		__setCache: function (key, value) {
-			if (key._startsWith('Storage-') || typeof value === 'object')
-				return;
+			Utilities.setImmediateTimeout(function (self, key, value) {
+				if (key._startsWith('Storage-') || value === undefined || typeof value === 'object')
+					return;
 
-			setTimeout(function (self, key, value) {
 				Object.defineProperty(self.__cache, key, {
 					configurable: true,
 					enumerable: true,
 
 					value: value
 				});
-			}, 50, this, key, value);
+			}, [this, key, value]);
 		},
 
-		getItem: function (key, defaultValue) {
+		getItem: function (key, defaultValue, noCache) {
 			if (key in this.__cache)
 				return this.__cache[key];
 
@@ -162,12 +162,13 @@ var ToolbarItems = {
 			if (value === null)
 				return defaultValue === undefined ? value : defaultValue;
 
-			this.__setCache(key, value);
+			if (!noCache)
+				this.__setCache(key, value);
 
 			return value;
 		},
 		getJSON: function (key, defaultValue) {
-			var value = this.getItem(key);
+			var value = this.getItem(key, undefined, true);
 
 			if (value === null)
 				return defaultValue === undefined ? value : defaultValue;
@@ -181,13 +182,14 @@ var ToolbarItems = {
 				return defaultValue;
 			}
 		},
-		setItem: function (key, value) {
-			this.__setCache(key, value);
+		setItem: function (key, value, noCache) {
+			if (!noCache)
+				this.__setCache(key, value);
 
 			safari.extension.settings.setItem(key, value);
 		},
 		setJSON: function (key, value) {
-			this.setItem(key, JSON.stringify(value));
+			this.setItem(key, JSON.stringify(value), true);
 		},
 		removeItem: function (key) {
 			delete this.__cache[key];

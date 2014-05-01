@@ -189,19 +189,22 @@ var Store = (function () {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
-		if (this.save)
-			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
+		Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
+			store.triggerEvent('presave');
+
+			if (store.save) {
 				LogDebug('Save ' + store.id);
 
-				store.triggerEvent('save');
-
 				SettingStore.setJSON(store.id, store);
-			}, this.saveDelay, [this]);
+
+				store.triggerEvent('save');
+			}
+		}, this.saveDelay, [this]);
 
 		if (this.parent)
-			setTimeout(function (store) {
+			Utilities.setImmediateTimeout(function (store) {
 				store.parent.__save(true);
-			}, 50, this);
+			}, [this]);
 	};
 
 	Store.prototype.load = function (defaultValue) {
@@ -460,14 +463,14 @@ var Store = (function () {
 
 		try {
 		if (this.data.hasOwnProperty(key)) {
-			if (!noAccess) {
-				this.data[key].accessed = Date.now();
+			if (this.maxLife < Infinity && !noAccess)
+				Utilities.setImmediateTimeout(function (store, key) {
+					if (store.data[key]) {
+						store.data[key].accessed = Date.now();
 
-				if (this.maxLife < Infinity)
-					setTimeout(function (store) {
 						store.__save();
-					}, 50, this);
-			}
+					}
+				}, [this, key]);
 
 			var cached = this.data[key].value;
 
@@ -600,7 +603,7 @@ var Store = (function () {
 		var now = Date.now();
 
 		for (var key in this.data)
-			setTimeout(function (store, key, now) {
+			Utilities.setImmediateTimeout(function (store, key, now) {
 				if (store.lock)
 					return;
 				
@@ -613,7 +616,7 @@ var Store = (function () {
 					store.remove(key);
 				} else if (value instanceof Store)
 					value.removeExpired();
-			}, 50, this, key, now);
+			}, [this, key, now]);
 	};
 
 	Store.prototype.replaceWith = function (store) {

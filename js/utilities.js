@@ -40,9 +40,6 @@ var Utilities = {
 	},
 
 	setImmediateTimeout: function (fn, args) {
-		if (typeof fn !== 'function')
-			throw new TypeError(fn + ' is not a function');
-
 		this.__immediateTimeouts.push({
 			fn: fn,
 			args: args
@@ -397,25 +394,12 @@ var Utilities = {
 			return url;
 		},
 
-		createAnchor: function (path) {
-			if (typeof path !== 'string' || !path.length)
-				return null;
-
-			var a = document.createElement('a');
-
-			a.href = path;
-
-			setTimeout(function () {
-				a = undefined;
-			});
-
-			return a;
-		},
 		getAbsolutePath: function (url) {
 			this.__anchor.href = url;
 
 			return this.__anchor.href;
 		},
+
 		extractHost: function (url) {
 			var url = (typeof url !== 'string') ? Utilities.Page.getCurrentLocation() : url;
 
@@ -428,13 +412,11 @@ var Utilities = {
 			if (/^data:/.test(url))
 				return 'data';
 
-			var matched = url.match(this.__structure);
+			this.__anchor.href = url;
 
-			if (matched && matched.length > 2)
-				return matched[3];
-
-			return '';
+			return this.__anchor.host;
 		},
+
 		hostParts: function (host, prefixed) {
 			if (!this.hostParts.cache && window.Store)
 				this.hostParts.cache = new Store('HostParts', {
@@ -485,6 +467,7 @@ var Utilities = {
 			
 			return hostStore.set(cacheKey, parts).get(cacheKey);
 		},
+
 		protocol: function (url) {
 			this.__anchor.href = url;
 
@@ -824,18 +807,6 @@ var Extension = {
 	},
 
 	Object: {
-		_deepFreeze: {
-			value: function () {
-				Object.freeze(this);
-
-				for (var key in this)
-					if (this[key] !== null && typeof this[key] === 'object')
-						this[key]._deepFreeze();
-
-				return this;
-			}
-		},
-
 		_createReverseMap: {
 			value: function (deep) {
 				for (var key in this)
@@ -965,6 +936,18 @@ Object._extend = function () {
 				base[key] = args[i][key];
 
 	return base;
+};
+
+Object._deepFreeze = function (object) {
+	Object.freeze(object);
+
+	var props = Object.getOwnPropertyNames(object);
+
+	for (var i = 0; i < props.length; i++)
+		if (object[props[i]] !== null && (typeof object[props[i]] === 'object' || typeof object[props[i]] === 'function'))
+			Object._deepFreeze(object[props[i]]);
+
+	return object;
 };
 
 
