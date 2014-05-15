@@ -122,6 +122,10 @@ var Command = function (type, event) {
 			Page.send();
 		},
 
+		nextImmediateTimeout: function () {
+			Utilities.nextImmediateTimeout();
+		},
+
 		messageTopExtension: function (detail, event) {
 			if (!Utilities.Page.isTop)
 				return;
@@ -373,7 +377,7 @@ var Command = function (type, event) {
 
 		XMLHttpRequest: function (detail) {
 			detail.meta.url = Utilities.URL.getAbsolutePath(detail.meta.url);
-			
+
 			var result = GlobalCommand(detail.command, detail);
 
 			if (result !== false)

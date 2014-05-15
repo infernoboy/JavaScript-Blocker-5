@@ -43,10 +43,6 @@ Resource.canLoadCache = new Store('ResourceCanLoad', {
 	saveDelay: TIME.ONE_SECOND * 30
 });
 
-Resource.canLoadCache.addEventListener('save', function () {
-	LogDebug('ResourceCanLoad Size: ' + Utilities.byteSize(SettingStore.getItem('Storage-ResourceCanLoad').length));
-});
-
 Resource.__many = function (action, resources, domain, rule, framed) {
 	if (!Array.isArray(resources))
 		throw new TypeError(resources + ' is not an array');
@@ -284,3 +280,7 @@ Resource.prototype.toJSON = function () {
 		meta: this.meta || undefined
 	};
 };
+
+Resource.canLoadCache.addEventListener('save', function () {
+	LogDebug('ResourceCanLoad Size: ' + Utilities.byteSize(SettingStore.getItem('Storage-ResourceCanLoad').length));
+});

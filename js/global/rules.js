@@ -550,3 +550,7 @@ Object.defineProperty(Rules, 'list', {
 });
 
 Rules.list.active = Rules.list.user;
+
+Rules.list.user.rules.addEventListener('save', function () {
+	Resource.canLoadCache.saveNow();
+});

@@ -30,11 +30,11 @@ var Store = (function () {
 
 		this.name = name;
 		this.props = props;
-		
+
 		if (!this.private)
 			Object.defineProperty(this, 'data', {
 				enumerable: true,
-				
+
 				get: function () {
 					return data[this.id];
 				},
@@ -43,7 +43,7 @@ var Store = (function () {
 				}
 			});
 
-		this.prolongDestruction();		
+		this.prolongDestruction();
 
 		var defaultValue = {};
 
@@ -56,7 +56,7 @@ var Store = (function () {
 
 		if (!this.data)
 			this.load(defaultValue);
-		
+
 		if (this.useSnapshot)
 			this.snapshot = new Snapshot(this);
 
@@ -156,7 +156,7 @@ var Store = (function () {
 		get: function () {
 			return this.private ? this.myParent[this.id] : parent[this.id];
 		},
-		set: function (newParent) {			
+		set: function (newParent) {
 			if (newParent instanceof Store) {
 				newParent.children[this.id] = this;
 
@@ -185,7 +185,7 @@ var Store = (function () {
 
 	Store.BREAK = -54684513;
 
-	Store.prototype.__save = function (bypassIgnore) {
+	Store.prototype.__save = function (bypassIgnore, now) {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
@@ -199,12 +199,16 @@ var Store = (function () {
 
 				store.triggerEvent('save');
 			}
-		}, this.saveDelay, [this]);
+		}, now ? 0 : this.saveDelay, [this]);
 
 		if (this.parent)
 			Utilities.setImmediateTimeout(function (store) {
 				store.parent.__save(true);
 			}, [this]);
+	};
+
+	Store.prototype.saveNow = function (bypassIgnore) {
+		this.__save(bypassIgnore, true);
 	};
 
 	Store.prototype.load = function (defaultValue) {
@@ -286,7 +290,7 @@ var Store = (function () {
 		var currentValue,
 				storeValue;
 
-		for (var key in store.data) {			
+		for (var key in store.data) {
 			currentValue = this.get(key, null, null, true);
 			storeValue = store.get(key, null, null, true);
 
@@ -408,11 +412,8 @@ var Store = (function () {
 			return this;
 		}
 
-		if (value === null || value === undefined) {
-			LogError(['refusing to set value', this.id, key, value]);
-
+		if (value === null || value === undefined)
 			return this;
-		}
 
 		setTimeout(function (store) {
 			store.prolongDestruction();
@@ -462,59 +463,59 @@ var Store = (function () {
 		this.prolongDestruction();
 
 		try {
-		if (this.data.hasOwnProperty(key)) {
-			if (this.maxLife < Infinity && !noAccess)
-				Utilities.setImmediateTimeout(function (store, key) {
-					if (store.data[key]) {
-						store.data[key].accessed = Date.now();
+			if (this.data.hasOwnProperty(key)) {
+				if (this.maxLife < Infinity && !noAccess)
+					Utilities.setImmediateTimeout(function (store, key) {
+						if (!store.destroyed && store.data[key]) {
+							store.data[key].accessed = Date.now();
 
-						store.__save();
+							store.__save();
+						}
+					}, [this, key]);
+
+				var cached = this.data[key].value;
+
+				if (!(cached instanceof Store)) {
+					if (cached && cached.data && cached.props) {
+						cached.props.private = cached.props.private || this.private;
+
+						var value = Store.promote(cached);
+
+						value.parent = this;
+
+						this.data[key] = {
+							accessed: Date.now(),
+							value: value
+						};
+
+						return value;
+					} else {
+						switch (true) {
+							case asReference:
+								return cached;
+							break;
+
+							case Array.isArray(cached):
+								return Utilities.makeArray(cached);
+							break;
+
+							case typeof cached === 'string':
+								return cached.toString();
+							break;
+
+							case cached && Utilities.typeOf(cached) === 'object':
+								return cached._clone();
+							break;
+
+							default:
+								return cached;
+							break;
+						}
 					}
-				}, [this, key]);
-
-			var cached = this.data[key].value;
-
-			if (!(cached instanceof Store))
-				if (cached && cached.data && cached.props) {
-					cached.props.private = cached.props.private || this.private;
-
-					var value = Store.promote(cached);
-
-					value.parent = this;
-
-					this.data[key] = {
-						accessed: Date.now(),
-						value: value
-					};
-
-					return value;
-				} else {
-					switch (true) {
-						case asReference:
-							return cached;
-						break;
-
-						case Array.isArray(cached):
-							return Utilities.makeArray(cached);
-						break;
-
-						case typeof cached === 'string':
-							return cached.toString();
-						break;
-
-						case cached && Utilities.typeOf(cached) === 'object':
-							return cached._clone();
-						break;
-
-						default:
-							return cached;
-						break;
-					}
-				}
-			else if (!cached.destroyed)
-				return cached;
-		} else if (defaultValue !== undefined && defaultValue !== null)
-			return this.set(key, defaultValue).get(key, null, asReference);
+				} else if (!cached.destroyed)
+					return cached;
+			} else if (defaultValue !== undefined && defaultValue !== null)
+				return this.set(key, defaultValue).get(key, null, asReference);
 		} catch (error) {
 			console.error('ERROR IN GET', error, this.id, key, this.destroyed);
 		}
@@ -606,7 +607,7 @@ var Store = (function () {
 			Utilities.setImmediateTimeout(function (store, key, now) {
 				if (store.lock)
 					return;
-				
+
 				value = store.get(key, null, null, true);
 
 				if (store.data[key] && now - store.data[key].accessed > store.maxLife) {

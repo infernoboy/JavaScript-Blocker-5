@@ -10,6 +10,7 @@ Special.specials = {
 		
 		Object.defineProperty(window, JSB.eventToken, {
 			value: Object.freeze({
+				window$JSON: window.JSON,
 				window$addEventListener: window.addEventListener.bind(window),
 				window$removeEventListener: window.removeEventListener.bind(window),
 				document$addEventListener: document.addEventListener.bind(document),
@@ -162,7 +163,7 @@ Special.specials = {
 			if (isAllowed)
 				return XHR.send.apply(this, arguments);
 
-			var JSONsendArguments = JSON.stringify(arguments);
+			var JSONsendArguments = window[JSB.eventToken].window$JSON.stringify(arguments);
 
 			if (detail.previousJSONsendArguments === JSONsendArguments) {
 				console.debug('XHR Resend?', arguments, this[storeToken]);

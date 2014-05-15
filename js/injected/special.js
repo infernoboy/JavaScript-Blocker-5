@@ -15,7 +15,7 @@ var Special = {
 		return (this.enabled.hasOwnProperty(special) && this.enabled[special] !== false);
 	},
 
-	JSBCommanderHandler: function (event) {		
+	JSBCommanderHandler: function (event) {
 		var pieces = event.type.split(':');
 
 		if (pieces.length !== 3 || !TOKEN.INJECTED.hasOwnProperty(pieces[1]) || pieces[2] !== TOKEN.EVENT)

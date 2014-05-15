@@ -230,7 +230,7 @@ var UserScript = {
 						} else {
 							if (['exclude', 'include', 'match']._contains(key)) {
 								localKey = key + 'JSB';
-								localValue = '^' + value.replace(/\*\./g, '_SUBDOMAINS_').replace(/\*/, '_ANY_')._escapeRegExp().replace(/_SUBDOMAINS_/g, '([^\\/]+\\.)?').replace(/_ANY_/g, '.*') + '$';
+								localValue = '^' + value.replace(/\*\./g, '_SUBDOMAINS_').replace(/\*/g, '_ANY_')._escapeRegExp().replace(/_SUBDOMAINS_/g, '([^\\/]+\\.)?').replace(/_ANY_/g, '.*') + '$';
 
 								if (localValue === '^.*$' && key !== 'exclude')
 									parsed.domain._pushMissing('*');

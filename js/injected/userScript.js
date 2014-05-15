@@ -46,7 +46,7 @@ var UserScript = {
 
 		var userScriptSetup = new DeepInject('userScriptSetup', function (setup) {
 			unsafeWidnow = window;
-			
+
 			GM_info = setup.info;
 		});
 
@@ -91,7 +91,7 @@ var UserScript = {
 			isFrame: Page.info.isFrame
 		});
 
-		for (var userScript in enabledUserScripts) {	
+		for (var userScript in enabledUserScripts) {
 			if (enabledUserScripts[userScript] === false)
 				Page.blocked.getStore('user_script').getStore('source').getStore(userScript).set(Page.info.location, {
 					ruleAction: -1
@@ -164,7 +164,7 @@ var UserScript = {
 				return '';
 
 			var URL = window.webkitURL || window.URL;
-					
+
 			if (window.Blob && typeof URL.createObjectURL === 'function') {
 				var text = atob(resource.data),
 						textArray = new Array(text.length);
@@ -211,9 +211,10 @@ var UserScript = {
 			var events,
 					action;
 
-			var serializable = JSON.parse(JSON.stringify(details));
+			var serializable = window[JSB.eventToken].window$JSON.parse(window[JSB.eventToken].window$JSON.stringify(details)),
+					messageFn = details.synchronous ? messageExtensionSync : messageExtension;
 
-			var response = messageExtensionSync('XMLHttpRequest', serializable, function (result) {
+			var response = messageFn('XMLHttpRequest', serializable, function (result) {
 				if (result.action === 'XHRComplete') {
 					delete JSB.eventCallback[result.callbackID];
 

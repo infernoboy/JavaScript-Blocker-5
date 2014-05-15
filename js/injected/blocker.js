@@ -47,7 +47,7 @@ var	broken = false;
 var Page = {
 	send: (function () {
 		var timeout;
-		
+
 		return function sendPage () {
 			try {
 				if (!document.hidden) {
@@ -156,7 +156,7 @@ var Handler = {
 
 	hash: function (event) {
 		Page.info.location = Utilities.Page.getCurrentLocation();
-		
+
 		Page.send();
 	},
 
@@ -195,7 +195,7 @@ var Element = {
 			Element.collapse(element);
 	},
 
-	collapse: function (element) {		
+	collapse: function (element) {
 		var collapsible = ['height', 'width', 'padding', 'margin'];
 
 		for (var i = 0; i < collapsible.length; i++)
@@ -243,7 +243,7 @@ var Element = {
 				scriptList.push(element.innerHTML || element.src || element.outerHTML);
 
 			Page.send();
-				
+
 			return true;
 		}
 
@@ -273,7 +273,7 @@ var Element = {
 			anchor = anchor.target || anchor;
 
 			var isAnchor = anchor.nodeName && anchor.nodeName === 'A';
-			
+
 			if (hasTarget && !isAnchor) {
 				if (anchor.querySelectorAll) {
 					var anchors = anchor.querySelectorAll('a', anchor);
@@ -281,7 +281,7 @@ var Element = {
 					for (var i = 0, b = anchors.length; i < b; i++)
 						Element.handle.anchor(anchors[i]);
 				}
-				
+
 				return false;
 			}
 
@@ -289,7 +289,7 @@ var Element = {
 				var href = anchor.getAttribute('href');
 
 				anchor.setAttribute('data-jsbAnchorPrepared', Utilities.Token.create('AnchorPrepared', true));
-				
+
 				if (Special.isEnabled('simple_referrer')) {
 					if (href && href.length && href.charAt(0) !== '#')
 						if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length))
@@ -308,16 +308,16 @@ var Element = {
 							event.stopPropagation();
 						}
 					});
-				
+
 				if (globalSetting.blockReferrer)
 					if (href && href[0] === '#')
 						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
-					else	
+					else
 						anchor.addEventListener('mousedown', function (event) {
 							var key = /Win/.test(window.navigator.platform) ? event.ctrlKey : event.metaKey;
-						
+
 							GlobalPage.message('anonymousNewTab', key || event.which === 2 ? 1 : 0);
-						
+
 							setTimeout(function () {
 								GlobalPage.message('anonymousNewTab', 0);
 							}, 1000);
@@ -331,7 +331,7 @@ var Element = {
 
 			if (!id || !id.length)
 				frame.setAttribute('id', (id = Utilities.id()));
-			
+
 			var idToken = frame.getAttribute('data-jsbFrameProcessed');
 
 			if (Utilities.Token.valid(idToken, id))
@@ -469,13 +469,13 @@ var Resource = {
 
 					Page.send();
 				}, [meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind]);
-				
+
 				return canLoad.isAllowed;
 			}
 		} else {
 			Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
 
-			if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'WasPlaceholder', true)) {		
+			if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'WasPlaceholder', true)) {
 				element.removeAttribute('data-jsbWasPlaceholder');
 				element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
 			}

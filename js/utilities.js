@@ -44,8 +44,13 @@ var Utilities = {
 			fn: fn,
 			args: args
 		});
-
-		window.postMessage('nextImmediateTimeout', '*');
+		
+		if (Utilities.Page.isGlobal)
+			window.postMessage('nextImmediateTimeout', '*');
+		else
+			GlobalPage.message('bounce', {
+				command: 'nextImmediateTimeout'
+			});
 	},
 
 	nextImmediateTimeout: function () {
