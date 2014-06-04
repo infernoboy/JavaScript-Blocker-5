@@ -73,11 +73,11 @@ var Utilities = {
 		return window.btoa(unescape(encodeURIComponent(str)));
 	},
 
-	throttle: function (fn, delay, extra) {
+	throttle: function (fn, delay, extraArgs) {
 		var timeout = null, last = 0;
 
 		return function () {
-			var elapsed = Date.now() - last, args = Utilities.makeArray(arguments).concat(extra || []);
+			var elapsed = Date.now() - last, args = Utilities.makeArray(arguments).concat(extraArgs || []);
 
 			var execute = function () {
 				last = Date.now();
@@ -135,15 +135,8 @@ var Utilities = {
 				aModifierCheck = aModifier[1] !== undefined ? parseInt(aModifier[1], 10) : Infinity,
 				bModifierCheck = bModifier[1] !== undefined ? parseInt(bModifier[1], 10) : Infinity;
 
-		if (isNaN(aModifierCheck))
-			aModifier[1] = aSimpleModifier[1];
-		else
-			aModifier[1] = aModifierCheck;
-
-		if (isNaN(bModifierCheck))
-			bModifier[1] = bSimpleModifier[1];
-		else
-			bModifier[1] = bModifierCheck;
+		aModifier[1] = isNaN(aModifierCheck) ? aSimpleModifier[1] : aModifierCheck;
+		bModifier[1] = isNaN(bModifierCheck) ? bSimpleModifier[1] : bModifierCheck;
 
 		while (aVersionPieces.length < 6)
 			aVersionPieces.push(0);
@@ -176,6 +169,9 @@ var Utilities = {
 
 		__findReference: function (type, reference) {
 			var timers = this.timers[type];
+
+			if (typeof reference === 'string')
+				return timers[reference] ? reference : undefined;
 
 			for (var timerID in timers)
 				if (timers[timerID].reference === reference)
@@ -220,7 +216,7 @@ var Utilities = {
 			this.remove(type, reference);
 
 			var timer = null,
-					timerID = Utilities.id();
+					timerID = typeof reference === 'string' ? reference : Utilities.id();
 
 			if (type === 'timeout')
 				timer = setTimeout(function (timer, type, reference, script, args) {

@@ -20,8 +20,6 @@ var Store = (function () {
 		this.useSnapshot = !!props.snapshot;
 		this.ignoreSave = !!props.ignoreSave;
 		this.private = !!props.private;
-		this.myChildren = this.private ? {} : children;
-		this.myParent = this.private ? {} : parent;
 
 		if (SettingStore.available && typeof name === 'string' && name.length)
 			this.id = (props.save ? 'Storage-' : 'Cache-') + name;
@@ -31,7 +29,9 @@ var Store = (function () {
 		this.name = name;
 		this.props = props;
 
-		if (!this.private)
+		if (!this.private) {
+			children[this.id] = {};
+
 			Object.defineProperty(this, 'data', {
 				enumerable: true,
 
@@ -42,6 +42,8 @@ var Store = (function () {
 					data[this.id] = value;
 				}
 			});
+		} else
+			this.__children[this.id] = {};
 
 		this.prolongDestruction();
 
@@ -154,18 +156,26 @@ var Store = (function () {
 
 	Object.defineProperty(Store.prototype, 'parent', {
 		get: function () {
-			return this.private ? this.myParent[this.id] : parent[this.id];
+			return this.private ? this.__parent : parent[this.id];
 		},
 		set: function (newParent) {
 			if (newParent instanceof Store) {
 				newParent.children[this.id] = this;
 
-				this.myParent[this.id] = newParent;
+				if (this.private)
+					this.__parent = newParent;
+				else
+					parent[this.id] = newParent;
 			} else if (newParent === null) {
-				delete this.myParent[this.id];
+				if (this.private)
+					this.__parent = undefined;
+				else
+					delete parent[this.id];
 
-				for (var key in this.myChildren)
-					delete this.myChildren[key][this.id];
+				var childrenReference = this.private ? this.__children : children;
+
+				for (var key in childrenReference)
+					delete childrenReference[key][this.id];
 			} else
 				throw new Error('parent is not null or an instance of Store');
 		}
@@ -173,17 +183,20 @@ var Store = (function () {
 
 	Object.defineProperty(Store.prototype, 'children', {
 		get: function () {
-			if (!this.myChildren[this.id])
-				this.myChildren[this.id] = {};
-
-			return this.myChildren[this.id];
+			return this.private ? this.__children[this.id] : children[this.id];
 		},
 		set: function (v) {
-			delete this.myChildren[this.id];
+			if (this.private)
+				this.__children[this.id] = {};
+			else
+				children[this.id] = {};
 		}
 	});
 
 	Store.BREAK = -54684513;
+
+	Store.prototype.__parent = undefined;
+	Store.prototype.__children = {};
 
 	Store.prototype.__save = function (bypassIgnore, now) {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
@@ -536,6 +549,7 @@ var Store = (function () {
 				defaultProps = {};
 
 			defaultProps.private = defaultProps.private || this.private;
+			defaultProps.ignoreSave = defaultProps.ignoreSave || this.ignoreSave;
 			defaultProps.maxLife = defaultProps.maxLife || this.maxLife;
 			defaultProps.selfDestruct = defaultProps.selfDestruct || this.selfDestruct;
 
@@ -634,16 +648,17 @@ var Store = (function () {
 		this.data = store.readyJSON(swapPrefix).data;
 	};
 
-	Store.prototype.clear = function () {
+	Store.prototype.clear = function (ignoreSave) {
 		if (this.lock)
 			return;
 
 		for (var child in this.children)
-			this.children[child].clear();
+			this.children[child].clear(true);
 
 		this.data = {};
 
-		this.__save();
+		if (!ignoreSave)
+			this.__save();
 
 		return this;
 	};
@@ -659,12 +674,16 @@ var Store = (function () {
 
 		var self = this;
 
-		if (this.destroyChildren || deep)
+		if (this.destroyChildren || deep) {
 			for (var child in this.children) {
 				this.children[child].destroy(true);
 
 				delete this.children[child];
 			}
+
+			if (!this.private)
+				delete children[this.id];
+		}
 
 		if (!ignoreParent && this.parent)
 			this.parent.only(function (key, value) {

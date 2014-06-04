@@ -10,11 +10,13 @@ var EasyList = function (listName, listURL) {
 EasyList.__updateInterval = TIME.ONE_DAY * 4;
 
 EasyList.blacklist = new Rule('EasyListBlacklist', {
-	private: true
+	private: true,
+	ignoreSave: true
 });
 
 EasyList.whitelist = new Rule('EasyListWhitelist', {
-	private: true
+	private: true,
+	ignoreSave: true
 });
 
 EasyList.updateCheck = function () {
@@ -80,7 +82,7 @@ EasyList.prototype.process = function (list) {
 					useKind = false,
 					domains = ['*'];
 
-			rule = subLine.replace(/\//g, '\\/')
+			var rule = subLine.replace(/\//g, '\\/')
 				.replace(/\(/g, '\\(')
 				.replace(/\+/g, '\\+')
 				.replace(/\?/g, '\\?')
@@ -98,7 +100,7 @@ EasyList.prototype.process = function (list) {
 			if (rule.match(/\|[^$]/))
 				return; // Weirdly written rules that I refuse to parse.
 
-			rule = '^' + rule
+			rule = '^' + rule;
 
 			if (rule._endsWith('|'))
 				rule = rule.substr(0, rule.length - 1) + '.*$';
