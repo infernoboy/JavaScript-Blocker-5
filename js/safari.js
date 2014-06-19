@@ -21,7 +21,7 @@ var ToolbarItems = {
 			return this;
 		},
 		visible: function () {
-			return safari.extension.toolbarItems.length > 0;
+			return safari.extension.toolbarItems && safari.extension.toolbarItems.length > 0;
 		},
 		disabled: function (state) {
 			safari.extension.toolbarItems.forEach(function (toolbarItem) {
@@ -124,7 +124,9 @@ var ToolbarItems = {
 	},
 
 	GlobalPage = {
-		page: function () {
+		tab: safari.self.tab,
+		
+		window: function () {
 			try {
 				return safari.extension.globalPage.contentWindow;
 			} catch (e) {
@@ -132,7 +134,7 @@ var ToolbarItems = {
 			}
 		},
 		message: function (message, data) {
-			safari.self.tab.dispatchMessage(message, data);
+			GlobalPage.tab.dispatchMessage(message, data);
 		}
 	},
 
@@ -143,7 +145,7 @@ var ToolbarItems = {
 
 		__setCache: function (key, value) {
 			Utilities.setImmediateTimeout(function (self, key, value) {
-				if (key._startsWith('Storage-') || value === undefined || typeof value === 'object')
+				if (key._startsWith(Store.STORE_STRING) || value === undefined || typeof value === 'object')
 					return;
 
 				Object.defineProperty(self.__cache, key, {
@@ -219,7 +221,7 @@ var ToolbarItems = {
 			safari.self.addEventListener(type, callback, true);
 		},
 		setContextMenuEventUserInfo: function (event, data) {
-			safari.self.tab.setContextMenuEventUserInfo(event, data);
+			GlobalPage.tab.setContextMenuEventUserInfo(event, data);
 		}
 	},
 
@@ -237,11 +239,11 @@ var ToolbarItems = {
 	},
 
 	ResourceCanLoad = function (beforeLoad, data) {
-		return safari.self.tab.canLoad(beforeLoad, data);
+		return GlobalPage.tab.canLoad(beforeLoad, data);
 	},
 
 	GlobalCommand = function (command, data) {
-		return safari.self.tab.canLoad(beforeLoad, {
+		return GlobalPage.tab.canLoad(beforeLoad, {
 			command: command,
 			data: data
 		});

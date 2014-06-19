@@ -11,6 +11,11 @@ var Settings = {
 		return (setting in Settings.items) ? Settings.items[setting].default : null;
 	},
 
+	onChange: function (event) {
+		if (Settings.items[event.key] && typeof Settings.items[event.key].setting.onChange === 'function')
+			Settings.items[event.key].setting.onChange(event.oldValue, event.newValue);
+	},
+
 	getItem: function (setting, JSON) {
 		var getMethod = JSON ? 'getJSON' : 'getItem',
 				storedValue = SettingStore.available ? SettingStore[getMethod](setting) : Settings.current_value(setting);
@@ -52,6 +57,10 @@ var Settings = {
 			SettingStore.removeItem(setting);
 	}
 };
+
+if (Utilities.Page.isGlobal)
+	Events.addSettingsListener(Settings.onChange);
+
 
 Settings._alwaysBlockHelp = 'alwaysBlock help';
 Settings._alwaysBlock = [['domain', 'Different hostnames'], ['topLevel', 'Different hosts &amp; subdomains'], ['nowhere', 'Blacklist only'], ['trueNowhere', 'Nowhere'], ['everywhere', 'Anywhere']];
@@ -181,9 +190,18 @@ Settings.settings = {
 			divider: 1
 		},
 		language: {
+			type: 'select-string',
 			label: 'Language:',
-			setting: [['Automatic', 'Automatic'], ['en-us', 'US English'], ['de-de', 'Deutsch']],
-			default: 'Automatic'
+			options: [['auto', 'Automatic'], ['en-us', 'US English'], ['de-de', 'Deutsch']],
+			default: 'auto',
+			onChange: function (oldValue, newValue) {
+				if (Object._hasPrototypeKey({}, newValue)) {
+					LogError('refusing to set language to ' + newValue);
+
+					Settings.setItem('language', 'auto');
+				} else
+					Strings.__currentLanguage = null;
+			}
 		},
 		sourceCount: {
 			label: 'Sources displayed by default:',
@@ -780,6 +798,7 @@ for (var section in Settings.settings) {
 	for (var setting in Settings.settings[section])
 		Settings.items[setting] = {
 			default: Settings.settings[section][setting].default,
-			editable: section !== 'misc'
+			editable: section !== 'misc',
+			setting: Settings.settings[section][setting]
 		}
 }

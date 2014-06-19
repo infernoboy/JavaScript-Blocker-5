@@ -204,7 +204,7 @@ Special.specials = {
 					for (var i = 0; i < params.length; i++) {
 						splitParam = params[i].split('=');
 
-						info.meta.data[decodeURIComponent(splitParam[0])] = decodeURIComponent(splitParam[1]);
+						info.meta.data[decodeURIComponent(splitParam[0])] = typeof splitParam[1] === 'string' ? decodeURIComponent(splitParam[1]) : null;
 					}
 				} else if (toSend instanceof window.Blob) {
 					var URL = window.webkitURL || window.URL;

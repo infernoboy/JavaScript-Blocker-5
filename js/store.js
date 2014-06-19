@@ -22,7 +22,7 @@ var Store = (function () {
 		this.private = !!props.private;
 
 		if (SettingStore.available && typeof name === 'string' && name.length)
-			this.id = (props.save ? 'Storage-' : 'Cache-') + name;
+			this.id = (props.save ? Store.STORE_STRING : Store.CACHE_STRING) + name;
 		else
 			this.id = Utilities.id();
 
@@ -70,6 +70,9 @@ var Store = (function () {
 	};
 
 	Store.prototype = Object.create(EventListener.prototype);
+
+	Store.STORE_STRING = 'Storage-';
+	Store.CACHE_STRING = 'Cache-';
 
 	Store.destroyAll = function () {
 		for (var key in Utilities.Timer.timers.timeout)
@@ -432,7 +435,7 @@ var Store = (function () {
 			store.prolongDestruction();
 		}, 50, this);
 
-		if ((typeof key !== 'string' && typeof key !== 'number') || (this.data[key] && !this.data.hasOwnProperty(key)))
+		if ((typeof key !== 'string' && typeof key !== 'number') || (Object._hasPrototypeKey(this.data, key)))
 			throw new Error(key + ' cannot be used as key.');
 
 		if (typeof overwrite !== 'boolean')

@@ -344,7 +344,9 @@ var Utilities = {
 	},
 
 	Page: {
-		isGlobal: GlobalPage.page() === window,
+		isGlobal: GlobalPage.window() === window,
+		isPopover: Popover.window() === window,
+		isWebpage: !!GlobalPage.tab,
 		isTop: window === window.top,
 		isAbout: document.location.protocol === 'about:',
 
@@ -488,7 +490,7 @@ var LogDebug = function () {
 	if (globalSetting.debugMode) {
 		console.debug.apply(console, ['(JSB)'].concat(Utilities.makeArray(arguments)));
 
-		if (!Utilities.Page.isGlobal) {
+		if (Utilities.Page.isWebpage) {
 			var args = Utilities.makeArray(arguments);
 
 			for (var i = 0; i < args.length; i++)
@@ -537,7 +539,7 @@ var LogError = function () {
 		} else
 			errorMessage = error;
 
-		if (!Utilities.Page.isGlobal)
+		if (Utilities.Page.isWebpage)
 			GlobalPage.message('logError', {
 				source: document.location.href,
 				message: errorMessage
@@ -804,10 +806,30 @@ var Extension = {
 			value: function () {
 				return this.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 			}
+		},
+
+		_format: {
+			value: function (args) {
+				if (!Array.isArray(args))
+					throw new TypeError(args + ' is not an array');
+
+				var string = this.toString();
+
+				for (var i = 0; i < args.length; i++)
+					string = string.replace(new RegExp('\\{' + i + '\\}', 'g'), args[i]);
+				
+				return string;
+			}
 		}
 	},
 
 	Object: {
+		_hasPrototypeKey: {
+			value: function (object, key) {
+				return ((key in object) && !object.hasOwnProperty(key));
+			}
+		},
+		
 		_createReverseMap: {
 			value: function (deep) {
 				for (var key in this)
