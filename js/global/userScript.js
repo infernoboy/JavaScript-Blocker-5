@@ -300,19 +300,19 @@ var UserScript = {
 		for (var i = 0; i < allowPages.length; i++)
 			Rules.list.active.addPage('user_script', allowPages[i], {
 				rule: namespace,
-				action: 3
+				action: ACTION.AUTO_ALLOW_USER_SCRIPT
 			});
 
 		for (var i = 0; i < allowDomains.length; i++)
 			Rules.list.active.addDomain('user_script', allowDomains[i], {
 				rule: namespace,
-				action: 3
+				action: ACTION.AUTO_ALLOW_USER_SCRIPT
 			});
 
 		for (var i = 0; i < detail.excludeJSB.length; i++)
 			Rules.list.active.addPage('user_script', detail.excludeJSB[i], {
 				rule: namespace,
-				action: 2
+				action: ACTION.AUTO_BLOCK_USER_SCRIPT
 			});
 
 		setTimeout(function (self, userScript, detail) {

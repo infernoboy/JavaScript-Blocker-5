@@ -482,80 +482,105 @@ var Utilities = {
 
 // Global functions ==========================================================
 
+var LOG_HISTORY_SIZE = 20;
+
 var Log = function () {
-	console.log.apply(console, ['(JSB)'].concat(Utilities.makeArray(arguments)));
+	Utilities.setImmediateTimeout(function (args) {
+		var logMessages = ['(JSB)'].concat(args);
+
+		Log.history.unshift(logMessages.join(' '));
+
+		Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
+
+		console.log.apply(console, logMessages);
+	}, [Utilities.makeArray(arguments)]);
 };
+
+Log.history = [];
 
 var LogDebug = function () {
 	if (globalSetting.debugMode) {
-		console.debug.apply(console, ['(JSB)'].concat(Utilities.makeArray(arguments)));
+		Utilities.setImmediateTimeout(function (args) {
+			var debugMessages = ['(JSB)'].concat(args);
 
-		if (Utilities.Page.isWebpage) {
-			var args = Utilities.makeArray(arguments);
+			LogDebug.history.push(debugMessages.join(' '));
 
-			for (var i = 0; i < args.length; i++)
-				GlobalPage.message('logDebug', {
-					source: document.location.href,
-					message: args[i]
-				});
-		}
+			LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
+
+			console.debug.apply(console, debugMessages);
+
+			if (Utilities.Page.isWebpage)
+				for (var i = 0; i < args.length; i++)
+					GlobalPage.message('logDebug', {
+						source: document.location.href,
+						message: args[i]
+					});
+		}, [Utilities.makeArray(arguments)]);
 	}
 };
+
+LogDebug.history = [];
 
 var LogError = function () {
-	var	error,
-			errorMessage,
-			errorStack;
-			
-	var args = Utilities.makeArray(arguments);
+	Utilities.setImmediateTimeout(function (args) {
+		var	error,
+				errorMessage,
+				errorStack;
+				
+		for (var i = 0; i < args.length; i++) {
+			error = args[i];
 
-	for (var i = 0; i < args.length; i++) {
-		error = args[i];
+			if (Array.isArray(error))
+				error = error
+					.filter(function (currentValue) {
+						return currentValue !== undefined;
+					})
+					.map(function (currentValue) {
+						if (typeof currentValue === 'object')
+							try {
+								return JSON.stringify(currentValue);
+							} catch (error) {
+								return currentValue.toString();
+							}
+						else
+							return currentValue;
+					})
+					.join(' - ');
 
-		if (Array.isArray(error))
-			error = error
-				.filter(function (currentValue) {
-					return currentValue !== undefined;
-				})
-				.map(function (currentValue) {
-					if (typeof currentValue === 'object')
-						try {
-							return JSON.stringify(currentValue);
-						} catch (error) {
-							return currentValue.toString();
-						}
-					else
-						return currentValue;
-				})
-				.join(' - ');
+			if (error instanceof Error) {
+				errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
 
-		if (error instanceof Error) {
-			errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
+				if (error.sourceURL)
+					errorMessage = error.message + ' - ' + error.sourceURL.replace(ExtensionURL(), '/') +  ' line ' + error.line;
+				else
+					errorMessage = error.message;
+			} else
+				errorMessage = error;
 
-			if (error.sourceURL)
-				errorMessage = error.message + ' - ' + error.sourceURL.replace(ExtensionURL(), '/') +  ' line ' + error.line;
-			else
-				errorMessage = error.message;
-		} else
-			errorMessage = error;
+			LogError.history.push(errorMessage);
 
-		if (Utilities.Page.isWebpage)
-			GlobalPage.message('logError', {
-				source: document.location.href,
-				message: errorMessage
-			});
+			LogError.history = LogError.history._chunk(LOG_HISTORY_SIZE)[0];
 
-		if (Utilities.Page.isGlobal || globalSetting.debugMode) {
-			console.error('(JSB)', errorMessage);
+			if (Utilities.Page.isWebpage)
+				GlobalPage.message('logError', {
+					source: document.location.href,
+					message: errorMessage
+				});
 
-			if (errorStack) {
-				console.groupCollapsed('(JSB) Stack');
-				console.error(errorStack);
-				console.groupEnd();
+			if (Utilities.Page.isGlobal || globalSetting.debugMode) {
+				console.error('(JSB)', errorMessage);
+
+				if (errorStack) {
+					console.groupCollapsed('(JSB) Stack');
+					console.error(errorStack);
+					console.groupEnd();
+				}
 			}
 		}
-	}
+	}, [Utilities.makeArray(arguments)]);
 };
+
+LogError.history = [];
 
 var Struct = (function () {
 	function Struct () {

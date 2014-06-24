@@ -12,9 +12,6 @@ function Page (page, tab) {
 	page.state = Store.promote(page.state);
 
 	page.state.forEach(function (state, kinds, store) {
-		if (state === 'unblocked')
-			return;
-
 		kinds.forEach(function (kind, resources, store) {
 			resources.getStore('source').map(function (sourceName, source) {
 				return source.map(function (location, attributes) {

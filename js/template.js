@@ -33,18 +33,14 @@ Template.load = function (file) {
 	return Template.__templates[file];
 };
 
-Template.loaded = function (file) {
-	return Template.__templates.hasOwnProperty(file);
-};
-
 Template.create = function (template, section, data) {
-	if (!Template.loaded(template))
+	if (!Template.__templates.hasOwnProperty(template))
 		throw new Error('template file not loaded - ' + template);
 
 	return Template.__templates[template].create(section, data);
 };
 
-Template.prototype.create = function (section, data) {
+Template.prototype.create = function (section, data, isHTML) {
 	// Simple JavaScript Templating
 	// John Resig - http://ejohn.org/ - MIT Licensed
 
@@ -53,17 +49,17 @@ Template.prototype.create = function (section, data) {
 	if (data !== false && typeof data !== 'object')
 		data = {};
 
-	if (!/\W/.test(section)) {
-		if(section in this.cache)
-			fn = this.cache[section];
-		else {
-			var template = this.get(section);
+	if (section in this.cache)
+		fn = this.cache[section];
+	else if (!isHTML) {
+		var template = this.get(section);
 
-			if (!template.length)
-				throw new Error('section not found in template: ' + this.name + ' - ' + section);
-	
-			fn = this.create(template.text(), false);
-		}
+		if (!template.length)
+			throw new Error('section not found in template: ' + this.name + ' - ' + section);
+
+		fn = this.create(template.text(), false, true);
+
+		this.cache[section] = fn;
 	} else
 		fn = this.cache[section] = new Function('self', "var p=[];p.push('" +
 			section
@@ -84,9 +80,3 @@ Template.prototype.create = function (section, data) {
 Template.prototype.get = function (section) {
 	return this.template.filter('#' + section);
 };
-
-Template.load('main');
-
-
-// Temporarily globalize Template
-globalPage.Template = Template;

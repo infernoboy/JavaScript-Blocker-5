@@ -533,7 +533,7 @@ var Store = (function () {
 			} else if (defaultValue !== undefined && defaultValue !== null)
 				return this.set(key, defaultValue).get(key, null, asReference);
 		} catch (error) {
-			console.error('ERROR IN GET', error, this.id, key, this.destroyed);
+			LogError(['ERROR IN GET', error, this.id, key, this.destroyed]);
 		}
 	};
 

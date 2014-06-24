@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>9537.77.4</string>
+	<string>10538.39.41</string>
 	<key>CFBundleDisplayName</key>
 	<string>JavaScript Blocker 5</string>
 	<key>CFBundleIdentifier</key>
@@ -18,8 +18,6 @@
 	<string>300</string>
 	<key>Chrome</key>
 	<dict>
-		<key>Database Quota</key>
-		<real>52428800</real>
 		<key>Global Page</key>
 		<string>global.html</string>
 		<key>Popovers</key>

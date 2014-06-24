@@ -49,7 +49,7 @@ DeepInject.prototype.prepare = function () {
 
 DeepInject.cleanLine = function (script) {
 	if (typeof script !== 'string')
-		throw new TypeError('script is not a string');
+		throw new TypeError(script + ' is not a string');
 
 	if (!script._endsWith(';'))
 		script += ';';

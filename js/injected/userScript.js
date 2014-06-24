@@ -72,7 +72,7 @@ var UserScript = {
 		Special.setup(userScript).inject();
 
 		if (attributes.before && DeepInject.useURL)
-			console.warn('This page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
+			Log('this page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
 
 		if (excludeFromPage !== true)
 			Page.allowed.getStore('user_script').getStore('source').getStore(attributes.meta.trueNamespace).set(Page.info.location, {
