@@ -3,21 +3,18 @@
 var EasyList = function (listName, listURL) {
 	this.name = listName;
 	this.url = listURL;
+	this.temporaryRules = EasyList.__temporary.get(this.name, new Rule('EasyTemporary', {
+		private: true
+	}));
+
+	this.temporaryRules.rules.clear();
 
 	this.download().done(this.process.bind(this));
 };
 
 EasyList.__updateInterval = TIME.ONE_DAY * 4;
 
-EasyList.blacklist = new Rule('EasyListBlacklist', {
-	private: true,
-	ignoreSave: true
-});
-
-EasyList.whitelist = new Rule('EasyListWhitelist', {
-	private: true,
-	ignoreSave: true
-});
+EasyList.__temporary = new Store('EasyTemporary');
 
 EasyList.updateCheck = function () {
 	if (Date.now() - Settings.getItem('EasyListLastUpdate') > EasyList.__updateInterval)
@@ -25,25 +22,25 @@ EasyList.updateCheck = function () {
 };
 
 EasyList.fetch = function () {
-	var lists = Settings.getStore('easyLists');
+	var lists = Settings.getItem('easyLists');
 
-	for (var list in lists.data)
-		if (lists.data[list].value[0])
-			new EasyList(list, lists.data[list].value[1]);
+	for (var list in lists)
+		if (lists[list].enabled)
+			new EasyList(list, lists[list].value[0]);
 
 	Settings.setItem('EasyListLastUpdate', Date.now());
 };
 
 EasyList.prototype.merge = function () {
-	Utilities.setImmediateTimeout(function () {
-		Rules.list.blacklist.rules.replaceWith(EasyList.blacklist.rules);
-		Rules.list.whitelist.rules.replaceWith(EasyList.whitelist.rules);
+	Utilities.setImmediateTimeout(function (self) {
+		Rules.list[self.name].rules.replaceWith(self.temporaryRules.rules);
 
 		Predefined();
 
-		EasyList.blacklist.rules.clear();
-		EasyList.whitelist.rules.clear();
-	});
+		setTimeout(function (self) {
+			self.temporaryRules.rules.clear();
+		}, 100, self);
+	}, [this]);
 };
 
 EasyList.prototype.download = function () {
@@ -59,19 +56,18 @@ EasyList.prototype.process = function (list) {
 		script: ['script'],
 		image: ['image'],
 		object: ['embed'],
-		xmlhttprequest: ['ajax_get', 'ajax_post', 'ajax_put']
+		xmlhttprequest: ['xhr_get', 'xhr_post', 'xhr_put']
 	};
 
 	for (var i = 0, b = lines.length; i < b; i++) {
-		Utilities.setImmediateTimeout(function (line) {
+		Utilities.setImmediateTimeout(function (self, line) {
 			if (line._contains('##') || line._contains('#@#') || !line.length)
 				return; // Ignore element hiding rules and empty lines.
 
 			var addType;
 
-			var ruleList = line._startsWith('@@') ? EasyList.whitelist : EasyList.blacklist,
-					oppositeRuleList = ruleList === EasyList.whitelist ? EasyList.blacklist : EasyList.whitelist,
-					line = ruleList === EasyList.whitelist ? line.substr(2) : line;
+			var action = line._startsWith('@@') ? ACTION.WHITELIST : ACTION.BLACKLIST,
+					line = action === ACTION.WHITELIST ? line.substr(2) : line;
 
 			if (line[0] === '!' || line[0] === '[')
 				return; // Line is a comment or determines which version of AdBlock is required.
@@ -84,6 +80,7 @@ EasyList.prototype.process = function (list) {
 
 			var rule = subLine.replace(/\//g, '\\/')
 				.replace(/\(/g, '\\(')
+				.replace(/\)/g, '\\)')
 				.replace(/\+/g, '\\+')
 				.replace(/\?/g, '\\?')
 				.replace(/\^/g, '([^a-zA-Z0-9_\.%-]+|$)')
@@ -139,18 +136,20 @@ EasyList.prototype.process = function (list) {
 
 				if (useKind)
 					for (var h = 0; h < useKind.length; h++)
-						ruleList[addType](useKind[h], domains[g], {
-							rule: rule
+						self.temporaryRules[addType](useKind[h], domains[g], {
+							rule: rule,
+							action: action
 						});
 				else
-					ruleList[addType]('*', domains[g], {
-						rule: rule
+					self.temporaryRules[addType]('*', domains[g], {
+						rule: rule,
+						action: action
 					});
 			}
-		}, [$.trim(lines[i])]);
+		}, [this, $.trim(lines[i])]);
 	}
 
-	Utilities.Timer.timeout('MergeNewEasylist', this.merge.bind(this), 2000);
+	Utilities.Timer.timeout('ReplaceNewEasyList-' + this.name, this.merge.bind(this), 2000);
 };
 
 Utilities.Timer.interval('EasyListUpdateCheck', EasyList.updateCheck, EasyList.__updateInterval);

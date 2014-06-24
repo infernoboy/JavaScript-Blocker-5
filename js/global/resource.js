@@ -115,16 +115,15 @@ Resource.prototype.__humanize = function (allow, rule, framed, temporary) {
 };
 
 Resource.prototype.allowedBySettings = function () {
-	var enabledKinds = Settings.getStore('enabledKinds'),
-			canLoad = {
-				action: ACTION.ALLOW_WITHOUT_RULE,
-				pageRule: false
-			};
+	var canLoad = {
+		action: ACTION.ALLOW_WITHOUT_RULE,
+		pageRule: false
+	};
 
-	if (!enabledKinds.get(this.kind))
+	if (!Settings.getItem('enabledKinds', this.kind))
 		return canLoad;
 
-	var blockFrom = Settings.getStore('alwaysBlock').get(this.kind),
+	var blockFrom = Settings.getItem('alwaysBlock', this.kind),
 			sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
 
 	if (blockFrom === 'trueNowhere' || blockFrom === 'nowhere' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
@@ -167,7 +166,7 @@ Resource.prototype.canLoad = function () {
 		return canLoad;
 	}
 
-	if (!Settings.getStore('enabledKinds').get(this.kind)) {
+	if (!Settings.getItem('enabledKinds', this.kind)) {
 		canLoad.action = ACTION.KIND_DISABLED;
 
 		return canLoad;

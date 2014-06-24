@@ -406,7 +406,7 @@ var Command = function (type, event) {
 				result: canLoad
 			};
 
-			if (info.canLoad.action < 0 && enabled_specials.ajax_intercept.value === 1) {
+			if (info.canLoad.action < 0 && enabled_specials.xhr_intercept.value === 1) {
 				info.str = detail.str;
 				info.kind = detail.kind;
 				info.source = detail.source;

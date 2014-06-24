@@ -103,33 +103,32 @@ var Command = function (command, data, event) {
 				disabled: false,
 				debugMode: true,
 
-				enabledKinds: Settings.getStore('enabledKinds').all(),
-				showPlaceholder: Settings.getStore('showPlaceholder').all(),
+				enabledKinds: Settings.getItem('enabledKinds'),
+				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
 				confirmShortURL: Settings.getItem('confirmShortURL'),
 				blockReferrer: Settings.getItem('blockReferrer')
 			};
 		},
 
-		getSetting: function (setting, getJSON, defaultValue) {
-			if (getJSON)
-				this.message = Settings.getJSON(setting, defaultValue);
-			else
-				this.message = Settings.getItem(setting, defaultValue);
-		},
-
 		specialsForLocation: function (page) {
 			if (page.protocol === 'about:')
 				page.location = this.event.target.url;
 
-			this.message = Special.forLocation(page.location, page.isFrame);
+			if (page.location)
+				this.message = Special.forLocation(page.location, page.isFrame);
+			else
+				this.message = {};
 		},
 
 		userScriptsForLocation: function (page) {
 			if (page.protocol === 'about:')
 				page.location = this.event.target.url;
-			
-			this.message = UserScript.forLocation(page.location, page.isFrame);
+
+			if (page.location)
+				this.message = UserScript.forLocation(page.location, page.isFrame);
+			else
+				this.message = {};
 		},
 
 		receivePage: function (thePage) {

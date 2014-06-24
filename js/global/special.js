@@ -3,6 +3,10 @@
 var Special = {
 	__enabled: null,
 
+	get __excludeLists() {
+		return ['predefined'].concat(Object.keys(Settings.getItem('easyLists')));
+	},
+
 	__forLocation: function (specials, kind, location, isFrame) {
 		var rule,
 				special;
@@ -10,7 +14,7 @@ var Special = {
 		var isUserScript = kind === 'user_script',
 				enabled = isUserScript ? {} : specials,
 				framedKind = isFrame ? 'framed:' + kind : null,
-				forLocation = Rules.forLocation([framedKind, kind], location, null, null, null, ['whitelist', 'blacklist']);
+				forLocation = Rules.forLocation([framedKind, kind], location, null, null, null, Special.__excludeLists);
 
 		if (isUserScript)
 			for (var script in specials)
@@ -43,9 +47,13 @@ var Special = {
 		if (this.__enabled)
 			return this.__enabled._clone();
 
-		this.__enabled = Settings.getStore('specials').filter(function (special, value) {
-			return value.value !== false;
-		}).all();
+		var specials = Settings.getItem('enabledSpecials');
+
+		this.__enabled = {};
+
+		for (var special in specials)
+			if (specials[special] !== false)
+				this.__enabled[special] = specials[special];
 
 		return this.__enabled._clone();
 	},

@@ -421,23 +421,14 @@ var Rules = {
 	forLocation: function () {
 		var excludeLists = Array.isArray(arguments[arguments.length - 1]) ? arguments[arguments.length - 1] : [];
 
-		var lists = {
-			temporary: {},
-			active: {},
-			whitelist: {},
-			blacklist: {}
-		};
-
 		if (this.list.active !== this.list.user)
 			excludeLists.push('temporary');
+		else
+			excludeLists.push('user');
 
-		if (Settings.getItem('ignoreWhitelist'))
-			excludeLists.push('whitelist');
+		var lists = {};
 
-		if (Settings.getItem('ignoreBlacklist'))
-			excludeLists.push('blacklist');
-
-		for (var list in lists)
+		for (var list in Rules.list)
 			if (!excludeLists._contains(list))
 				lists[list] = this.list[list].forLocation.apply(this.list[list], arguments)
 
@@ -475,7 +466,7 @@ var Rules = {
 
 Object.defineProperty(Rules, '__kinds', {
 	value: Object.freeze([
-		'*', 'disable', 'script', 'frame', 'embed', 'video', 'image', 'ajax_get', 'ajax_post', 'ajax_put', 'special', 'user_script'
+		'*', 'disable', 'script', 'frame', 'embed', 'video', 'image', 'xhr_get', 'xhr_post', 'xhr_put', 'special', 'user_script'
 	])
 });
 
@@ -503,8 +494,14 @@ Object.defineProperty(Rules, 'list', {
 				if (!(rules instanceof Rule))
 					throw new TypeError(rules + ' is not an instance of Rule.');
 
-				if (rules.rules.name && ['Blacklist', 'Whitelist', 'TemporaryRules']._contains(rules.rules.name))
-					throw new Error('active rules cannot be set to Blacklist, Whitelist, or TemporaryRules.');
+				var exclude = Special.__excludeLists.map(function (name) {
+					return 'EasyRules-' + name;
+				});
+
+				exclude.push('Predefined', 'TemporaryRules');
+
+				if (rules.rules.name && exclude._contains(rules.rules.name))
+					throw new Error('active rules cannot be set to ' + rules.rules.name);
 
 				if (this.active !== this.user && this.active.autoDestruct)
 					this.active.destroy(true);
@@ -525,31 +522,34 @@ Object.defineProperty(Rules, 'list', {
 			})
 		},
 
-		whitelist: {
+		predefined: {
 			enumerable: true,
 
-			value: new Rule('Whitelist', {
+			value: new Rule('Predefined', {
 				save: true,
 				private: true
-			}, {
-				action: ACTION.WHITELIST
-			})
-		},
-
-		blacklist: {
-			enumerable: true,
-
-			value: new Rule('Blacklist', {
-				save: true,
-				private: true
-			}, {
-				action: ACTION.BLACKLIST
 			})
 		}
 	})
 });
 
 Rules.list.active = Rules.list.user;
+
+(function () {
+	var easyLists = Settings.getItem('easyLists');
+
+	for (var list in easyLists)
+		if (easyLists[list].enabled)
+			Object.defineProperty(Rules.list, list, {
+				enumerable: true,
+
+				value: new Rule('EasyRules-' + list, {
+					save: true,
+					private: true
+				})
+			});
+
+})();
 
 Rules.list.user.rules.addEventListener('save', function () {
 	Resource.canLoadCache.saveNow();

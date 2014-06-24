@@ -133,7 +133,7 @@ Special.specials = {
 			}, true);
 	},
 
-	ajax_intercept: function () {
+	xhr_intercept: function () {
 		var XHR = {
 			open: XMLHttpRequest.prototype.open,
 			send: XMLHttpRequest.prototype.send
@@ -180,7 +180,7 @@ Special.specials = {
 			detail.previousJSONsendArguments = JSONsendArguments;
 
 			var	pageAction = 'addBlockedItem',
-					kind = 'ajax_' + detail.method,
+					kind = 'xhr_' + detail.method,
 					info = {
 						meta: null,
 						kind: kind,
@@ -255,6 +255,6 @@ Special.specials = {
 Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
 Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.prepareScript.commandToken = Utilities.Token.create('inlineScriptsAllowed');
-Special.specials.ajax_intercept.excludeFromPage = true;
+Special.specials.xhr_intercept.excludeFromPage = true;
 
 Special.begin();

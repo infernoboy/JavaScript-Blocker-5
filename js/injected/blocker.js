@@ -37,9 +37,9 @@ var BLOCKABLE = {
 	OBJECT: ['embed', true],
 	VIDEO: ['video', true],
 	IMG: ['image', true],
-	AJAX_POST: ['ajax_post'],
-	AJAX_PUT: ['ajax_put'],
-	AJAX_GET: ['ajax_get']
+	XHR_POST: ['xhr_post'],
+	XHR_PUT: ['xhr_put'],
+	XHR_GET: ['xhr_get']
 };
 
 var	broken = false;

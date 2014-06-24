@@ -4,6 +4,8 @@ var Template = function (template, file) {
 	this.cache = {};
 	this.name = file;
 	this.template = $(template);
+
+	// document.createDocumentFragment();
 };
 
 Template.__templates = {};

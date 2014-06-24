@@ -7,13 +7,21 @@
  ***************************************/
 
 var Predefined = function () {
-	/* ====================WHITELIST===================== */
+	var kind,
+			domain,
+			i;
 
-	var whitelistValue = {};
+	var whitelistValue = {
+		action: 5
+	};
 
-	var blacklistValue = {};
+	var blacklistValue = {
+		action: 4
+	};
 
-	var wld = {
+	/* ====================WHITELIST===================== */	
+
+	var whitelistDomains = {
 		script: {
 			'*': [
 				'www\\.readability\\.com',
@@ -43,12 +51,12 @@ var Predefined = function () {
 		image: {
 			'.google.com': ['gstatic\\.com']
 		},
-		ajax_get: {
+		xhr_get: {
 			'.digg.com': ['digg\\.com']
 		}
 	};
 
-	Rules.list.whitelist.addMany({
+	Rules.list.predefined.addMany({
 		script: {
 			domain: {
 				'*': {
@@ -82,35 +90,26 @@ var Predefined = function () {
 		}
 	});
 
-	var rule;
-
-	for (var kind in wld) {
-		for (var domain in wld[kind]) {
-			for (var i = 0; i < wld[kind][domain].length; i++) {
-				rule = [
-						'^', typeof wld[kind][domain][i] === 'object' ? '(' + wld[kind][domain][i][0] + ')?' : '',
-						'https?:\\/\\/([^\\/]+\.)?', typeof wld[kind][domain][i] === 'object' ? wld[kind][domain][i][1] : wld[kind][domain][i], '\\/.*$'].join('')
-
-				Rules.list.whitelist.addDomain(kind, domain, {
-					rule: rule,
+	for (kind in whitelistDomains)
+		for (domain in whitelistDomains[kind])
+			for (i = 0; i < whitelistDomains[kind][domain].length; i++) 
+				Rules.list.predefined.addDomain(kind, domain, {
+					rule: '^https?:\\/\\/([^\\/]+\.)?' + whitelistDomains[kind][domain][i] + '\\/.*$',
 					action: 5
 				});
-			}
-		}
-	}
 
-	var wlScriptRules = Rules.list.whitelist.kind('script').domain();
+	var scriptRules = Rules.list.predefined.kind('script').domain();
 
-	wlScriptRules.setMany({
-		'.google.co.uk': wlScriptRules.get('.google.com'),
-		'.google.de': wlScriptRules.get('.google.com'),
-		'.amazon.co.uk': wlScriptRules.get('.amazon.com'),
-		'.amazon.de': wlScriptRules.get('.amazon.com')
+	scriptRules.setMany({
+		'.google.co.uk': scriptRules.get('.google.com'),
+		'.google.de': scriptRules.get('.google.com'),
+		'.amazon.co.uk': scriptRules.get('.amazon.com'),
+		'.amazon.de': scriptRules.get('.amazon.com')
 	});
 
 	/* ====================BLACKLIST===================== */
 
-	Rules.list.blacklist.addMany({
+	Rules.list.predefined.addMany({
 		script: {
 			domain: {
 				'*': {
@@ -127,80 +126,74 @@ var Predefined = function () {
 		}
 	});
 
-	var bld = {
+	var blacklistDomain = {
 		script: {
 			'*': [
-				['Blocks copy and paste on websites', 'tynt\\.com'],
-				['Turns words on webpages into clickable ads', 'kontera\\.com'],
-				['Makes a popup appear over a link when hovered on', 'snap\\.com'],
-				['User tracking and advertising', '(edge|pixel)\\.quantserve\\.com'],
-				['Advertisements', 'pagead[0-9]+\\.googlesyndication\\.com'],
-				['Advertisements', 'blogads\\.com'],
-				['Advertisements', 'admeld\\.com'],
-				['Tracks users', 'scorecardresearch\\.com'],
-				['Social media tracking', 'connect\\.facebook\\.(com|net)'],
-				['Social media tracking', 'platform\\.twitter\\.com'],
-				['Advertisements', 'engine\\.carbonads\\.com'],
-				['Adds a "tweet-this" button on webpages', 'widgets\\.twimg\\.com'],
-				['Tracks users', 'media6degrees\\.com'],
-				['Tracks users', '(ssl|www)\\.google\\-analytics\\.com'],
-				['User tracking and advertisements', '(ad|stats)\.([a-z]+\\.)?doubleclick\.net'],
-				['Tracks users', 'getclicky\\.com'],
-				['Advertisements', 'infolinks\\.com'],
-				['Tracks users', 'clicktale\\.(net|com)'],
-				['User tracking and advertisements', 'zedo\\.com'],
-				['Tracks users', 'monster\\.com'],
-				['Tracks users', 'ensighten\\.com'],
-				['User tracking and advertisements', 'gorillanation\\.com'],
-				['Tracks users', 'bizographics\\.com'],
-				['Adds a "digg-this" button on webpages', 'widgets\\.digg\\.com'],
-				['Tracks users', 'chartbeat\\.com'],
-				['Adds a "reddit-this" button on webpages', 'redditstatic.s3.amazonaws.com'],
-				['Adds a "reddit-this" button on webpages', 'reddit.com'],
-				['Tracks users', 'verticalacuity\\.com'],
-				['Tracks users', 'sail\\-horizon\\.com'],
-				['Tracks users', 'kissmetrics\\.com'],
-				['Advertisements', 'legolas\\-media\\.com'],
-				['Advertisements', 'adzerk\\.(com|net)'],
-				['Advertisements', 'adtechus\\.com'],
-				['Marketing', 'skimlinks\\.com'],
-				['Marketing', 'visualwebsiteoptimizer\\.com'],
-				['Marketing', 'marketo\\.(net|com)'],
-				['Tracks users', 'coremetrics\\.com'],
-				['Tracks users', 'serving\\-sys\\.com'],
-				['Advertisements', 'insightexpressai\\.com'],
-				['Advertisements', 'googletagservices.com'],
-				['Layers', 'live.spokenlayer.com'],
-				['Tracks users', 'linksalpha.com'],
-				['ShareThis', 'sharethis.com'],
-				['AddThis', 'addthis.com']
+				'tynt\\.com',
+				'kontera\\.com',
+				'snap\\.com',
+				'(edge|pixel)\\.quantserve\\.com',
+				'pagead[0-9]+\\.googlesyndication\\.com',
+				'blogads\\.com',
+				'admeld\\.com',
+				'scorecardresearch\\.com',
+				'connect\\.facebook\\.(com|net)',
+				'platform\\.twitter\\.com',
+				'engine\\.carbonads\\.com',
+				'widgets\\.twimg\\.com',
+				'media6degrees\\.com',
+				'(ssl|www)\\.google\\-analytics\\.com',
+				'(ad|stats)\.([a-z]+\\.)?doubleclick\.net',
+				'getclicky\\.com',
+				'infolinks\\.com',
+				'clicktale\\.(net|com)',
+				'zedo\\.com',
+				'monster\\.com',
+				'ensighten\\.com',
+				'gorillanation\\.com',
+				'bizographics\\.com',
+				'widgets\\.digg\\.com',
+				'chartbeat\\.com',
+				'redditstatic.s3.amazonaws.com',
+				'reddit.com',
+				'verticalacuity\\.com',
+				'sail\\-horizon\\.com',
+				'kissmetrics\\.com',
+				'legolas\\-media\\.com',
+				'adzerk\\.(com|net)',
+				'adtechus\\.com',
+				'skimlinks\\.com',
+				'visualwebsiteoptimizer\\.com',
+				'marketo\\.(net|com)',
+				'coremetrics\\.com',
+				'serving\\-sys\\.com',
+				'insightexpressai\\.com',
+				'googletagservices.com',
+				'live.spokenlayer.com',
+				'linksalpha.com',
+				'sharethis.com',
+				'addthis.com'
 			]
 		},
 		frame: {
 			'*': [
-				['Facebook social media tracking', 'facebook\\.com'],
-				['Twitter social media tracking', 'twitter\\.com'],
-				['Google social media tracking', 'plusone\\.google\\.(com|ca|co\\.uk)'],
+				'facebook\\.com',
+				'twitter\\.com',
+				'plusone\\.google\\.(com|ca|co\\.uk)',
 				'ads\\.[^\\.]+\\..*',
-				['Tracks users', 'mediaplex\\.com'],
-				['Advertisements', 'legolas\\-media\\.com'],
-				['Adds a "reddit-this" button on webpages', 'reddit.com'],
-				['Tracks users', 'linksalpha.com']
+				'mediaplex\\.com',
+				'legolas\\-media\\.com',
+				'reddit.com',
+				'linksalpha.com'
 			]
 		}
 	};
 
-	for (var kind in bld) {
-		for (var domain in bld[kind]) {
-			for (var i = 0; i < bld[kind][domain].length; i++) {
-				rule = [
-						'^', typeof bld[kind][domain][i] === 'object' ? '(' + bld[kind][domain][i][0] + ')?' : '',
-						'https?:\\/\\/([^\\/]+\.)?', typeof bld[kind][domain][i] === 'object' ? bld[kind][domain][i][1] : bld[kind][domain][i], '\\/.*$'].join('')
-
-				Rules.list.blacklist.addDomain(kind, domain, {
-					rule: rule,
+	for (kind in blacklistDomain)
+		for (domain in blacklistDomain[kind])
+			for (i = 0; i < blacklistDomain[kind][domain].length; i++)
+				Rules.list.predefined.addDomain(kind, domain, {
+					rule: '^https?:\\/\\/([^\\/]+\.)?' + blacklistDomain[kind][domain][i] + '\\/.*$',
+					action: 4
 				});
-			}
-		}
-	}
 };
