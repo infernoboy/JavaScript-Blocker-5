@@ -110,8 +110,11 @@ Page.await = function (awaitTab, done) {
 
 	Utilities.Timer.timeout(awaitTab, function () {
 		Tabs.all(function (tab) {
-			if (tab === awaitTab)
+			if (tab === awaitTab) {
 				ToolbarItems.badge(0, tab);
+
+				UI.clear();
+			}
 		});
 	}, 300);
 }

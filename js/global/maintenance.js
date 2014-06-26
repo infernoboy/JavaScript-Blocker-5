@@ -1,7 +1,10 @@
 "use strict";
 
-var Maiintenance = {
+var Maintenance = {
 	validate: function (event) {
+		if (!window.UI)
+			return setTimeout(Maintenance.validate, 0, event);
+
 		if (event && event.target) {
 			BrowserWindows.all().forEach(function (browserWindow) {
 				if (event.target.browserWindow === browserWindow) {
@@ -20,4 +23,4 @@ var Maiintenance = {
 	}
 };
 
-Events.addApplicationListener('validate', Maiintenance.validate);
+Events.addApplicationListener('validate', Maintenance.validate);

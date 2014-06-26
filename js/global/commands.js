@@ -133,6 +133,7 @@ var Command = function (command, data, event) {
 
 		receivePage: function (thePage) {
 			var tab = this.event.target,
+					activeTab = Tabs.active(),
 					page = new Page(thePage, tab);
 
 			if (thePage.isFrame) {				
@@ -161,12 +162,14 @@ var Command = function (command, data, event) {
 				Page.active(function (activePage) {
 					activePage.badge('blocked');
 
-					UI.renderPopover(activePage);
+					if (activeTab === activePage.tab)
+						UI.renderPopover(activePage);
 				});
 			} else {
 				page.badge('blocked');
 
-				UI.renderPopover(page);
+				if (activeTab === page.tab)
+					UI.renderPopover(page);
 			}
 		},
 
@@ -287,6 +290,22 @@ var Command = function (command, data, event) {
 			};
 
 			$.ajax(meta);
+		},
+
+		setting: {
+			getItem: function (detail) {
+				this.message = SettingStore.getItem(detail.setting, detail.value);
+			},
+			getJSON: function (detail) {
+				this.message = SettingStore.getJSON(detail.setting, detail.value);
+			},
+
+			setItem: function (detail) {
+				this.message = SettingStore.setItem(detail.setting, detail.value);
+			},
+			setJSON: function (detail) {
+				this.message = SettingStore.setJSON(detail.setting, detail.value);
+			}
 		},
 
 		storage: {

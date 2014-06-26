@@ -21,10 +21,12 @@ var Store = (function () {
 		this.ignoreSave = !!props.ignoreSave;
 		this.private = !!props.private;
 
-		if (SettingStore.available && typeof name === 'string' && name.length)
+		if (typeof name === 'string' && name.length)
 			this.id = (props.save ? Store.STORE_STRING : Store.CACHE_STRING) + name;
 		else
 			this.id = Utilities.id();
+
+		this.isNew = this.private || !(this.id in data);
 
 		this.name = name;
 		this.props = props;
@@ -74,6 +76,10 @@ var Store = (function () {
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
 
+	Store.exist = function (storeName) {
+		return (storeName in data);
+	};
+
 	Store.destroyAll = function () {
 		for (var key in Utilities.Timer.timers.timeout)
 			if (key._startsWith('SelfDestruct'))
@@ -111,6 +117,12 @@ var Store = (function () {
 			left: left,
 			right: right
 		};
+
+		if (!Store.compareCache)
+			Store.compareCache = new Store('Compare', {
+				maxLife: TIME.ONE_MINUTE * 10,
+				private: true
+			});
 
 		var store = Store.compareCache.getStore(left.name + '-' + right.name);
 
@@ -211,7 +223,7 @@ var Store = (function () {
 			if (store.save) {
 				LogDebug('Save ' + store.id);
 
-				SettingStore.setJSON(store.id, store);
+				Settings.__method('setJSON', store.id, store);
 
 				store.triggerEvent('save');
 			}
@@ -229,7 +241,7 @@ var Store = (function () {
 
 	Store.prototype.load = function (defaultValue) {
 		if (this.save) {
-			var stored = SettingStore.getJSON(this.id, {
+			var stored = Settings.__method('getJSON', this.id, {
 				data: defaultValue
 			});
 
@@ -415,6 +427,24 @@ var Store = (function () {
 				this.remove(results[i].key);
 
 		return this;
+	};
+
+	Store.prototype.copy = function (key, newKey) {
+		if (!this.keyExist(key))
+			throw new Error(key + ' does not exist.');
+
+		return this.set(newKey, this.get(key));
+	};
+
+	Store.prototype.move = function (key, newKey) {
+		return this.copy(key, newKey).remove(key);
+	};
+
+	Store.prototype.replace = function (key, newKey, value) {
+		if (typeof value === 'undefined')
+			throw new TypeError('value cannot be undefined.');
+		
+		return this.move(key, newKey).set(newKey, value);
 	};
 
 	Store.prototype.set = function (key, value, overwrite) {
@@ -813,11 +843,6 @@ var Store = (function () {
 
 		this.removeExpired();
 	};
-
-	Store.compareCache = new Store('Compare', {
-		maxLife: TIME.ONE_MINUTE * 10,
-		private: true
-	});
 
 	return Store;
 })();

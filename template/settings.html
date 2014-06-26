@@ -1,0 +1,13 @@
+<textarea id="toolbar-item">
+	<li id="toolbar-<%=self.sectionID%>">
+		<% if (self.toolbarHTML) { %>
+			<%=self.toolbarHTML%>
+		<% } else { %>
+			<input id="toolbar-button-<%=self.sectionID%>" type="button" value="<%=self.sectionName%>" />
+		<% } %>
+	</li>
+</textarea>
+
+<textarea id="section">
+	<section class="standard-section" id="section-<%=self.sectionID%>"></section>
+</textarea>

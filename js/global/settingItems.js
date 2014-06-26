@@ -2,7 +2,7 @@
 
 Settings.settings = {
 	// Misc settings that are not user editable
-	misc: [{
+	__misc: [{
 		setting: 'extendedSupport',
 		props: {
 			default: parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10) >= 537
@@ -58,6 +58,12 @@ Settings.settings = {
 			type: 'number',
 			default: 0
 		}
+	}, {
+		setting: 'settingsPageCurrentSection',
+		props: {
+			type: 'string',
+			default: 'ui'
+		}
 	}],
 
 	// UI Settings
@@ -90,7 +96,9 @@ Settings.settings = {
 			helpText: 'showUnblocked help',
 			default: false,
 			subSettings: [{
-				when: true,
+				when: {
+					showUnblocked: true
+				},
 				hide: true,
 				settings: [{
 					setting: 'hideInjected',
@@ -166,7 +174,7 @@ Settings.settings = {
 		header: 'Extra features'
 	}, {
 		when: {
-			donationVerified: true,
+			donationVerified: true
 		},
 		settings: [{
 			setting: 'updateNotify',
@@ -218,8 +226,8 @@ Settings.settings = {
 		props: {
 			type: 'option',
 			options: [
-				['trueNowhere', 'Nowhere'],
-				['nowhere', 'Blacklist only'],
+				['nowhere', 'Nowhere'],
+				['blacklist', 'Blacklist only'],
 				['everywhere', 'Anywhere'],
 				['domain', 'Different hostnames'],
 				['topLevel', 'Different hosts &amp; subdomains']
@@ -310,7 +318,9 @@ Settings.settings = {
 			label: 'Enable Quick Add',
 			default: true,
 			subSettings: [{
-				when: true,
+				when: {
+					quickAdd: true
+				},
 				settings: [{
 					setting: 'quickAddSimpleOnly',
 					props: {
@@ -370,7 +380,7 @@ Settings.settings = {
 				storeKey: 'script',
 				label: 'Automatically block scripts from:',
 				help: 'alwaysBlock help',
-				default: 'nowhere'
+				default: 'blacklist'
 			}
 		}]
 	}, {
@@ -408,11 +418,29 @@ Settings.settings = {
 					storeKey: 'frame',
 					label: 'Automatically block frames from:',
 					help: 'alwaysBlock help',
-					default: 'nowhere'
+					default: 'blacklist'
 				}
 			}]
 		}, {
 			divider: true //===================================================================================
+		}, {
+			setting: 'enabledKinds',
+			props: {
+				storeKey: 'xhr_get',
+				remap: 'xhr'
+			}
+		}, {
+			setting: 'enabledKinds',
+			props: {
+				storeKey: 'xhr_post',
+				remap: 'xhr'
+			}
+		}, {
+			setting: 'enabledKinds',
+			props: {
+				storeKey: 'xhr_put',
+				remap: 'xhr'
+			}
 		}, {
 			setting: 'enabledKinds',
 			props: {
@@ -430,13 +458,29 @@ Settings.settings = {
 			settings: [{
 				setting: 'alwaysBlock',
 				props: {
+					storeKey: 'xhr_get',
+					remap: 'xhr'
+				}
+			}, {
+				setting: 'alwaysBlock',
+				props: {
+					storeKey: 'xhr_post',
+					remap: 'xhr'
+				}
+			}, {
+				setting: 'alwaysBlock',
+				props: {
+					storeKey: 'xhr_put',
+					remap: 'xhr'
+				}
+			}, {
+				setting: 'alwaysBlock',
+				props: {
 					storeKey: 'xhr',
 					label: 'Automatically block XHRs to:',
-					extendOptions: {
-						ask: 'Ask when neccessary'
-					},
+					extendOptions: [['ask', 'Ask when neccessary']],
 					help: 'alwaysBlock help',
-					default: 'nowhere'
+					default: 'blacklist'
 				}
 			}]
 		}, {
@@ -532,7 +576,7 @@ Settings.settings = {
 					storeKey: 'image',
 					label: 'Automatically hide images from:',
 					help: 'alwaysBlock help',
-					default: 'nowhere'
+					default: 'blacklist'
 				}
 			}]
 		}]
@@ -690,7 +734,9 @@ Settings.settings = {
 					prompt: 'blockReferrer help'
 				}],
 				subSettings: [{
-					when: true,
+					when: {
+						blockReferrer: true
+					},
 					hide: true,
 					settings: [{
 						setting: 'focusNewTab',
@@ -711,8 +757,10 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'xhr_intercept',
-				hidden: true,
-				default: true
+				readOnly: true,
+				default: function () {
+					return Settings.getItem('enabledKinds', 'xhr');
+				}
 			}
 		}, {
 			setting: 'enabledSpecials',
@@ -874,7 +922,7 @@ Settings.settings = {
 	},
 
 	// About page
-	about: {
+	__about: {
 		header: {
 			label: false,
 			description: [
@@ -921,7 +969,7 @@ Settings.settings = {
 			classes: 'single-click'
 		}
 	},
-	search: {
+	__search: {
 		headerSearch: {
 			classes: 'extras',
 			label: '',

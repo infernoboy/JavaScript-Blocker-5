@@ -1,9 +1,5 @@
 "use strict";
 
-var $$ = function (query, context) {
-	return $(query, context ? context : Popover.window().document);
-};
-
 var UI = {
 	show: ToolbarItems.showPopover,
 	disabled: false,
@@ -12,11 +8,11 @@ var UI = {
 		if (!Popover.visible())
 			return;
 
-		$$('body').html('<pre>' + JSON.stringify(page.tree(), null, 1)._escapeHTML() + '</pre>');
+		$('body').html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a><br/><pre>' + JSON.stringify(page.tree(), null, 1)._escapeHTML() + '</pre>');
 	},
 	
 	clear: function () {
-		$$('body').empty();
+		$('body').html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a>');
 	},
 
 	openedPopover: function () {
@@ -24,11 +20,10 @@ var UI = {
 	},
 
 	renderPopover: function (page) {
-		if (Tabs.active() !== page.tab)
-			return;
-
 		Utilities.Timer.timeout('RenderPopover', this.__renderPopover.bind(this, page), 50);
 	},
 };
 
 Events.addApplicationListener('popover', UI.openedPopover);
+
+globalPage.UI = UI;

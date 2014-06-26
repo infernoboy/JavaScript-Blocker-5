@@ -5,13 +5,9 @@ var globalSetting = {
 };
 
 var Settings = {
-	__stores: new Store('StoreSettings', {
-		save: true
-	}),
-
 	__method: function (method, setting, value) {
 		if (SettingStore.available)
-			return SettingStore[method](setting);
+			return SettingStore[method](setting, value);
 		else
 			return GlobalCommand('setting.' + method, {
 				setting: setting,
@@ -35,6 +31,10 @@ var Settings = {
 					return otherOption.validate ? otherOption.validate(value) : true;
 
 				return false;
+			break;
+
+			case 'string':
+				return typeof value === 'string';
 			break;
 
 			case 'number':
@@ -93,14 +93,22 @@ var Settings = {
 				var storedValues = this.__stores.getStore(settingKey).all();
 
 				for (var key in defaultStorage)
-					if (!storedValues.hasOwnProperty(key))
-						storedValues[key] = hasOwnDefaults ? defaultStorage[key] : defaultStorage[key].props.default;
+					if (!(key in storedValues)) {
+						storeKey = (!hasOwnDefaults && defaultStorage[key].props.remap) ? defaultStorage[key].props.remap : key;
+
+						storedValues[key] = storedValues[storeKey] || (hasOwnDefaults ? defaultStorage[storeKey] : defaultStorage[storeKey].props.default);
+
+						if (typeof storedValues[key] === 'function')
+							storedValues[key] = storedValues[key]();
+					}
 
 				return storedValues;
 			}
 
 			if (!setting.storeKeySettings[storeKey] && !setting.props.type._startsWith('dynamic'))
 				throw new Error(Settings.ERROR.STORE_KEY_NOT_FOUND._format([settingKey, storeKey]));
+
+			storeKey = setting.storeKeySettings[storeKey].props.remap ? setting.storeKeySettings[storeKey].props.remap : storeKey;
 
 			value = this.__stores.getStore(settingKey).get(storeKey);
 			defaultValue = hasOwnDefaults ? defaultStorage[storeKey] : defaultStorage[storeKey].props.default;
@@ -109,75 +117,85 @@ var Settings = {
 			defaultValue = setting.props.default;
 		}
 
+		if (typeof defaultValue === 'function')
+			defaultValue = defaultValue();
+
 		try {
 			value = (value === null || value === undefined) ? defaultValue : value;
 
 			if (typeof defaultValue === 'object' && typeof value !== 'object')
 				value = JSON.parse(value);
 		} catch (error) {
-			throw new LogError(['no default value for', settingKey, setting]);
+			LogError(error, setting);
+			throw new Error('no default value for ' + settingKey);
 		}
 
 		return value;
 	},
 
 	setItem: function (settingKey, value, storeKey) {
-		if (SettingStore.available) {
-			var setting = Settings.map[settingKey];
+		var setting = Settings.map[settingKey];
 
-			if (!setting)
-				throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
+		if (!setting)
+			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
 
-			var type = setting.props.type,
-					options = setting.props.options;
+		var type = setting.props.type,
+				options = setting.props.options;
 
-			if (setting.storeKeySettings) {
-				var storeSetting = setting.storeKeySettings[storeKey];
+		if (setting.storeKeySettings) {
+			var storeSetting = setting.storeKeySettings[storeKey];
 
-				if (!storeSetting) {
-					if (setting.props.type._startsWith('dynamic'))
-						storeSetting = {
-							props: {}
-						};
-					else
-						throw new Error(Settings.ERROR.STORE_KEY_NOT_FOUND._format([settingKey, storeKey]));
-				}
+			if (storeSetting.props.remap) {
+				storeKey = storeSetting.props.remap;
 
-				var type = storeSetting.props.type || setting.props.type,
-						options = storeSetting.props.options || setting.props.options;
+				storeSetting = setting.storeKeySettings[storeKey];
+			}
 
-				if (!this.__validate(type, value, options, storeSetting.props.otherOption))
-					throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, storeKey, value]));
+			if (!storeSetting) {
+				if (setting.props.type._startsWith('dynamic'))
+					storeSetting = {
+						props: {}
+					};
+				else
+					throw new Error(Settings.ERROR.STORE_KEY_NOT_FOUND._format([settingKey, storeKey]));
+			}
 
-				this.__stores.getStore(settingKey).set(storeKey, value);
+			var type = storeSetting.props.type || setting.props.type,
+					options = storeSetting.props.options || setting.props.options;
 
-				if (setting.props.onChange)
-					setting.props.onChange(value);
+			if (!this.__validate(type, value, options, storeSetting.props.otherOption))
+				throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, storeKey, value]));
 
-				if (storeSetting.props.onChange)
-					storeSetting.props.onChange(value);
-			} else if (this.__validate(type, value, options, setting.props.otherOption))
-				SettingStore.setItem(settingKey, value);
-			else
-				throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
-		}
+			this.__stores.getStore(settingKey).set(storeKey, value);
+
+			if (setting.props.onChange)
+				setting.props.onChange(value);
+
+			if (storeSetting.props.onChange)
+				storeSetting.props.onChange(value);
+		} else if (this.__validate(type, value, options, setting.props.otherOption))
+			this.__method('setItem', settingKey, value);
+		else
+			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
 	},
 
 	removeItem: function (settingKey, storeKey) {
-		if (SettingStore.available) {
-			var setting = Settings.map[settingKey];
+		var setting = Settings.map[settingKey];
 
-			if (!setting)
-				throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
+		if (!setting)
+			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
 
-			if (setting.storeKeySettings) {
-				if (storeKey)
+		if (setting.storeKeySettings) {
+			if (storeKey) {
+				if (setting.storeKeySettings[storeKey]) {
+					storeKey = setting.storeKeySettings[storeKey].props.remap || storeKey;
+
 					this.__stores.getStore(settingKey).remove(storeKey);
-				else
-					this.__stores.getStore(settingKey).clear();
+				}
 			} else
-				SettingStore.removeItem(settingKey);
-		}
+				this.__stores.getStore(settingKey).clear();
+		} else
+			this.__method('removeItem', settingKey);
 	},
 
 	createMap: function (settings) {
@@ -213,3 +231,7 @@ var Settings = {
 		return Settings.map;
 	}
 };
+
+Settings.__stores = new Store('StoreSettings', {
+	save: true
+});

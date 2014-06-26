@@ -14,18 +14,21 @@
 	
 	<title>JavaScript Blocker Settings</title>
 		
-	<link rel="stylesheet" href="css/settings.css" type="text/css" id="settings-style" />
-	<link rel="stylesheet" href="css/injected.css" type="text/css" id="injected-style" />
-	
-	<script src="js/jquery.js"></script>
+	<!-- <link rel="stylesheet" href="css/settings.css" type="text/css" id="settings-style" /> -->
+	<!-- <link rel="stylesheet" href="css/injected.css" type="text/css" id="injected-style" /> -->
+
+	<script src="js/global/jquery.js"></script>
 	<script src="js/safari.js"></script>
-	<script src="js/chrome.js"></script>
-	<script src="i18n/i18n.js"></script>
-	<script src="i18n/en-us.js"></script>
-	<script src="js/setting_items.js"></script>
-	<script src="js/settings.js"></script>
-	<script src="js/after.js"></script>
-	<script src="js/popover.js"></script>
+	<script src="js/promise.js"></script>
+	<script src="js/event.js"></script>
+	<script src="js/template.js"></script>
+	<script src="js/utilities.js"></script>
+	<script src="js/store.js"></script>
+	<script src="js/popover/i18n.js"></script>
+	<script src="js/global/settings.js"></script>
+	<script src="js/global/settingItems.js"></script>
+	<script src="js/global/easylist.js"></script>
+	<script src="js/settings/settings.js"></script>
 </head>
 
 <body>
@@ -34,40 +37,13 @@
 		
 		<br style="clear:both;">
 		
-		<div id="content">
+		<div id="sections">
 			<section id="requirements">
 				<p>You have to allow scripts from the host <b>com.toggleable.JavaScriptBlocker-6S8J5HV3H4</b>
 				in order for the settings page to function.</p>
 			</section>
 
-			<section id="welcome">
-				<div class="logo">
-					<a href="http://javascript-blocker.toggleable.com/" target="_top">
-						<img src="images/toggleable.png" alt="Toggleable" style="margin-left:-8px;" width="143" height="59" /><img src="Icon-64.png" alt="JavaScript Blocker" style="margin-bottom:14px;margin-left:5px;" width="32" height="32" />
-					</a>
-				</div>
-				<h3>Thanks for installing JavaScript Blocker!</h3>
-				<p>You're browsing experience just got a whole lot safer and faster. JavaScript Blocker puts you in control of
-					what webpages can do&mdash;no more advertisements, no more being tracked, and no more unnecessary clutter.
-					You'll have to reload any pages you already have open for JavaScript Blocker to start taking effect on them.</p>
-				<div class="divider"></div>
-				<p>Visit the <a href="help/index.html">help page</a> to learn more and get the most out of JavaScript Blocker.</p>
-			</section>
-
-			<section id="user-script-edit">
-				<ul class="padding">
-					<li class="setting-header">
-						<div class="label" data-i18n="User Script"></div>
-						<br style="clear:both;" />
-					</li>
-					<li>
-						<textarea id="user-script-content"></textarea>
-					</li>
-					<li id="user-script-actions">
-						<input id="button-user-script-save" type="button" data-i18n="Save" class="single-click" value=" " />
-					</li>
-				</ul>
-			</section>
+			
 		</div>
 	</div>
 </body>

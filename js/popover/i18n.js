@@ -68,5 +68,5 @@ var _ = function (string, args, hideNotLocalized) {
 };
 
 
-globalPage.Strings = Strings;
-globalPage._ = _;
+// globalPage.Strings = Strings;
+// globalPage._ = _;

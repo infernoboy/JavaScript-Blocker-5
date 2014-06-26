@@ -22,15 +22,14 @@
 		<script src="js/utilities.js"></script>
 		<script src="js/event.js"></script>
 		<script src="js/store.js"></script>
-		<script src="js/global/snapshot.js"></script>
 		<script src="js/global/beautify.min.js"></script>
 		<script src="js/global/settings.js"></script>
 		<script src="js/global/settingItems.js"></script>
+		<script src="js/global/snapshot.js"></script>
 		<script src="js/global/special.js"></script>
 		<script src="js/global/userScript.js"></script>
 		<script src="js/global/resource.js"></script>
 		<script src="js/global/rules.js"></script>
-		<script src="js/global/popover.js"></script>
 		<script src="js/global/pages.js"></script>
 		<script src="js/global/maintenance.js"></script>
 		<script src="js/global/easylist.js"></script>
@@ -59,7 +58,73 @@
 			// var res = new Resource('script', 'http://a.a/', 'http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.a/');
 			// 150
 
-			var resInfo = {"kind":"embed","pageLocation":"http://lion.toggleable.com:160/","pageProtocol":"http:","source":"http://www.google-analytics.com/ga.js","isFrame":false};
+			var ToyStore = new Store('ToyStore', {
+				save: true
+			});
+
+			var group = {
+				group: 'all',
+				items: [
+					{
+						method: 'contains',
+						needle: 'google'
+					},
+					{
+						group: 'any',
+						items: [
+							{
+								method: 'contains',
+								needle: 'analytics'
+							},
+							{
+								method: 'endsWith',
+								needle: 'ga.js'
+							}
+						]
+					}
+				]
+			};
+
+			setTimeout(function () {
+				Rules.list.active.__add('script', {
+					action: 0,
+					group: {
+						group: 'all',
+						items: [{
+							key: 'locationDomain',
+							method: Utilities.Group.CONTAINS,
+							needle: 'com',
+						}, {
+							group: 'any',
+							items: [{
+								group: 'all',
+								items: [{
+									key: 'sourcePath',
+									method: Utilities.Group.CONTAINS,
+									needle: 'jquery'
+								}, {
+									key: 'sourcePath',
+									method: Utilities.Group.ENDS_WITH,
+									needle: '.js'
+								}]
+							}, {
+								group: 'all',
+								items: [{
+									key: 'sourcePath',
+									method: Utilities.Group.CONTAINS,
+									needle: 'animate'
+								}, {
+									key: 'sourcePath',
+									method: Utilities.Group.CONTAINS,
+									needle: 'class'
+								}]
+							}]
+						}]
+					}
+				});
+			}, 1000);
+
+			var resInfo = {"kind":"script","pageLocation":"http://lion.toggleable.com:160/","pageProtocol":"http:","source":"http://www.google-analytics.com/ga.js","isFrame":false};
 
 		</script>
 	</head>

@@ -1,4 +1,12 @@
 {
+	"settings.ui": "User Interface",
+	"settings.rules": "Rules",
+	"settings.snapshots": "Snapshots",
+	"settings.keyboard": "Keyboard",
+	"settings.other": "Other Features",
+	"settings.userScript": "User Scripts",
+	"settings.search": "Search",
+
 	"Help": "Help",
 	"tears": "😂"
 }

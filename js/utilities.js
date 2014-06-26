@@ -45,7 +45,7 @@ var Utilities = {
 			args: args
 		});
 		
-		if (Utilities.Page.isGlobal)
+		if (!Utilities.Page.isWebpage)
 			window.postMessage('nextImmediateTimeout', '*');
 		else
 			GlobalPage.message('bounce', {
@@ -159,6 +159,106 @@ var Utilities = {
 
 	typeOf: function(object) {
 		return ({}).toString.call(object).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+	},
+
+	Group: {
+		IS_ANYTHING: 1,
+		IS: 2,
+		STARTS_WITH: 3,
+		ENDS_WITH: 4,
+		CONTAINS: 5,
+		MATCHES: 6,
+
+		NOT: {
+			IS: 7,
+			STARTS_WITH: 8,
+			ENDS_WITH: 9,
+			CONTAINS: 10,
+			MATCHES: 11 
+		},
+
+		isGroup: function (group) {
+			return (group && typeof group === 'object' && typeof group.group === 'string' && Array.isArray(group.items));
+		},
+
+		satisfies: function (method, haystack, needle) {
+			if (typeof haystack !== 'string')
+				return false;
+
+			switch (method) {
+				case this.IS_ANYTHING:
+					return (typeof needle !== 'undefined' && needle !== null);
+				break;
+
+				case this.IS:
+					return haystack === needle;
+				break;
+
+				case this.NOT.IS:
+					return haystack !== needle;
+				break;
+
+				case this.STARTS_WITH:
+					return haystack._startsWith(needle);
+				break;
+
+				case this.NOT.STARTS_WITH:
+					return !haystack._startsWith(needle);
+				break;
+
+				case this.ENDS_WITH:
+					return haystack._endsWith(needle);
+				break;
+
+				case this.NOT.ENDS_WITH:
+					return !haystack._endsWith(needle);
+				break;
+
+				case this.CONTAINS:
+					return haystack._contains(needle);
+				break;
+
+				case this.NOT.CONTAINS:
+					return !haystack._contains(needle);
+				break;
+
+				case this.MATCHES:
+					try {
+						return (new RegExp(needle)).test(haystack);
+					} catch (e) {}
+				break;
+
+				case this.NOT.MATCHES:
+					try {
+						return !(new RegExp(needle)).test(haystack);
+					} catch (e) {}
+				break;
+			}
+
+			return false;
+		},
+
+		eval: function (group, subject) {
+			if (!this.isGroup(group))
+				throw new TypeError(group + ' is not a valid group.');
+
+			if (!group.items.length)
+				return true;
+
+			var results = [];
+
+			for (var i = 0; i < group.items.length; i++) {
+				if (this.isGroup(group.items[i]))
+					results.unshift(this.eval(group.items[i], subject));
+				else
+					results.unshift(this.satisfies(group.items[i].method, subject[group.items[i].key], group.items[i].needle));
+
+				if (group.group === 'all' && !results[0])
+					return false;
+			}
+
+			return results._contains(true);
+		}
 	},
 
 	Timer: {
@@ -346,7 +446,6 @@ var Utilities = {
 	Page: {
 		isGlobal: GlobalPage.window() === window,
 		isPopover: Popover.window() === window,
-		isWebpage: !!GlobalPage.tab,
 		isTop: window === window.top,
 		isAbout: document.location.protocol === 'about:',
 
@@ -401,6 +500,12 @@ var Utilities = {
 			this.__anchor.href = url;
 
 			return this.__anchor.href;
+		},
+
+		extractPath: function (url) {
+			this.__anchor.href = url;
+
+			return this.__anchor.pathname;
 		},
 
 		extractHost: function (url) {
@@ -822,6 +927,12 @@ var Extension = {
 			}
 		},
 
+		_lcfirst: {
+			value: function() {
+				return this.substr(0, 1).toLowerCase() + this.substr(1);
+			}
+		},
+
 		_escapeRegExp: {
 			value: function () {
 				return this.replace(new RegExp('(\\' + ['/','.','*','+','?','|','$','^','(',')','[',']','{','}','\\'].join('|\\') + ')', 'g'), '\\$1');
@@ -998,10 +1109,15 @@ Object._deepFreeze = function (object) {
 	return object;
 };
 
+Utilities.Page.isWebpage = !!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL());
+
+Utilities.Group.NOT._createReverseMap();
+
 
 // Event listeners ======================================================================
 
-window.addEventListener('message', function nextImmediateTimeout (event) {
-	if (event.data === 'nextImmediateTimeout')
-		Utilities.nextImmediateTimeout();
-}, true);
+if (!Utilities.Page.isWebpage)
+	window.addEventListener('message', function nextImmediateTimeout (event) {
+		if (event.data === 'nextImmediateTimeout')
+			Utilities.nextImmediateTimeout();
+	}, true);

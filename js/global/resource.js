@@ -65,17 +65,17 @@ Resource.prototype.__addRule = function (action, domain, rule, framed) {
 	if (this.unblockable)
 		return false;
 
+	if (typeof rule !== 'object')
+		throw new TypeError(rule + ' is not an object.');
+
 	domain = this.__mapDomain(this.pageHost, domain);
 
 	if (this.sourceIsURL)
-		rule = this.__mapDomain(this.sourceHost, rule);
-	else if (!Rules.isRegExp(rule))
-		rule = this.source;
+		rule.rule = this.__mapDomain(this.sourceHost, rule.rule);
+	else if (!Rules.isRegExp(rule.rule))
+		rule.rule = this.source;
 
-	return Rules.list.active.__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, {
-		rule: rule,
-		action: action
-	});
+	return Rules.list.active.__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, rule);
 };
 
 Resource.prototype.__mapDomain = function (host, domain) {
@@ -126,7 +126,7 @@ Resource.prototype.allowedBySettings = function () {
 	var blockFrom = Settings.getItem('alwaysBlock', this.kind),
 			sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
 
-	if (blockFrom === 'trueNowhere' || blockFrom === 'nowhere' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
+	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
 		return canLoad;
 	else {
 		var pageProtocol = Utilities.URL.protocol(this.pageLocation),
@@ -189,6 +189,7 @@ Resource.prototype.canLoad = function () {
 	var pageRule,
 			longAllowed,
 			rule,
+			matched,
 			longRules,
 			longKindStore,
 			longStore,
@@ -223,10 +224,13 @@ Resource.prototype.canLoad = function () {
 				if (longAllowed)
 					longRules.push(rule.toLowerCase());
 				else {
-					if (Rules.matches(rule, rules.data[rule].value.regexp, self.source))
+					matched = Rules.matches(rule, rules.data[rule].value, self.source, self.pageLocation);
+
+					if (matched)
 						canLoad = {
 							action: rules.data[rule].value.action,
-							pageRule: pageRule
+							pageRule: pageRule,
+							matchedPath: matched === Rules.MATCHED_PATH
 						};
 				}
 			}
@@ -265,9 +269,10 @@ Resource.prototype.canLoad = function () {
 	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE)
 		canLoad = this.allowedBySettings.apply(this, arguments);
 
-	Utilities.setImmediateTimeout(function (canLoad, store, source) {
-		store.set(source, canLoad);
-	}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
+	if (!canLoad.matchedPath)
+		Utilities.setImmediateTimeout(function (canLoad, store, source) {
+			// store.set(source, canLoad);
+		}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
 
 	return canLoad;
 };
