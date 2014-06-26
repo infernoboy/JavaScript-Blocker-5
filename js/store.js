@@ -235,6 +235,18 @@ var Store = (function () {
 			}, [this]);
 	};
 
+	Store.prototype.unlock = function () {
+		this.lock = false;
+		this.props.lock = false;
+
+		this.forEach(function (key, value) {
+			if (value instanceof Store)
+				value.unlock();
+		})
+
+		return this;
+	};
+
 	Store.prototype.saveNow = function (bypassIgnore) {
 		this.__save(bypassIgnore, true);
 	};
@@ -288,7 +300,7 @@ var Store = (function () {
 	Store.prototype.clone = function (prefix, props) {
 		var value;
 
-		var store = new Store(prefix + ',' + this.name, props),
+		var store = new Store(prefix ? (prefix + ',' + this.name) : this.name, props),
 				newData = {};
 
 		for (var key in this.data) {
@@ -447,7 +459,7 @@ var Store = (function () {
 		return this.move(key, newKey).set(newKey, value);
 	};
 
-	Store.prototype.set = function (key, value, overwrite) {
+	Store.prototype.set = function (key, value) {
 		if (this.lock) {
 			if (value instanceof Store) {
 				value.lock = true;
@@ -468,26 +480,21 @@ var Store = (function () {
 		if ((typeof key !== 'string' && typeof key !== 'number') || (Object._hasPrototypeKey(this.data, key)))
 			throw new Error(key + ' cannot be used as key.');
 
-		if (typeof overwrite !== 'boolean')
-			overwrite = true;
-
-		if (!overwrite && (key in this.data))
-			return this.get(key);
-
 		this.data[key] = {
 			accessed: this.data[key] ? this.data[key].accessed : Date.now(),
 			value: value,
 		};
 
-		if (!this.ignoreSave)
-			if (value instanceof Store) {
-				value.parent = this;
+		if (value instanceof Store)
+			value.parent = this;
 
+		if (!this.ignoreSave)
+			if (value instanceof Store)
 				setTimeout(function (store, value) {
 					if (!value.readyJSON().data._isEmpty())
 						store.__save();
 				}, 100, this, value);
-			} else
+			else
 				this.__save();
 
 		if (value instanceof Store)
@@ -496,11 +503,11 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.setMany = function (object, overwrite) {
+	Store.prototype.setMany = function (object) {
 		if (typeof object === 'object')
 			for (var key in object)
 				if (object.hasOwnProperty(key))
-					this.set(key, object[key], overwrite);
+					this.set(key, object[key]);
 
 		return this;
 	};
@@ -523,7 +530,11 @@ var Store = (function () {
 
 				if (!(cached instanceof Store)) {
 					if (cached && cached.data && cached.props) {
+						cached.name = (this.name || this.id) + ',' + key;
 						cached.props.private = cached.props.private || this.private;
+						cached.props.ignoreSave = cached.props.ignoreSave || this.ignoreSave;
+						cached.props.maxLife = cached.props.maxLife || this.maxLife;
+						cached.props.selfDestruct = cached.props.selfDestruct || this.selfDestruct;
 
 						var value = Store.promote(cached);
 
@@ -782,7 +793,7 @@ var Store = (function () {
 		var value,
 				finalValue;
 
-		var name = this.name ? this.name.toString() : null;
+		var name = (this.name && !this.parent) ? this.name.toString() : null;
 
 		if (name && typeof swapPrefix === 'string' && swapPrefix.length) {
 			var split = this.name.split(',');

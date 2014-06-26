@@ -86,16 +86,17 @@ var Command = function (command, data, event) {
 			MessageTarget(this.event, this.event.message.command, this.event.message.detail);
 		},
 
+		localize: function (detail) {
+			this.message = _(detail.string, detail.args);
+		},
+
 		canLoadResource: function (info) {
-			if (info.pageProtocol === 'about:')		
+			if (info.pageProtocol === 'about:')
 				info.pageLocation = this.event.target.url;
 
-			var resource = new Resource(info),
-					canLoad = resource.canLoad();
+			var resource = new Resource(info);
 
-			canLoad.isAllowed = !!(canLoad.action % 2);
-
-			this.message = canLoad;
+			this.message = resource.canLoad();
 		},
 
 		globalSetting: function (setting) {
@@ -166,10 +167,16 @@ var Command = function (command, data, event) {
 						UI.renderPopover(activePage);
 				});
 			} else {
-				page.badge('blocked');
+				if (!activeTab.url) {
+					ToolbarItems.badge(0, activeTab);
 
-				if (activeTab === page.tab)
-					UI.renderPopover(page);
+					UI.clear();
+				} else {
+					page.badge('blocked');
+
+					if (activeTab === page.tab)
+						UI.renderPopover(page);
+				}
 			}
 		},
 

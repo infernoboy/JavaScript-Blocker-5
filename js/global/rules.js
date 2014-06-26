@@ -17,6 +17,7 @@ var ACTION = Object.freeze({
 
 var Rule = function (store, storeProps, ruleProps) {
 	this.action = (ruleProps && typeof ruleProps.action === 'number') ? ruleProps.action : null;
+	this.longRuleAllowed = (ruleProps && typeof ruleProps.longRuleAllowed === 'boolean') ? ruleProps.longRuleAllowed : null;
 
 	if (typeof store === 'string')
 		this.rules = new Store(store, storeProps);
@@ -399,14 +400,14 @@ var Rules = {
 
 			return regExp.test(source);
 		} else {
-			var ruleParts = this.parts(rule),
-					sourceProtocol = Utilities.URL.protocol(source),
-					sourceHost = Utilities.URL.extractHost(source);
+			var sourceHost = Utilities.URL.extractHost(source);
 
 			if (!sourceHost.length)
 				return rule === source;
 
-			var sourceParts = Utilities.URL.hostParts(Utilities.URL.extractHost(source));
+			var ruleParts = this.parts(rule),
+					sourceProtocol = Utilities.URL.protocol(source),
+					sourceParts = Utilities.URL.hostParts(Utilities.URL.extractHost(source));
 
 			if (ruleParts.protocols && !ruleParts.protocols.hasOwnProperty(sourceProtocol))
 				return false;
@@ -546,6 +547,8 @@ Rules.list.active = Rules.list.user;
 				value: new Rule('EasyRules-' + list, {
 					save: true,
 					private: true
+				}, {
+					longRuleAllowed: true
 				})
 			});
 

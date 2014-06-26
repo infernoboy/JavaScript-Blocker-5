@@ -23,9 +23,10 @@ var ToolbarItems = {
 		visible: function () {
 			return safari.extension.toolbarItems && safari.extension.toolbarItems.length > 0;
 		},
-		disabled: function (state) {
+		disabled: function (state, tab) {
 			safari.extension.toolbarItems.forEach(function (toolbarItem) {
-				toolbarItem.disabled = state;
+				if (!tab || tab === toolbarItem.browserWindow.activeTab)
+					toolbarItem.disabled = state;
 			});
 
 			return this;

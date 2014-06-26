@@ -129,7 +129,7 @@ Snapshot.prototype.add = function (keep, name) {
 	var id = Date.now(),
 			store = keep ? this.kept : this.unkept;
 
-	var cloned = this.store.clone(this.snapshots.name + ',' + id, {
+	var cloned = this.store.clone(null, {
 		lock: true,
 		private: true
 	}).readyJSON();

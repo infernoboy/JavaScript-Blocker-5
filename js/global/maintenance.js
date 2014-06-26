@@ -1,26 +1,21 @@
 "use strict";
 
 var Maintenance = {
+	maintainPopover: function () {
+		var popover = Popover.window(),
+				popoverURL = ExtensionURL('popover.html');
+
+		if (popover.location.href !== popoverURL)
+			popover.location.href = popoverURL;
+	},
+
 	validate: function (event) {
-		if (!window.UI)
-			return setTimeout(Maintenance.validate, 0, event);
-
 		if (event && event.target) {
-			BrowserWindows.all().forEach(function (browserWindow) {
-				if (event.target.browserWindow === browserWindow) {
-					if (!UI.disabled) {
-						event.target.disabled = !browserWindow.activeTab || !browserWindow.activeTab.page;
-						
-						if (event.target.disabled) {
-							ToolbarItems.badge(0, browserWindow.activeTab);
-
-							Popover.hide();
-						}
-					}
-				}
-			});
+			if (!event.target.browserWindow.activeTab || !event.target.browserWindow.activeTab.page)
+				ToolbarItems.badge(0, event.target.browserWindow.activeTab);
 		}
 	}
 };
 
+Events.addApplicationListener('popover', Maintenance.maintainPopover);
 Events.addApplicationListener('validate', Maintenance.validate);

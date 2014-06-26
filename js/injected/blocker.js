@@ -79,7 +79,9 @@ var Page = {
 
 	info: {
 		id: TOKEN.PAGE,
-		state: new Store(TOKEN.PAGE),
+		state: new Store(TOKEN.PAGE, {
+			ignoreSave: true
+		}),
 		location: Utilities.Page.getCurrentLocation(),
 		host: Utilities.Page.isAbout ? document.location.href.substr(document.location.protocol.length) : (document.location.host || 'blank'),
 		protocol: document.location.protocol,
@@ -104,8 +106,8 @@ var _ = (function () {
 	var stringCache = new Store('Strings');
 
 	return function _ (string, args) {
-		if (Array.isArray(args))
-			stringCache.set(string, GlobalCommand('_', {
+		if (Array.isArray(args) || !stringCache.keyExist(string))
+			stringCache.set(string, GlobalCommand('localize', {
 				string: string,
 				args: args
 			}));

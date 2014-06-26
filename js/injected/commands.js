@@ -397,13 +397,9 @@ var Command = function (type, event) {
 			toCheck.isFrame = Page.info.isFrame;
 			toCheck.source = Utilities.URL.getAbsolutePath(toCheck.source);
 
-			var canLoad = GlobalCommand('canLoadResource', toCheck);
-
-			canLoad.isAllowed = !!(canLoad.action % 2);
-
 			return {
 				callbackID: detail.callbackID,
-				result: canLoad
+				result: GlobalCommand('canLoadResource', toCheck)
 			};
 
 			if (info.canLoad.action < 0 && enabled_specials.xhr_intercept.value === 1) {

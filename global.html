@@ -85,45 +85,6 @@
 				]
 			};
 
-			setTimeout(function () {
-				Rules.list.active.__add('script', {
-					action: 0,
-					group: {
-						group: 'all',
-						items: [{
-							key: 'locationDomain',
-							method: Utilities.Group.CONTAINS,
-							needle: 'com',
-						}, {
-							group: 'any',
-							items: [{
-								group: 'all',
-								items: [{
-									key: 'sourcePath',
-									method: Utilities.Group.CONTAINS,
-									needle: 'jquery'
-								}, {
-									key: 'sourcePath',
-									method: Utilities.Group.ENDS_WITH,
-									needle: '.js'
-								}]
-							}, {
-								group: 'all',
-								items: [{
-									key: 'sourcePath',
-									method: Utilities.Group.CONTAINS,
-									needle: 'animate'
-								}, {
-									key: 'sourcePath',
-									method: Utilities.Group.CONTAINS,
-									needle: 'class'
-								}]
-							}]
-						}]
-					}
-				});
-			}, 1000);
-
 			var resInfo = {"kind":"script","pageLocation":"http://lion.toggleable.com:160/","pageProtocol":"http:","source":"http://www.google-analytics.com/ga.js","isFrame":false};
 
 		</script>

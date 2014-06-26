@@ -157,6 +157,7 @@ Resource.prototype.canLoad = function () {
 
 	var canLoad = {
 		action: ACTION.ALLOW_WITHOUT_RULE,
+		isAllowed: true,
 		pageRule: false
 	};
 
@@ -191,17 +192,19 @@ Resource.prototype.canLoad = function () {
 			rule,
 			matched,
 			longRules,
+			longRulesChunks,
 			longKindStore,
 			longStore,
 			longRegExps,
 			i,
-			b;
+			b,
+			action;
 
 	var self = this;
 
 	Rule.withLocationRules(this.matchingRules(), function (ruleList, ruleKind, ruleType, domain, rules) {
 		pageRule = (ruleType === 'page' || ruleType === 'notPage');
-		longAllowed = (!pageRule && (ruleList in ACTION));
+		longAllowed = (!pageRule && Rules.list[ruleList].longRuleAllowed);
 
 		if (longAllowed) {
 			longKindStore = Resource.longRegExps.getStore(ruleList);
@@ -210,51 +213,67 @@ Resource.prototype.canLoad = function () {
 		}
 
 		if (longAllowed && longRegExps) {
-			for (i = 0, b = longRegExps.regExps.length; i < b; i++) {
-				if (longRegExps.regExps[i].test(self.source)) {
-					canLoad = longRegExps.canLoad;
+			actionLoop:
+			for (action in longRegExps.data) {
+				for (i = 0, b = longRegExps.data[action].value.regExps.length; i < b; i++) {
+					if (longRegExps.data[action].value.regExps[i].test(self.source)) {
+						canLoad = longRegExps.data[action].value.canLoad;
 
-					break;
+						if (action % 2)
+							break actionLoop;
+						else
+							continue actionLoop;
+					}
 				}
 			}
 		} else {
-			longRules = [];
+			longRules = new Store(null, {
+				private: true
+			});
 
 			for (rule in rules.data) {
 				if (longAllowed)
-					longRules.push(rule.toLowerCase());
+					longRules.get(rules.data[rule].value.action, [], true).push(rule.toLowerCase());
 				else {
 					matched = Rules.matches(rule, rules.data[rule].value, self.source, self.pageLocation);
 
 					if (matched)
 						canLoad = {
 							action: rules.data[rule].value.action,
-							pageRule: pageRule,
-							matchedPath: matched === Rules.MATCHED_PATH
+							pageRule: pageRule
 						};
 				}
 			}
 
-			if (longAllowed && longRules.length) {
-				longRules = longRules._chunk(740);
-				longRegExps = [];
+			if (longAllowed) {
+				actionLoop:
+				for (action in longRules.data) {
+					longRulesChunks = longRules.data[action].value._chunk(740);
+					longRegExps = [];
 
-				for (i = 0, b = longRules.length; i < b; i++)
-					longRegExps.push(new RegExp(longRules[i].join('|')));
+					for (i = 0, b = longRulesChunks.length; i < b; i++)
+						longRegExps.push(new RegExp(longRulesChunks[i].join('|')));
 
-				longStore.set(domain, {
-					regExps: longRegExps,
-					canLoad: {
-						action: ACTION[ruleList],
-						pageRule: false
-					}
-				});
+					longStore.getStore(domain).set(action, {
+						regExps: longRegExps,
+						canLoad: {
+							action: action,
+							pageRule: false
+						}
+					});
 
-				for (i = 0, b = longRegExps.length; i < b; i++) {
-					if (longRegExps[i].test(self.source)) {
-						canLoad = longStore.get(domain).canLoad;
+					for (i = 0, b = longRegExps.length; i < b; i++) {
+						if (longRegExps[i].test(self.source)) {
+							canLoad = {
+								action: action,
+								pageRule: false
+							};
 
-						break;
+							if (action % 2)
+								break actionLoop;
+							else
+								continue actionLoop;
+						}
 					}
 				}
 			}
@@ -269,10 +288,11 @@ Resource.prototype.canLoad = function () {
 	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE)
 		canLoad = this.allowedBySettings.apply(this, arguments);
 
-	if (!canLoad.matchedPath)
-		Utilities.setImmediateTimeout(function (canLoad, store, source) {
-			// store.set(source, canLoad);
-		}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
+	canLoad.isAllowed = !!(canLoad.action % 2);
+
+	Utilities.setImmediateTimeout(function (canLoad, store, source) {
+		store.set(source, canLoad);
+	}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
 
 	return canLoad;
 };
