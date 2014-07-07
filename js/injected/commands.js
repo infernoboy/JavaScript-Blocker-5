@@ -220,24 +220,32 @@ var Command = function (type, event) {
 			else {
 				Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
 
-				var host;
+				var sourceRef,
+						frameURL,
+						locationURL;
 
 				var allowedFrames = Page.allowed.getStore('frame'),
-						all = allowedFrames.get('all', [], true),
-						allClone = Utilities.makeArray(all),
-						hosts = allowedFrames.getStore('hosts');
+						frameSources = allowedFrames.getStore('source'),
+						allFrameSources = frameSources.all();
 
-				for (var i = 0; i < allClone.length; i++)
-					if (allClone[i].meta && allClone[i].meta.waiting && allClone[i].meta.id === message.id) {
-						LogDebug('frame did not vanish - ' + message.id);
+				for (frameURL in allFrameSources)
+					for (locationURL in allFrameSources[frameURL])
+						if (allFrameSources[frameURL][locationURL].meta && allFrameSources[frameURL][locationURL].meta.waiting && allFrameSources[frameURL][locationURL].meta.id === message.id) {
+							sourceRef = frameSources.getStore(frameURL).get(locationURL, null, true);
 
-						all.splice(i, 1);
+							sourceRef.unblockable = false;
+							
+							delete sourceRef.meta.waiting;
 
-						hosts.decrement(Utilities.URL.extractHost(allClone[i].source));
-					}
+							Page.allowed.decrementHost('frame', Utilities.URL.extractHost(frameURL));
+						}
 			}
 
-			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank';
+			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank',
+					previousURLTokenString = previousURL + 'FrameURL';
+
+			if (frame && !Utilities.Token.valid(frame.getAttribute('data-jsbFrameURLToken'), previousURLTokenString))
+				return;
 
 			if (previousURL !== message.url) {
 				Resource.canLoad({
@@ -249,8 +257,12 @@ var Command = function (type, event) {
 				});
 			}
 
-			if (frame)
+			if (frame) {
+				Utilities.Token.expire(previousURLTokenString);
+
 				frame.setAttribute('data-jsbFrameURL', message.url);
+				frame.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(message.url + 'FrameURL', true));
+			}
 		},
 
 		historyStateChange: function (detail, event) {
@@ -275,18 +287,18 @@ var Command = function (type, event) {
 
 		__addPageItem: function (isAllowed, detail) {
 			var info = detail.meta,
-					kindStore = (isAllowed ? Page.allowed : Page.blocked).getStore(info.kind);
+					actionStore = isAllowed ? Page.allowed : Page.blocked;
 
 			info.source = Utilities.URL.getAbsolutePath(info.source);
 			info.host = Utilities.URL.extractHost(info.source);
 
-			kindStore.getStore('source').getStore(info.source).set(info.pageLocation, {
+			actionStore.pushSource(info.kind, info.source, info.pageLocation, {
 				ruleAction: info.canLoad.action,
 				unblockable: false,
 				meta: info.meta
 			});
 
-			kindStore.getStore('hosts').increment(info.host);
+			actionStore.incrementHost(info.kind, info.host);
 
 			Page.send();
 		},

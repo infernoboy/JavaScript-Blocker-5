@@ -18,19 +18,16 @@ var UserScript = {
 
 		if (typeof attributes.script === 'string') {
 			try {
-				attributes.script = (new Function("return function () {\n" + attributes.script + "\n}"))();
+				new Function("return function () {\n" + attributes.script + "\n}");
 
 				isSafe = true
 			} catch (error) {
 				if (error.message._contains('unsafe-eval') || error instanceof EvalError) {
 					isSafe = GlobalCommand('verifyScriptSafety', attributes.script);
 
-					LogDebug('received an unsafe-eval error from within an injected script - ' + attributes.meta.name);
+					LogDebug('caught an unsafe-eval error from within an injected script - ' + attributes.meta.name);
 				} else
 					LogError(['unable to inject user script', attributes.meta.name], error);
-
-				if (!isSafe)
-					return;
 			}
 		}
 
@@ -75,12 +72,15 @@ var UserScript = {
 			Log('this page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
 
 		if (excludeFromPage !== true)
-			Page.allowed.getStore('user_script').getStore('source').getStore(attributes.meta.trueNamespace).set(Page.info.location, {
+			Page.allowed.pushSource('user_script', attributes.meta.trueNamespace, Page.info.location, {
 				ruleAction: -1
 			});
 	},
 
 	begin: function () {
+		if (Utilities.Page.isXML)
+			return LogDebug('refusing to inject user scripts into XML page.');
+
 		var url,
 				requirement,
 				requirementName;
@@ -93,15 +93,15 @@ var UserScript = {
 
 		for (var userScript in enabledUserScripts) {
 			if (enabledUserScripts[userScript] === false)
-				Page.blocked.getStore('user_script').getStore('source').getStore(userScript).set(Page.info.location, {
-					ruleAction: -1
+				Page.blocked.pushSource('user_script', userScript, Page.info.location, {
+					ruleAction: -2
 				});
 			else {
 				if (enabledUserScripts[userScript].requirements) {
 					for (url in enabledUserScripts[userScript].requirements) {
 						requirement = enabledUserScripts[userScript].requirements[url];
 
-						requirementName = 'Requirement,' + userScript + ',' + url;
+						requirementName = 'RequiredFor:' + userScript + ':' + url;
 
 						UserScript.inject({
 							before: true,

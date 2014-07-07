@@ -77,6 +77,22 @@ var Page = {
 		}
 	})(),
 
+	pushSource: function (storeName, kind, source, location, data) {
+		Page[storeName].getStore(kind).getStore('source').getStore(source).set(location, data);
+	},
+
+	pushAll: function (storeName, kind, location, data) {
+		Page[storeName].getStore(kind).getStore('all').getStore(data).set(location, 1);
+	},
+
+	incrementHost: function (storeName, kind, host) {
+		Page[storeName].getStore(kind).getStore('hosts').increment(host);
+	},
+
+	decrementHost: function (storeName, kind, host) {
+		Page[storeName].getStore(kind).getStore('hosts').decrement(host);
+	},
+
 	info: {
 		id: TOKEN.PAGE,
 		state: new Store(TOKEN.PAGE, {
@@ -89,9 +105,28 @@ var Page = {
 	}
 };
 
-Page.allowed = Page.info.state.getStore('allowed');
-Page.blocked = Page.info.state.getStore('blocked');
-Page.unblocked = Page.info.state.getStore('unblocked');
+(function () {
+	var actions = ['allowed', 'blocked', 'unblocked'];
+
+	for (var i = 0; i < actions.length; i++) {
+		Page[actions[i]] = Page.info.state.getStore(actions[i]);
+
+		Object.defineProperties(Page[actions[i]], {
+			pushSource: {
+				value: Page.pushSource.bind(Page, actions[i])
+			},
+			pushAll: {
+				value: Page.pushAll.bind(Page, actions[i])
+			},
+			incrementHost: {
+				value: Page.incrementHost.bind(Page, actions[i])
+			},
+			decrementHost: {
+				value: Page.decrementHost.bind(Page, actions[i])
+			}
+		});
+	}
+})();
 
 // Sometimes the global page isn't ready when a page is loaded. This can happen
 // when Safari is first launched or after reloading the extension. This loop
@@ -222,8 +257,6 @@ var Element = {
 
 	processUnblockable: function (kind, element) {
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {
-			var scriptList = Page.unblocked.getStore(kind).getStore('all').get(Page.info.location, [], true);
-
 			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element, true));
 
 			if (Element.triggersBeforeLoad(element)) {
@@ -240,9 +273,9 @@ var Element = {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
 				if (!globalSetting.hideInjected)
-					scriptList.push(element.innerHTML || element.src);
+					Page.unblocked.pushAll(kind, Page.info.location, element.innerHTML || element.src);
 			} else
-				scriptList.push(element.innerHTML || element.src || element.outerHTML);
+				Page.unblocked.pushAll(kind, Page.info.location, element.innerHTML || element.src  || element.outerHTML);
 
 			Page.send();
 
@@ -353,8 +386,6 @@ var Element = {
 						id: frame.id,
 						waiting: true
 					});
-				else
-					LogDebug(['frame vanished', frame.id].join(' - '));
 			}, 2000, [frame]);
 
 			frame.addEventListener('load', function () {
@@ -424,13 +455,6 @@ var Resource = {
 						isFrame: !Utilities.Page.isTop
 					});
 
-				if (!canLoad.isAllowed) {
-					if (event.preventDefault)
-						event.preventDefault();
-
-					BLOCKED_ELEMENTS.push(element);
-				}
-
 				if (canLoad.action === -85) {
 					Resource.staticActions[kind] = canLoad.isAllowed;
 
@@ -438,6 +462,13 @@ var Resource = {
 
 					return canLoad.isAllowed;
 				}
+
+				if (!canLoad.isAllowed) {
+					if (event.preventDefault)
+						event.preventDefault();
+
+					BLOCKED_ELEMENTS.push(element);
+				}				
 
 				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
 					if (!meta)
@@ -447,9 +478,10 @@ var Resource = {
 						meta.id = element.id;
 
 						element.setAttribute('data-jsbFrameURL', source);
+						element.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(source + 'FrameURL', true));
 					}
 
-					var kindStore = ((canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked).getStore(kind);
+					var actionStore = (canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked;
 
 					sourceHost = sourceHost || ((source && source.length) ? Utilities.URL.extractHost(source) : null);
 
@@ -457,13 +489,13 @@ var Resource = {
 						meta.type = element.getAttribute('type');
 
 					if (excludeFromPage !== true || canLoad.action >= 0) {
-						kindStore.getStore('source').getStore(source).set(Page.info.location, {
+						actionStore.pushSource(kind, source, Page.info.location, {
 							ruleAction: canLoad.action,
 							unblockable: !!event.unblockable,
 							meta: meta
 						});
 
-						kindStore.getStore('hosts').increment(sourceHost);
+						actionStore.incrementHost(kind, sourceHost);
 					}
 
 					if (BLOCKABLE[element.nodeName][1] && !canLoad.isAllowed)
@@ -514,11 +546,11 @@ if (!globalSetting.disabled) {
 	window.addEventListener('hashchange', Handler.hash, true);
 	window.addEventListener('popstate', Handler.hash, true);
 
-	window.onerror = function (d, p, l, c) {
+	window.addEventListener('error', function (event) {
 		if (typeof p === 'string' && p._contains('JavaScriptBlocker')) {
-			var errorMessage =  d + ', ' + p + ', ' + l;
+			var errorMessage =  event.message + ', ' + event.filename + ', ' + event.lineno;
 
 			LogError(errorMessage);
 		}
-	};
+	});
 }

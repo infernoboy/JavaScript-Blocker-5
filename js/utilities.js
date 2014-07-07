@@ -12,11 +12,15 @@ var ARRAY = {
 };
 
 var TIME = {
-	ONE_SECOND: 1000,
-	ONE_MINUTE: 1000 * 60,
-	ONE_HOUR: 1000 * 60 * 60,
-	ONE_DAY: 1000 * 60 * 60 * 24
+	ONE: {
+		SECOND: 1000,
+		MINUTE: 1000 * 60,
+		HOUR: 1000 * 60 * 60,
+		DAY: 1000 * 60 * 60 * 24
+	}
 };
+
+var LINE_SEPARATOR = '―――――――――――――――';
 
 
 // Primary utilities ====================================================================
@@ -24,7 +28,7 @@ var TIME = {
 var Utilities = {
 	__immediateTimeouts: [],
 
-	safariBuildVersion: window.navigator.appVersion.split('Safari/')[1].split('.')[0],
+	safariBuildVersion: parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10),
 
 	noop: function () {},
 
@@ -444,7 +448,7 @@ var Utilities = {
 	},
 
 	Page: {
-		isGlobal: GlobalPage.window() === window,
+		isGlobal: (window.GlobalPage && GlobalPage.window() === window),
 		isPopover: Popover.window() === window,
 		isTop: window === window.top,
 		isAbout: document.location.protocol === 'about:',
@@ -528,7 +532,7 @@ var Utilities = {
 		hostParts: function (host, prefixed) {
 			if (!this.hostParts.cache && window.Store)
 				this.hostParts.cache = new Store('HostParts', {
-					maxLife: TIME.ONE_HOUR
+					maxLife: TIME.ONE.HOUR
 				});
 
 			var cacheKey = prefixed ? 'prefixed' : 'unprefixed',
@@ -591,7 +595,7 @@ var LOG_HISTORY_SIZE = 20;
 
 var Log = function () {
 	Utilities.setImmediateTimeout(function (args) {
-		var logMessages = ['(JSB)'].concat(args);
+		var logMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
 
 		Log.history.unshift(logMessages.join(' '));
 
@@ -606,9 +610,9 @@ Log.history = [];
 var LogDebug = function () {
 	if (globalSetting.debugMode) {
 		Utilities.setImmediateTimeout(function (args) {
-			var debugMessages = ['(JSB)'].concat(args);
+			var debugMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
 
-			LogDebug.history.push(debugMessages.join(' '));
+			LogDebug.history.unshift(debugMessages.join(' '));
 
 			LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
 
@@ -662,7 +666,7 @@ var LogError = function () {
 			} else
 				errorMessage = error;
 
-			LogError.history.push(errorMessage);
+			LogError.history.unshift(errorMessage);
 
 			LogError.history = LogError.history._chunk(LOG_HISTORY_SIZE)[0];
 
@@ -673,7 +677,10 @@ var LogError = function () {
 				});
 
 			if (Utilities.Page.isGlobal || globalSetting.debugMode) {
-				console.error('(JSB)', errorMessage);
+				if (Utilities.Page.isGlobal)
+					errorMessage = '(JSB) ' + errorMessage;
+
+				console.error(errorMessage);
 
 				if (errorStack) {
 					console.groupCollapsed('(JSB) Stack');
@@ -774,6 +781,24 @@ var Struct = (function () {
 // Native object extensions =============================================================
 
 var Extension = {
+	Function: {
+		_clone: {
+			value: function () {
+				var fn = this;
+
+				var cloned = function cloned () {
+					return fn.apply(this, arguments);
+				};
+
+				for (var key in this)
+					if (this.hasOwnProperty(key))
+						cloned[key] = this[key];
+
+				return cloned;
+			}
+		}
+	},
+
 	Array: {
 		__contains: {
 			value: function (matchType, needle, returnMissingItems) {
@@ -1109,6 +1134,7 @@ Object._deepFreeze = function (object) {
 	return object;
 };
 
+Utilities.Page.isXML = (window.location.href._endsWith('.xml') && document.xmlVersion);
 Utilities.Page.isWebpage = !!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL());
 
 Utilities.Group.NOT._createReverseMap();

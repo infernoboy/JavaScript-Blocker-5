@@ -2,6 +2,13 @@
 
 var globalPage = GlobalPage.window();
 
+if (!globalPage.GlobalPageReady) {
+	Log('Waiting for global page to be ready...');
+
+	window.location.reload();
+} else
+	Log('Ready to go.');
+
 globalPage.Template = Template;
 
 // Allow direct access to required variables contained within the global page.
@@ -23,9 +30,15 @@ globalPage.Template = Template;
 			$[key] = jQuery[key];
 })();
 
-window.onerror = function (d, p, l, c) {
-	LogError('=PopoverError=', p.replace(ExtensionURL(), '/'), [d, l, c], '=/PopoverError=');
-};
+window.addEventListener('error', function (event) {
+	console.group('Popover Error');
+
+	LogError([event.filename.replace(ExtensionURL(), '/'), event.lineno], event.message);
+
+	Utilities.setImmediateTimeout(function () {
+		console.groupEnd();
+	});
+});
 
 Template.load('container');
 Template.load('main');

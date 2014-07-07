@@ -5,7 +5,7 @@ Settings.settings = {
 	__misc: [{
 		setting: 'extendedSupport',
 		props: {
-			default: parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10) >= 537
+			default: Utilities.safariBuildVersion >= 537
 		}
 	}, {
 		setting: 'donationVerified',

@@ -26,7 +26,7 @@ Template.load = function (file) {
 	}).done(function (template) {
 			Template.__templates[file] = new Template(template, file);
 
-			Template.event.trigger('load.' + file, template);
+			Template.event.trigger('load.' + file, template, true);
 		})
 		.fail(function (error) {
 			LogError(['unable to load template file', file, error]);

@@ -1,7 +1,7 @@
 "use strict";
 
 var UserScript = {
-	__updateInterval: TIME.ONE_DAY * 5,
+	__updateInterval: TIME.ONE.DAY * 5,
 
 	scripts: new Store('UserScripts', {
 		save: true
@@ -81,17 +81,22 @@ var UserScript = {
 	},
 
 	forLocation: function (location, isFrame) {
-		var script;
+		var script,
+				attributes;
 
 		var scripts = Special.__forLocation(this.scripts.data, 'user_script', location, isFrame);
 
 		for (var namespace in scripts) {
 			if (!scripts[namespace])
+				continue;	
+
+			script = this.scripts.get(namespace);
+			attributes = script.getStore('attributes').all();
+
+			if (!attributes.enabled)
 				continue;
 
 			this.update(namespace);
-
-			script = this.scripts.get(namespace);
 
 			scripts[namespace] = {
 				attributes: script.getStore('attributes').all(),
@@ -281,6 +286,7 @@ var UserScript = {
 				attributes = userScript.getStore('attributes');
 
 		var newAttributes = {
+			enabled: attributes.get('enabled', true),
 			metaStr: parsed.metaStr,
 			meta: detail,
 			script: script,
@@ -316,7 +322,7 @@ var UserScript = {
 			});
 
 		setTimeout(function (self, userScript, detail) {
-			// If a script is in developer mode or just updated normally, the resources and
+			// If a script was just updated, the resources and
 			// requirements will always be empty if this is not delayed.
 
 			self.__fetch(userScript.getStore('resources'), detail.resource);

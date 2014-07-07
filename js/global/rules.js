@@ -152,7 +152,7 @@ Rule.prototype.kind = function (kindName, hide) {
 				return this.__rules(type, [domain[0], null]);
 
 			rules = new Store(domains.name + ',' + domain.join(), {
-				selfDestruct: TIME.ONE_HOUR,
+				selfDestruct: TIME.ONE.HOUR,
 				ignoreSave: true
 			});
 
@@ -529,6 +529,8 @@ Object.defineProperty(Rules, 'list', {
 			value: new Rule('Predefined', {
 				save: true,
 				private: true
+			}, {
+				longRuleAllowed: true
 			})
 		}
 	})

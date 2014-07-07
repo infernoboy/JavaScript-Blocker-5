@@ -28,7 +28,7 @@ EventListener.prototype.addEventListener = function (name, fn, once) {
 		fn: fn
 	});
 
-	if (listeners.triggered)
+	if (listeners.triggerSubsequentAdditions)
 		this.trigger(name);
 };
 
@@ -38,11 +38,11 @@ EventListener.prototype.removeEventListener = function (name, fn) {
 	});
 };
 
-EventListener.prototype.trigger = function (name, data) {
+EventListener.prototype.trigger = function (name, data, triggerSubsequentAdditions) {
 	var newListeners = [],
 			listeners = this.listeners(name);
 
-	listeners.triggered = true;
+	listeners.triggerSubsequentAdditions = !!triggerSubsequentAdditions;
 
 	for (var i = 0; i < listeners.fns.length; i++) {
 		Utilities.setImmediateTimeout(listeners.fns[i].fn, [data]);

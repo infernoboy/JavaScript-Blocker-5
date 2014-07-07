@@ -62,23 +62,30 @@ var Command = function (command, data, event) {
 		logError: function (error) {
 			if (typeof error.message === 'string') {
 				if (this.event.target.url !== error.source)
-					LogError([error.source, 'via', this.event.target.url]);
+					console.group(error.source + ' - via - ' + this.event.target.url);
 				else
-					LogError(this.event.target.url);
+					console.group(this.event.target.url);
 
-				LogError(error.message, '--------------');
+				LogError(error.message, LINE_SEPARATOR);
+
+				Utilities.setImmediateTimeout(function () {
+					console.groupEnd();
+				});
 			}
 		},
 
 		logDebug: function (message) {
-			if (typeof message.message === 'string') {
+			if (globalSetting.debugMode && typeof message.message === 'string') {
 				if (this.event.target.url !== message.source)
-					LogDebug(message.source + ' via ' + this.event.target.url);
+					console.group(message.source + ' via ' + this.event.target.url);
 				else
-					LogDebug(this.event.target.url);
+					console.group(this.event.target.url);
 
 				LogDebug(message.message);
-				LogDebug('--------------');
+
+				Utilities.setImmediateTimeout(function () {
+					console.groupEnd();
+				});
 			}
 		},
 
@@ -182,9 +189,7 @@ var Command = function (command, data, event) {
 
 		verifyScriptSafety: function (script) {
 			try {
-				var fn = (new Function("return function () {\n" + script + "\n}"))();
-
-				fn = undefined;
+				new Function("return function () {\n" + script + "\n}");
 
 				this.message = true;
 			} catch (error) {

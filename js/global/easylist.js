@@ -1,6 +1,9 @@
 "use strict";
 
 var EasyList = function (listName, listURL) {
+	if (!Rules.list[listName])
+		throw new Error(listName + ' is not a valid EasyList.');
+
 	this.name = listName;
 	this.url = listURL;
 	this.temporaryRules = EasyList.__temporary.get(this.name, new Rule('EasyTemporary', {
@@ -12,7 +15,7 @@ var EasyList = function (listName, listURL) {
 	this.download().done(this.process.bind(this));
 };
 
-EasyList.__updateInterval = TIME.ONE_DAY * 4;
+EasyList.__updateInterval = TIME.ONE.DAY * 4;
 
 EasyList.__temporary = new Store('EasyTemporary');
 
@@ -33,13 +36,15 @@ EasyList.fetch = function () {
 
 EasyList.prototype.merge = function () {
 	Utilities.setImmediateTimeout(function (self) {
+		Rules.list[self.name].rules.addEventListener('save', function () {
+			self.temporaryRules.rules.clear();
+
+			self = undefined;
+		}, true);
+
 		Rules.list[self.name].rules.replaceWith(self.temporaryRules.rules);
 
 		Predefined();
-
-		setTimeout(function (self) {
-			self.temporaryRules.rules.clear();
-		}, 100, self);
 	}, [this]);
 };
 

@@ -50,20 +50,18 @@ var SettingsUI = {
 
 	events: {
 		activateToolbar: function () {
-			SettingsUI.$toolbar.on('click', 'input', function (event) {
-				SettingsUI.view.switchTo($(this.parentNode).data('section'));
+			SettingsUI.$toolbar.on('click', 'li', function (event) {
+				SettingsUI.view.switchTo($(this).data('section'));
 			});
 		},
 
-		onSearch: function (event) {
+		performSearch: function (event) {
 			SettingsUI.view.switchTo(SettingsUI.section.search).then(function (section) {
-				console.log('OK')
+				Log('SEARCH', section)
 			})
 		}
 	}
 };
-
-Template.load('settings');
 
 $(function () {
 	SettingsUI.$toolbar = $('#toolbar');
@@ -80,7 +78,9 @@ $(function () {
 
 	SettingsUI.createSection('search', _('settings.search'), '<input id="toolbar-search" type="search" incremental="incremental" />');
 
-	SettingsUI.toolbarItem.search.on('search', 'input', SettingsUI.events.onSearch);
+	SettingsUI.toolbarItem.search
+		.on('click', null, SettingsUI.events.performSearch)
+		.on('search', 'input', SettingsUI.events.performSearch);
 
 	SettingsUI.view.switchTo(
 		SettingsUI.section[window.location.hash.substr(1)] ||
@@ -88,3 +88,5 @@ $(function () {
 		$('.standard-section:first', SettingsUI.$sections)
 	);
 });
+
+Template.load('settings');

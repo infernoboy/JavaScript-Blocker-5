@@ -39,8 +39,8 @@ function Resource (resource) {
 Resource.longRegExps = new Store('LongRegExps');
 Resource.canLoadCache = new Store('ResourceCanLoad', {
 	save: true,
-	maxLife: TIME.ONE_HOUR * 12,
-	saveDelay: TIME.ONE_SECOND * 30
+	maxLife: TIME.ONE.HOUR * 36,
+	saveDelay: TIME.ONE.SECOND * 30
 });
 
 Resource.__many = function (action, resources, domain, rule, framed) {
@@ -235,7 +235,7 @@ Resource.prototype.canLoad = function () {
 				if (longAllowed)
 					longRules.get(rules.data[rule].value.action, [], true).push(rule.toLowerCase());
 				else {
-					matched = Rules.matches(rule, rules.data[rule].value, self.source, self.pageLocation);
+					matched = Rules.matches(rule, rules.data[rule].value.regexp, self.source, self.pageLocation);
 
 					if (matched)
 						canLoad = {
@@ -304,7 +304,3 @@ Resource.prototype.toJSON = function () {
 		meta: this.meta || undefined
 	};
 };
-
-Resource.canLoadCache.addEventListener('save', function () {
-	LogDebug('ResourceCanLoad Size: ' + Utilities.byteSize(SettingStore.getItem('Storage-ResourceCanLoad').length));
-});

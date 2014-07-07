@@ -23,7 +23,7 @@ var Special = {
 		Rule.withLocationRules(forLocation, function (ruleList, ruleKind, ruleType, domain, rules) {
 			for (rule in rules.data)
 				for (special in specials)
-					if (Rules.matches(rule.toLowerCase(), rules.data[rule].value, special.toLowerCase(), location)) {
+					if (Rules.matches(rule.toLowerCase(), rules.data[rule].value.regexp, special.toLowerCase(), location)) {
 						if (rules.data[rule].value.action % 2) {
 							if (isUserScript)
 								enabled[special] = specials[special];

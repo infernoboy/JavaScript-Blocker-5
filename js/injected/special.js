@@ -123,15 +123,17 @@ var Special = {
 		special.inject(useURL);
 
 		if (useURL === undefined && !this.specials[name].excludeFromPage)
-			Page.blocked.getStore('special').get('all', [], true).push({
-				source: name,
-				ruleAction: -1
+			Page.blocked.pushSource('special', name, Page.info.location, {
+				ruleAction: -2
 			});
 
 		return special;
 	},
 
 	begin: function () {
+		if (Utilities.Page.isXML)
+			return LogDebug('refusing to inject helper scripts into XML page.');
+
 		var preparation = this.inject('prepareScript', false);
 
 		Utilities.Token.expire(Special.specials.prepareScript.commandToken);
@@ -152,8 +154,7 @@ var Special = {
 		for (var special in this.enabled) {
 			if (this.enabled[special] === false) {
 				if (!this.enabled[special].excludeFromPage)
-					Page.allowed.getStore('special').get('all', [], true).push({
-						source: special,
+					Page.allowed.pushSource('special', special, Page.info.location, {
 						ruleAction: -1
 					});
 			} else if (this.specials[special]) {

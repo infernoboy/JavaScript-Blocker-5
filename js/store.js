@@ -69,6 +69,11 @@ var Store = (function () {
 
 			Utilities.Timer.interval(this.cleanupName, this.removeExpired.bind(this), this.maxLife * .25);
 		}
+
+		if (this.save)
+			this.addEventListener('save', function () {
+				LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(SettingStore.getItem(this.id).length));
+			}.bind(this));
 	};
 
 	Store.prototype = Object.create(EventListener.prototype);
@@ -120,7 +125,7 @@ var Store = (function () {
 
 		if (!Store.compareCache)
 			Store.compareCache = new Store('Compare', {
-				maxLife: TIME.ONE_MINUTE * 10,
+				maxLife: TIME.ONE.MINUTE * 10,
 				private: true
 			});
 
@@ -221,9 +226,11 @@ var Store = (function () {
 			store.triggerEvent('presave');
 
 			if (store.save) {
-				LogDebug('Save ' + store.id);
+				console.time('SAVED ' + store.id);
 
 				Settings.__method('setJSON', store.id, store);
+
+				console.timeEnd('SAVED ' + store.id);
 
 				store.triggerEvent('save');
 			}
@@ -408,7 +415,7 @@ var Store = (function () {
 		var results = this.forEach(fn);
 
 		var store = useSelf ? this : new Store('Map-' + Utilities.id(), {
-			selfDestruct: TIME.ONE_SECOND * 30
+			selfDestruct: TIME.ONE.SECOND * 30
 		});
 
 		for (var i = 0; i < results.length; i++)
@@ -421,7 +428,7 @@ var Store = (function () {
 		var results = this.forEach(fn);
 
 		var store = new Store('Filter-' + Utilities.id(), {
-			selfDestruct: TIME.ONE_SECOND * 30
+			selfDestruct: TIME.ONE.SECOND * 30
 		});
 
 		for (var i = 0; i < results.length; i++)
@@ -547,6 +554,8 @@ var Store = (function () {
 
 						return value;
 					} else {
+						var cachedType = typeof cached;
+
 						switch (true) {
 							case asReference:
 								return cached;
@@ -556,8 +565,16 @@ var Store = (function () {
 								return Utilities.makeArray(cached);
 							break;
 
-							case typeof cached === 'string':
-								return cached.toString();
+							case cachedType === 'string':
+								return String(cached);
+							break;
+
+							case cachedType === 'number':
+								return Number(cached);
+							break;
+
+							case cachedType === 'boolean':
+								return Boolean(cached);
 							break;
 
 							case cached && Utilities.typeOf(cached) === 'object':
@@ -565,6 +582,8 @@ var Store = (function () {
 							break;
 
 							default:
+								LogDebug('getting as reference when not requested as such:', this.id, key, cached);
+
 								return cached;
 							break;
 						}

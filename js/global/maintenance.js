@@ -11,11 +11,17 @@ var Maintenance = {
 
 	validate: function (event) {
 		if (event && event.target) {
-			if (!event.target.browserWindow.activeTab || !event.target.browserWindow.activeTab.page)
+			if (event.target.browserWindow && (!event.target.browserWindow.activeTab || !event.target.browserWindow.activeTab.page))
 				ToolbarItems.badge(0, event.target.browserWindow.activeTab);
 		}
 	}
 };
+
+$(function () {
+	Object.defineProperty(window, 'GlobalPageReady', {
+		value: true
+	});
+});
 
 Events.addApplicationListener('popover', Maintenance.maintainPopover);
 Events.addApplicationListener('validate', Maintenance.validate);

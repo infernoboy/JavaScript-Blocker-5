@@ -30,7 +30,7 @@ function Snapshot (store, props) {
 	store.addEventListener('save', function () {
 		Utilities.Timer.timeout('CheckForChanges' + this.snapshots.name, function (snapshot) {
 			snapshot.checkForChanges();
-		}, TIME.ONE_SECOND * 30, [this]);
+		}, TIME.ONE.SECOND * 30, [this]);
 	}.bind(this));
 };
 

@@ -7,6 +7,8 @@
  ***************************************/
 
 var Predefined = function () {
+	Rules.list.predefined.rules.clear();
+	
 	var kind,
 			domain,
 			i;
@@ -22,6 +24,9 @@ var Predefined = function () {
 	/* ====================WHITELIST===================== */	
 
 	var whitelistDomains = {
+		'*': {
+			'.reddit.com': ['reddit.com']
+		},
 		script: {
 			'*': [
 				'www\\.readability\\.com',
@@ -60,14 +65,14 @@ var Predefined = function () {
 		script: {
 			domain: {
 				'*': {
-					'^(Google hosted JavaScript frameworks)?https?:\\/\\/ajax\\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js((\\?|#)+.*)?$': whitelistValue,
-					'^(Google hosted JavaScript frameworks)?https?:\\/\\/www\\.google\\.com\\/jsapi((\\?|#)+.*)?$': whitelistValue,
-					'^(Prototype, the JavaScript framework)?.*\\/prototype\\.js((\\?|#)+.*)?$': whitelistValue,
-					'^(jQuery, the JavaScript framework)?.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js((\\?|#)+.*)?$': whitelistValue,
-					'^(jQuery, the JavaScript framework)?.*\\/jquery\\.[^.\\/]+\\.js((\\?|#)+.*)?$': whitelistValue,
-					'^(jQuery, the JavaScript framework)?.*\\/jquery\\.js((\\?|#)+.*)?$': whitelistValue,
-					'^(jQuery UI, the JavaScript framework to make things pretty)?.*\\/jquery(\\-ui|\\.ui)(\\.[^.\\/]+)?\\.js$': whitelistValue,
-					'^(reCAPTCHA)?https?:\\/\\/www\\.google\\.com\\/recaptcha\\/api\\/.*$': whitelistValue
+					'^https?:\\/\\/ajax\\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js((\\?|#)+.*)?$': whitelistValue,
+					'^https?:\\/\\/www\\.google\\.com\\/jsapi((\\?|#)+.*)?$': whitelistValue,
+					'^.*\\/prototype\\.js((\\?|#)+.*)?$': whitelistValue,
+					'^.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js((\\?|#)+.*)?$': whitelistValue,
+					'^.*\\/jquery\\.[^.\\/]+\\.js((\\?|#)+.*)?$': whitelistValue,
+					'^.*\\/jquery\\.js((\\?|#)+.*)?$': whitelistValue,
+					'^.*\\/jquery(\\-ui|\\.ui)(\\.[^.\\/]+)?\\.js$': whitelistValue,
+					'^https?:\\/\\/www\\.google\\.com\\/recaptcha\\/api\\/.*$': whitelistValue
 				},
 				'.docs.google.com': {
 					'^https?:\/\/docs\.google\.com\/static\/.*$': whitelistValue
@@ -127,7 +132,7 @@ var Predefined = function () {
 	});
 
 	var blacklistDomain = {
-		script: {
+		'*': {
 			'*': [
 				'tynt\\.com',
 				'kontera\\.com',
