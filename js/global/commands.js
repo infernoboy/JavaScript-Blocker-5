@@ -68,9 +68,7 @@ var Command = function (command, data, event) {
 
 				LogError(error.message, LINE_SEPARATOR);
 
-				Utilities.setImmediateTimeout(function () {
-					console.groupEnd();
-				});
+				console.groupEnd();
 			}
 		},
 
@@ -83,9 +81,7 @@ var Command = function (command, data, event) {
 
 				LogDebug(message.message);
 
-				Utilities.setImmediateTimeout(function () {
-					console.groupEnd();
-				});
+				console.groupEnd();
 			}
 		},
 

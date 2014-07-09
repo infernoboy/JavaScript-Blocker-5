@@ -13,17 +13,19 @@ function Page (page, tab) {
 
 	page.state.forEach(function (state, kinds, store) {
 		kinds.forEach(function (kind, resources, store) {
-			resources.getStore('source').map(function (sourceName, source) {
-				return source.map(function (location, attributes) {
-					return new Resource({
-						kind: kind,
-						pageLocation: location,
-						source: sourceName,
-						isFrame: attributes.isFrame,
-						ruleAction: attributes.ruleAction,
-						unblockable: attributes.unblockable,
-						meta: attributes.meta
-					});
+			resources.getStore('source').map(function (location, source) {
+				return source.map(function (sourceName, items) {
+					return items.map(function (itemID, attributes) {
+						return new Resource({
+							kind: kind,
+							pageLocation: location,
+							source: sourceName,
+							isFrame: attributes.isFrame,
+							ruleAction: attributes.ruleAction,
+							unblockable: attributes.unblockable,
+							meta: attributes.meta
+						});
+					}, true);
 				}, true);
 			}, true);
 		});
@@ -150,7 +152,6 @@ Page.prototype.addFrame = function (frame) {
 					myResources = myState.getStore(kind);
 					myHosts = myResources.getStore('hosts');
 
-					myResources.getStore('all').merge(resources.getStore('all'), true);
 					myResources.getStore('source').merge(resources.getStore('source'), true);
 
 					resources.getStore('hosts').forEach(function (host, count, hostStore) {

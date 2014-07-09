@@ -78,11 +78,7 @@ var Page = {
 	})(),
 
 	pushSource: function (storeName, kind, source, location, data) {
-		Page[storeName].getStore(kind).getStore('source').getStore(source).set(location, data);
-	},
-
-	pushAll: function (storeName, kind, location, data) {
-		Page[storeName].getStore(kind).getStore('all').getStore(data).set(location, 1);
+		Page[storeName].getStore(kind).getStore('source').getStore(location).getStore(source).set(Utilities.id(), data);
 	},
 
 	incrementHost: function (storeName, kind, host) {
@@ -114,9 +110,6 @@ var Page = {
 		Object.defineProperties(Page[actions[i]], {
 			pushSource: {
 				value: Page.pushSource.bind(Page, actions[i])
-			},
-			pushAll: {
-				value: Page.pushAll.bind(Page, actions[i])
 			},
 			incrementHost: {
 				value: Page.incrementHost.bind(Page, actions[i])
@@ -273,9 +266,9 @@ var Element = {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
 				if (!globalSetting.hideInjected)
-					Page.unblocked.pushAll(kind, Page.info.location, element.innerHTML || element.src);
+					Page.unblocked.pushSource(kind, element.innerHTML || element.src, Page.info.location, {});
 			} else
-				Page.unblocked.pushAll(kind, Page.info.location, element.innerHTML || element.src  || element.outerHTML);
+				Page.unblocked.pushSource(kind, element.innerHTML || element.src  || element.outerHTML, Page.info.location, {});
 
 			Page.send();
 

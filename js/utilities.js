@@ -117,16 +117,6 @@ var Utilities = {
 		return (Math.round(number * 100) / 100) + ' ' + power + (divisor === 1024 && power.length ? 'i' : '') + (power.length ? 'B' : ('byte' + (number === 1 ? '' : 's')));
 	},
 
-	queue: function (fn, callback) {
-		var promise = Promise.resolve(typeof callback === 'function' ? callback : Utilities.noop);
-
-		return function queue () {
-			promise.then(function (args, callback) {
-				callback(fn.apply(null, args));
-			}.bind(null, arguments));
-		};
-	},
-
 	isNewerVersion: function (a, b) {
 		var a = typeof a === 'string' ? a : '0',
 				b = typeof b === 'string' ? b : '0',
@@ -594,102 +584,100 @@ var Utilities = {
 var LOG_HISTORY_SIZE = 20;
 
 var Log = function () {
-	Utilities.setImmediateTimeout(function (args) {
-		var logMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
+	var args = Utilities.makeArray(arguments),
+			logMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
 
-		Log.history.unshift(logMessages.join(' '));
+	Log.history.unshift(logMessages.join(' '));
 
-		Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
+	Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
 
-		console.log.apply(console, logMessages);
-	}, [Utilities.makeArray(arguments)]);
+	console.log.apply(console, logMessages);
 };
 
 Log.history = [];
 
 var LogDebug = function () {
 	if (globalSetting.debugMode) {
-		Utilities.setImmediateTimeout(function (args) {
-			var debugMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
+		var args = Utilities.makeArray(arguments),
+			debugMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
 
-			LogDebug.history.unshift(debugMessages.join(' '));
+		LogDebug.history.unshift(debugMessages.join(' '));
 
-			LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
+		LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
 
-			console.debug.apply(console, debugMessages);
+		console.debug.apply(console, debugMessages);
 
-			if (Utilities.Page.isWebpage)
-				for (var i = 0; i < args.length; i++)
-					GlobalPage.message('logDebug', {
-						source: document.location.href,
-						message: args[i]
-					});
-		}, [Utilities.makeArray(arguments)]);
+		if (Utilities.Page.isWebpage)
+			for (var i = 0; i < args.length; i++)
+				GlobalPage.message('logDebug', {
+					source: document.location.href,
+					message: args[i]
+				});
 	}
 };
 
 LogDebug.history = [];
 
 var LogError = function () {
-	Utilities.setImmediateTimeout(function (args) {
-		var	error,
-				errorMessage,
-				errorStack;
-				
-		for (var i = 0; i < args.length; i++) {
-			error = args[i];
+	var	error,
+			errorMessage,
+			errorStack;
 
-			if (Array.isArray(error))
-				error = error
-					.filter(function (currentValue) {
-						return currentValue !== undefined;
-					})
-					.map(function (currentValue) {
-						if (typeof currentValue === 'object')
-							try {
-								return JSON.stringify(currentValue);
-							} catch (error) {
-								return currentValue.toString();
-							}
-						else
-							return currentValue;
-					})
-					.join(' - ');
+	var args = Utilities.makeArray(arguments);
+			
+	for (var i = 0; i < args.length; i++) {
+		error = args[i];
 
-			if (error instanceof Error) {
-				errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
+		if (Array.isArray(error))
+			error = error
+				.filter(function (currentValue) {
+					return currentValue !== undefined;
+				})
+				.map(function (currentValue) {
+					if (typeof currentValue === 'object')
+						try {
+							return JSON.stringify(currentValue);
+						} catch (error) {
+							return currentValue.toString();
+						}
+					else
+						return currentValue;
+				})
+				.join(' - ');
 
-				if (error.sourceURL)
-					errorMessage = error.message + ' - ' + error.sourceURL.replace(ExtensionURL(), '/') +  ' line ' + error.line;
-				else
-					errorMessage = error.message;
-			} else
-				errorMessage = error;
+		if (error instanceof Error) {
+			errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
 
-			LogError.history.unshift(errorMessage);
+			if (error.sourceURL)
+				errorMessage = error.message + ' - ' + error.sourceURL.replace(ExtensionURL(), '/') +  ' line ' + error.line;
+			else
+				errorMessage = error.message;
+		} else
+			errorMessage = error;
 
-			LogError.history = LogError.history._chunk(LOG_HISTORY_SIZE)[0];
+		LogError.history.unshift(errorMessage);
 
-			if (Utilities.Page.isWebpage)
-				GlobalPage.message('logError', {
-					source: document.location.href,
-					message: errorMessage
-				});
+		LogError.history = LogError.history._chunk(LOG_HISTORY_SIZE)[0];
 
-			if (Utilities.Page.isGlobal || globalSetting.debugMode) {
-				if (Utilities.Page.isGlobal)
-					errorMessage = '(JSB) ' + errorMessage;
+		if (Utilities.Page.isWebpage)
+			GlobalPage.message('logError', {
+				source: document.location.href,
+				message: errorMessage
+			});
 
-				console.error(errorMessage);
+		if (Utilities.Page.isGlobal || globalSetting.debugMode) {
+			if (Utilities.Page.isGlobal)
+				errorMessage = '(JSB) ' + errorMessage;
 
-				if (errorStack) {
-					console.groupCollapsed('(JSB) Stack');
-					console.error(errorStack);
-					console.groupEnd();
-				}
+			console.error(errorMessage);
+
+			if (errorStack) {
+				console.groupCollapsed('(JSB) Stack');
+				console.error(errorStack);
+				console.groupEnd();
 			}
 		}
-	}, [Utilities.makeArray(arguments)]);
+	}
 };
 
 LogError.history = [];

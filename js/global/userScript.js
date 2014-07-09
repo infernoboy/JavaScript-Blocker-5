@@ -10,48 +10,38 @@ var UserScript = {
 	__fetch: function (store, resources) {
 		store.clear();
 
-		if ($.isEmptyObject(resources))
-			return;		
+		for (var resourceName in resources)
+			if (resources.hasOwnProperty(resourceName))
+				Utilities.setImmediateTimeout(function (self, store, resources, resourceName) {
+					var xhr = new XMLHttpRequest(),
+							bypassCache = (resources[resourceName]._contains('?') ? '&' : '?') + Date.now();
 
-		var addResource = function (self, resourceName, data, type) {
-			if (!resourceName)
-				return;
+					xhr.open('GET', resources[resourceName] + bypassCache, true);
 
-			store.set(resourceName, {
-				data: data,
-				type: type
-			});
-		};
+					xhr.responseType = 'arraybuffer';
 
-		for (var resourceName in resources) {
-			Utilities.setImmediateTimeout(function (self, resources, resourceName, addResource) {
-				var xhr = new XMLHttpRequest(),
-						bypassCache = (resources[resourceName]._contains('?') ? '&' : '?') + Date.now();
+					xhr.onload = function () {
+						if (this.status !== 200)
+							return LogError(['resource not found', store.name, resourceName]);
 
-				xhr.open('GET', resources[resourceName] + bypassCache, true);
+						var data = '',
+								array = new Uint8Array(this.response);
 
-				xhr.responseType = 'arraybuffer';
+						for (var i = 0, b = array.length; i < b; i++)
+							data += String.fromCharCode(array[i]);
 
-				xhr.onload = function () {
-					if (this.status !== 200)
-						return LogError(['resource not found', store.name, resourceName]);
+						store.set(resourceName, {
+							data: btoa(data),
+							type: this.getResponseHeader('Content-Type')
+						});
+					};
 
-					var data = '',
-							array = new Uint8Array(this.response);
+					xhr.onerror = function () {
+						LogError(['resource load error', store.name, resourceName]);
+					};
 
-					for (var i = 0, b = array.length; i < b; i++)
-						data += String.fromCharCode(array[i]);
-
-					addResource(self, resourceName, btoa(data), this.getResponseHeader('Content-Type'));
-				};
-
-				xhr.onerror = function () {
-					LogError(['resource load error', store.name, resourceName]);
-				};
-
-				xhr.send(null);
-			}, [this, resources, resourceName, addResource]);
-		}
+					xhr.send(null);
+				}, [this, store, resources, resourceName]);
 	},
 
 	onContextMenu: function (event) {

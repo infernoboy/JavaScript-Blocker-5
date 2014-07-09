@@ -222,23 +222,21 @@ var Command = function (type, event) {
 
 				var sourceRef,
 						frameURL,
-						locationURL;
+						locationURL,
+						frameItemID;
 
 				var allowedFrames = Page.allowed.getStore('frame'),
 						frameSources = allowedFrames.getStore('source'),
 						allFrameSources = frameSources.all();
 
-				for (frameURL in allFrameSources)
-					for (locationURL in allFrameSources[frameURL])
-						if (allFrameSources[frameURL][locationURL].meta && allFrameSources[frameURL][locationURL].meta.waiting && allFrameSources[frameURL][locationURL].meta.id === message.id) {
-							sourceRef = frameSources.getStore(frameURL).get(locationURL, null, true);
+				for (locationURL in allFrameSources)
+					for (frameURL in allFrameSources[locationURL])
+						for (frameItemID in allFrameSources[locationURL][frameURL])
+							if (allFrameSources[locationURL][frameURL][frameItemID].meta && allFrameSources[locationURL][frameURL][frameItemID].meta.waiting && allFrameSources[locationURL][frameURL][frameItemID].meta.id === message.id) {
+								frameSources.getStore(locationURL).getStore(frameURL).remove(frameItemID);
 
-							sourceRef.unblockable = false;
-							
-							delete sourceRef.meta.waiting;
-
-							Page.allowed.decrementHost('frame', Utilities.URL.extractHost(frameURL));
-						}
+								Page.allowed.decrementHost('frame', Utilities.URL.extractHost(frameURL));
+							}
 			}
 
 			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank',

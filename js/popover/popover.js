@@ -35,9 +35,7 @@ window.addEventListener('error', function (event) {
 
 	LogError([event.filename.replace(ExtensionURL(), '/'), event.lineno], event.message);
 
-	Utilities.setImmediateTimeout(function () {
-		console.groupEnd();
-	});
+	console.groupEnd();
 });
 
 Template.load('container');
