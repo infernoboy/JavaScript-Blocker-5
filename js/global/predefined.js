@@ -115,6 +115,13 @@ var Predefined = function () {
 	/* ====================BLACKLIST===================== */
 
 	Rules.list.predefined.addMany({
+		'*': {
+			domain: {
+				'*': {
+					'^.*JSB_BLOCKED_SOURCE.*$': blacklistValue
+				}
+			}
+		},
 		script: {
 			domain: {
 				'*': {

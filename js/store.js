@@ -31,21 +31,10 @@ var Store = (function () {
 		this.name = name;
 		this.props = props;
 
-		if (!this.private) {
-			children[this.id] = {};
-
-			Object.defineProperty(this, 'data', {
-				enumerable: true,
-
-				get: function () {
-					return data[this.id];
-				},
-				set: function (value) {
-					data[this.id] = value;
-				}
-			});
-		} else
+		if (this.private)
 			this.__children[this.id] = {};
+		else
+			this.deprivatize();
 
 		this.prolongDestruction();
 
@@ -65,7 +54,7 @@ var Store = (function () {
 			this.snapshot = new Snapshot(this);
 
 		if (this.maxLife < Infinity) {
-			this.cleanupName = 'StoreCleanup-' + this.id;
+			this.cleanupName = 'StoreCleanup' + this.id;
 
 			Utilities.Timer.interval(this.cleanupName, this.removeExpired.bind(this), this.maxLife * .25);
 		}
@@ -92,8 +81,18 @@ var Store = (function () {
 	};
 
 	Store.promote = function (object) {
-		if (typeof object.data !== 'object' || typeof object.props !== 'object')
+		if (object instanceof Store)
+			return object;
+
+		if (!Store.isStore(object))
 			throw new TypeError('cannot create store from object');
+
+		object.props = {
+			private: object.props.private || this.private,
+			ignoreSave: object.props.ignoreSave || this.ignoreSave,
+			maxLife: object.props.maxLife || this.maxLife,
+			selfDestruct: object.props.selfDestruct || this.selfDestruct
+		};
 
 		var store = new Store(object.name, object.props);
 
@@ -174,6 +173,10 @@ var Store = (function () {
 		};
 	};
 
+	Store.isStore = function (object) {
+		return !!(object && object.data && object.props);
+	};
+
 	Object.defineProperty(Store.prototype, 'parent', {
 		get: function () {
 			return this.private ? this.__parent : parent[this.id];
@@ -213,7 +216,7 @@ var Store = (function () {
 		}
 	});
 
-	Store.BREAK = -54684513;
+	Store.BREAK = Utilities.id();
 
 	Store.prototype.__parent = undefined;
 	Store.prototype.__children = {};
@@ -228,7 +231,7 @@ var Store = (function () {
 			if (store.save) {
 				console.time('SAVED ' + store.id);
 
-				Settings.__method('setJSON', store.id, store);
+				Settings.__method('setJSON', store.id, store.readyJSON());
 
 				console.timeEnd('SAVED ' + store.id);
 
@@ -249,9 +252,35 @@ var Store = (function () {
 		this.forEach(function (key, value) {
 			if (value instanceof Store)
 				value.unlock();
-		})
+		});
+
+		this.saveNow();
 
 		return this;
+	};
+
+	Store.prototype.deprivatize = function (bypass) {
+		if (!bypass && data[this.id])
+			return;
+
+		this.private = false;
+		this.props.private = false;
+
+		children[this.id] = {};
+		data[this.id] = this.data;
+
+		delete this.data;
+
+		Object.defineProperty(this, 'data', {
+			enumerable: true,
+
+			get: function () {
+				return data[this.id];
+			},
+			set: function (value) {
+				data[this.id] = value;
+			}
+		});
 	};
 
 	Store.prototype.saveNow = function (bypassIgnore) {
@@ -267,7 +296,7 @@ var Store = (function () {
 			if (stored.lock)
 				this.lock = true;
 
-			this.data = stored.data;
+			this.data = stored.data || {};
 		} else
 			this.data = defaultValue;
 	};
@@ -536,12 +565,8 @@ var Store = (function () {
 				var cached = this.data[key].value;
 
 				if (!(cached instanceof Store)) {
-					if (cached && cached.data && cached.props) {
+					if (Store.isStore(cached)) {
 						cached.name = (this.name || this.id) + ',' + key;
-						cached.props.private = cached.props.private || this.private;
-						cached.props.ignoreSave = cached.props.ignoreSave || this.ignoreSave;
-						cached.props.maxLife = cached.props.maxLife || this.maxLife;
-						cached.props.selfDestruct = cached.props.selfDestruct || this.selfDestruct;
 
 						var value = Store.promote(cached);
 
@@ -577,6 +602,13 @@ var Store = (function () {
 								return Boolean(cached);
 							break;
 
+							case cachedType === 'undefined':
+								if (defaultValue !== undefined && defaultValue !== null)
+									return defaultValue;
+
+								return cached;
+							break;
+
 							case cached && Utilities.typeOf(cached) === 'object':
 								return cached._clone();
 							break;
@@ -593,7 +625,7 @@ var Store = (function () {
 			} else if (defaultValue !== undefined && defaultValue !== null)
 				return this.set(key, defaultValue).get(key, null, asReference);
 		} catch (error) {
-			LogError(['ERROR IN GET', error, this.id, key, this.destroyed]);
+			LogError(['ERROR IN GET', this.id, key, this.destroyed], error);
 		}
 	};
 
@@ -611,7 +643,7 @@ var Store = (function () {
 			if (!(defaultProps instanceof Object))
 				defaultProps = {};
 
-			defaultProps.private = defaultProps.private || this.private;
+			defaultProps.private = defaultProps.private || defaultProps.p || this.private;
 			defaultProps.ignoreSave = defaultProps.ignoreSave || this.ignoreSave;
 			defaultProps.maxLife = defaultProps.maxLife || this.maxLife;
 			defaultProps.selfDestruct = defaultProps.selfDestruct || this.selfDestruct;
@@ -824,10 +856,10 @@ var Store = (function () {
 
 		var stringable = {
 			name: name,
-			save: this.save,
+			save: this.save || undefined,
 			props: this.props,
-			lock: this.lock,
-			private: this.private,
+			lock: this.lock || undefined,
+			private: this.private || undefined,
 			data: {}
 		};
 
@@ -846,12 +878,17 @@ var Store = (function () {
 			} else
 				finalValue = value;
 
-			if (finalValue !== undefined)
+			if (finalValue !== undefined) {
 				stringable.data[key] = {
 					accessed: this.data[key].accessed,
 					value: finalValue
 				};
+			}
 		}
+
+		for (var key in stringable.props)
+			if (stringable.props[key] === false)
+				stringable.props[key] = undefined;
 
 		return stringable;
 	};

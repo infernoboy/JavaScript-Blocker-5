@@ -20,9 +20,6 @@ function Resource (resource) {
 	this.unblockable = resource.unblockable;
 	this.meta = resource.meta;
 
-	this.block = this.__addRule.bind(this, 0);
-	this.allow = this.__addRule.bind(this, 1);
-
 	if (this.sourceIsURL) {
 		var protos = ['http:', 'https:', 'ftp:', 'sftp:', 'safari-extension:'],
 				sourceProto = Utilities.URL.protocol(this.source),
@@ -54,19 +51,21 @@ Resource.__many = function (action, resources, domain, rule, framed) {
 			continue;
 		}
 
-		resources[i][action](domain, rule, framed);
+		resources[i].__addRule(action, domain, rule, framed);
 	}
 };
 
-Resource.blockMany = Resource.__many.bind(null, 'block');
-Resource.allowMany = Resource.__many.bind(null, 'allow');
+Resource.blockMany = Resource.__many.bind(null, 0);
+Resource.allowMany = Resource.__many.bind(null, 1);
 
 Resource.prototype.__addRule = function (action, domain, rule, framed) {
 	if (this.unblockable)
 		return false;
 
-	if (typeof rule !== 'object')
-		throw new TypeError(rule + ' is not an object.');
+	rule = {
+		rule: rule,
+		action: action
+	};
 
 	domain = this.__mapDomain(this.pageHost, domain);
 
@@ -240,7 +239,8 @@ Resource.prototype.canLoad = function () {
 					if (matched)
 						canLoad = {
 							action: rules.data[rule].value.action,
-							pageRule: pageRule
+							pageRule: pageRule,
+							list: ruleList
 						};
 				}
 			}
@@ -258,7 +258,8 @@ Resource.prototype.canLoad = function () {
 						regExps: longRegExps,
 						canLoad: {
 							action: action,
-							pageRule: false
+							pageRule: false,
+							list: ruleList
 						}
 					});
 
@@ -266,7 +267,8 @@ Resource.prototype.canLoad = function () {
 						if (longRegExps[i].test(self.source)) {
 							canLoad = {
 								action: action,
-								pageRule: false
+								pageRule: false,
+								list: ruleList
 							};
 
 							if (action % 2)
@@ -290,9 +292,10 @@ Resource.prototype.canLoad = function () {
 
 	canLoad.isAllowed = !!(canLoad.action % 2);
 
-	Utilities.setImmediateTimeout(function (canLoad, store, source) {
-		store.set(source, canLoad);
-	}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
+	if (canLoad.list !== 'temporary')
+		Utilities.setImmediateTimeout(function (canLoad, store, source) {
+			store.set(source, canLoad);
+		}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
 
 	return canLoad;
 };

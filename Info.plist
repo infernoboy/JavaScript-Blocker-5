@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>9537.77.4</string>
+	<string>9537.85.5</string>
 	<key>CFBundleDisplayName</key>
 	<string>JavaScript Blocker 5</string>
 	<key>CFBundleIdentifier</key>
@@ -57,11 +57,6 @@
 		<dict>
 			<key>Start</key>
 			<array>
-				<string>js/safari.js</string>
-				<string>js/promise.js</string>
-				<string>js/utilities.js</string>
-				<string>js/event.js</string>
-				<string>js/store.js</string>
 				<string>js/injected/compiled.js</string>
 			</array>
 		</dict>

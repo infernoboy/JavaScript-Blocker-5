@@ -1,8 +1,5 @@
 "use strict";
 
-if (!window.safari)
-	throw new Error('preventing execution.');
-
 Special.specials = {
 	prepareScript: function () {
 		if (window[JSB.eventToken])

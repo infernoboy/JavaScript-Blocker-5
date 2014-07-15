@@ -1,8 +1,5 @@
 "use strict";
 
-if (!window.safari)
-	throw new Error('preventing execution.');
-
 var UserScript = {
 	menuCommand: {},
 
@@ -68,11 +65,11 @@ var UserScript = {
 
 		Special.setup(userScript).inject();
 
-		if (attributes.before && DeepInject.useURL)
+		if (attributes.runAtStart && DeepInject.useURL)
 			Log('this page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
 
 		if (excludeFromPage !== true)
-			Page.allowed.pushSource('user_script', attributes.meta.trueNamespace, Page.info.location, {
+			Page.allowed.pushSource('user_script', attributes.meta.trueNamespace, {
 				ruleAction: -1
 			});
 	},
@@ -93,7 +90,7 @@ var UserScript = {
 
 		for (var userScript in enabledUserScripts) {
 			if (enabledUserScripts[userScript] === false)
-				Page.blocked.pushSource('user_script', userScript, Page.info.location, {
+				Page.blocked.pushSource('user_script', userScript, {
 					ruleAction: -2
 				});
 			else {
@@ -104,7 +101,7 @@ var UserScript = {
 						requirementName = 'RequiredFor:' + userScript + ':' + url;
 
 						UserScript.inject({
-							before: true,
+							runAtStart: true,
 
 							attributes: {
 								script: Utilities.decode(requirement.data),
@@ -117,7 +114,7 @@ var UserScript = {
 					}
 				}
 
-				if (enabledUserScripts[userScript].attributes.before)
+				if (enabledUserScripts[userScript].attributes.runAtStart)
 					UserScript.inject(enabledUserScripts[userScript]);
 				else
 					UserScript.injectWhenLoaded(enabledUserScripts[userScript]);
@@ -127,7 +124,7 @@ var UserScript = {
 
 	helpers: {
 		GM_getValue: function (key, defaultValue) {
-			var result = messageExtensionSync('storage.getItem', {
+			var result = messageExtensionSync('userScript.storage.getItem', {
 				key: key
 			});
 
@@ -137,18 +134,18 @@ var UserScript = {
 			return result;
 		},
 		GM_setValue: function (key, value) {
-			messageExtension('storage.setItem', {
+			messageExtension('userScript.storage.setItem', {
 				key: key,
 				value: value
 			});
 		},
 		GM_deleteValue: function (key) {
-			messageExtension('storage.removeItem', {
+			messageExtension('userScript.storage.removeItem', {
 				key: key
 			});
 		},
 		GM_listValues: function () {
-			return messageExtensionSync('storage.keys');
+			return messageExtensionSync('userScript.storage.keys');
 		},
 
 		// RESOURCES

@@ -43,7 +43,7 @@ Snapshot.prototype.__outerMost = function (latest, kept, returnID) {
 
 	var snapshot = returnID ? ids[0] : store.get(ids[0]);
 
-	if (!returnID && snapshot)
+	if (!returnID && snapshot && !(snapshot.snapshot instanceof Store))
 		snapshot.snapshot = Store.promote(snapshot.snapshot);
 
 	return snapshot;
@@ -55,10 +55,10 @@ Snapshot.prototype.latest = function (returnID) {
 	
 	if (returnID)
 		return Math.max(latestKept, latestUnkept);
-	
+
 	var snapshot = latestKept > latestUnkept ? this.kept.get(latestKept) : this.unkept.get(latestUnkept);
 
-	if (snapshot)
+	if (snapshot && !(snapshot.snapshot instanceof Store))
 		snapshot.snapshot = Store.promote(snapshot.snapshot);
 
 	return snapshot;
@@ -73,7 +73,7 @@ Snapshot.prototype.first = function (returnID) {
 	
 	var snapshot = firstKept < firstUnkept ? this.kept.get(firstKept) : this.unkept.get(firstUnkept);
 
-	if (snapshot)
+	if (snapshot && !(snapshot.snapshot instanceof Store))
 		snapshot.snapshot = Store.promote(snapshot.snapshot);
 
 	return snapshot;
@@ -94,7 +94,7 @@ Snapshot.prototype.checkForChanges = function () {
 
 	var comparison = Store.compare(cleanStore, this.latest().snapshot);
 
-	if (!comparison.equal)		
+	if (!comparison.equal)
 		this.add();
 
 	comparison.store.destroy(true);

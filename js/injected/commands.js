@@ -1,8 +1,5 @@
 "use strict";
 
-if (!window.safari)
-	throw new Error('preventing execution.');
-
 var COMMAND = {
 	SUCCESS: 0,
 	UNAUTHORIZED: -1,
@@ -205,13 +202,18 @@ var Command = function (type, event) {
 				command: 'receiveFrameURL',
 				data: {
 					id: detail.data.id,
-					url: Page.info.location
+					url: Page.info.location,
+					token: detail.data.token
 				}
 			}, event.origin);
 		},
 		receiveFrameURL: function (detail) {
-			var message = detail.data,
-					frame = document.getElementById(message.id);
+			var message = detail.data;
+
+			if (!Utilities.Token.valid(message.token, message.id, true))
+				return LogDebug('invalid token received for frame.', message);
+
+			var frame = document.getElementById(message.id);
 
 			Utilities.Timer.remove('timeout', 'FrameURLRequestFailed' + message.id);
 
@@ -290,7 +292,7 @@ var Command = function (type, event) {
 			info.source = Utilities.URL.getAbsolutePath(info.source);
 			info.host = Utilities.URL.extractHost(info.source);
 
-			actionStore.pushSource(info.kind, info.source, info.pageLocation, {
+			actionStore.pushSource(info.kind, info.source, {
 				ruleAction: info.canLoad.action,
 				unblockable: false,
 				meta: info.meta
@@ -428,23 +430,23 @@ var Command = function (type, event) {
 			return 3;
 		},
 
-		storage: {
-			getItem: function (detail) {
-				return this.__userScriptAction(detail);
-			},
-
-			setItem: function (detail) {
-				return this.__userScriptAction(detail);
-			},
-
-			keys: function (detail) {
-				return this.__userScriptAction(detail);
-			}
-		},
-
 		userScript: {
 			resource: {
 				getItem: function (detail) {
+					return this.__userScriptAction(detail);
+				}
+			},
+
+			storage: {
+				getItem: function (detail) {
+					return this.__userScriptAction(detail);
+				},
+
+				setItem: function (detail) {
+					return this.__userScriptAction(detail);
+				},
+
+				keys: function (detail) {
 					return this.__userScriptAction(detail);
 				}
 			}

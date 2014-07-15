@@ -1,8 +1,5 @@
 "use strict";
 
-if (!window.safari)
-	throw new Error('preventing execution.');
-
 if (document.hidden === undefined)
 	document.hidden = false;
 
@@ -77,16 +74,18 @@ var Page = {
 		}
 	})(),
 
-	pushSource: function (storeName, kind, source, location, data) {
-		Page[storeName].getStore(kind).getStore('source').getStore(location).getStore(source).set(Utilities.id(), data);
-	},
+	resultAction: {
+		pushSource: function (storeName, kind, source, data) {
+			Page[storeName].getStore(kind).getStore('source').getStore(Page.info.location).getStore(source).set(Utilities.id(), data);
+		},
 
-	incrementHost: function (storeName, kind, host) {
-		Page[storeName].getStore(kind).getStore('hosts').increment(host);
-	},
+		incrementHost: function (storeName, kind, host) {
+			Page[storeName].getStore(kind).getStore('hosts').increment(host);
+		},
 
-	decrementHost: function (storeName, kind, host) {
-		Page[storeName].getStore(kind).getStore('hosts').decrement(host);
+		decrementHost: function (storeName, kind, host) {
+			Page[storeName].getStore(kind).getStore('hosts').decrement(host);
+		}
 	},
 
 	info: {
@@ -102,22 +101,17 @@ var Page = {
 };
 
 (function () {
-	var actions = ['allowed', 'blocked', 'unblocked'];
+	var resultAction;
 
-	for (var i = 0; i < actions.length; i++) {
-		Page[actions[i]] = Page.info.state.getStore(actions[i]);
+	var result = ['allowed', 'blocked', 'unblocked'];
 
-		Object.defineProperties(Page[actions[i]], {
-			pushSource: {
-				value: Page.pushSource.bind(Page, actions[i])
-			},
-			incrementHost: {
-				value: Page.incrementHost.bind(Page, actions[i])
-			},
-			decrementHost: {
-				value: Page.decrementHost.bind(Page, actions[i])
-			}
-		});
+	for (var i = 0; i < result.length; i++) {
+		Page[result[i]] = Page.info.state.getStore(result[i]);
+
+		for (resultAction in Page.resultAction)
+			Object.defineProperty(Page[result[i]], resultAction, {
+				value: Page.resultAction[resultAction].bind(Page, result[i])
+			});
 	}
 })();
 
@@ -131,16 +125,16 @@ do
 while (globalSetting.command);
 
 var _ = (function () {
-	var stringCache = new Store('Strings');
+	var strings = {};
 
 	return function _ (string, args) {
-		if (Array.isArray(args) || !stringCache.keyExist(string))
-			stringCache.set(string, GlobalCommand('localize', {
+		if (Array.isArray(args) || !strings.hasOwnProperty(string))
+			strings[string] = GlobalCommand('localize', {
 				string: string,
 				args: args
-			}));
+			});
 
-		return stringCache.get(string);
+		return strings[string];
 	}
 })();
 
@@ -266,9 +260,9 @@ var Element = {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
 				if (!globalSetting.hideInjected)
-					Page.unblocked.pushSource(kind, element.innerHTML || element.src, Page.info.location, {});
+					Page.unblocked.pushSource(kind, element.innerHTML || element.src, {});
 			} else
-				Page.unblocked.pushSource(kind, element.innerHTML || element.src  || element.outerHTML, Page.info.location, {});
+				Page.unblocked.pushSource(kind, element.innerHTML || element.src  || element.outerHTML, {});
 
 			Page.send();
 
@@ -385,7 +379,8 @@ var Element = {
 				this.contentWindow.postMessage({
 					command: 'requestFrameURL',
 					data: {
-						id: this.id
+						id: this.id,
+						token: Utilities.Token.create(this.id)
 					}
 				}, '*');
 			}, false);
@@ -482,7 +477,7 @@ var Resource = {
 						meta.type = element.getAttribute('type');
 
 					if (excludeFromPage !== true || canLoad.action >= 0) {
-						actionStore.pushSource(kind, source, Page.info.location, {
+						actionStore.pushSource(kind, source, {
 							ruleAction: canLoad.action,
 							unblockable: !!event.unblockable,
 							meta: meta

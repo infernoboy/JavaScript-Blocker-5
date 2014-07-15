@@ -1,8 +1,5 @@
 "use strict";
 
-if (!window.safari)
-	throw new Error('preventing execution.');
-
 if(false) {
 Handler.globalMessageReceived = function (event) {
 	if (event.message)

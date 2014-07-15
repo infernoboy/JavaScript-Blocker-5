@@ -978,6 +978,18 @@ var Extension = {
 				return ((key in object) && !object.hasOwnProperty(key));
 			}
 		},
+
+		_remap: {
+			value: function (map) {
+				var newObject = {};
+
+				for (var key in this)
+					if (this.hasOwnProperty(key) && map.hasOwnProperty(key))
+						newObject[map[key]] = this[key];
+
+				return newObject;
+			}
+		},
 		
 		_createReverseMap: {
 			value: function (deep) {

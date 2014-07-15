@@ -1,8 +1,5 @@
 "use strict";
 
-if (!window.safari)
-	throw new Error('preventing execution.');
-
 function DeepInject (name, script) {
 	if (typeof name !== 'string')
 		name = '';

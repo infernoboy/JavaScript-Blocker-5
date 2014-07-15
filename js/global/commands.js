@@ -66,7 +66,7 @@ var Command = function (command, data, event) {
 				else
 					console.group(this.event.target.url);
 
-				LogError(error.message, LINE_SEPARATOR);
+				LogError(error.message);
 
 				console.groupEnd();
 			}
@@ -316,43 +316,6 @@ var Command = function (command, data, event) {
 			}
 		},
 
-		storage: {
-			__storage: function (method, detail) {
-				if (!UserScript.exist(detail.namespace)) {
-					this.message = null;
-
-					return LogError(detail.namespace + ' does not exist.');
-				}
-
-				if (method !== 'keys' && (typeof detail.meta.key !== 'string' || !detail.meta.key.length)) {
-					this.message = null;
-
-					return LogError([detail.meta.key + ' is not a string', method, detail.namespace]);
-				}
-
-				var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage'),
-						result = storage[method](detail.meta && detail.meta.key, detail.meta && detail.meta.value);
-
-				this.message = ['keys', 'get']._contains(method) ? result : null;
-			},
-
-			getItem: function (detail) {
-				this.commands.__storage.call(this, 'get', detail);
-			},
-
-			setItem: function (detail) {
-				this.commands.__storage.call(this, 'set', detail);
-			},
-
-			removeItem: function (detail) {
-				this.commands.__storage.call(this, 'remove', detail);
-			},
-
-			keys: function (detail) {
-				this.commands.__storage.call(this, 'keys', detail);
-			}
-		},
-
 		userScript: {
 			resource: {
 				getItem: function (detail) {
@@ -369,6 +332,43 @@ var Command = function (command, data, event) {
 					}
 
 					this.message = UserScript.scripts.getStore(detail.namespace).getStore('resources').get(detail.meta, null);
+				}
+			},
+
+			storage: {
+				__storage: function (method, detail) {
+					if (!UserScript.exist(detail.namespace)) {
+						this.message = null;
+
+						return LogError(detail.namespace + ' does not exist.');
+					}
+
+					if (method !== 'keys' && (typeof detail.meta.key !== 'string' || !detail.meta.key.length)) {
+						this.message = null;
+
+						return LogError([detail.meta.key + ' is not a string', method, detail.namespace]);
+					}
+
+					var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage'),
+							result = storage[method](detail.meta && detail.meta.key, detail.meta && detail.meta.value);
+
+					this.message = ['keys', 'get']._contains(method) ? result : null;
+				},
+
+				getItem: function (detail) {
+					this.commands.__storage.call(this, 'get', detail);
+				},
+
+				setItem: function (detail) {
+					this.commands.__storage.call(this, 'set', detail);
+				},
+
+				removeItem: function (detail) {
+					this.commands.__storage.call(this, 'remove', detail);
+				},
+
+				keys: function (detail) {
+					this.commands.__storage.call(this, 'keys', detail);
 				}
 			}
 		}

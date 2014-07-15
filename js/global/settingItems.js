@@ -522,7 +522,7 @@ Settings.settings = {
 			props: {
 				storeKey: 'video',
 				label: 'Enable video blocker',
-				default: true
+				default: false
 			}
 		}, {
 			when: {
@@ -554,7 +554,7 @@ Settings.settings = {
 			props: {
 				storeKey: 'image',
 				label: 'Enable image hider',
-				default: true
+				default: false
 			}
 		}, {
 			when: {

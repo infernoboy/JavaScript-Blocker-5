@@ -418,7 +418,7 @@ var Rules = {
 
 	// Load all rules contained in each list for a given location.
 	// If the last argument is an array, it will be used to determine which lists to exclude.
-	// Temporary rules are only included if the active set is the saved set.
+	// Temporary rules are only included if the active set is the user set.
 	forLocation: function () {
 		var excludeLists = Array.isArray(arguments[arguments.length - 1]) ? arguments[arguments.length - 1] : [];
 
@@ -541,12 +541,12 @@ Rules.list.active = Rules.list.user;
 (function () {
 	var easyLists = Settings.getItem('easyLists');
 
-	for (var list in easyLists)
-		if (easyLists[list].enabled)
-			Object.defineProperty(Rules.list, list, {
+	for (var easyList in easyLists)
+		if (easyLists[easyList].enabled)
+			Object.defineProperty(Rules.list, easyList, {
 				enumerable: true,
 
-				value: new Rule('EasyRules-' + list, {
+				value: new Rule('EasyRules-' + easyList, {
 					save: true,
 					private: true
 				}, {
@@ -554,6 +554,8 @@ Rules.list.active = Rules.list.user;
 				})
 			});
 
+	for (var list in Rules.list)
+		Rules.list[list].rules.all();
 })();
 
 Rules.list.user.rules.addEventListener('save', function () {

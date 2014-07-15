@@ -175,7 +175,7 @@ if (!window.Promise) {
 
 	//This file contains then/promise specific extensions to the core promise API
 
-	var Promise = require('./core.js')
+	window.Promise = require('./core.js')
 	var asap = require('asap')
 
 	module.exports = Promise
@@ -472,8 +472,8 @@ if (!window.Promise) {
 	  };
 	}
 	},{}],6:[function(require,module,exports){
-	if (typeof Promise === 'undefined') {
-	  Promise = require('promise');
+	if (typeof window.Promise === 'undefined') {
+	  window.Promise = require('promise');
 	} else {
 	  require('./polyfill-done.js');
 	}

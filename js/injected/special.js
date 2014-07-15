@@ -1,8 +1,5 @@
 "use strict";
 
-if (!window.safari)
-	throw new Error('preventing execution.');
-
 TOKEN.INJECTED = {};
 TOKEN.REGISTERED = {};
 
@@ -23,6 +20,9 @@ var Special = {
 
 		event.detail.sourceID = pieces[1];
 		event.detail.sourceName = TOKEN.INJECTED[pieces[1]].namespace;
+
+		if (!Utilities.Token.valid(event.detail.sourceID, event.detail.sourceName))
+			return LogDebug('no longer authorized to execute commands from ' + event.detail.sourceName);
 
 		var response = Command('injected', event);
 
@@ -123,7 +123,7 @@ var Special = {
 		special.inject(useURL);
 
 		if (useURL === undefined && !this.specials[name].excludeFromPage)
-			Page.blocked.pushSource('special', name, Page.info.location, {
+			Page.blocked.pushSource('special', name, {
 				ruleAction: -2
 			});
 
@@ -154,7 +154,7 @@ var Special = {
 		for (var special in this.enabled) {
 			if (this.enabled[special] === false) {
 				if (!this.enabled[special].excludeFromPage)
-					Page.allowed.pushSource('special', special, Page.info.location, {
+					Page.allowed.pushSource('special', special, {
 						ruleAction: -1
 					});
 			} else if (this.specials[special]) {

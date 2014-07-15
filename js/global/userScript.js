@@ -114,7 +114,7 @@ var UserScript = {
 	},
 
 	canBeUpdated: function (meta) {
-		return (meta.updateURL && meta.updateURL.length && meta.version.length && ((meta.downloadURL && meta.downloadURL.length || meta.installURL && meta.installURL.length)));
+		return !!(meta.updateURL && meta.updateURL.length && meta.version.length && ((meta.downloadURL && meta.downloadURL.length || meta.installURL && meta.installURL.length)));
 	},
 
 	update: function (namespace) {
@@ -284,7 +284,7 @@ var UserScript = {
 			downloadURL: detail.updateURL ? (detail.downloadURL || detail.installURL) : null,
 			autoUpdate: canBeUpdated,
 			developerMode: attributes.get('developerMode', false),
-			before: (detail['run-at'] && detail['run-at'].toLowerCase()) === 'document-start',
+			runAtStart: (detail['run-at'] && detail['run-at'].toLowerCase()) === 'document-start',
 			lastUpdate: Date.now()
 		};
 
