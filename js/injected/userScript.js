@@ -42,7 +42,7 @@ var UserScript = {
 			unsafeWidnow = window;
 
 			GM_info = setup.info;
-		});
+		}, true);
 
 		userScriptSetup.setArguments({
 			setup: {
@@ -75,6 +75,9 @@ var UserScript = {
 	},
 
 	begin: function () {
+		if (globalSetting.disabled)
+			return;
+		
 		if (Utilities.Page.isXML)
 			return LogDebug('refusing to inject user scripts into XML page.');
 
@@ -150,12 +153,12 @@ var UserScript = {
 
 		// RESOURCES
 		GM_getResourceText: function (name) {
-			var resource = messageExtensionSync('userScript.resource.getItem', name);
+			var resource = messageExtensionSync('userScript.getResource', name);
 
 			return resource ? atob(resource.data) : '';
 		},
 		GM_getResourceURL: function (name) {
-			var resource = messageExtensionSync('userScript.resource.getItem', name);
+			var resource = messageExtensionSync('userScript.getResource', name);
 
 			if (!resource)
 				return '';

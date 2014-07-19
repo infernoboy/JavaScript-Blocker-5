@@ -6,7 +6,7 @@ function Page (page, tab) {
 
 	page.state.props = {
 		destroyChildren: true,
-		selfDestruct: TIME.ONE.MINUTE * 5
+		selfDestruct: TIME.ONE.SECOND * 5
 	};
 
 	page.state = Store.promote(page.state);
@@ -44,11 +44,11 @@ function Page (page, tab) {
 };
 
 Page.pages = new Store('Pages', {
-	maxLife: TIME.ONE.MINUTE * 10
+	maxLife: TIME.ONE.SECOND * 2
 });
 
 Page.frames = new Store('Frames', {
-	maxLife: TIME.ONE.MINUTE * 10
+	maxLife: TIME.ONE.SECOND * 2
 });
 
 Page.active = function (callback) {

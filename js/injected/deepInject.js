@@ -1,6 +1,6 @@
 "use strict";
 
-function DeepInject (name, script) {
+function DeepInject (name, script, noToken) {
 	if (typeof name !== 'string')
 		name = '';
 
@@ -9,7 +9,7 @@ function DeepInject (name, script) {
 	this.fnName = this.cleanName;
 	this.script = script;
 	this.scriptString = script.toString();
-	this.id = Utilities.Token.create(this.name);
+	this.id = noToken ? Utilities.id() : Utilities.Token.create(this.name);
 
 	if (!DeepInject.fnHeaderRegExp.test(this.scriptString))
 		this.scriptString = 'function () {' + this.scriptString + '}';

@@ -40,13 +40,15 @@ var Command = function (command, data, event) {
 			if (this.isEvent)
 				return this.event.message;
 
-			return null;
+			return this.__message;
 		},
 		set: function (message) {
 			if (this.isEvent)
 				this.event.message = message;
 			else if (typeof this.event === 'function')
 				this.event(message);
+			else
+				this.__message = message;
 		}
 	});
 
@@ -75,7 +77,7 @@ var Command = function (command, data, event) {
 		logDebug: function (message) {
 			if (globalSetting.debugMode && typeof message.message === 'string') {
 				if (this.event.target.url !== message.source)
-					console.group(message.source + ' via ' + this.event.target.url);
+					console.group(message.source + ' - via - ' + this.event.target.url);
 				else
 					console.group(this.event.target.url);
 
@@ -300,7 +302,7 @@ var Command = function (command, data, event) {
 			$.ajax(meta);
 		},
 
-		setting: {
+		settingStore: {
 			getItem: function (detail) {
 				this.message = SettingStore.getItem(detail.setting, detail.value);
 			},
@@ -317,22 +319,20 @@ var Command = function (command, data, event) {
 		},
 
 		userScript: {
-			resource: {
-				getItem: function (detail) {
-					if (!UserScript.exist(detail.namespace)) {
-						this.message = null;
+			getResource: function (detail) {
+				if (!UserScript.exist(detail.namespace)) {
+					this.message = null;
 
-						return LogError(detail.namespace + ' does not exist.');
-					}
-
-					if (typeof detail.meta !== 'string') {
-						this.message = null;
-
-						return LogError([detail.meta + ' is not a string', detail.namespace]);
-					}
-
-					this.message = UserScript.scripts.getStore(detail.namespace).getStore('resources').get(detail.meta, null);
+					return LogError(detail.namespace + ' does not exist.');
 				}
+
+				if (typeof detail.meta !== 'string') {
+					this.message = null;
+
+					return LogError([detail.meta + ' is not a string', detail.namespace]);
+				}
+
+				this.message = UserScript.scripts.getStore(detail.namespace).getStore('resources').get(detail.meta, null);
 			},
 
 			storage: {
@@ -374,9 +374,11 @@ var Command = function (command, data, event) {
 		}
 	};
 
-	new InternalCommand();
+	var result = new InternalCommand();
 
 	InternalCommand = command = data = event = undefined;
+
+	return result.message;
 };
 
 Command.messageReceived = function (event) {
@@ -385,7 +387,7 @@ Command.messageReceived = function (event) {
 
 	var command = (event.name === 'canLoad') ? event.message.command : event.name;
 
-	Command(command, event.message ? (event.message.data || event.message) : null, event);
+	return Command(command, event.message ? (event.message.data || event.message) : null, event);
 };
 
 Events.addApplicationListener('message', Command.messageReceived);

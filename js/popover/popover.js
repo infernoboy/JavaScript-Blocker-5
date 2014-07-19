@@ -7,7 +7,7 @@ if (!globalPage.GlobalPageReady) {
 
 	window.location.reload();
 } else
-	Log('Ready to go.');
+	globalPage.Log('Ready to go.');
 
 globalPage.Template = Template;
 

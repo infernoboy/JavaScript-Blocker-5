@@ -178,9 +178,10 @@ Rule.prototype.kind = function (kindName, hide) {
 };
 
 Rule.prototype.domain = function (domain) {
+	var rules;
+
 	var self = this,
-			kinds = {},
-			rules;
+			kinds = {};
 
 	this.rules.forEach(function (kind) {
 		rules = self.kind(kind).domain(domain);

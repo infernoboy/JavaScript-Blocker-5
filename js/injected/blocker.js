@@ -45,7 +45,14 @@ var Page = {
 	send: (function () {
 		var timeout;
 
-		return function sendPage () {
+		var doSendPage = function () {
+			GlobalPage.message('receivePage', Page.info);
+
+			for (var framePageID in FRAMED_PAGES)
+				GlobalPage.message('receivePage', FRAMED_PAGES[framePageID]);
+		};
+
+		return function sendPage (now) {
 			try {
 				if (!document.hidden) {
 					if (Page.info.isFrame)
@@ -56,14 +63,13 @@ var Page = {
 					else {
 						clearTimeout(timeout);
 
-						timeout = setTimeout(function () {
-							GlobalPage.message('receivePage', Page.info);
-
-							for (var framePageID in FRAMED_PAGES)
-								GlobalPage.message('receivePage', FRAMED_PAGES[framePageID]);
-						}, 100);
+						if (now)
+							doSendPage();
+						else
+							timeout = setTimeout(doSendPage, 150);
 					}
-				}
+				} else
+					Handler.onDocumentVisible.push(Page.send.bind(window, now));
 			} catch(error) {
 				if (!broken) {
 					broken = true;
@@ -141,6 +147,10 @@ var _ = (function () {
 var Handler = {
 	onDocumentVisible: [],
 
+	unloadedFrame: function () {
+		Page.send(true);
+	},
+
 	DOMContentLoaded: function () {
 		var i,
 				b;
@@ -153,7 +163,7 @@ var Handler = {
 
 		for (i = 0, b = scripts.length; i < b; i++)
 			if (!Element.triggersBeforeLoad(scripts[i]))
-				Element.processUnblockable('script', scripts[i]);
+				Element.processUnblockable('script', scripts[i], true);
 
 		for (i = 0, b = anchors.length; i < b; i++)
 			Element.handle.anchor(anchors[i]);
@@ -175,10 +185,10 @@ var Handler = {
 			}
 		}
 
-		Page.send();
+		Page.send(true);
 	},
 
-	hash: function (event) {
+	resetLocation: function (event) {
 		Page.info.location = Utilities.Page.getCurrentLocation();
 
 		Page.send();
@@ -242,11 +252,11 @@ var Element = {
 		return !!(element.src || element.srcset) || ['FRAME', 'IFRAME']._contains(element.nodeName);
 	},
 
-	processUnblockable: function (kind, element) {
+	processUnblockable: function (kind, element, doesNotTrigger) {
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {
 			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element, true));
 
-			if (Element.triggersBeforeLoad(element)) {
+			if (!doesNotTrigger && Element.triggersBeforeLoad(element)) {
 				if (!globalSetting.hideInjected)
 					Page.allowed.getStore(kind).set(element.src || element.srcset, {
 						ruleAction: -1,
@@ -285,7 +295,7 @@ var Element = {
 				var kind = BLOCKABLE[node.nodeName][0];
 
 				if (globalSetting.enabledKinds[kind] && !Element.triggersBeforeLoad(node))
-					Element.processUnblockable(kind, node);
+					Element.processUnblockable(kind, node, true);
 			}
 		},
 
@@ -509,6 +519,28 @@ var Resource = {
 	}
 };
 
+var JSBSupport = GlobalCommand('canLoadResource', {
+	kind: 'disable',
+	pageLocation: Page.info.location,
+	pageProtocol: Page.info.protocol,
+	source: '*',
+	isFrame: !Utilities.Page.isTop
+});
+
+if (!JSBSupport.isAllowed) {
+	globalSetting.disabled = true;
+
+	Page.blocked.pushSource('disable', '*', {
+		ruleAction: JSBSupport.action
+	});
+
+	LogDebug('disabled on this page: ' + Page.info.location);
+
+	Page.send(true);
+}
+
+document.addEventListener('visibilitychange', Handler.visibilityChange, true);
+
 if (!globalSetting.disabled) {
 	if (Utilities.safariBuildVersion > 535) {
 		var observer = new MutationObserver(function (mutations) {
@@ -527,12 +559,11 @@ if (!globalSetting.disabled) {
 
 	document.addEventListener('contextmenu', Handler.contextMenu, false);
 	document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
-	document.addEventListener('visibilitychange', Handler.visibilityChange, true);
 	document.addEventListener('keyup', Handler.keyUp, true);
 	document.addEventListener('beforeload', Resource.canLoad, true);
 
-	window.addEventListener('hashchange', Handler.hash, true);
-	window.addEventListener('popstate', Handler.hash, true);
+	window.addEventListener('hashchange', Handler.resetLocation, true);
+	window.addEventListener('popstate', Handler.resetLocation, true);
 
 	window.addEventListener('error', function (event) {
 		if (typeof p === 'string' && p._contains('JavaScriptBlocker')) {
@@ -541,4 +572,7 @@ if (!globalSetting.disabled) {
 			LogError(errorMessage);
 		}
 	});
+
+	if (Page.info.isFrame)
+		window.addEventListener('beforeunload', Handler.unloadedFrame, true);
 }

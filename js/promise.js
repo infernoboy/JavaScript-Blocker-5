@@ -478,8 +478,7 @@ if (!window.Promise) {
 	  require('./polyfill-done.js');
 	}
 	},{"./polyfill-done.js":5,"promise":3}]},{},[6])
-} else
-	console.info('using native Promise object.');
+}
 
 Promise.prototype.finally = function (onResolveOrReject) {
 	return this.then(onResolveOrReject, onResolveOrReject);

@@ -131,6 +131,9 @@ var Special = {
 	},
 
 	begin: function () {
+		if (globalSetting.disabled)
+			return;
+		
 		if (Utilities.Page.isXML)
 			return LogDebug('refusing to inject helper scripts into XML page.');
 

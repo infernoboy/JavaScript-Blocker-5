@@ -9,7 +9,7 @@ var Settings = {
 		if (SettingStore.available)
 			return SettingStore[method](setting, value);
 		else
-			return GlobalCommand('setting.' + method, {
+			return GlobalCommand('settingStore.' + method, {
 				setting: setting,
 				value: value
 			});

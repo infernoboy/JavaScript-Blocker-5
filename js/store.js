@@ -182,6 +182,11 @@ var Store = (function () {
 			return this.private ? this.__parent : parent[this.id];
 		},
 		set: function (newParent) {
+			var hasParent = (this.private ? this.__parent : parent[this.id]) instanceof Store;
+
+			if (hasParent)
+				return;
+
 			if (newParent instanceof Store) {
 				newParent.children[this.id] = this;
 

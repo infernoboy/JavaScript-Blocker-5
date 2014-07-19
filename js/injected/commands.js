@@ -359,10 +359,15 @@ var Command = function (type, event) {
 				type: event.type
 			};
 
-			GlobalPage.message('bounce', {
-				command: 'messageTopExtension',
-				detail: detail
-			});
+			if (document.hidden) {
+				event.detail.commandToken = Command.requestToken('messageTopExtension');
+
+				Handler.onDocumentVisible.push(Command.bind(window, 'injected', event));
+			} else
+				GlobalPage.message('bounce', {
+					command: 'messageTopExtension',
+					detail: detail
+				});
 		},
 
 		inlineScriptsAllowed: function (detail) {
@@ -431,10 +436,8 @@ var Command = function (type, event) {
 		},
 
 		userScript: {
-			resource: {
-				getItem: function (detail) {
-					return this.__userScriptAction(detail);
-				}
+			getResource: function (detail) {
+				return this.__userScriptAction(detail);
 			},
 
 			storage: {

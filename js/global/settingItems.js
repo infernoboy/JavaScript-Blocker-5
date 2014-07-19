@@ -363,6 +363,20 @@ Settings.settings = {
 	}, {
 		setting: 'enabledKinds',
 		props: {
+			readOnly: true,
+			storeKey: 'disable',
+			default: true
+		}
+	}, {
+		setting: 'alwaysBlock',
+		props: {
+			readOnly: true,
+			storeKey: 'disable',
+			default: 'nowhere'
+		}
+	}, {
+		setting: 'enabledKinds',
+		props: {
 			storeKey: 'script',
 			label: 'Enable script blocker',
 			default: true
