@@ -1,5 +1,3 @@
-"use strict";
-
 if(false) {
 Handler.globalMessageReceived = function (event) {
 	if (event.message)

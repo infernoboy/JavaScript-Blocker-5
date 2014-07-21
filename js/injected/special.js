@@ -1,5 +1,3 @@
-"use strict";
-
 TOKEN.INJECTED = {};
 TOKEN.REGISTERED = {};
 
@@ -124,7 +122,7 @@ var Special = {
 
 		if (useURL === undefined && !this.specials[name].excludeFromPage)
 			Page.blocked.pushSource('special', name, {
-				ruleAction: -2
+				action: -2
 			});
 
 		return special;
@@ -158,7 +156,7 @@ var Special = {
 			if (this.enabled[special] === false) {
 				if (!this.enabled[special].excludeFromPage)
 					Page.allowed.pushSource('special', special, {
-						ruleAction: -1
+						action: -1
 					});
 			} else if (this.specials[special]) {
 				this.specials[special].value = this.enabled[special].value;

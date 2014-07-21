@@ -1,5 +1,3 @@
-"use strict";
-
 Special.specials = {
 	prepareScript: function () {
 		if (window[JSB.eventToken])
@@ -7,7 +5,8 @@ Special.specials = {
 		
 		Object.defineProperty(window, JSB.eventToken, {
 			value: Object.freeze({
-				window$JSON: window.JSON,
+				window$JSON$stringify: window.JSON.stringify.bind(window.JSON),
+				window$JSON$parse: window.JSON.parse.bind(window.JSON),
 				window$addEventListener: window.addEventListener.bind(window),
 				window$removeEventListener: window.removeEventListener.bind(window),
 				document$addEventListener: document.addEventListener.bind(document),
@@ -49,7 +48,7 @@ Special.specials = {
 	},
 
 	zoom: function () {
-		window[JSB.eventToken].document$addEventListener('DOMContentLoaded', function () {
+		document.addEventListener('DOMContentLoaded', function () {
 			document.body.style.setProperty('zoom', JSB.value + '%', 'important');
 		}, true);
 	},
@@ -105,7 +104,7 @@ Special.specials = {
 				node.setAttribute('autocomplete', 'on');
 		}
 
-		window[JSB.eventToken].document$addEventListener('DOMContentLoaded', function () {
+		document.addEventListener('DOMContentLoaded', function () {
 			var inputs = document.getElementsByTagName('input');
 			
 			for (var i = 0; i < inputs.length; i++)
@@ -125,7 +124,7 @@ Special.specials = {
 				subtree: true
 			});
 		} else
-			window[JSB.eventToken].document$addEventListener('DOMNodeInserted', function (event) {
+			document.addEventListener('DOMNodeInserted', function (event) {
 				withNode(event.target);
 			}, true);
 	},
@@ -160,7 +159,7 @@ Special.specials = {
 			if (isAllowed)
 				return XHR.send.apply(this, arguments);
 
-			var JSONsendArguments = window[JSB.eventToken].window$JSON.stringify(arguments);
+			var JSONsendArguments = window[JSB.eventToken].window$JSON$stringify(arguments);
 
 			if (detail.previousJSONsendArguments === JSONsendArguments) {
 				console.debug('XHR Resend?', arguments, this[storeToken]);

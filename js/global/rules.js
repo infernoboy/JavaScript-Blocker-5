@@ -362,7 +362,7 @@ var Rules = {
 	},
 
 	kindShouldBadge: function (kind) {
-		return !['special', 'user_script']._contains(kind);
+		return !['special', 'user_script', 'disable']._contains(kind);
 	},
 
 	isRegExp: function (rule) {

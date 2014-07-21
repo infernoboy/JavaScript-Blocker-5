@@ -1,5 +1,3 @@
-"use strict";
-
 function DeepInject (name, script, noToken) {
 	if (typeof name !== 'string')
 		name = '';
@@ -9,7 +7,7 @@ function DeepInject (name, script, noToken) {
 	this.fnName = this.cleanName;
 	this.script = script;
 	this.scriptString = script.toString();
-	this.id = noToken ? Utilities.id() : Utilities.Token.create(this.name);
+	this.id = noToken ? Utilities.Token.generate() : Utilities.Token.create(this.name);
 
 	if (!DeepInject.fnHeaderRegExp.test(this.scriptString))
 		this.scriptString = 'function () {' + this.scriptString + '}';
@@ -135,7 +133,7 @@ DeepInject.prototype.injectable = function (useURL) {
 	var executable = this.executable(),
 			scriptElement = document.createElement('script');
 
-	scriptElement.id = 'jsb-injected-' + Utilities.id();
+	scriptElement.id = 'jsb-injected-' + Utilities.Token.generate();
 
 	scriptElement.setAttribute('data-jsbAllowAndIgnore', Utilities.Token.create('AllowAndIgnore'));
 	scriptElement.setAttribute('data-jsbInjectedScript', this.name);

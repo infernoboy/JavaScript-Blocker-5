@@ -44,7 +44,7 @@ var Strings = {
 	}
 };
 
-var _ = function (string, args, hideNotLocalized) {
+function _ (string, args, hideNotLocalized) {
 	if (typeof string !== 'string' || !string.length)
 		throw new TypeError(string + ' is not a valid string.');
 

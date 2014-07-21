@@ -1,5 +1,3 @@
-"use strict";
-
 var COMMAND = {
 	SUCCESS: 0,
 	UNAUTHORIZED: -1,
@@ -155,7 +153,7 @@ var Command = function (type, event) {
 
 			if (data.callback) {
 				var callback = new DeepInject(null, data.callback),
-						name = 'TopCallback-' + data.originSourceName + Utilities.id();
+						name = 'TopCallback-' + data.originSourceName + Utilities.Token.generate();
 
 				callback.setArguments({
 					detail: {
@@ -293,7 +291,7 @@ var Command = function (type, event) {
 			info.host = Utilities.URL.extractHost(info.source);
 
 			actionStore.pushSource(info.kind, info.source, {
-				ruleAction: info.canLoad.action,
+				action: info.canLoad.action,
 				unblockable: false,
 				meta: info.meta
 			});
@@ -352,22 +350,23 @@ var Command = function (type, event) {
 		},
 
 		messageTopExtension: function (detail, event) {
-			detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].namespace;
-			detail.meta.originSourceID = detail.sourceID;
-
-			detail.originalEvent = {
-				type: event.type
-			};
-
 			if (document.hidden) {
 				event.detail.commandToken = Command.requestToken('messageTopExtension');
 
 				Handler.onDocumentVisible.push(Command.bind(window, 'injected', event));
-			} else
+			} else {
+				detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].namespace;
+				detail.meta.originSourceID = detail.sourceID;
+
+				detail.originalEvent = {
+					type: event.type
+				};
+
 				GlobalPage.message('bounce', {
 					command: 'messageTopExtension',
 					detail: detail
 				});
+			}
 		},
 
 		inlineScriptsAllowed: function (detail) {

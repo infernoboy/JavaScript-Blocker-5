@@ -24,7 +24,7 @@ var Store = (function () {
 		if (typeof name === 'string' && name.length)
 			this.id = (props.save ? Store.STORE_STRING : Store.CACHE_STRING) + name;
 		else
-			this.id = Utilities.id();
+			this.id = Utilities.Token.generate();
 
 		this.isNew = this.private || !(this.id in data);
 
@@ -221,7 +221,7 @@ var Store = (function () {
 		}
 	});
 
-	Store.BREAK = Utilities.id();
+	Store.BREAK = Utilities.Token.generate();
 
 	Store.prototype.__parent = undefined;
 	Store.prototype.__children = {};
@@ -448,7 +448,7 @@ var Store = (function () {
 	Store.prototype.map = function (fn, useSelf) {
 		var results = this.forEach(fn);
 
-		var store = useSelf ? this : new Store('Map-' + Utilities.id(), {
+		var store = useSelf ? this : new Store('Map-' + Utilities.Token.generate(), {
 			selfDestruct: TIME.ONE.SECOND * 30
 		});
 
@@ -461,7 +461,7 @@ var Store = (function () {
 	Store.prototype.filter = function (fn) {
 		var results = this.forEach(fn);
 
-		var store = new Store('Filter-' + Utilities.id(), {
+		var store = new Store('Filter-' + Utilities.Token.generate(), {
 			selfDestruct: TIME.ONE.SECOND * 30
 		});
 

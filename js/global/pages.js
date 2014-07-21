@@ -6,7 +6,7 @@ function Page (page, tab) {
 
 	page.state.props = {
 		destroyChildren: true,
-		selfDestruct: TIME.ONE.SECOND * 5
+		selfDestruct: TIME.ONE.MINUTE * 5
 	};
 
 	page.state = Store.promote(page.state);
@@ -21,7 +21,7 @@ function Page (page, tab) {
 							pageLocation: location,
 							source: sourceName,
 							isFrame: attributes.isFrame,
-							ruleAction: attributes.ruleAction,
+							action: attributes.action,
 							unblockable: attributes.unblockable,
 							meta: attributes.meta
 						});
@@ -48,7 +48,7 @@ Page.pages = new Store('Pages', {
 });
 
 Page.frames = new Store('Frames', {
-	maxLife: TIME.ONE.SECOND * 2
+	maxLife: TIME.ONE.MINUTE * 5
 });
 
 Page.active = function (callback) {
@@ -182,7 +182,8 @@ Page.prototype.badge = function (state) {
 		};
 
 		for (var kind in tree.state[state])
-			withState(kind, tree.state[state][kind]);
+			if (Rules.kindShouldBadge(kind))
+				withState(kind, tree.state[state][kind]);
 
 		for (var frame in tree.frames) 
 			for (kind in tree.frames[frame].state[state])

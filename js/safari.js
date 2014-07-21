@@ -104,13 +104,13 @@ var Tabs = {
 		else
 			return activeWindow ? activeWindow.activeTab : null;
 	},
-	create: function (object) {
+	create: function (url) {
 		var activeWindow = BrowserWindows.active();
 
 		if (activeWindow)
-			activeWindow.openTab().url = object.url;
+			activeWindow.openTab().url = url;
 		else
-			BrowserWindows.open().activeTab.url = object.url;
+			BrowserWindows.open().activeTab.url = url;
 	},
 	messageActive: function (message, data) {
 		this.active(function (tab) {
@@ -229,24 +229,24 @@ var Events = {
 	}
 };
 
-var MessageTarget = function (event, name, data) {
+function MessageTarget (event, name, data) {
 	if (event.target.page)
 		event.target.page.dispatchMessage(name, data);
 };
 
-var PrivateBrowsing = function () {
+function PrivateBrowsing () {
 	return (safari.application.privateBrowsing && safari.application.privateBrowsing.enabled);
 };
 
-var ExtensionURL = function (path) {
+function ExtensionURL (path) {
 	return safari.extension.baseURI + (path || '');
 };
 
-var ResourceCanLoad = function (beforeLoad, data) {
+function ResourceCanLoad (beforeLoad, data) {
 	return GlobalPage.tab.canLoad(beforeLoad, data);
 };
 
-var GlobalCommand = function (command, data) {
+function GlobalCommand (command, data) {
 	return GlobalPage.tab.canLoad(beforeLoad, {
 		command: command,
 		data: data

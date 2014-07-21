@@ -1,6 +1,6 @@
 "use strict";
 
-var EasyList = function (listName, listURL) {
+function EasyList (listName, listURL) {
 	if (!Rules.list[listName])
 		throw new Error(listName + ' is not a valid EasyList.');
 

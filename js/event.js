@@ -1,6 +1,6 @@
 "use strict";
 
-var EventListener = function () {
+function EventListener () {
 	this.__listeners = {};
 };
 

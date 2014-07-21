@@ -1,5 +1,3 @@
-"use strict";
-
 if (document.hidden === undefined)
 	document.hidden = false;
 
@@ -23,7 +21,7 @@ var BLOCKED_ELEMENTS = [],
 
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
-	EVENT: Utilities.id(),
+	EVENT: Utilities.Token.generate(),
 };
 
 var BLOCKABLE = {
@@ -80,20 +78,6 @@ var Page = {
 		}
 	})(),
 
-	resultAction: {
-		pushSource: function (storeName, kind, source, data) {
-			Page[storeName].getStore(kind).getStore('source').getStore(Page.info.location).getStore(source).set(Utilities.id(), data);
-		},
-
-		incrementHost: function (storeName, kind, host) {
-			Page[storeName].getStore(kind).getStore('hosts').increment(host);
-		},
-
-		decrementHost: function (storeName, kind, host) {
-			Page[storeName].getStore(kind).getStore('hosts').decrement(host);
-		}
-	},
-
 	info: {
 		id: TOKEN.PAGE,
 		state: new Store(TOKEN.PAGE, {
@@ -107,17 +91,30 @@ var Page = {
 };
 
 (function () {
-	var resultAction;
-
 	var result = ['allowed', 'blocked', 'unblocked'];
 
 	for (var i = 0; i < result.length; i++) {
 		Page[result[i]] = Page.info.state.getStore(result[i]);
 
-		for (resultAction in Page.resultAction)
-			Object.defineProperty(Page[result[i]], resultAction, {
-				value: Page.resultAction[resultAction].bind(Page, result[i])
-			});
+		Object.defineProperties(Page[result[i]], {
+			pushSource: {
+				value: function (kind, source, data) {
+					this.getStore(kind).getStore('source').getStore(Page.info.location).getStore(source).set(Utilities.Token.generate(), data);
+				}.bind(Page[result[i]])
+			},
+
+			incrementHost: {
+				value: function (kind, host) {
+					this.getStore(kind).getStore('hosts').increment(host);
+				}.bind(Page[result[i]])
+			},
+
+			decrementHost: {
+				value: function (kind, host) {
+					this.getStore(kind).getStore('hosts').decrement(host);
+				}.bind(Page[result[i]])
+			},
+		});
 	}
 })();
 
@@ -259,7 +256,7 @@ var Element = {
 			if (!doesNotTrigger && Element.triggersBeforeLoad(element)) {
 				if (!globalSetting.hideInjected)
 					Page.allowed.getStore(kind).set(element.src || element.srcset, {
-						ruleAction: -1,
+						action: -1,
 						unblockable: true,
 						meta: {
 							injected: true,
@@ -362,7 +359,7 @@ var Element = {
 					id = frame.getAttribute('id');
 
 			if (!id || !id.length)
-				frame.setAttribute('id', (id = Utilities.id()));
+				frame.setAttribute('id', (id = Utilities.Token.generate()));
 
 			var idToken = frame.getAttribute('data-jsbFrameProcessed');
 
@@ -385,7 +382,7 @@ var Element = {
 					});
 			}, 2000, [frame]);
 
-			frame.addEventListener('load', function () {
+			var postMessage = function () {
 				this.contentWindow.postMessage({
 					command: 'requestFrameURL',
 					data: {
@@ -393,7 +390,14 @@ var Element = {
 						token: Utilities.Token.create(this.id)
 					}
 				}, '*');
-			}, false);
+			};
+
+			try {
+				if (frame && frame.contentWindow && frame.contentWindow.document && frame.contentWindow.document.readyState === 'complete')
+					postMessage.call(frame);
+			} catch (e) {}
+
+			frame.addEventListener('load', postMessage, false);
 		}
 	}
 };
@@ -488,7 +492,7 @@ var Resource = {
 
 					if (excludeFromPage !== true || canLoad.action >= 0) {
 						actionStore.pushSource(kind, source, {
-							ruleAction: canLoad.action,
+							action: canLoad.action,
 							unblockable: !!event.unblockable,
 							meta: meta
 						});
@@ -529,14 +533,18 @@ var JSBSupport = GlobalCommand('canLoadResource', {
 
 if (!JSBSupport.isAllowed) {
 	globalSetting.disabled = true;
+	
+	setTimeout(function () {
+		Page.blocked.pushSource('disable', '*', {
+			action: JSBSupport.action
+		});
 
-	Page.blocked.pushSource('disable', '*', {
-		ruleAction: JSBSupport.action
-	});
+		Page.blocked.incrementHost('disable', '*');
 
-	LogDebug('disabled on this page: ' + Page.info.location);
+		// LogDebug('disabled on this page: ' + Page.info.location);
 
-	Page.send(true);
+		Page.send(true);
+	}, 0);
 }
 
 document.addEventListener('visibilitychange', Handler.visibilityChange, true);

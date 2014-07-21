@@ -32,10 +32,6 @@ var Utilities = {
 
 	noop: function () {},
 
-	id: function () {
-		return this.Token.generate();
-	},
-
 	makeArray: function (arrayLikeObject, offset) {
 		if (typeof offset !== 'number')
 			offset = 0;
@@ -68,13 +64,13 @@ var Utilities = {
 
 	decode: function (str) {
 		try {
-			return decodeURIComponent(escape(window.atob(str)));
+			return decodeURIComponent(escape(atob(str)));
 		} catch (e) {
 			return str;
 		}
 	},
 	encode: function (str) {
-		return window.btoa(unescape(encodeURIComponent(str)));
+		return btoa(unescape(encodeURIComponent(str)));
 	},
 
 	throttle: function (fn, delay, extraArgs) {
@@ -98,7 +94,7 @@ var Utilities = {
 		};
 	},
 
-	byteSize: function(number) {	
+	byteSize: function (number) {	
 		var power;
 
 		var number = parseInt(number, 10),
@@ -151,7 +147,7 @@ var Utilities = {
 		return (bVersion > aVersion || (bVersion === aVersion && bModifier[1] > aModifier[1]));
 	},
 
-	typeOf: function(object) {
+	typeOf: function (object) {
 		return ({}).toString.call(object).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
 	},
 
@@ -310,7 +306,7 @@ var Utilities = {
 			this.remove(type, reference);
 
 			var timer = null,
-					timerID = typeof reference === 'string' ? reference : Utilities.id();
+					timerID = typeof reference === 'string' ? reference : Utilities.Token.generate();
 
 			if (type === 'timeout')
 				timer = setTimeout(function (timer, type, reference, script, args) {
@@ -361,7 +357,7 @@ var Utilities = {
 
 		return {
 			generate: function () {
-				return Math.random().toString(36).substr(2, 10);
+				return (Math.random().toString(36) + Math.random().toString(36).substr(2)).substr(2, 14);
 			},
 			create: function (value, keep) {
 				var token = this.generate();
@@ -395,11 +391,11 @@ var Utilities = {
 	})(),
 
 	Element: {
-		_adjustmentProperties: ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
+		__adjustmentProperties: ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
 		
 		cloneAdjustmentProperties: function (fromElement, toElement) {
-			for (var i = 0; i < this._adjustmentProperties.length; i++)
-				toElement.style.setProperty(this._adjustmentProperties[i], fromElement.getPropertyValue(this._adjustmentProperties[i]), 'important');
+			for (var i = 0; i < this.__adjustmentProperties.length; i++)
+				toElement.style.setProperty(this.__adjustmentProperties[i], fromElement.getPropertyValue(this.__adjustmentProperties[i]), 'important');
 		},
 
 		setCSSProperties: function (element, properties, isImportant) {
@@ -583,7 +579,7 @@ var Utilities = {
 
 var LOG_HISTORY_SIZE = 20;
 
-var Log = function () {
+function Log () {
 	var args = Utilities.makeArray(arguments),
 			logMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
 
@@ -596,7 +592,7 @@ var Log = function () {
 
 Log.history = [];
 
-var LogDebug = function () {
+function LogDebug () {
 	if (globalSetting.debugMode) {
 		var args = Utilities.makeArray(arguments),
 			debugMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
@@ -618,7 +614,7 @@ var LogDebug = function () {
 
 LogDebug.history = [];
 
-var LogError = function () {
+function LogError () {
 	var	error,
 			errorMessage,
 			errorStack;
@@ -917,6 +913,21 @@ var Extension = {
 	},
 
 	String: {
+		_rpad: {
+			value: function (length, padding) {
+				if (this.length < length) {
+					if (padding.length !== 1)
+						throw new TypeError(padding + ' is not equal to 1');
+
+					var arr = new Array(length - this.length + 1);
+
+					return this + arr.join(padding);
+				}
+
+				return this;
+			}
+		},
+
 		_contains: {
 			value: function (string) {
 				return this.indexOf(string) > -1;

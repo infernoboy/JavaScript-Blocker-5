@@ -6,7 +6,7 @@
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
  ***************************************/
 
-var Predefined = function () {
+function Predefined () {
 	Rules.list.predefined.rules.clear();
 	
 	var kind,

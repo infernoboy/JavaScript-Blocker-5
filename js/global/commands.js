@@ -1,7 +1,7 @@
 "use strict";
 
-var Command = function (command, data, event) {
-	var InternalCommand = function () {
+function Command (command, data, event) {
+	function InternalCommand () {
 		var part;
 
 		var commands = this.commands,

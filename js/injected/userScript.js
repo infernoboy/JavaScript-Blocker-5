@@ -1,5 +1,3 @@
-"use strict";
-
 var UserScript = {
 	menuCommand: {},
 
@@ -38,24 +36,35 @@ var UserScript = {
 		Special.injectHelpers(userScript, this.helpers);
 		Special.injectHelpers(userScript, Special.helpers);
 
-		var userScriptSetup = new DeepInject('userScriptSetup', function (setup) {
-			unsafeWidnow = window;
-
-			GM_info = setup.info;
+		var userScriptSetup = new DeepInject(null, function () {
+			var unsafeWindow = window,
+					GM_info = JSB.scriptInfo;
 		}, true);
 
-		userScriptSetup.setArguments({
-			setup: {
-				info: {
-					scriptMetaStr: attributes.metaStr,
-					scriptWillUpdate: attributes.autoUpdate,
-					version: 5,
-					script: attributes.meta
-				}
-			}
-		});
+		userScript.prepend([userScriptSetup.inner()]);
 
-		userScript.prepend([userScriptSetup.executable(), 'var unsafeWindow, GM_info;']);
+		Special.setup(userScript);
+
+		var meta = attributes.meta;
+
+		meta.resources = meta.resource;
+		meta.includes = meta.include;
+		meta.excludes = meta.exclude;
+		meta.matches = meta.match;
+
+		delete meta.resource;
+		delete meta.include;
+		delete meta.exclude;
+		delete meta.match;
+
+		userScript.pieces.args.JSB.scriptInfo = {
+			scriptMetaStr: attributes.metaStr,
+			scriptWillUpdate: attributes.autoUpdate,
+			version: 5,
+			script: meta
+		};
+
+		userScript.setArguments(userScript.pieces.args).inject();
 
 		TOKEN.INJECTED[userScript.id] = {
 			namespace: attributes.meta.trueNamespace,
@@ -63,14 +72,12 @@ var UserScript = {
 			usedURL: DeepInject.useURL
 		};
 
-		Special.setup(userScript).inject();
-
 		if (attributes.runAtStart && DeepInject.useURL)
 			Log('this page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
 
 		if (excludeFromPage !== true)
 			Page.allowed.pushSource('user_script', attributes.meta.trueNamespace, {
-				ruleAction: -1
+				action: -1
 			});
 	},
 
@@ -94,7 +101,7 @@ var UserScript = {
 		for (var userScript in enabledUserScripts) {
 			if (enabledUserScripts[userScript] === false)
 				Page.blocked.pushSource('user_script', userScript, {
-					ruleAction: -2
+					action: -2
 				});
 			else {
 				if (enabledUserScripts[userScript].requirements) {
@@ -211,7 +218,7 @@ var UserScript = {
 			var events,
 					action;
 
-			var serializable = window[JSB.eventToken].window$JSON.parse(window[JSB.eventToken].window$JSON.stringify(details)),
+			var serializable = window[JSB.eventToken].window$JSON$parse(window[JSB.eventToken].window$JSON$stringify(details)),
 					messageFn = details.synchronous ? messageExtensionSync : messageExtension;
 
 			var response = messageFn('XMLHttpRequest', serializable, function (result) {

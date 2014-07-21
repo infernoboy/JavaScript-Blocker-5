@@ -1,6 +1,6 @@
 "use strict";
 
-var Template = function (template, file) {
+function Template (template, file) {
 	this.cache = {};
 	this.name = file;
 	this.template = $(template);
