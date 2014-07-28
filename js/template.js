@@ -10,7 +10,7 @@ function Template (template, file) {
 
 Template.__templates = {};
 
-Template.event = new EventListener();
+Template.event = new EventListener;
 
 Template.ref = function (template) {
 	return Template.__templates[template];

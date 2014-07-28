@@ -107,10 +107,13 @@ var Tabs = {
 	create: function (url) {
 		var activeWindow = BrowserWindows.active();
 
-		if (activeWindow)
-			activeWindow.openTab().url = url;
-		else
-			BrowserWindows.open().activeTab.url = url;
+		var tab = activeWindow ? activeWindow.openTab() : BrowserWindows.open().activeTab;
+
+		tab.url = url;
+
+		tab.activate()
+
+		return tab;
 	},
 	messageActive: function (message, data) {
 		this.active(function (tab) {

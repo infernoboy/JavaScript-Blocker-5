@@ -6,7 +6,7 @@ function Page (page, tab) {
 
 	page.state.props = {
 		destroyChildren: true,
-		selfDestruct: TIME.ONE.MINUTE * 5
+		selfDestruct: TIME.ONE.SECOND * 2
 	};
 
 	page.state = Store.promote(page.state);
@@ -44,20 +44,22 @@ function Page (page, tab) {
 };
 
 Page.pages = new Store('Pages', {
-	maxLife: TIME.ONE.SECOND * 2
+	maxLife: TIME.ONE.SECOND
 });
 
 Page.frames = new Store('Frames', {
-	maxLife: TIME.ONE.MINUTE * 5
+	maxLife: TIME.ONE.SECOND
 });
 
-Page.active = function (callback) {
-	var active = Page.pages.findLast(function (pageID, page, store) {
-		return (page.isTop && page.tab === Tabs.active());
+Page.withActive = function (callback) {
+	var activeTab = Tabs.active();
+
+	var activePage = Page.pages.findLast(function (pageID, page, store) {
+		return (page.isTop && page.tab === activeTab);
 	});
 
-	if (active && typeof callback === 'function')
-		callback(active);
+	if (activePage && typeof callback === 'function')
+		callback(activePage);
 };
 
 Page.isPage = function (page) {
@@ -173,22 +175,18 @@ Page.prototype.badge = function (state) {
 
 	Page.await(this.tab, true);
 
-	Utilities.Timer.timeout('badgeToolbar' + this.info.state.name, function (self) {
+	Utilities.Timer.timeout('badgeToolbar', function (self) {
 		var tree = self.tree(),
 				count = 0;
 
-		var withState = function (kind, resources) {
-			count += Object.keys(resources.hosts || []).length;
-		};
-
 		for (var kind in tree.state[state])
 			if (Rules.kindShouldBadge(kind))
-				withState(kind, tree.state[state][kind]);
+				count += Object.keys(tree.state[state][kind].hosts || []).length
 
 		for (var frame in tree.frames) 
 			for (kind in tree.frames[frame].state[state])
 				if (Rules.kindShouldBadge(kind))
-					withState(kind, tree.frames[frame].state[state][kind]);
+					count += Object.keys(tree.frames[frame].state[state][kind].hosts || []).length
 
 		ToolbarItems.badge(count, self.tab);
 	}, 50, [this]);

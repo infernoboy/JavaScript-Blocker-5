@@ -76,6 +76,15 @@ var Settings = {
 			Settings.map[event.key].props.onChange(event.oldValue, event.newValue);
 	},
 
+	all: function () {
+		var all = {};
+
+		for (var setting in Settings.map)
+			all[setting] = Settings.getItem(setting);
+
+		return all;
+	},
+
 	getItem: function (settingKey, storeKey) {
 		var setting = Settings.map[settingKey];
 

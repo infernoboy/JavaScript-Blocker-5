@@ -434,6 +434,55 @@ var Command = function (type, event) {
 			return 3;
 		},
 
+		confirm: function (detail) {
+			for (var i = 0; i < 1000; i++)
+				GlobalCommand('ping');
+
+			return Command.globalRelay(detail);
+		},
+
+		showPopover: function (detail) {
+			Command.globalRelay(detail);
+		},
+
+		openTabWithURL: function (detail) {
+			return Command.globalRelay(detail);
+		},
+
+		activeTabIndex: function (detail) {
+			return Command.globalRelay(detail);
+		},
+
+		closeTabAtIndex: function (detail) {
+			Command.globalRelay(detail);
+		},
+
+		activateTabAtIndex: function (detail) {
+			Command.globalRelay(detail);
+		},
+
+		localize: function (detail) {
+			return Command.globalRelay(detail);
+		},
+
+		addResourceRule: function (detail) {
+			if (!Utilities.Token.valid(detail.meta.key, 'addResourceRuleKey'))
+				throw new Error('invalid addResourceRuleKey');
+
+			var ruleInfo = detail.meta.resource;
+
+			ruleInfo.pageLocation = Page.info.location;
+			ruleInfo.pageProtocol = Page.info.protocol;
+			ruleInfo.isFrame = Page.info.isFrame;
+
+			GlobalPage.message('addResourceRule', detail.meta);
+
+			return {
+				callbackID: detail.callbackID,
+				result: true
+			};
+		},
+
 		userScript: {
 			getResource: function (detail) {
 				return this.__userScriptAction(detail);
@@ -483,6 +532,13 @@ Command.sendCallback = function (sourceID, callbackID, result) {
 			result: result
 		}
 	}));
+};
+
+Command.globalRelay = function (detail) {
+	return {
+		callbackID: detail.callbackID,
+		result: GlobalCommand(detail.command, detail.meta)
+	};
 };
 
 Command.global = function (event) {

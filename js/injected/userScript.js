@@ -64,13 +64,13 @@ var UserScript = {
 			script: meta
 		};
 
-		userScript.setArguments(userScript.pieces.args).inject();
-
 		TOKEN.INJECTED[userScript.id] = {
 			namespace: attributes.meta.trueNamespace,
 			name: attributes.meta.name,
 			usedURL: DeepInject.useURL
 		};
+
+		userScript.setArguments(userScript.pieces.args).inject();
 
 		if (attributes.runAtStart && DeepInject.useURL)
 			Log('this page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
@@ -93,8 +93,8 @@ var UserScript = {
 				requirementName;
 
 		var enabledUserScripts = GlobalCommand('userScriptsForLocation', {
-			location: Page.info.location,
-			protocol: Page.info.protocol,
+			pageLocation: Page.info.location,
+			pageProtocol: Page.info.protocol,
 			isFrame: Page.info.isFrame
 		});
 
@@ -201,7 +201,7 @@ var UserScript = {
 		},
 
 		GM_log: function () {
-			console.debug.apply(console, arguments);
+			console.warn.apply(console, arguments);
 		},
 
 		GM_openInTab: function (url) {

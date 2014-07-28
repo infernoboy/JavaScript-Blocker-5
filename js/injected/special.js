@@ -122,7 +122,7 @@ var Special = {
 
 		if (useURL === undefined && !this.specials[name].excludeFromPage)
 			Page.blocked.pushSource('special', name, {
-				action: -2
+				action: this.enabled[name].action
 			});
 
 		return special;
@@ -147,19 +147,19 @@ var Special = {
 		}
 
 		this.enabled = GlobalCommand('specialsForLocation', {
-			location: Page.info.location,
-			protocol: Page.info.protocol,
+			pageLocation: Page.info.location,
+			pageProtocol: Page.info.protocol,
 			isFrame: Page.info.isFrame
 		});
 
 		for (var special in this.enabled) {
-			if (this.enabled[special] === false) {
+			if (!this.enabled[special].enabled) {
 				if (!this.enabled[special].excludeFromPage)
 					Page.allowed.pushSource('special', special, {
-						action: -1
+						action: this.enabled[special].action
 					});
 			} else if (this.specials[special]) {
-				this.specials[special].value = this.enabled[special].value;
+				this.specials[special].value = this.enabled[special];
 
 				this.inject(special);
 			}

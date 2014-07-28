@@ -95,9 +95,51 @@ function Command (command, data, event) {
 			this.message = _(detail.string, detail.args);
 		},
 
+		ping: function () {
+			this.message = 'pong';
+		},
+
+		confirm: function (string) {
+			this.message = confirm(string);
+		},
+
+		showPopover: function () {
+			ToolbarItems.showPopover();
+		},
+
+		activeTabIndex: function () {
+			var activeTab = Tabs.active(),
+					tabs = Tabs.array();
+
+			for (var i = 0; i < tabs.length; i++)
+				if (tabs[i] === activeTab)
+					this.message = i;
+		},
+
+		openTabWithURL: function (url) {
+			var tab = Tabs.create(url),
+					tabs = Tabs.array();
+
+			for (var i = 0; i < tabs.length; i++)
+				if (tabs[i] === tab)
+					this.message = i;
+		},
+
+		closeTabAtIndex: function (index) {
+			var tabs = Tabs.array();
+
+			tabs[index].close();
+		},
+
+		activateTabAtIndex: function (index) {
+			var tabs = Tabs.array();
+
+			tabs[index].activate();
+		},
+
 		canLoadResource: function (info) {
 			if (info.pageProtocol === 'about:')
-				info.pageLocation = this.event.target.url;
+				info.pageLocation = this.event.target.url || info.pageLocation;
 
 			var resource = new Resource(info);
 
@@ -118,21 +160,21 @@ function Command (command, data, event) {
 		},
 
 		specialsForLocation: function (page) {
-			if (page.protocol === 'about:')
-				page.location = this.event.target.url;
+			if (page.pageProtocol === 'about:')
+				page.pageLocation = this.event.target.url || page.pageLocation;
 
-			if (page.location)
-				this.message = Special.forLocation(page.location, page.isFrame);
+			if (page.pageLocation)
+				this.message = Special.forLocation(page.pageLocation, page.isFrame);
 			else
 				this.message = {};
 		},
 
 		userScriptsForLocation: function (page) {
-			if (page.protocol === 'about:')
-				page.location = this.event.target.url;
+			if (page.pageProtocol === 'about:')
+				page.pageLocation = this.event.target.url || page.pageLocation;
 
-			if (page.location)
-				this.message = UserScript.forLocation(page.location, page.isFrame);
+			if (page.pageLocation)
+				this.message = UserScript.forLocation(page.pageLocation, page.isFrame);
 			else
 				this.message = {};
 		},
@@ -165,14 +207,14 @@ function Command (command, data, event) {
 					else
 						return LogError(['frame does not seem to have a parent', page.info.id]);
 
-				Page.active(function (activePage) {
+				Page.withActive(function (activePage) {
 					activePage.badge('blocked');
 
 					if (activeTab === activePage.tab)
 						UI.renderPopover(activePage);
 				});
 			} else {
-				if (!activeTab.url) {
+				if (!activeTab || !activeTab.url) {
 					ToolbarItems.badge(0, activeTab);
 
 					UI.clear();
@@ -302,6 +344,14 @@ function Command (command, data, event) {
 			$.ajax(meta);
 		},
 
+		addResourceRule: function (detail) {
+			var resource = new Resource(detail.resource);
+
+			resource.__addRule(detail.action, detail.domain, detail.rule, detail.framed, detail.temporary);
+
+			this.message = true;
+		},
+
 		settingStore: {
 			getItem: function (detail) {
 				this.message = SettingStore.getItem(detail.setting, detail.value);
@@ -387,7 +437,7 @@ Command.messageReceived = function (event) {
 
 	var command = (event.name === 'canLoad') ? event.message.command : event.name;
 
-	return Command(command, event.message ? (event.message.data || event.message) : null, event);
+	return Command(command, event.message ? (event.message.data === undefined ? event.message : event.message.data) : null, event);
 };
 
 Events.addApplicationListener('message', Command.messageReceived);

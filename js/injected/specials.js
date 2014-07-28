@@ -49,7 +49,7 @@ Special.specials = {
 
 	zoom: function () {
 		document.addEventListener('DOMContentLoaded', function () {
-			document.body.style.setProperty('zoom', JSB.value + '%', 'important');
+			document.body.style.setProperty('zoom', JSB.value.value + '%', 'important');
 		}, true);
 	},
 
@@ -162,12 +162,12 @@ Special.specials = {
 			var JSONsendArguments = window[JSB.eventToken].window$JSON$stringify(arguments);
 
 			if (detail.previousJSONsendArguments === JSONsendArguments) {
-				console.debug('XHR Resend?', arguments, this[storeToken]);
+				console.warn('XHR Resend?', arguments, this[storeToken]);
 
 				try {
 					return detail.isAllowed ? XHR.send.apply(this, arguments) : this.abort();
 				} catch (error) {
-					console.debug('XHR Resend...Failed?', error);
+					console.warn('XHR Resend...Failed?', error);
 				} finally {
 					return;
 				}
@@ -224,7 +224,7 @@ Special.specials = {
 			try {
 				isAllowed = canLoad.isAllowed;
 			} catch (error) {
-				console.debug('failed to retrieve canLoadResource response.', document);
+				console.warn('failed to retrieve canLoadResource response.', document);
 
 				isAllowed = true;
 			}
@@ -245,12 +245,145 @@ Special.specials = {
 
 			messageExtension('page.' + pageAction, info);
 		};
+	},
+
+	environmental_information: function () {
+		var now = Math.random().toString(36), nowInt = Date.now(),
+				agent = 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/24.0';
+
+		window.navigator = {
+			geoLocation: window.navigator.geoLocation,
+			cookieEnabled: window.navigator.cookieEnabled,
+			productSub: now,
+			mimeTypes: [],
+			product: now,
+			appCodeName: 'Mozilla',
+			appVersion: agent,
+			vendor: now,
+			vendorSub: now,
+			platform: now,
+			appName: 'Netscape',
+			userAgent: agent,
+			language: window.navigator.language,
+			plugins: (function () {
+				function PluginArray () {};
+
+				PluginArray.prototype.refresh = function () {};
+				PluginArray.prototype.item = function () {};
+				PluginArray.prototype.namedItem = function () {};
+
+				return new PluginArray();
+			})(),
+			onLine: window.navigator.onLine,
+			javaEnabled: window.navigator.javaEnabled.bind(window.navigator),
+			getStorageUpdates: window.navigator.getStorageUpdates.bind(window.navigator)
+		};
+
+		window.screen = {
+			width: 1000,
+			availWidth: 1000,
+			height: 700,
+			availHeight: 700,
+			availLeft: 0,
+			availTop: 0,
+			pixelDepth: 24,
+			colorDepth: 24
+		};
+
+		Date.prototype.getTimezoneOffset = function () {
+			return 0;
+		};
+	},
+
+	canvas_data_url: function () {
+		var ALWAYS_ASK = 1,
+				ASK_ONCE = 2,
+				ASK_ONCE_SESSION = 3,
+				ALWAYS_BLOCK = 4;
+
+		var toDataURL = HTMLCanvasElement.prototype.toDataURL,
+				toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
+				shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION),
+				autoContinue = {};
+
+		var confirmString = messageExtensionSync('localize', {
+			string: JSB.data.safariBuildVersion < 537 ? 'canvas_data_url_prompt_old' : 'canvas_data_url_prompt'
+		});
+
+		if (shouldAskOnce)
+			confirmString += "\n\n" + messageExtensionSync('localize', {
+				string: JSB.value.value === ASK_ONCE_SESSION ? 'canvas_data_url_subsequent_session' : 'canvas_data_url_subsequent',
+				args: [window.location.host]
+			});
+
+		var baseURL = JSB.data.extensionURL + 'html/canvasFingerprinting.html#';
+
+		function protection (dataURL) {
+			var url = baseURL + dataURL;
+
+			if (JSB.value.value === ALWAYS_BLOCK || (shouldAskOnce && JSB.value.action >= 0))
+				var shouldContinue = false;
+			else if (autoContinue.hasOwnProperty(dataURL))
+				var shouldContinue = autoContinue[dataURL];
+			else {
+				if (JSB.data.safariBuildVersion < 537)
+					var shouldContinue = confirm(confirmString);
+				else {
+					var activeTabIndex = messageExtensionSync('activeTabIndex'),
+							newTabIndex = messageExtensionSync('openTabWithURL', url);
+
+					var shouldContinue = messageExtensionSync('confirm', window.location.href + "\n\n" + confirmString);
+
+					messageExtension('activateTabAtIndex', activeTabIndex);
+					messageExtension('closeTabAtIndex', newTabIndex);
+				}
+
+				if (shouldAskOnce) {
+					JSB.value.action = shouldContinue ? 1 : 0;
+
+					messageExtension('addResourceRule', {
+						key: JSB.data.key,
+						temporary: JSB.value.value === ASK_ONCE_SESSION,
+						action: shouldContinue ? 1 : 0,
+						domain: 2, // RESOURCE.HOST
+						rule: null,
+						resource: {
+							kind: 'special',
+							source: 'canvas_data_url',
+						}
+					});
+				}
+
+				autoContinue[dataURL] = shouldContinue;
+			}
+
+			if (shouldContinue)
+				return dataURL;
+			else
+				return 'data:image/png;base64,' + btoa(Math.random());
+		}
+
+		HTMLCanvasElement.prototype.toDataURL = function () {			
+			return protection(toDataURL.apply(this, arguments));
+		};
+
+		if (typeof toDataURLHD === 'function')
+			HTMLCanvasElement.prototype.toDataURLHD = function () {
+				return protection(toDataURLHD.apply(this, arguments));
+			};
 	}
 };
 
 Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
+
+Special.specials.canvas_data_url.data = {
+	safariBuildVersion: Utilities.safariBuildVersion,
+	extensionURL: ExtensionURL(),
+	key: Utilities.Token.create('addResourceRuleKey', true)
+};
+
 Special.specials.prepareScript.ignoreHelpers = true;
-Special.specials.prepareScript.commandToken = Utilities.Token.create('inlineScriptsAllowed');
+Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
 Special.specials.xhr_intercept.excludeFromPage = true;
 
 Special.begin();

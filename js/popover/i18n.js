@@ -56,7 +56,7 @@ function _ (string, args, hideNotLocalized) {
 	else if (Strings.strings.hasOwnProperty(Strings.defaultLanguage) && typeof Strings.strings[Strings.defaultLanguage][string] === 'string') {
 		localized = Strings.strings[Strings.defaultLanguage][string];
 
-		LogDebug('"' + string + '"', 'is not localized in', language);
+		LogDebug('"' + string + '" is not localized in ' + language);
 	}
 
 	localized = (!localized && !hideNotLocalized) ? string + ':NOT_LOCALIZED' : (localized || string);

@@ -525,6 +525,7 @@ var Resource = {
 
 var JSBSupport = GlobalCommand('canLoadResource', {
 	kind: 'disable',
+	strict: true,
 	pageLocation: Page.info.location,
 	pageProtocol: Page.info.protocol,
 	source: '*',
@@ -574,7 +575,7 @@ if (!globalSetting.disabled) {
 	window.addEventListener('popstate', Handler.resetLocation, true);
 
 	window.addEventListener('error', function (event) {
-		if (typeof p === 'string' && p._contains('JavaScriptBlocker')) {
+		if (typeof event.filename === 'string' && event.filename._contains('JavaScriptBlocker')) {
 			var errorMessage =  event.message + ', ' + event.filename + ', ' + event.lineno;
 
 			LogError(errorMessage);

@@ -8,7 +8,9 @@ var UI = {
 		if (!Popover.visible())
 			return;
 
-		$('body').html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a><br/><pre>' + JSON.stringify(page.tree(), null, 1)._escapeHTML() + '</pre>');
+		var tree = page.tree();
+
+		$('body').html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a><br/><pre>' + JSON.stringify(tree, null, 1)._escapeHTML() + '</pre>');
 	},
 	
 	clear: function () {
@@ -19,9 +21,9 @@ var UI = {
 		UI.clear();
 	},
 
-	renderPopover: function (page) {
-		Utilities.Timer.timeout('RenderPopover', this.__renderPopover.bind(this, page), 50);
-	},
+	renderPopover: Utilities.throttle(function (page) {
+		UI.__renderPopover(page);
+	}, 50, null, true),
 };
 
 Events.addApplicationListener('popover', UI.openedPopover);

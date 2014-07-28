@@ -33,6 +33,8 @@ globalPage.Template = Template;
 window.addEventListener('error', function (event) {
 	console.group('Popover Error');
 
+	console.log('GOT AN ERROR', event)
+
 	LogError([event.filename.replace(ExtensionURL(), '/'), event.lineno], event.message);
 
 	console.groupEnd();

@@ -73,7 +73,7 @@ var Utilities = {
 		return btoa(unescape(encodeURIComponent(str)));
 	},
 
-	throttle: function (fn, delay, extraArgs) {
+	throttle: function (fn, delay, extraArgs, debounce) {
 		var timeout = null, last = 0;
 
 		return function () {
@@ -87,10 +87,10 @@ var Utilities = {
 
 			clearTimeout(timeout);
 
-			if (elapsed > delay)
+			if (elapsed > delay && !debounce)
 				execute.call(this)
 			else
-				timeout = setTimeout(execute.bind(this), delay - elapsed);
+				timeout = setTimeout(execute.bind(this), debounce ? delay : delay - elapsed);
 		};
 	},
 
@@ -152,6 +152,7 @@ var Utilities = {
 	},
 
 	Group: {
+		NONE: 0,
 		IS_ANYTHING: 1,
 		IS: 2,
 		STARTS_WITH: 3,
@@ -172,7 +173,12 @@ var Utilities = {
 		},
 
 		satisfies: function (method, haystack, needle) {
-			if (typeof haystack !== 'string')
+			var type = Utilities.typeOf(needle);
+
+			if (type === 'object')
+				return this.eval(needle, haystack);
+
+			if (!this.TYPES[type] || !this.TYPES[type]._contains(method))
 				return false;
 
 			switch (method) {
@@ -353,11 +359,17 @@ var Utilities = {
 	},
 
 	Token: (function () {
-		var tokens = {};
+		var tokens = {},
+				characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 		return {
 			generate: function () {
-				return (Math.random().toString(36) + Math.random().toString(36).substr(2)).substr(2, 14);
+				var text = '';
+
+				for (var i = 0; i < 15; i++)
+					text += characters[Math.floor(Math.random() * characters.length)];
+
+				return text;
 			},
 			create: function (value, keep) {
 				var token = this.generate();
@@ -458,8 +470,9 @@ var Utilities = {
 					return base + '?';
 				else
 					return base;
-			} else
+			} else {
 				return document.location.href;
+			}
 		}
 	},
 
@@ -601,7 +614,7 @@ function LogDebug () {
 
 		LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
 
-		console.debug.apply(console, debugMessages);
+		console.warn.apply(console, debugMessages);
 
 		if (Utilities.Page.isWebpage)
 			for (var i = 0; i < args.length; i++)
@@ -624,32 +637,15 @@ function LogError () {
 	for (var i = 0; i < args.length; i++) {
 		error = args[i];
 
-		if (Array.isArray(error))
-			error = error
-				.filter(function (currentValue) {
-					return currentValue !== undefined;
-				})
-				.map(function (currentValue) {
-					if (typeof currentValue === 'object')
-						try {
-							return JSON.stringify(currentValue);
-						} catch (error) {
-							return currentValue.toString();
-						}
-					else
-						return currentValue;
-				})
-				.join(' - ');
-
-		if (error instanceof Error) {
+		if (error && error.constructor && error.constructor.name._endsWith('Error')) {
 			errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
 
 			if (error.sourceURL)
-				errorMessage = error.message + ' - ' + error.sourceURL.replace(ExtensionURL(), '/') +  ' line ' + error.line;
+				errorMessage = [error.message, '-', error.sourceURL.replace(ExtensionURL(), '/'),  'line', error.line];
 			else
-				errorMessage = error.message;
+				errorMessage = [error.message];
 		} else
-			errorMessage = error;
+			errorMessage = [error];
 
 		LogError.history.unshift(errorMessage);
 
@@ -662,10 +658,10 @@ function LogError () {
 			});
 
 		if (Utilities.Page.isGlobal || globalSetting.debugMode) {
-			if (Utilities.Page.isGlobal)
-				errorMessage = '(JSB) ' + errorMessage;
+			if (!Utilities.Page.isGlobal)
+				errorMessage.unshift('(JSB)');
 
-			console.error(errorMessage);
+			console.error.apply(console, errorMessage);
 
 			if (errorStack) {
 				console.groupCollapsed('(JSB) Stack');
@@ -677,89 +673,6 @@ function LogError () {
 };
 
 LogError.history = [];
-
-var Struct = (function () {
-	function Struct () {
-		var objects = Utilities.makeArray(arguments);
-
-		if (objects[0] === true) {
-			this.deep = true;
-
-			objects.shift();
-		}
-
-		this.object = {};
-
-		for (var i = 0; i < objects.length; i++)
-			if (typeof objects[i] === 'object')
-				this.add(objects[i]);
-	}
-
-	Struct.BREAK = -1985465488;
-
-	Struct.prototype.build = function (keys) {
-		this.struct = [];
-
-		var keyOrder = Array.isArray(keys) ? keys : this.keyOrder;
-
-		for (var i = 0; i < keyOrder.length; i++)
-			if (this.object.hasOwnProperty(keyOrder[i]))
-				this.struct.push([keyOrder[i], this.object[keyOrder[i]]])
-
-		return this;
-	};
-
-	Struct.prototype.sort = function (sortFunction) {
-		return this.order(Object.keys(this.object).sort(sortFunction));
-	};
-
-	Struct.prototype.order = function (keys) {	
-		this.keyOrder = keys;
-
-		return this.build(keys);
-	};
-
-	Struct.prototype.forEach = function (callback) {
-		if (typeof callback !== 'function')
-			throw new TypeError(callback + ' is not a function');
-
-		for (var i = 0, b = this.struct.length; i < b; i++)
-			if (callback(this.struct[i][0], this.struct[i][1]) === Struct.BREAK)
-				break;
-
-		return Struct.BREAK;
-	};
-
-	Struct.prototype.add = function (object) {
-		if (!(object instanceof Object))
-			throw new TypeError(object + ' is not an instance of Object');
-
-		for (var key in object)
-			if (object.hasOwnProperty(key)) {
-				if (this.deep && !(this.object[key] instanceof Struct) && (this.object[key] instanceof Object))
-					this.object[key] = new Struct(true, object[key]);
-				else
-					this.object[key] = object[key];
-
-				Object.defineProperty(this, '_' + key, {
-					configurable: true,
-
-					get: function (){
-						return this.object[key];
-					},
-					set: function (value) {
-						this.object[key] = value;
-					}
-				});
-			}
-
-		this.sort();
-
-		return this;
-	};
-
-	return Struct;
-})();
 
 
 // Native object extensions =============================================================
@@ -779,6 +692,27 @@ var Extension = {
 						cloned[key] = this[key];
 
 				return cloned;
+			}
+		},
+
+		_extendClass: {
+			value: function (fn) {
+				if (typeof fn !== 'function')
+					throw new TypeError(fn + ' is not a function');
+
+				function extended () {
+					fn.call(this);
+
+					extended.__originalClass.apply(this, arguments);
+				};
+
+				extended.__originalClass = this;
+
+				extended.prototype = Object.create(fn.prototype);
+
+				extended.prototype.constructor = this;
+
+				return extended;
 			}
 		}
 	},
@@ -990,6 +924,17 @@ var Extension = {
 			}
 		},
 
+		_getWithDefault: {
+			value: function (key, defaultValue) {
+				if (key in this)
+					return this[key];
+
+				this[key] = defaultValue;
+
+				return this[key];
+			}
+		},
+
 		_remap: {
 			value: function (map) {
 				var newObject = {};
@@ -1021,11 +966,14 @@ var Extension = {
 		},
 
 		_clone: {
-			value: function () {
+			value: function (deep) {
 				var object = {};
 
 				for (var key in this)
-					object[key] = this[key];
+					if (deep && typeof this[key] === 'object')
+						object[key] = this[key]._clone();
+					else
+						object[key] = this[key];
 
 				return object;
 			}
@@ -1149,6 +1097,11 @@ Utilities.Page.isXML = (window.location.href._endsWith('.xml') && document.xmlVe
 Utilities.Page.isWebpage = !!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL());
 
 Utilities.Group.NOT._createReverseMap();
+Utilities.Group.TYPES = {
+	string: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.STARTS_WITH, Utilities.Group.NOT.STARTS_WITH, Utilities.Group.ENDS_WITH, Utilities.Group.NOT.ENDS_WITH, Utilities.Group.MATCHES, Utilities.Group.NOT.MATCHES, Utilities.Group.CONTAINS, Utilities.Group.NOT.CONTAINS],
+	array: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.CONTAINS, Utilities.Group.NOT.CONTAINS],
+	boolean: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS]
+};
 
 
 // Event listeners ======================================================================

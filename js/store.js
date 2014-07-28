@@ -6,8 +6,6 @@ var Store = (function () {
 			children = {};
 
 	function Store (name, props) {
-		EventListener.apply(this);
-
 		if (!(props instanceof Object))
 			props = {};
 
@@ -65,7 +63,7 @@ var Store = (function () {
 			}.bind(this));
 	};
 
-	Store.prototype = Object.create(EventListener.prototype);
+	Store = Store._extendClass(EventListener);
 
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
@@ -239,9 +237,9 @@ var Store = (function () {
 				Settings.__method('setJSON', store.id, store.readyJSON());
 
 				console.timeEnd('SAVED ' + store.id);
-
-				store.triggerEvent('save');
 			}
+
+			store.triggerEvent('save');
 		}, now ? 0 : this.saveDelay, [this]);
 
 		if (this.parent)
@@ -320,9 +318,6 @@ var Store = (function () {
 	Store.prototype.triggerEvent = function (name) {
 		Utilities.Timer.timeout('StoreTrigger' + this.id + name, function (store, name) {
 			store.trigger(name);
-
-			if (store.parent)
-				store.parent.triggerEvent(name);
 		}, 500, [this, name]);
 	};
 

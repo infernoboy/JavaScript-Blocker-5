@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<head>
+	<title>Canvas Fingerprinting Check</title>
+
+	<style type="text/css">
+		html {
+			text-align: center;
+			background: #eee;
+		}
+
+		img {
+			margin-top: 20px;
+			box-shadow: 0 7px 20px #777;
+		}
+	</style>
+
+	<script>
+		var img = new Image();
+
+		img.src = window.location.hash.substr(1);
+
+		document.documentElement.appendChild(img);
+	</script>
+</head>

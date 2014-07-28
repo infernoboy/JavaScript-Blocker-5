@@ -97,9 +97,16 @@ Settings.settings = {
 			default: false,
 			subSettings: [{
 				when: {
-					showUnblocked: true
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'showUnblocked',
+							needle: true
+						}]
+					}
 				},
-				hide: true,
 				settings: [{
 					setting: 'hideInjected',
 					props: {
@@ -117,11 +124,19 @@ Settings.settings = {
 			label: 'Show domain descriptions when possible',
 			default: true,
 			when: {
-				simpleMode: true
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.IS,
+						key: 'simpleMode',
+						needle: true
+					}]
+				}
 			}
 		}
 	}, {
-		setting: 'autoHideWhitelistBlacklist',
+		setting: 'autoHideEasyList',
 		props: {
 			type: 'boolean',
 			label: 'Automatically hide whitelisted and blacklisted items',
@@ -174,7 +189,14 @@ Settings.settings = {
 		header: 'Extra features'
 	}, {
 		when: {
-			donationVerified: true
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'donationVerified',
+					needle: true
+				}]
+			}
 		},
 		settings: [{
 			setting: 'updateNotify',
@@ -206,7 +228,15 @@ Settings.settings = {
 				label: 'Temporarily switch to expert mode when clicked',
 				default: true,
 				when: {
-					expertMode: false
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'expertMode',
+							needle: false
+						}]
+					}
 				}
 			}
 		}]
@@ -319,7 +349,15 @@ Settings.settings = {
 			default: true,
 			subSettings: [{
 				when: {
-					quickAdd: true
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'quickAdd',
+							needle: true
+						}]
+					}
 				},
 				settings: [{
 					setting: 'quickAddSimpleOnly',
@@ -333,7 +371,14 @@ Settings.settings = {
 		}
 	}, {
 		when: {
-			quickAdd: true
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'methodquickAdd',
+					needle: true
+				}]
+			}
 		},
 		settings: [{
 			setting: 'quickAddQuicker',
@@ -383,11 +428,23 @@ Settings.settings = {
 		}
 	}, {
 		when: {
-			enabledKinds: {
-				script: true
+			hide: true,
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.NONE,
+					key: 'enabledKinds',
+					needle: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'script',
+							needle: true
+						}]
+					}
+				}]
 			}
 		},
-		hide: true,
 		settings: [{
 			setting: 'alwaysBlock',
 			props: {
@@ -403,7 +460,14 @@ Settings.settings = {
 		header: 'Extra features',
 	}, {
 		when: {
-			donationVerified: true
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'donationVerified',
+					needle: true
+				}]
+			}
 		},
 		settings: [{
 			setting: 'enabledKinds',
@@ -414,11 +478,23 @@ Settings.settings = {
 			}
 		}, {
 			when: {
-				enabledKinds: {
-					frame: true
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.NONE,
+						key: 'enabledKinds',
+						needle: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'frame',
+								needle: true
+							}]
+						}
+					}]
 				}
 			},
-			hide: true,
 			settings: [{
 				setting: 'showPlaceholder',
 				props: {
@@ -464,11 +540,23 @@ Settings.settings = {
 			}
 		}, {
 			when: {
-				enabledKinds: {
-					xhr: true
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.NONE,
+						key: 'enabledKinds',
+						needle: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'xhr',
+								needle: true
+							}]
+						}
+					}]
 				}
 			},
-			hide: true,
 			settings: [{
 				setting: 'alwaysBlock',
 				props: {
@@ -508,11 +596,23 @@ Settings.settings = {
 			}
 		}, {
 			when: {
-				enabledKinds: {
-					embed: true
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.NONE,
+						key: 'enabledKinds',
+						needle: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'embed',
+								needle: true
+							}]
+						}
+					}]
 				}
 			},
-			hide: true,
 			settings: [{
 				setting: 'showPlaceholder',
 				props: {
@@ -540,11 +640,23 @@ Settings.settings = {
 			}
 		}, {
 			when: {
-				enabledKinds: {
-					video: true
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.NONE,
+						key: 'enabledKinds',
+						needle: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'video',
+								needle: true
+							}]
+						}
+					}]
 				}
 			},
-			hide: true,
 			settings: [{
 				setting: 'showPlaceholder',
 				props: {
@@ -572,8 +684,21 @@ Settings.settings = {
 			}
 		}, {
 			when: {
-				enabledKinds: {
-					image: true
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.NONE,
+						key: 'enabledKinds',
+						needle: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'image',
+								needle: true
+							}]
+						}
+					}]
 				}
 			},
 			hide: true,
@@ -612,7 +737,14 @@ Settings.settings = {
 		header: 'Extra features'
 	}, {
 		when: {
-			donationVerified: true
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'donationVerified',
+					needle: true
+				}]
+			}
 		},
 		settings: [{
 			description: 'Snapshots description',
@@ -633,7 +765,14 @@ Settings.settings = {
 			}
 		}, {
 			when: {
-				enableSnapshots: true
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.IS,
+						key: 'enableSnapshots',
+						needle: true
+					}]
+				}
 			},
 			settings: [{
 				setting: 'autoSnapshots',
@@ -727,12 +866,22 @@ Settings.settings = {
 		divider: true //===================================================================================
 	}, {
 		when: {
-			donationVerified: true
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'donationVerified',
+					needle: true
+				}]
+			}
 		},
 		settings: [{
 			store: 'enabledSpecials',
 			props: {
-				type: 'mixed'
+				type: 'mixed',
+				onChange: function () {
+					Special.__enabled = null;
+				}
 			}
 		}, {
 			header: 'Extra features'
@@ -749,9 +898,16 @@ Settings.settings = {
 				}],
 				subSettings: [{
 					when: {
-						blockReferrer: true
+						hide: true,
+						settings: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'blockReferrer',
+								needle: true
+							}]
+						}
 					},
-					hide: true,
 					settings: [{
 						setting: 'focusNewTab',
 						props: {
@@ -845,9 +1001,16 @@ Settings.settings = {
 			}
 		}, {
 			when: {
-				canBlockInlineScripts: true
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.IS,
+						key: 'canBlockInlineScripts',
+						needle: true
+					}]
+				}
 			},
-			hide: true,
 			settings: [{
 				setting: 'enabledSpecials',
 				props: {
@@ -862,9 +1025,19 @@ Settings.settings = {
 			setting: 'enabledSpecials',
 			props: {
 				type: 'boolean',
-				storeKey: 'navigator_override',
+				storeKey: 'environmental_information',
 				label: 'Randomize browser information',
 				subLabel: 'Environmental information',
+				default: false
+			}
+		}, {
+			setting: 'enabledSpecials',
+			props: {
+				type: 'option',
+				storeKey: 'canvas_data_url',
+				label: 'Canvas data URL access',
+				subLabel: 'Canvas data URL access',
+				options: [[false, 'Always allow'], [1, 'Always ask'], [2, 'Ask once per domain'], [3, 'Ask once per domain for session'], [4, 'Always block']],
 				default: false
 			}
 		}, {

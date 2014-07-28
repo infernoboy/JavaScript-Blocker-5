@@ -235,19 +235,7 @@ Rule.prototype.addMany = function (kinds) {
 };
 
 Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDomains, excludeParts) {
-	var kindIsArray = Array.isArray(kind),
-			location = location.toLowerCase();
-
-	if (!kindIsArray && !Rules.kindSupported(kind))
-		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
-
-	var host = Utilities.URL.extractHost(location),
-			hostParts = excludeParts ? [host] : Utilities.URL.hostParts(host, true);
-
-	if (!excludeAllDomains)
-		hostParts.push('*');
-
-	if (kindIsArray) {
+	if (Array.isArray(kind)) {
 		var rules = {};
 
 		for (var i = 0; i < kind.length; i++)
@@ -257,8 +245,18 @@ Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDoma
 		return rules;
 	}
 
+	if (!Rules.kindSupported(kind))
+		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
+
 	var regExp,
 			lowerPage;
+
+	var location = location.toLowerCase(),
+			host = Utilities.URL.extractHost(location),
+			hostParts = excludeParts ? [host] : Utilities.URL.hostParts(host, true);
+
+	if (!excludeAllDomains)
+		hostParts.push('*');	
 
 	var types = this.kind(kind);
 
@@ -423,10 +421,7 @@ var Rules = {
 	forLocation: function () {
 		var excludeLists = Array.isArray(arguments[arguments.length - 1]) ? arguments[arguments.length - 1] : [];
 
-		if (this.list.active !== this.list.user)
-			excludeLists.push('temporary');
-		else
-			excludeLists.push('user');
+		excludeLists.push(this.list.active === this.list.user ? 'user' : 'temporary');
 
 		var lists = {};
 
@@ -555,10 +550,14 @@ Rules.list.active = Rules.list.user;
 				})
 			});
 
-	for (var list in Rules.list)
-		Rules.list[list].rules.all();
-})();
+	for (var list in Rules.list) {
+		if (list === 'active')
+			continue;
 
-Rules.list.user.rules.addEventListener('save', function () {
-	Resource.canLoadCache.saveNow();
-});
+		Rules.list[list].rules.all();
+
+		Rules.list[list].rules.addEventListener('save', function () {
+			Resource.canLoadCache.saveNow();
+		});
+	}
+})();

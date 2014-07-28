@@ -24,11 +24,14 @@ var Special = {
 			for (rule in rules.data)
 				for (special in specials)
 					if (Rules.matches(rule.toLowerCase(), rules.data[rule].value.regexp, special.toLowerCase(), location)) {
+						if (!isUserScript)
+							enabled[special].action = rules.data[rule].value.action;
+
 						if (rules.data[rule].value.action % 2) {
 							if (isUserScript)
 								enabled[special] = specials[special];
 							else
-								enabled[special] = false;
+								enabled[special].enabled = false;
 						}
 
 						if ([ACTION.BLOCK, ACTION.ALLOW]._contains(rules.data[rule].value.action))
@@ -45,7 +48,7 @@ var Special = {
 
 	get enabled () {
 		if (this.__enabled)
-			return this.__enabled._clone();
+			return this.__enabled._clone(true);
 
 		var specials = Settings.getItem('enabledSpecials');
 
@@ -53,9 +56,13 @@ var Special = {
 
 		for (var special in specials)
 			if (specials[special] !== false)
-				this.__enabled[special] = specials[special];
+				this.__enabled[special] = {
+					enabled: true,
+					value: specials[special],
+					action: ACTION.BLOCK_WITHOUT_RULE
+				};
 
-		return this.__enabled._clone();
+		return this.enabled;
 	},
 	set enabled () {
 		this.__enabled = null;

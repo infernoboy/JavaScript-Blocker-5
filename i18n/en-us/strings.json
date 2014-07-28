@@ -8,5 +8,10 @@
 	"settings.search": "Search",
 
 	"Help": "Help",
-	"tears": "😂"
+	"tears": "😂",
+
+	"canvas_data_url_prompt": "This page may be attempting to use canvas fingerprinting to identify you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there is no image, use your best judgement.",
+	"canvas_data_url_prompt_old": "This page may be attempting to use canvas fingerprinting to identify you. If this is unexpected and you are not on a site you trust, click Cancel.",
+	"canvas_data_url_subsequent": "Subsequent attempts from {0} will be handled automatically.",
+	"canvas_data_url_subsequent_session": "Subsequent attempts from {0} will be handled automatically until you restart Safari."
 }
