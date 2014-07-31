@@ -14,7 +14,11 @@ var Special = {
 		var isUserScript = kind === 'user_script',
 				enabled = isUserScript ? {} : specials,
 				framedKind = isFrame ? 'framed:' + kind : null,
-				forLocation = Rules.forLocation([framedKind, kind], location, null, null, null, Special.__excludeLists);
+				forLocation = Rules.forLocation({
+					searchKind: [framedKind, kind],
+					location: location,
+					excludeLists: Special.__excludeLists
+				});
 
 		if (isUserScript)
 			for (var script in specials)

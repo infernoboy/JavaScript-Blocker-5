@@ -128,8 +128,7 @@ Resource.prototype.allow = function () {
 
 Resource.prototype.allowedBySettings = function () {
 	var canLoad = {
-		action: ACTION.ALLOW_WITHOUT_RULE,
-		pageRule: false
+		action: ACTION.ALLOW_WITHOUT_RULE
 	};
 
 	if (!Settings.getItem('enabledKinds', this.kind))
@@ -159,8 +158,13 @@ Resource.prototype.allowedBySettings = function () {
 	return canLoad;
 };
 
-Resource.prototype.matchingRules = function (isAllowed) {
-	return Rules.forLocation(this.searchKinds, this.pageLocation, isAllowed);
+Resource.prototype.matchingRules = function (isAllowed, pageRulesOnly) {
+	return Rules.forLocation({
+		searchKind: this.searchKinds,
+		location: this.pageLocation,
+		isAllowed: isAllowed,
+		pageRulesOnly: pageRulesOnly
+	});
 };
 
 Resource.prototype.canLoad = function () {
@@ -169,8 +173,7 @@ Resource.prototype.canLoad = function () {
 
 	var canLoad = {
 		action: ACTION.ALLOW_WITHOUT_RULE,
-		isAllowed: true,
-		pageRule: false
+		isAllowed: true
 	};
 
 	if (this.unblockable) {
@@ -186,17 +189,14 @@ Resource.prototype.canLoad = function () {
 	}
 
 	var store = Resource.canLoadCache.getStore(this.searchKinds.join('-')),
-			hostSources = store.getStore(this.pageHost),
-			cached = hostSources.get(this.source);
+			pageSources = store.getStore(this.pageLocation),
+			pageCached = pageSources.get(this.source);
 
-	if (cached)
-		return cached;
+	if (pageCached)
+		return pageCached;
 
-	var pageSources = store.getStore(this.pageLocation),
-			cached = pageSources.get(this.source);
-
-	if (cached)
-		return cached;
+	var hostSources = store.getStore(this.pageHost),
+			domainCached = hostSources.get(this.source);
 
 	var pageRule,
 			longAllowed,
@@ -210,7 +210,7 @@ Resource.prototype.canLoad = function () {
 
 	var self = this;
 
-	Rule.withLocationRules(this.matchingRules(), function (ruleList, ruleKind, ruleType, domain, rules) {
+	Rule.withLocationRules(this.matchingRules(null, !!domainCached), function (ruleList, ruleKind, ruleType, domain, rules) {
 		pageRule = (ruleType === 'page' || ruleType === 'notPage');
 		longAllowed = (!pageRule && Rules.list[ruleList].longRuleAllowed);
 
@@ -243,7 +243,6 @@ Resource.prototype.canLoad = function () {
 				else if (Rules.matches(rule, rules.data[rule].value.regexp, self.source, self.pageLocation))
 					canLoad = {
 						action: rules.data[rule].value.action,
-						pageRule: pageRule,
 						list: ruleList
 					};
 			}
@@ -259,7 +258,6 @@ Resource.prototype.canLoad = function () {
 						regExps: longRegExps,
 						canLoad: {
 							action: parseInt(action, 10),
-							pageRule: false,
 							list: ruleList
 						}
 					});
@@ -268,7 +266,6 @@ Resource.prototype.canLoad = function () {
 						if (longRegExps[i].test(self.source)) {
 							canLoad = {
 								action: parseInt(action, 10),
-								pageRule: false,
 								list: ruleList
 							};
 
@@ -289,13 +286,14 @@ Resource.prototype.canLoad = function () {
 	self = undefined;
 
 	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE)
-		canLoad = this.allowedBySettings.apply(this, arguments);
+		canLoad = domainCached ? domainCached : this.allowedBySettings.apply(this, arguments);
 
 	canLoad.isAllowed = !!(canLoad.action % 2);
 
-	Utilities.setImmediateTimeout(function (canLoad, store, source) {
-		store.set(source, canLoad);
-	}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
+	Utilities.setImmediateTimeout(function (canLoad, pageSources, hostSources, source) {		
+		pageSources.set(source, canLoad);
+		hostSources.set(source, canLoad);
+	}, [canLoad, pageSources, hostSources, this.source]);
 
 	return canLoad;
 };

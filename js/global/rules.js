@@ -48,11 +48,13 @@ Rule.withLocationRules = function (allRules, callback) {
 	for (ruleList in allRules) {
 		for (ruleKind in allRules[ruleList]) {
 			for (ruleType in allRules[ruleList][ruleKind]) {
-				domains = allRules[ruleList][ruleKind][ruleType].data._sort(Rules.__prioritize);
+				if (allRules[ruleList][ruleKind][ruleType]) {
+					domains = allRules[ruleList][ruleKind][ruleType].data._sort(Rules.__prioritize);
 
-				for (domain in domains)
-					if (callback(ruleList, ruleKind, ruleType, domain, domains[domain].value))
-						break matchingRulesLoop;
+					for (domain in domains)
+						if (callback(ruleList, ruleKind, ruleType, domain, domains[domain].value))
+							break matchingRulesLoop;
+				}
 			}
 		}
 	}
@@ -234,31 +236,35 @@ Rule.prototype.addMany = function (kinds) {
 	return this;
 };
 
-Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDomains, excludeParts) {
-	if (Array.isArray(kind)) {
-		var rules = {};
+Rule.prototype.forLocation = function (params) {
+	if (Array.isArray(params.searchKind)) {
+		var localParams = params._clone(true),
+				rules = {};
 
-		for (var i = 0; i < kind.length; i++)
-			if (kind[i])
-				rules[kind[i]] = this.forLocation(kind[i], location, isAllowed, excludeAllDomains, excludeParts);
+		for (var i = 0; i < params.searchKind.length; i++)
+			if (params.searchKind[i]) {
+				localParams.searchKind = params.searchKind[i];
+
+				rules[params.searchKind[i]] = this.forLocation(localParams);
+			}
 
 		return rules;
 	}
 
-	if (!Rules.kindSupported(kind))
+	if (!Rules.kindSupported(params.searchKind))
 		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
 
 	var regExp,
 			lowerPage;
 
-	var location = location.toLowerCase(),
-			host = Utilities.URL.extractHost(location),
-			hostParts = excludeParts ? [host] : Utilities.URL.hostParts(host, true);
+	var location = params.location.toLowerCase(),
+			host = params.pageRulesOnly ? '' : Utilities.URL.extractHost(location),
+			hostParts = params.pageRulesOnly ? [] : (params.excludeParts ? [host] : Utilities.URL.hostParts(host, true));
 
-	if (!excludeAllDomains)
+	if (!params.excludeAllDomains)
 		hostParts.push('*');	
 
-	var types = this.kind(kind);
+	var types = this.kind(params.searchKind);
 
 	var rules = {
 		page: types.page().filter(function (page) {
@@ -275,7 +281,7 @@ Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDoma
 			}
 		}),
 
-		domain: types.domain(hostParts),
+		domain: params.pageRulesOnly ? undefined : types.domain(hostParts),
 
 		notPage: types.notPage().filter(function (page) {
 			try {
@@ -291,16 +297,16 @@ Rule.prototype.forLocation = function (kind, location, isAllowed, excludeAllDoma
 			}
 		}),
 
-		notDomain: types.notDomain().filter(function (domain) {
+		notDomain: params.pageRulesOnly ? undefined : types.notDomain().filter(function (domain) {
 			return !hostParts._contains(domain);
 		})
 	};
 
-	if (typeof isAllowed === 'boolean')
+	if (typeof params.isAllowed === 'boolean')
 		for (var type in rules)
 			rules[type] = rules[type].map(function (domain, rules, domainStore) {
 				return rules.filter(function (rule, value, ruleStore) {
-					return (!!(value.action % 2) === isAllowed);
+					return (!!(value.action % 2) === params.isAllowed);
 				});
 			})
 
@@ -418,8 +424,8 @@ var Rules = {
 	// Load all rules contained in each list for a given location.
 	// If the last argument is an array, it will be used to determine which lists to exclude.
 	// Temporary rules are only included if the active set is the user set.
-	forLocation: function () {
-		var excludeLists = Array.isArray(arguments[arguments.length - 1]) ? arguments[arguments.length - 1] : [];
+	forLocation: function (params) {
+		var excludeLists = params.excludeLists ? params.excludeLists : [];
 
 		excludeLists.push(this.list.active === this.list.user ? 'user' : 'temporary');
 
@@ -427,7 +433,7 @@ var Rules = {
 
 		for (var list in Rules.list)
 			if (!excludeLists._contains(list))
-				lists[list] = this.list[list].forLocation.apply(this.list[list], arguments)
+				lists[list] = this.list[list].forLocation(params);
 
 		return lists;
 	},

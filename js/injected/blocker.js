@@ -267,9 +267,9 @@ var Element = {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
 				if (!globalSetting.hideInjected)
-					Page.unblocked.pushSource(kind, element.innerHTML || element.src, {});
+					Page.unblocked.pushSource(kind, element.innerHTML || element.src || element.outerHTML || element.textContent, {});
 			} else
-				Page.unblocked.pushSource(kind, element.innerHTML || element.src  || element.outerHTML, {});
+				Page.unblocked.pushSource(kind, element.innerHTML || element.src  || element.outerHTML || element.textContent, {});
 
 			Page.send();
 

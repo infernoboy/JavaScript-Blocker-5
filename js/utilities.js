@@ -148,7 +148,7 @@ var Utilities = {
 	},
 
 	typeOf: function (object) {
-		return ({}).toString.call(object).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+		return ({}).toString.call(object).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
 	},
 
 	Group: {
@@ -446,6 +446,7 @@ var Utilities = {
 	},
 
 	Page: {
+		isXML: document.xmlVersion !== null,
 		isGlobal: (window.GlobalPage && GlobalPage.window() === window),
 		isPopover: Popover.window() === window,
 		isTop: window === window.top,
@@ -657,8 +658,8 @@ function LogError () {
 				message: errorMessage
 			});
 
-		if (Utilities.Page.isGlobal || globalSetting.debugMode) {
-			if (!Utilities.Page.isGlobal)
+		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || globalSetting.debugMode) {
+			if (!Utilities.Page.isWebpage)
 				errorMessage.unshift('(JSB)');
 
 			console.error.apply(console, errorMessage);
@@ -919,8 +920,8 @@ var Extension = {
 
 	Object: {
 		_hasPrototypeKey: {
-			value: function (object, key) {
-				return ((key in object) && !object.hasOwnProperty(key));
+			value: function (key) {
+				return ((key in this) && !this.hasOwnProperty(key));
 			}
 		},
 
@@ -970,10 +971,10 @@ var Extension = {
 				var object = {};
 
 				for (var key in this)
-					if (deep && typeof this[key] === 'object')
-						object[key] = this[key]._clone();
+					if (deep && Object._isPlainObject(this[key]))
+						object[key] = this[key]._clone(true);
 					else
-						object[key] = this[key];
+						object[key] = Object._copy(this[key]);
 
 				return object;
 			}
@@ -981,16 +982,16 @@ var Extension = {
 
 		_merge: {
 			value: function () {
-				var objects = Utilities.makeArray(arguments);
+				var object;
+
+				var deep = false,
+						objects = Utilities.makeArray(arguments);
 
 				if (objects[0] === true) {
-					var deep = true;
+					deep = true;
 
 					objects.shift();
-				} else
-					var deep = false;
-
-				var object;
+				}
 
 				for (var i = 0; i < objects.length; i++) {
 					object = objects[i];
@@ -1000,7 +1001,7 @@ var Extension = {
 
 					for (var key in object)
 						if (object.hasOwnProperty(key)) {
-							if (deep && typeof (this[key] instanceof Object) && (object[key] instanceof Object) && this.hasOwnProperty(key))
+							if (deep && Object._isPlainObject(this[key]) && Object._isPlainObject(object[key]) && this.hasOwnProperty(key))
 								this[key]._merge(true, object[key]);
 							else
 								this[key] = object[key];
@@ -1050,12 +1051,61 @@ var Extension = {
 	}
 };
 
-for (var object in Extension)
-	try {
-		Object.defineProperties(window[object].prototype, Extension[object]);
-	} catch (error) {}
+(function () {
+	for (var object in Extension)
+		try {
+			Object.defineProperties(window[object].prototype, Extension[object]);
+		} catch (error) {}
+})();
 
 Extension = undefined;
+
+Object._isPlainObject = function (object) {
+	return (typeof object === 'object' && object !== null && object.constructor && object.constructor === Object);
+};
+
+Object._copy = function (object, defaultValue) {
+	var objectType = typeof object;
+
+	switch (true) {
+		case object === null:
+			return null;
+		break;
+
+		case Array.isArray(object):
+			return Utilities.makeArray(object);
+		break;
+
+		case objectType === 'string':
+			return String(object);
+		break;
+
+		case objectType === 'number':
+			return Number(object);
+		break;
+
+		case objectType === 'boolean':
+			return Boolean(object);
+		break;
+
+		case objectType === 'undefined':
+			if (defaultValue !== undefined && defaultValue !== null)
+				return defaultValue;
+
+			return object;
+		break;
+
+		case objectType === 'object' && object.constructor === Object:
+			return object._clone(true);
+		break;
+
+		default:
+			// LogDebug('getting as reference when not requested as such:', this.id, key, object, cachedKey);
+
+			return object;
+		break;
+	}
+};
 
 Object._extend = function () {
 	var deep = false,
@@ -1093,7 +1143,6 @@ Object._deepFreeze = function (object) {
 	return object;
 };
 
-Utilities.Page.isXML = (window.location.href._endsWith('.xml') && document.xmlVersion);
 Utilities.Page.isWebpage = !!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL());
 
 Utilities.Group.NOT._createReverseMap();

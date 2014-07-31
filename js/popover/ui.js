@@ -26,6 +26,6 @@ var UI = {
 	}, 50, null, true),
 };
 
-Events.addApplicationListener('popover', UI.openedPopover);
-
 globalPage.UI = UI;
+
+Events.addApplicationListener('popover', UI.openedPopover);

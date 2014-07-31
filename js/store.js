@@ -24,15 +24,31 @@ var Store = (function () {
 		else
 			this.id = Utilities.Token.generate();
 
-		this.isNew = this.private || !(this.id in data);
+		this.isNew = this.private || !data[this.id];
 
 		this.name = name;
 		this.props = props;
 
 		if (this.private)
 			this.__children[this.id] = {};
-		else
-			this.deprivatize();
+		else {
+			if (!children[this.id])
+				children[this.id] = {};
+
+			Object.defineProperty(this, 'data', {
+				enumerable: true,
+
+				get: function () {
+					return this.private ? this.__data : data[this.id];
+				},
+				set: function (value) {
+					if (this.private)
+						this.__data = value;
+					else
+						data[this.id] = value;
+				}
+			});
+		}
 
 		this.prolongDestruction();
 
@@ -65,6 +81,8 @@ var Store = (function () {
 
 	Store = Store._extendClass(EventListener);
 
+	Store.__inheritable = ['private', 'ignoreSave', 'maxLife', 'selfDestruct'];
+
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
 
@@ -85,18 +103,18 @@ var Store = (function () {
 		if (!Store.isStore(object))
 			throw new TypeError('cannot create store from object');
 
-		object.props = {
-			private: object.props.private || this.private,
-			ignoreSave: object.props.ignoreSave || this.ignoreSave,
-			maxLife: object.props.maxLife || this.maxLife,
-			selfDestruct: object.props.selfDestruct || this.selfDestruct
-		};
-
 		var store = new Store(object.name, object.props);
 
 		store.data = object.data;
 
 		return store;
+	};
+
+	Store.inherit = function (props, store) {
+		for (var i = 0; i < Store.__inheritable.length; i++)
+			props[Store.__inheritable[i]] = props[Store.__inheritable[i]] || store[Store.__inheritable[i]];
+
+		return props;
 	};
 
 	Store.compare = function (left, right) {
@@ -222,6 +240,7 @@ var Store = (function () {
 	Store.BREAK = Utilities.Token.generate();
 
 	Store.prototype.__parent = undefined;
+	Store.prototype.__data = {};
 	Store.prototype.__children = {};
 
 	Store.prototype.__save = function (bypassIgnore, now) {
@@ -260,30 +279,6 @@ var Store = (function () {
 		this.saveNow();
 
 		return this;
-	};
-
-	Store.prototype.deprivatize = function (bypass) {
-		if (!bypass && data[this.id])
-			return;
-
-		this.private = false;
-		this.props.private = false;
-
-		children[this.id] = {};
-		data[this.id] = this.data;
-
-		delete this.data;
-
-		Object.defineProperty(this, 'data', {
-			enumerable: true,
-
-			get: function () {
-				return data[this.id];
-			},
-			set: function (value) {
-				data[this.id] = value;
-			}
-		});
 	};
 
 	Store.prototype.saveNow = function (bypassIgnore) {
@@ -513,7 +508,7 @@ var Store = (function () {
 			store.prolongDestruction();
 		}, 50, this);
 
-		if ((typeof key !== 'string' && typeof key !== 'number') || (Object._hasPrototypeKey(this.data, key)))
+		if ((typeof key !== 'string' && typeof key !== 'number') || this.data._hasPrototypeKey(key))
 			throw new Error(key + ' cannot be used as key.');
 
 		this.data[key] = {
@@ -562,66 +557,30 @@ var Store = (function () {
 						}
 					}, [this, key]);
 
-				var cached = this.data[key].value;
+				var value = this.data[key].value;
 
-				if (!(cached instanceof Store)) {
-					if (Store.isStore(cached)) {
-						cached.name = (this.name || this.id) + ',' + key;
+				if (!(value instanceof Store)) {
+					if (Store.isStore(value)) {
+						value.name = (this.name || this.id) + ',' + key;
 
-						var value = Store.promote(cached);
+						Store.inherit(value.props, this);
 
-						value.parent = this;
+						var promoted = Store.promote(value);
+
+						promoted.parent = this;
 
 						this.data[key] = {
 							accessed: Date.now(),
-							value: value
+							value: promoted
 						};
 
+						return promoted;
+					} else if (asReference)
 						return value;
-					} else {
-						var cachedType = typeof cached;
-
-						switch (true) {
-							case asReference:
-								return cached;
-							break;
-
-							case Array.isArray(cached):
-								return Utilities.makeArray(cached);
-							break;
-
-							case cachedType === 'string':
-								return String(cached);
-							break;
-
-							case cachedType === 'number':
-								return Number(cached);
-							break;
-
-							case cachedType === 'boolean':
-								return Boolean(cached);
-							break;
-
-							case cachedType === 'undefined':
-								if (defaultValue !== undefined && defaultValue !== null)
-									return defaultValue;
-
-								return cached;
-							break;
-
-							case cached && Utilities.typeOf(cached) === 'object':
-								return cached._clone();
-							break;
-
-							default:
-								LogDebug('getting as reference when not requested as such:', this.id, key, cached);
-
-								return cached;
-							break;
-						}
-					}
-				} else if (!cached.destroyed)
-					return cached;
+					else
+						return Object._copy(value, defaultValue);
+				} else if (!value.destroyed)
+					return value;
 			} else if (defaultValue !== undefined && defaultValue !== null)
 				return this.set(key, defaultValue).get(key, null, asReference);
 		} catch (error) {
@@ -643,10 +602,7 @@ var Store = (function () {
 			if (!(defaultProps instanceof Object))
 				defaultProps = {};
 
-			defaultProps.private = defaultProps.private || defaultProps.p || this.private;
-			defaultProps.ignoreSave = defaultProps.ignoreSave || this.ignoreSave;
-			defaultProps.maxLife = defaultProps.maxLife || this.maxLife;
-			defaultProps.selfDestruct = defaultProps.selfDestruct || this.selfDestruct;
+			Store.inherit(defaultProps, this);
 
 			return this.set(key, new Store(requiredName, defaultProps));
 		}
@@ -910,6 +866,11 @@ var Store = (function () {
 
 		this.removeExpired();
 	};
+
+	Store.EMPTY_STORE = new Store('EmptyStore', {
+		private: true,
+		lock: true
+	});
 
 	return Store;
 })();
