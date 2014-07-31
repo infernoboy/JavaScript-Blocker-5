@@ -157,4 +157,6 @@ EasyList.prototype.process = function (list) {
 	Utilities.Timer.timeout('ReplaceNewEasyList-' + this.name, this.merge.bind(this), 2000);
 };
 
+EasyList.updateCheck();
+
 Utilities.Timer.interval('EasyListUpdateCheck', EasyList.updateCheck, EasyList.__updateInterval);

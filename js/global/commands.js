@@ -181,8 +181,17 @@ function Command (command, data, event) {
 
 		receivePage: function (thePage) {
 			var tab = this.event.target,
-					activeTab = Tabs.active(),
-					page = new Page(thePage, tab);
+					activeTab = Tabs.active();
+
+			if (!Page.protocolSupported(thePage.protocol)) {
+				ToolbarItems.badge(0, activeTab);
+
+				UI.clear();
+				
+				return LogDebug('received page from unsupported protocol:', thePage.protocol);
+			}
+
+			var page = new Page(thePage, tab);
 
 			if (thePage.isFrame) {				
 				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
@@ -196,7 +205,7 @@ function Command (command, data, event) {
 				if (!pageParent)
 					if (page.retries < 3)
 						return Utilities.Timer.timeout('WaitForParent' + page.info.id, function (page) {
-							Log('Waiting...', page.retries);
+							Log('Waiting for top page...', page.retries, page.info);
 
 							page.retries++;
 

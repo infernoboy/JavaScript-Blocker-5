@@ -185,16 +185,39 @@ var Command = function (type, event) {
 				Command.sendCallback(detail.data.sourceID, detail.data.callbackID);
 		},
 
-		addFrameInfo: function (detail, event) {
-			if (Utilities.Page.isTop) {
-				FRAMED_PAGES[detail.data.id] = detail.data;
+		receiveFrameInfo: function (detail) {
+			if (Utilities.Page.isTop && detail.data.attachTo === TOKEN.PAGE) {
+				FRAMED_PAGES[detail.data.info.id] = detail.data.info;
 
 				Page.send();
+			}
+		},
+
+		getFrameInfo: function (detail) {
+			if (detail.data.frameID === TOKEN.PAGE) {
+				GlobalPage.message('bounce', {
+					command: 'receiveFrameInfo',
+					detail: {
+						attachTo: detail.data.attachTo,
+						info: Page.info
+					}
+				});
 			}
 		}
 	};
 
 	Commands.window = {
+		getFrameInfoWithID: function (detail, event) {			
+			if (Utilities.Page.isTop)
+				GlobalPage.message('bounce', {
+					command: 'getFrameInfo',
+					detail: {
+						attachTo: TOKEN.PAGE,
+						frameID: detail.data
+					}
+				});
+		},
+
 		requestFrameURL: function (detail, event) {
 			window.parent.postMessage({
 				command: 'receiveFrameURL',
@@ -205,6 +228,7 @@ var Command = function (type, event) {
 				}
 			}, event.origin);
 		},
+
 		receiveFrameURL: function (detail) {
 			var message = detail.data;
 

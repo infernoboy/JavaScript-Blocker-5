@@ -43,6 +43,10 @@ function Page (page, tab) {
 	this.frames = Page.frames.getStore(page.state.name);
 };
 
+Object.defineProperty(Page, '__protocols', {
+	value: Object.freeze(['http:', 'https:', 'ftp:', 'file:', 'safari-extension:', 'about:'])
+});
+
 Page.pages = new Store('Pages', {
 	maxLife: TIME.ONE.SECOND
 });
@@ -50,6 +54,10 @@ Page.pages = new Store('Pages', {
 Page.frames = new Store('Frames', {
 	maxLife: TIME.ONE.SECOND
 });
+
+Page.protocolSupported = function (protocol) {
+	return Page.__protocols._contains(protocol);
+};
 
 Page.withActive = function (callback) {
 	var activeTab = Tabs.active();

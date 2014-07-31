@@ -41,34 +41,40 @@ var	broken = false;
 
 var Page = {
 	send: (function () {
-		var timeout;
-
-		var doSendPage = function () {
+		function sendPageInfo () {
 			GlobalPage.message('receivePage', Page.info);
 
 			for (var framePageID in FRAMED_PAGES)
 				GlobalPage.message('receivePage', FRAMED_PAGES[framePageID]);
 		};
 
+		sendPageInfo.timeout = null;
+
+		function requestFrameInfo () {
+			window.top.postMessage({
+				command: 'getFrameInfoWithID',
+				data: Page.info.id
+			}, '*');
+		};
+
+		requestFrameInfo.timeout = null;
+
+		var fn;
+
 		return function sendPage (now) {
 			try {
 				if (!document.hidden) {
-					if (Page.info.isFrame)
-						GlobalPage.message('bounce', {
-							command: 'addFrameInfo',
-							detail: Page.info
-						});
-					else {
-						clearTimeout(timeout);
+					fn = Page.info.isFrame ? requestFrameInfo : sendPageInfo;
 
-						if (now)
-							doSendPage();
-						else
-							timeout = setTimeout(doSendPage, 150);
-					}
+					clearTimeout(fn.timeout);
+
+					if (now)
+						fn();
+					else
+						fn.timeout = setTimeout(fn, 150);
 				} else
 					Handler.onDocumentVisible.push(Page.send.bind(window, now));
-			} catch(error) {
+			} catch (error) {
 				if (!broken) {
 					broken = true;
 

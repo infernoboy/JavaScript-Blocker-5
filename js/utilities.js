@@ -274,13 +274,14 @@ var Utilities = {
 					return timerID;
 		},
 
-		__run_interval: function (timerID) {
+		__run_interval: function (timerID, isSetter) {
 			var interval = this.timers.interval[timerID];
 
 			if (!interval)
 				return this.remove('RunInterval' + timerID);
 
-			interval.script.apply(null, interval.args);
+			if (!isSetter)
+				interval.script.apply(null, interval.args);
 
 			setTimeout(this.__run_interval.bind(this), interval.time, timerID);
 		},
@@ -330,7 +331,7 @@ var Utilities = {
 			};
 
 			if (type === 'interval')
-				this.__run_interval(timerID);
+				this.__run_interval(timerID, true);
 		},
 		remove: function () {
 			var timerID;

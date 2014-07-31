@@ -70,7 +70,7 @@ var Store = (function () {
 		if (this.maxLife < Infinity) {
 			this.cleanupName = 'StoreCleanup' + this.id;
 
-			Utilities.Timer.interval(this.cleanupName, this.removeExpired.bind(this), this.maxLife * .25);
+			Utilities.Timer.interval(this.cleanupName, this.removeExpired.bind(this), this.maxLife * .85);
 		}
 
 		if (this.save)
