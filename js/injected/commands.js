@@ -13,7 +13,7 @@ var Command = function (type, event) {
 		case 'global':
 			var detail = {
 				sourceName: 'Page',
-				sourceID: TOKEN.PAGE,
+				sourceID: Page.info.id,
 				commandToken: Command.requestToken(event.name),
 				command: event.name,
 				data: event.message
@@ -23,7 +23,7 @@ var Command = function (type, event) {
 		case 'window':
 			var detail = {
 				sourceName: 'Page',
-				sourceID: TOKEN.PAGE,
+				sourceID: Page.info.id,
 				commandToken: Command.requestToken(event.data.command),
 				command: event.data.command,
 				data: event.data.data
@@ -181,12 +181,12 @@ var Command = function (type, event) {
 		},
 
 		executeMenuCommand: function (detail) {
-			if (detail.data.pageID === TOKEN.PAGE)
+			if (detail.data.pageID === Page.info.id)
 				Command.sendCallback(detail.data.sourceID, detail.data.callbackID);
 		},
 
 		receiveFrameInfo: function (detail) {
-			if (Utilities.Page.isTop && detail.data.attachTo === TOKEN.PAGE) {
+			if (Utilities.Page.isTop && detail.data.attachTo === Page.info.id) {
 				FRAMED_PAGES[detail.data.info.id] = detail.data.info;
 
 				Page.send();
@@ -194,7 +194,7 @@ var Command = function (type, event) {
 		},
 
 		getFrameInfo: function (detail) {
-			if (detail.data.frameID === TOKEN.PAGE) {
+			if (detail.data.frameID === Page.info.id)
 				GlobalPage.message('bounce', {
 					command: 'receiveFrameInfo',
 					detail: {
@@ -202,17 +202,24 @@ var Command = function (type, event) {
 						info: Page.info
 					}
 				});
-			}
 		}
 	};
 
 	Commands.window = {
-		getFrameInfoWithID: function (detail, event) {			
+		recommendPageReload: function () {
+			if (Utilities.Page.isTop && !RECOMMEND_PAGE_RELOAD) {
+				RECOMMEND_PAGE_RELOAD = true;
+
+				window.location.reload();
+			}
+		},
+
+		getFrameInfoWithID: function (detail, event) {	
 			if (Utilities.Page.isTop)
 				GlobalPage.message('bounce', {
 					command: 'getFrameInfo',
 					detail: {
-						attachTo: TOKEN.PAGE,
+						attachTo: Page.info.id,
 						frameID: detail.data
 					}
 				});
@@ -270,8 +277,13 @@ var Command = function (type, event) {
 				return;
 
 			if (previousURL !== message.url) {
+				if (!frame) {
+					frame = document.createElement('iframe');
+					frame.id = message.id;
+				}
+
 				Resource.canLoad({
-					target: frame ? frame : document.createElement('iframe'),
+					target: frame,
 					url: message.url,
 					unblockable: true,
 				}, false, {
@@ -377,7 +389,7 @@ var Command = function (type, event) {
 			if (document.hidden) {
 				event.detail.commandToken = Command.requestToken('messageTopExtension');
 
-				Handler.onDocumentVisible.push(Command.bind(window, 'injected', event));
+				Handler.event.addEventListener('documentBecameVisible', Command.bind(window, 'injected', event), true);
 			} else {
 				detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].namespace;
 				detail.meta.originSourceID = detail.sourceID;

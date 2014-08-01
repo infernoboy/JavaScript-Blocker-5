@@ -87,8 +87,10 @@ function Command (command, data, event) {
 			}
 		},
 
-		bounce: function () {
-			MessageTarget(this.event, this.event.message.command, this.event.message.detail);
+		bounce: function (detail) {
+			MessageTarget(this.event, detail.command, detail.detail);
+
+			this.message = true;
 		},
 
 		localize: function (detail) {

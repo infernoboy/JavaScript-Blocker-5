@@ -17,7 +17,9 @@ if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
 
 var BLOCKED_ELEMENTS = [],
-		FRAMED_PAGES = {};
+		FRAMED_PAGES = {},
+		RECOMMEND_PAGE_RELOAD = false,
+		BROKEN = false;
 
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
@@ -36,8 +38,6 @@ var BLOCKABLE = {
 	XHR_PUT: ['xhr_put'],
 	XHR_GET: ['xhr_get']
 };
-
-var	broken = false;
 
 var Page = {
 	send: (function () {
@@ -73,10 +73,10 @@ var Page = {
 					else
 						fn.timeout = setTimeout(fn, 150);
 				} else
-					Handler.onDocumentVisible.push(Page.send.bind(window, now));
+					Handler.event.addEventListener('documentBecameVisible', Page.send.bind(window, now), true);
 			} catch (error) {
-				if (!broken) {
-					broken = true;
+				if (!BROKEN) {
+					BROKEN = true;
 
 					console.error('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error.message);
 				}
@@ -148,7 +148,7 @@ var _ = (function () {
 })();
 
 var Handler = {
-	onDocumentVisible: [],
+	event: new EventListener,
 
 	unloadedFrame: function () {
 		Page.send(true);
@@ -199,12 +199,7 @@ var Handler = {
 
 	visibilityChange: function (event) {
 		if (!document.hidden) {
-			for (var i = 0, b = Handler.onDocumentVisible.length; i < b; i++) {
-				var fn = Handler.onDocumentVisible.shift();
-
-				if (typeof fn === 'function')
-					fn();
-			}
+			Handler.event.trigger('documentBecameVisible');
 
 			Page.send();
 		}
@@ -212,7 +207,7 @@ var Handler = {
 
 	contextMenu: function (event) {
 		Events.setContextMenuEventUserInfo(event, {
-			pageID: TOKEN.PAGE,
+			pageID: Page.info.id,
 			menuCommand: UserScript.menuCommand,
 			placeholders: document.querySelectorAll('.jsblocker-placeholder').length
 		});
@@ -221,6 +216,12 @@ var Handler = {
 	keyUp: function (event) {
 		if (event.ctrlKey && event.altKey && event.which === 74)
 			GlobalPage.message('openPopover');
+	},
+
+	blockedHiddenPageContent: function (event) {
+		window.top.postMessage({
+			command: 'recommendPageReload'
+		}, '*');
 	}
 };
 
@@ -378,7 +379,9 @@ var Element = {
 				if (BLOCKED_ELEMENTS._contains(frame))
 					return;
 
-				if (document.getElementById(frame.id))
+				var proto = Utilities.URL.protocol(frame.src);
+
+				if (!['data:', 'javascript:']._contains(proto) && document.getElementById(frame.id))
 					Resource.canLoad({
 						target: frame,
 						unblockable: !!frame.src
@@ -388,7 +391,10 @@ var Element = {
 					});
 			}, 2000, [frame]);
 
-			var postMessage = function () {
+			function postMessage () {
+				if (postMessage.skip)
+					return postMessage.skip = false;
+
 				this.contentWindow.postMessage({
 					command: 'requestFrameURL',
 					data: {
@@ -398,9 +404,14 @@ var Element = {
 				}, '*');
 			};
 
+			postMessage.skip = false;
+
 			try {
-				if (frame && frame.contentWindow && frame.contentWindow.document && frame.contentWindow.document.readyState === 'complete')
+				if (frame && frame.contentWindow && frame.contentWindow.document && frame.contentWindow.document.readyState === 'complete') {
+					postMessage.skip = true;
+
 					postMessage.call(frame);
+				}
 			} catch (e) {}
 
 			frame.addEventListener('load', postMessage, false);
@@ -452,9 +463,18 @@ var Resource = {
 				if (event.unblockable)
 					var canLoad = {
 						isAllowed: true,
-						action: -1
+						action: -3
 					}
-				else
+				else if (document.hidden && Page.info.isFrame && Page.info.protocol === 'about:') {
+					LogDebug('blocked source from loading within blank frame because the document was hidden when it loaded and the frame\'s parent address could not be determined: ' + source);
+
+					var canLoad = {
+						action: -4,
+						isAllowed: false
+					};
+
+					Handler.event.addMissingEventListener('documentBecameVisible', Handler.blockedHiddenPageContent, true);
+				} else
 					var canLoad = GlobalCommand('canLoadResource', {
 						kind: kind,
 						pageLocation: Page.info.location,

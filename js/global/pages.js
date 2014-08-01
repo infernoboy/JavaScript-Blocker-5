@@ -44,7 +44,7 @@ function Page (page, tab) {
 };
 
 Object.defineProperty(Page, '__protocols', {
-	value: Object.freeze(['http:', 'https:', 'ftp:', 'file:', 'safari-extension:', 'about:'])
+	value: Object.freeze(['http:', 'https:', 'ftp:', 'file:', 'safari-extension:', 'about:', 'data:', 'javascript:', 'blob:'])
 });
 
 Page.pages = new Store('Pages', {
