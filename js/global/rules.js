@@ -13,6 +13,8 @@ var ACTION = Object.freeze({
 	BLOCK_WITHOUT_RULE: -2,
 	AUTO_ALLOW_UNBLOCKABLE: -3,
 	AUTO_BLOCK_HIDDEN_FRAME: -4,
+	ALLOW_XHR_VIA_PROMPT: -5,
+	BLOCK_XHR_VIA_PROMPT: -6,
 	KIND_DISABLED: -85,
 	UNBLOCKABLE: -87
 });
@@ -376,7 +378,7 @@ var Rules = {
 	},
 
 	// Splits a simple rule (e.g. HTTP|.google.com) into its protocol and domain parts.
-	parts: function (rule) {
+	partsForRule: function (rule) {
 		var cached = this.__partsCache.get(rule);
 
 		if (cached)
@@ -412,7 +414,7 @@ var Rules = {
 			if (!sourceHost.length)
 				return rule === source;
 
-			var ruleParts = this.parts(rule),
+			var ruleParts = this.partsForRule(rule),
 					sourceProtocol = Utilities.URL.protocol(source),
 					sourceParts = Utilities.URL.hostParts(Utilities.URL.extractHost(source));
 

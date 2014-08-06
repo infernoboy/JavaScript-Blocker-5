@@ -35,11 +35,16 @@ Template.load = function (file) {
 	return Template.__templates[file];
 };
 
-Template.create = function (template, section, data) {
+Template.create = function (template, section, data, shouldBeWrapped) {
 	if (!Template.__templates.hasOwnProperty(template))
 		throw new Error('template file not loaded - ' + template);
 
-	return Template.__templates[template].create(section, data);
+	var element = Template.__templates[template].create(section, data);
+
+	if (shouldBeWrapped)
+		return $('<div />').append(element);
+
+	return element;
 };
 
 Template.prototype.create = function (section, data, isHTML) {

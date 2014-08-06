@@ -1,0 +1,82 @@
+<noscript id="notification">
+	<div class="jsb-notification <%=globalSetting.noAnimations ? 'jsb-no-animations' : ''%>" id="jsb-notification-<%=self.id || Utilities.Token.generate()%>">
+		<div class="jsb-notification-toggle-layering"></div>
+		<input type="button" class="jsb-notification-close" value="<%=_('Close')%>">
+		<div class="jsb-notification-inner">
+			<div class="jsb-notification-title jsb-info"><%=self.title%></div>
+			<% if (self.subTitle) { %>
+				<div class="jsb-notification-sub-title"><%=self.subTitle._lcut(100, '&hellip;')%></div>
+			<% } %>
+			<div class="jsb-notification-body"><%=self.body%></div>
+		</div>
+	</div>
+</noscript>
+
+<noscript id="javascript-alert">
+	<p class="jsb-info"><%=self.body%></p>
+</noscript>
+
+<noscript id="install-user-script-prompt">
+	<p class="jsb-info"><%=_('user_script.add_prompt')%></p>
+	<p class="jsb-info">
+		<input type="button" id="jsb-install-user-script" value="<%=_('user_script.add_script')%>" />
+	</p>
+</noscript>
+
+<noscript id="xhr-prompt">
+	<% var temporaryID = Utilities.Token.generate(); %>
+	<% if (!self.synchronousInfoOnly) { %>
+		<div class="jsb-xhr-add-rule-prompt jsb-hidden">
+			<input id="jsb-xhr-temporary-<%=temporaryID%>" class="jsb-xhr-temporary" type="checkbox" />
+			<label for="jsb-xhr-temporary-<%=temporaryID%>"> <%=_('rule.make_this_temporary')%></label>
+			<br />
+			<span class="jsb-label"><%=_('rule.on')%> </span>
+				<select class="jsb-xhr-on-domain">
+					<option value="lion.toggleable.com:160">lion.toggleable.com:160</option>
+					<option value=".toggleable.com:160">.toggleable.com:160</option>
+					<option value=".*">All Domains</option>
+			</select>
+			<br />
+			<select class="jsb-xhr-method jsb-color-allow">
+				<option value="1"><%=_('rule.allow')%></option>
+				<option value="0"><%=_('rule.block')%></option>
+			</select>
+			<textarea class="jsb-xhr-rule-input" wrap="off" spellcheck="false">Loading...</textarea>
+			<input type="button" class="jsb-xhr-rule-save jsb-bold" value="<%=_('Save')%>" />
+			<br>
+			<input type="button" class="jsb-xhr-rule-cancel" value="<%=_('Cancel')%>" />
+			<br>
+		</div>
+	<% } %>
+	<div class="jsb-xhr-prompt">
+		<% if (!self.synchronousInfoOnly) { %>
+			<div class="jsb-info">
+				<input type="button" class="jsb-xhr-action jsb-color-allow jsb-xhr-once" data-method="1" value="<%=_('xhr.allow_once')%>" />
+				<input type="button" class="jsb-xhr-action jsb-color-block jsb-xhr-once" data-method="0" value="<%=_('xhr.block_once')%>" />
+				<input type="button" class="jsb-xhr-action jsb-xhr-add-rule" value="<%=_('xhr.add_rule')%>" />
+			</div>
+		<% } %>
+		<% var sourceOrigin = Utilities.URL.origin(self.info.source),
+					locationOrigin = Utilities.URL.origin(self.info.pageLocation);
+
+			if (self.info.isFrame || sourceOrigin !== locationOrigin) { %>
+				<div class="jsb-info jsb-xhr-origin">
+					<div class="jsb-label jsb-bold jsb-xhr-label">Origin</div>
+					<span class="jsb-indented"><%=Utilities.URL.origin(self.info.source)%></span>
+				</div>
+		<% } %>
+		<div class="jsb-info">
+			<div class="jsb-label jsb-bold jsb-xhr-label">Path</div>
+			<span class="jsb-indented"><%=Utilities.URL.extractPath(self.info.source)%></span>
+		</div>
+		<% if (Utilities.typeOf(self.info.meta) === 'object' && !self.info.meta.data._isEmpty()) { %>
+			<div class="jsb-info jsb-xhr-origin">
+				<div class="jsb-label jsb-bold jsb-xhr-label">Query</div>
+				<% for (var param in self.info.meta.data) { %>
+					<span class="jsb-indented"><span class="jsb-xhr-query-param"><%=param._escapeHTML()%></span>: <%=self.info.meta.data[param] ? self.info.meta.data[param]._escapeHTML() : null%></span>
+					<br />
+				<% } %>
+			</div>
+		<% } %>
+	</div>
+</noscript>

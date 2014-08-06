@@ -130,7 +130,7 @@ var Command = function (type, event) {
 
 			for (var token in TOKEN.INJECTED)
 				if (TOKEN.INJECTED[token].namespace === data.originSourceName) {
-					foundSourceID = true;
+					foundSourceID = token;
 
 					break;
 				}
@@ -138,12 +138,11 @@ var Command = function (type, event) {
 			if (!foundSourceID)
 				return LogDebug('cannot execute command on top since the calling script is not injected here. - ' + data.originSourceName + ' - ' + document.location.href);
 
-			delete data.meta.args.meta;
-
 			var result = Special.JSBCommanderHandler({
-				type: detail.data.originalEvent.type,
+				type: 'JSBCommander:' + foundSourceID + ':' + TOKEN.EVENT,
 
 				detail: {
+					originSourceID: data.originSourceID,
 					commandToken: Command.requestToken(data.command, data.preserve),
 					command: data.command,
 					viaFrame: detail.data.viaFrame,
@@ -202,10 +201,8 @@ var Command = function (type, event) {
 						info: Page.info
 					}
 				});
-		}
-	};
+		},
 
-	Commands.window = {
 		recommendPageReload: function () {
 			if (Utilities.Page.isTop && !RECOMMEND_PAGE_RELOAD) {
 				RECOMMEND_PAGE_RELOAD = true;
@@ -213,7 +210,9 @@ var Command = function (type, event) {
 				window.location.reload();
 			}
 		},
+	};
 
+	Commands.window = {
 		getFrameInfoWithID: function (detail, event) {	
 			if (Utilities.Page.isTop)
 				GlobalPage.message('bounce', {
@@ -226,45 +225,60 @@ var Command = function (type, event) {
 		},
 
 		requestFrameURL: function (detail, event) {
+			FRAME_ID_ON_PARENT = detail.data.id;
+
 			window.parent.postMessage({
 				command: 'receiveFrameURL',
 				data: {
 					id: detail.data.id,
+					reason: detail.data.reason,
 					url: Page.info.location,
 					token: detail.data.token
 				}
 			}, event.origin);
 		},
 
+		rerequestFrameURL: function (detail) {
+			Element.requestFrameURL(document.getElementById(detail.data.id), detail.data.reason);
+		},
+
 		receiveFrameURL: function (detail) {
 			var message = detail.data;
 
 			if (!Utilities.Token.valid(message.token, message.id, true))
-				return LogDebug('invalid token received for frame.', message);
+				return LogDebug('invalid token received for frame URL.', message);
 
 			var frame = document.getElementById(message.id);
 
 			Utilities.Timer.remove('timeout', 'FrameURLRequestFailed' + message.id);
 
-			if (!frame)
+			if (!frame) {
 				LogDebug('received frame URL, but frame does not exist - ' + message.id);
-			else {
+
+				frame = document.createElement('iframe');
+
+				frame.id = message.id;
+			} else {
 				Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
 
-				var sourceRef,
+				var locationURL,
+						locationURLStore,
 						frameURL,
-						locationURL,
+						frameURLStore,
 						frameItemID;
 
-				var allowedFrames = Page.allowed.getStore('frame'),
-						frameSources = allowedFrames.getStore('source'),
+				var frameSources = Page.allowed.getStore('frame').getStore('source'),
 						allFrameSources = frameSources.all();
 
 				for (locationURL in allFrameSources)
+					locationURLStore = frameSources.getStore(locationURL);
+
 					for (frameURL in allFrameSources[locationURL])
+						frameURLStore = locationURLStore.getStore(frameURL);
+
 						for (frameItemID in allFrameSources[locationURL][frameURL])
 							if (allFrameSources[locationURL][frameURL][frameItemID].meta && allFrameSources[locationURL][frameURL][frameItemID].meta.waiting && allFrameSources[locationURL][frameURL][frameItemID].meta.id === message.id) {
-								frameSources.getStore(locationURL).getStore(frameURL).remove(frameItemID);
+								frameURLStore.remove(frameItemID);
 
 								Page.allowed.decrementHost('frame', Utilities.URL.extractHost(frameURL));
 							}
@@ -276,20 +290,18 @@ var Command = function (type, event) {
 			if (frame && !Utilities.Token.valid(frame.getAttribute('data-jsbFrameURLToken'), previousURLTokenString))
 				return;
 
-			if (previousURL !== message.url) {
-				if (!frame) {
-					frame = document.createElement('iframe');
-					frame.id = message.id;
-				}
-
-				Resource.canLoad({
+			if (previousURL !== message.url)
+				Element.afterCanLoad({
+					reason: message.reason,
+					previousURL: previousURL
+				}, frame, false, {
+					isAllowed: true,
+					action: -1
+				}, message.url, {
 					target: frame,
 					url: message.url,
-					unblockable: true,
-				}, false, {
-					previousURL: previousURL
-				});
-			}
+					unblockable: true
+				}, null, 'frame');
 
 			if (frame) {
 				Utilities.Token.expire(previousURLTokenString);
@@ -300,7 +312,18 @@ var Command = function (type, event) {
 		},
 
 		historyStateChange: function (detail, event) {
-			Page.info.location = Utilities.Page.getCurrentLocation();
+			Handler.setPageLocation();
+
+			if (Page.info.isFrame)
+				window.parent.postMessage({
+					command: 'rerequestFrameURL',
+					data: {
+						id: FRAME_ID_ON_PARENT,
+						reason: {
+							historyStateDidChange: true
+						}
+					}
+				}, '*');
 
 			Page.send();
 		}
@@ -394,10 +417,6 @@ var Command = function (type, event) {
 				detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].namespace;
 				detail.meta.originSourceID = detail.sourceID;
 
-				detail.originalEvent = {
-					type: event.type
-				};
-
 				GlobalPage.message('bounce', {
 					command: 'messageTopExtension',
 					detail: detail
@@ -439,7 +458,92 @@ var Command = function (type, event) {
 				};
 		},
 
-		notification: Utilities.noop,
+		showXHRPrompt: function (detail) {
+			var self = this,
+					meta = detail.meta.meta;
+
+			var response = {
+				meta: {
+					sourceID: detail.originSourceID,
+					callbackID: detail.meta.onXHRPromptInput,
+					result: false
+				}
+			};
+
+			var notificationID = Utilities.Token.generate();
+
+			var xhrPrompt = GlobalCommand('template.create', {
+				template: 'injected',
+				section: 'xhr-prompt',
+				data: {
+					notificationID: notificationID,
+					synchronousInfoOnly: detail.meta.synchronousInfoOnly,
+					synchronousInfoIsAllowed: detail.meta.synchronousInfoIsAllowed,
+					info: detail.meta.meta
+				}
+			});
+
+			var subTitle = detail.viaFrame ? [_('via_frame')] : [];
+
+			if (detail.meta.synchronousInfoOnly)
+				subTitle.push(_('xhr.synchronous'), _(detail.meta.synchronousInfoIsAllowed ? 'xhr.sync_auto_allowed' : 'xhr.sync_auto_blocked'));
+
+			var notification = new PageNotification({
+				id: notificationID,
+				title: _(meta.kind + '.prompt.title'),
+				subTitle: subTitle.join(' - '),
+				body: xhrPrompt
+			});
+
+			if (!detail.meta.synchronousInfoOnly) {
+				notification.closeButtonText(_('xhr.block_and_close'));
+
+				notification
+					.addEventListener('click', '.jsb-xhr-rule-cancel', function (notification) {
+						notification.restoreLayering();
+
+						notification.element.querySelector('.jsb-xhr-add-rule-prompt').classList.add('jsb-hidden');
+						notification.element.querySelector('.jsb-xhr-prompt').classList.remove('jsb-hidden');
+					})
+					.addEventListener('click', '.jsb-notification-close', function (notification) {
+						self.executeCommanderCallback(response);
+					})
+					.addEventListener('change', '.jsb-xhr-method', function (notification) {
+						var value = this.options[this.selectedIndex].value;
+
+						this.classList.toggle('jsb-color-allow', value === '1');
+						this.classList.toggle('jsb-color-block', value === '0');
+					})
+					.addEventListener('click', '.jsb-xhr-action', function (notification) {
+						if (this.classList.contains('jsb-xhr-once')) {
+							response.meta.result = this.getAttribute('data-method') === '1';
+
+							self.executeCommanderCallback(response);
+
+							notification.hide();;
+						} else {
+							notification.bringForward();
+
+							notification.element.querySelector('.jsb-xhr-add-rule-prompt').classList.remove('jsb-hidden');
+							notification.element.querySelector('.jsb-xhr-prompt').classList.add('jsb-hidden');
+						}
+					});
+			}
+		},
+
+		notification: function (detail) {
+			var self = this,
+					notification = new PageNotification(detail.meta);
+
+			Handler.event.addEventListener('stylesheetLoaded', function () {
+				detail.result = notification.element.id;
+				detail.callbackID = detail.meta.onNotificationVisible;
+
+				self.executeCommanderCallback({
+					meta: detail
+				});
+			}, true);
+		},
 
 		canLoadResource: function (detail) {
 			var toCheck = detail.meta;
@@ -453,17 +557,6 @@ var Command = function (type, event) {
 				callbackID: detail.callbackID,
 				result: GlobalCommand('canLoadResource', toCheck)
 			};
-
-			if (info.canLoad.action < 0 && enabled_specials.xhr_intercept.value === 1) {
-				info.str = detail.str;
-				info.kind = detail.kind;
-				info.source = detail.source;
-				info.data = detail.data;
-				info.rule = detail.source._escapeRegExp();
-				info.domain_parts = ResourceCanLoad(beforeLoad, ['arbitrary', 'domain_parts', parseURL(pageHost()).host]);
-			}
-
-			sendCallback(sourceID, detail.callback, o);
 		},
 
 		testCommand: function (detail) {
@@ -501,6 +594,13 @@ var Command = function (type, event) {
 			return Command.globalRelay(detail);
 		},
 
+		extensionURL: function (detail) {
+			return {
+				callbackID: detail.callbackID,
+				result: ExtensionURL(detail.meta.path)
+			};
+		},
+
 		addResourceRule: function (detail) {
 			if (!Utilities.Token.valid(detail.meta.key, 'addResourceRuleKey'))
 				throw new Error('invalid addResourceRuleKey');
@@ -517,6 +617,19 @@ var Command = function (type, event) {
 				callbackID: detail.callbackID,
 				result: true
 			};
+		},
+
+		installUserScriptFromURL: function (detail) {
+			return {
+				callbackID: detail.callbackID,
+				result: GlobalCommand('installUserScriptFromURL', detail.meta.url)
+			};
+		},
+
+		template: {
+			create: function (detail) {
+				return Command.globalRelay(detail);
+			}
 		},
 
 		userScript: {

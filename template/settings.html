@@ -1,4 +1,4 @@
-<textarea id="toolbar-item">
+<noscript id="toolbar-item">
 	<li id="toolbar-<%=self.sectionID%>">
 		<% if (self.toolbarHTML) { %>
 			<%=self.toolbarHTML%>
@@ -6,8 +6,8 @@
 			<input id="toolbar-button-<%=self.sectionID%>" type="button" value="<%=self.sectionName%>" />
 		<% } %>
 	</li>
-</textarea>
+</noscript>
 
-<textarea id="section">
+<noscript id="section">
 	<section class="standard-section" id="section-<%=self.sectionID%>"></section>
-</textarea>
+</noscript>

@@ -134,7 +134,7 @@ Snapshot.prototype.add = function (keep, name) {
 		private: true
 	}).readyJSON();
 
-	if (cloned.data._isEmpty())
+	if (cloned.STORE._isEmpty())
 		return;
 
 	LogDebug('New snapshot: ' + id + '-' + name);

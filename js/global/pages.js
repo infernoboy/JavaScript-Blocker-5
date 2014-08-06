@@ -6,7 +6,7 @@ function Page (page, tab) {
 
 	page.state.props = {
 		destroyChildren: true,
-		selfDestruct: TIME.ONE.SECOND * 2
+		selfDestruct: TIME.ONE.SECOND * 6
 	};
 
 	page.state = Store.promote(page.state);
@@ -48,11 +48,11 @@ Object.defineProperty(Page, '__protocols', {
 });
 
 Page.pages = new Store('Pages', {
-	maxLife: TIME.ONE.SECOND
+	maxLife: TIME.ONE.SECOND * 5
 });
 
 Page.frames = new Store('Frames', {
-	maxLife: TIME.ONE.SECOND
+	maxLife: TIME.ONE.SECOND * 5
 });
 
 Page.protocolSupported = function (protocol) {
@@ -106,17 +106,17 @@ Page.requestPage = function (event) {
 	if (event.target instanceof SafariBrowserTab) {
 		MessageTarget(event, 'sendPage');
 
-		Page.await(event.target);
+		Page.awaitFromTab(event.target);
 	}
 };
 
 Page.requestPageFromActive = function (event) {
 	Tabs.messageActive('sendPage');
 
-	Page.await(Tabs.active());
+	Page.awaitFromTab(Tabs.active());
 };
 
-Page.await = function (awaitTab, done) {
+Page.awaitFromTab = function (awaitTab, done) {
 	if (done)
 		return Utilities.Timer.remove('timeout', awaitTab);
 
@@ -177,11 +177,11 @@ Page.prototype.addFrame = function (frame) {
 	return this;
 };
 
-Page.prototype.badge = function (state) {
+Page.prototype.badgeState = function (state) {
 	if (!this.isTop)
 		return;
 
-	Page.await(this.tab, true);
+	Page.awaitFromTab(this.tab, true);
 
 	Utilities.Timer.timeout('badgeToolbar', function (self) {
 		var tree = self.tree(),

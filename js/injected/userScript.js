@@ -170,7 +170,7 @@ var UserScript = {
 			if (!resource)
 				return '';
 
-			var URL = window.webkitURL || window.URL;
+			var URL = window.webkitURL || window.URL || {};
 
 			if (window.Blob && typeof URL.createObjectURL === 'function') {
 				var text = atob(resource.data),

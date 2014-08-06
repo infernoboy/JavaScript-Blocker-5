@@ -26,7 +26,7 @@ EventListener.prototype.addEventListener = function (name, fn, once) {
 	});
 
 	if (listeners.triggerSubsequentAdditions)
-		this.trigger(name);
+		this.trigger(name, null, true);
 };
 
 EventListener.prototype.addMissingEventListener = function (name, fn, once) {

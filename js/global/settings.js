@@ -1,9 +1,5 @@
 "use strict";
 
-var globalSetting = {
-	debugMode: true
-};
-
 var Settings = {
 	__method: function (method, setting, value) {
 		if (SettingStore.available)
@@ -15,7 +11,7 @@ var Settings = {
 			});
 	},
 
-	__validate: function (type, value, options, otherOption) {
+	__validate: function (type, value, options, otherOption, extendOptions) {
 		switch (type) {
 			case 'boolean':
 				return typeof value === 'boolean';
@@ -23,8 +19,10 @@ var Settings = {
 
 			case 'option':
 			case 'option-radio':
-				for (var i = 0; i < options.length; i++)
-					if (options[i][0].toString() === value.toString())
+				var allOptions = extendOptions ? extendOptions.concat(options) : options;
+
+				for (var i = 0; i < allOptions.length; i++)
+					if (allOptions[i][0].toString() === value.toString())
 						return true;
 
 				if (otherOption)
@@ -172,7 +170,7 @@ var Settings = {
 			var type = storeSetting.props.type || setting.props.type,
 					options = storeSetting.props.options || setting.props.options;
 
-			if (!this.__validate(type, value, options, storeSetting.props.otherOption))
+			if (!this.__validate(type, value, options, storeSetting.props.otherOption, storeSetting.props.extendOptions))
 				throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, storeKey, value]));
 
 			this.__stores.getStore(settingKey).set(storeKey, value);
@@ -182,7 +180,7 @@ var Settings = {
 
 			if (storeSetting.props.onChange)
 				storeSetting.props.onChange(value);
-		} else if (this.__validate(type, value, options, setting.props.otherOption))
+		} else if (this.__validate(type, value, options, setting.props.otherOption, setting.props.extendOptions))
 			this.__method('setItem', settingKey, value);
 		else
 			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));

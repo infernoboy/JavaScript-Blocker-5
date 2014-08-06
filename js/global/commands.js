@@ -153,6 +153,7 @@ function Command (command, data, event) {
 				disabled: false,
 				debugMode: true,
 
+				noAnimations: !Settings.getItem('useAnimations'),
 				enabledKinds: Settings.getItem('enabledKinds'),
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
@@ -189,7 +190,7 @@ function Command (command, data, event) {
 				ToolbarItems.badge(0, activeTab);
 
 				UI.clear();
-				
+
 				return LogDebug('received page from unsupported protocol:', thePage.protocol);
 			}
 
@@ -219,10 +220,10 @@ function Command (command, data, event) {
 						return LogError(['frame does not seem to have a parent', page.info.id]);
 
 				Page.withActive(function (activePage) {
-					activePage.badge('blocked');
+					activePage.badgeState('blocked');
 
 					if (activeTab === activePage.tab)
-						UI.renderPopover(activePage);
+						UI.renderPage(activePage);
 				});
 			} else {
 				if (!activeTab || !activeTab.url) {
@@ -230,10 +231,10 @@ function Command (command, data, event) {
 
 					UI.clear();
 				} else {
-					page.badge('blocked');
+					page.badgeState('blocked');
 
 					if (activeTab === page.tab)
-						UI.renderPopover(page);
+						UI.renderPage(page);
 				}
 			}
 		},
@@ -363,6 +364,39 @@ function Command (command, data, event) {
 			this.message = true;
 		},
 
+		installUserScriptFromURL: function (url) {
+			var success = false;
+
+			UserScript.download(url, false).done(function (userScript) {
+				try {
+					success = UserScript.add(userScript);
+				} catch (error) {
+					success = error;
+
+					LogError(error);
+				}
+
+			}).fail(function () {
+				success = false;
+			});
+
+			this.message = success;
+		},
+
+		template: {
+			create: function (detail) {
+				try {
+					Template.load(detail.template);
+
+					this.message = Template.create(detail.template, detail.section, detail.data, true).html();
+				} catch (error) {
+					LogError(error);
+
+					this.message = null;
+				}
+			}
+		},
+
 		settingStore: {
 			getItem: function (detail) {
 				this.message = SettingStore.getItem(detail.setting, detail.value);
@@ -450,5 +484,7 @@ Command.messageReceived = function (event) {
 
 	return Command(command, event.message ? (event.message.data === undefined ? event.message : event.message.data) : null, event);
 };
+
+var globalSetting = Command('globalSetting', null, {});
 
 Events.addApplicationListener('message', Command.messageReceived);

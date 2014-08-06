@@ -26,7 +26,7 @@ Special.specials = {
 
 			window.postMessage({
 				command: 'historyStateChange'
-			}, window.location.href);
+			}, '*');
 		};
 
 		window.history.replaceState = function () {
@@ -34,17 +34,78 @@ Special.specials = {
 
 			window.postMessage({
 				command: 'historyStateChange'
-			}, window.location.href);
+			}, '*');
 		};
 
 		var evt = document.createEvent('CustomEvent');
 
-		evt.initCustomEvent('JSBCommander:' + JSB.temporarySourceID + ':' + JSB.eventToken, false, false, {
+		evt.initCustomEvent('JSBCommander:' + JSB.sourceID + ':' + JSB.eventToken, false, false, {
 			commandToken: JSB.commandToken,
 			command: 'inlineScriptsAllowed'
 		});
 
 		document.dispatchEvent(evt);
+	},
+
+	installUserScriptPrompt: function () {
+		var onNotificationVisible = registerCallback(function (notificationID) {
+			var notification = document.getElementById(notificationID),
+					notificationBody = notification.querySelector('.jsb-notification-body');
+
+			notification.querySelector('#jsb-install-user-script').addEventListener('click', function (event) {
+				this.disabled = true;
+
+				this.value = messageExtensionSync('localize', { string: 'user_script.adding' });
+
+				setTimeout(function () {
+					messageExtension('installUserScriptFromURL', {
+						url: window.location.href
+					}, function (result) {
+						var p = document.createElement('p');
+
+						p.classList.add('jsb-info');
+
+						p.innerHTML = result === true ? messageExtensionSync('localize', { string: 'user_script.add_success' }) : result;
+
+						notificationBody.innerHTML = p.outerHTML;
+					});
+				}, 0);
+			}, true);
+		});
+
+		messageTopExtension('notification', {
+			onNotificationVisible: onNotificationVisible,
+			title: messageExtensionSync('localize', { string: 'user_script' }),
+			body: messageExtensionSync('template.create', {
+				template: 'injected',
+				section: 'install-user-script-prompt'
+			})
+		});
+	},
+
+	alert_dialogs: function () {
+		var isFrame = window !== window.top;
+
+		window.alert = function (string) {
+			if (typeof string === 'undefined')
+				string = 'undefined';
+			else if (string === null)
+				string = 'null';
+			else if (typeof string !== 'string')
+				string = string.toString ? string.toString() : '';
+
+			messageTopExtension('notification', {
+				title: messageExtensionSync('localize', { string: 'Alert' }),
+				subTitle: isFrame ? messageExtensionSync('localize', { string: 'via_frame' }) + ' - ' + window.location.href : '',
+				body: messageExtensionSync('template.create', {
+					template: 'injected',
+					section: 'javascript-alert',
+					data: {
+						body: string.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+					}
+				})
+			});
+		};
 	},
 
 	zoom: function () {
@@ -135,8 +196,39 @@ Special.specials = {
 			send: XMLHttpRequest.prototype.send
 		};
 
-		var supportedMethods = ['get', 'post', 'put'],
+		var SYNCHRONOUS_ALLOW = 0,
+				SYNCHRONOUS_BLOCK = 1,
+				SYNCHRONOUS_ASK = 2;
+
+		var shouldShowPrompt = JSB.value.value.alwaysBlock === 'ask',
+				supportedMethods = ['get', 'post', 'put'],
 				storeToken = Math.random().toString(36);
+
+		function performAction (request, info, args) {
+			var xhrError;
+
+			var pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
+
+			if (info.canLoad.isAllowed) {
+				pageAction = 'addAllowedItem';
+
+				request[storeToken].resendAllowed = true;
+
+				try {
+					XHR.send.apply(request, args);
+				} catch (error) {
+					xhrError = error;
+				}
+			}
+
+			messageExtension('page.' + pageAction, info);
+
+			if (xhrError) {
+				xhrError.JSB_RETHROW = true;
+				
+				throw xhrError;
+			}
+		};
 
 		XMLHttpRequest.prototype.open = function () {
 			if (!this[storeToken])
@@ -146,6 +238,7 @@ Special.specials = {
 
 			this[storeToken].method = arguments[0].toLowerCase();
 			this[storeToken].path = (arguments[1] && arguments[1].path) ? arguments[1].path : arguments[1].toString();
+			this[storeToken].sync = arguments[2] === false;
 
 			Object.freeze(this[storeToken]);
 
@@ -153,10 +246,9 @@ Special.specials = {
 		};
 
 		XMLHttpRequest.prototype.send = function () {
-			var detail = this[storeToken],
-					isAllowed = (supportedMethods.indexOf(detail.method) === -1);
+			var detail = this[storeToken];
 
-			if (isAllowed)
+			if (supportedMethods.indexOf(detail.method) === -1)
 				return XHR.send.apply(this, arguments);
 
 			var JSONsendArguments = window[JSB.eventToken].window$JSON$stringify(arguments);
@@ -165,7 +257,7 @@ Special.specials = {
 				console.warn('XHR Resend?', arguments, this[storeToken]);
 
 				try {
-					return detail.isAllowed ? XHR.send.apply(this, arguments) : this.abort();
+					return detail.resendAllowed ? XHR.send.apply(this, arguments) : this.abort();
 				} catch (error) {
 					console.warn('XHR Resend...Failed?', error);
 				} finally {
@@ -175,8 +267,7 @@ Special.specials = {
 
 			detail.previousJSONsendArguments = JSONsendArguments;
 
-			var	pageAction = 'addBlockedItem',
-					kind = 'xhr_' + detail.method,
+			var kind = 'xhr_' + detail.method,
 					info = {
 						meta: null,
 						kind: kind,
@@ -198,12 +289,15 @@ Special.specials = {
 					var params = toSend.split(/&/g);
 
 					for (var i = 0; i < params.length; i++) {
+						if (!params[i].length)
+							continue;
+
 						splitParam = params[i].split('=');
 
 						info.meta.data[decodeURIComponent(splitParam[0])] = typeof splitParam[1] === 'string' ? decodeURIComponent(splitParam[1]) : null;
 					}
 				} else if (toSend instanceof window.Blob) {
-					var URL = window.webkitURL || window.URL;
+					var URL = window.webkitURL || window.URL || {};
 
 					if (typeof URL.createObjectURL === 'function')
 						info.meta = {
@@ -222,28 +316,65 @@ Special.specials = {
 			var canLoad = messageExtensionSync('canLoadResource', info);
 
 			try {
-				isAllowed = canLoad.isAllowed;
+				canLoad.isAllowed;
 			} catch (error) {
-				console.warn('failed to retrieve canLoadResource response.', document);
+				console.warn('failed to retrieve canLoadResource response', document);
 
-				isAllowed = true;
+				canLoad = {
+					action: -1,
+					isAllowed: true
+				};
 			}
 
 			info.canLoad = canLoad;
 
-			if (isAllowed) {
-				pageAction = 'addAllowedItem';
+			var self = this,
+					args = arguments;
 
-				detail.isAllowed = true;
+			var onXHRPromptInput = registerCallback(function (isAllowed) {
+				info.canLoad = {
+					action: isAllowed ? -5 : -6,
+					isAllowed: isAllowed
+				};
 
-				try {
-					XHR.send.apply(this, arguments);
-				} catch (error) {
-					console.log('XHR SEND FAIL', error)
+				return performAction(self, info, args);
+			});
+
+			if (canLoad.action < 0 && shouldShowPrompt && !detail.sync)
+				messageTopExtension('showXHRPrompt', {
+					onXHRPromptInput: onXHRPromptInput,
+					meta: info
+				});
+			else if (detail.sync) {
+				var _ = function (string, args) {
+					return messageExtensionSync('localize', {
+						string: string,
+						args: args
+					});
+				};
+
+				if (JSB.value.value.synchronousMethod === SYNCHRONOUS_ASK) {
+					var isAllowed = confirm(_('xhr.sync_prompt', [
+						'Synchronous',
+						_(kind + '.prompt.title'),
+						info.source,
+						info.meta ? JSON.stringify(info.meta.data, null, 2) : ''
+					]));
+				} else {
+					var isAllowed = JSB.value.value.synchronousMethod === SYNCHRONOUS_ALLOW;
+
+					if (JSB.value.value.showSynchronousXHRNotification)
+						messageTopExtension('showXHRPrompt', {
+							synchronousInfoOnly: true,
+							synchronousInfoIsAllowed: isAllowed,
+							onXHRPromptInput: onXHRPromptInput,
+							meta: info
+						});
 				}
-			}
 
-			messageExtension('page.' + pageAction, info);
+				executeLocalCallback(onXHRPromptInput, isAllowed);
+			} else
+				performAction(this, info, arguments);
 		};
 	},
 
@@ -306,17 +437,19 @@ Special.specials = {
 				shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION),
 				autoContinue = {};
 
+		var baseURL = messageExtensionSync('extensionURL', {
+			path: 'html/canvasFingerprinting.html#'
+		});
+
 		var confirmString = messageExtensionSync('localize', {
-			string: JSB.data.safariBuildVersion < 537 ? 'canvas_data_url_prompt_old' : 'canvas_data_url_prompt'
+			string: JSB.data.safariBuildVersion < 537 ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt'
 		});
 
 		if (shouldAskOnce)
 			confirmString += "\n\n" + messageExtensionSync('localize', {
-				string: JSB.value.value === ASK_ONCE_SESSION ? 'canvas_data_url_subsequent_session' : 'canvas_data_url_subsequent',
+				string: JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent',
 				args: [window.location.host]
 			});
-
-		var baseURL = JSB.data.extensionURL + 'html/canvasFingerprinting.html#';
 
 		function protection (dataURL) {
 			var url = baseURL + dataURL;
@@ -378,12 +511,12 @@ Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
 
 Special.specials.canvas_data_url.data = {
 	safariBuildVersion: Utilities.safariBuildVersion,
-	extensionURL: ExtensionURL(),
 	key: Utilities.Token.create('addResourceRuleKey', true)
 };
 
 Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
+Special.specials.installUserScriptPrompt.excludeFromPage = true;
 Special.specials.xhr_intercept.excludeFromPage = true;
 
 Special.begin();

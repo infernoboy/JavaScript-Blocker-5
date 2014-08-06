@@ -60,10 +60,6 @@
 				<string>js/injected/compiled.js</string>
 			</array>
 		</dict>
-		<key>Stylesheets</key>
-		<array>
-			<string>css/injected.css</string>
-		</array>
 	</dict>
 	<key>Description</key>
 	<string>Controls the loading of external resources on webpages.</string>

@@ -75,7 +75,7 @@ var Store = (function () {
 
 		if (this.save)
 			this.addEventListener('save', function () {
-				LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(SettingStore.getItem(this.id).length));
+				LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(this.savedByteSize()));
 			}.bind(this));
 	};
 
@@ -105,7 +105,7 @@ var Store = (function () {
 
 		var store = new Store(object.name, object.props);
 
-		store.data = object.data;
+		store.data = object.data || object.STORE;
 
 		return store;
 	};
@@ -169,7 +169,7 @@ var Store = (function () {
 					for (comparedSide in sides) {
 						inside = compared.sides[comparedSide];
 
-						if (!inside.data._isEmpty())
+						if (!inside.STORE._isEmpty())
 							sides[comparedSide].set(key, inside);
 					}
 				} else if (JSON.stringify(thisValue) === JSON.stringify(oppositeValue))
@@ -181,16 +181,17 @@ var Store = (function () {
 
 		sides.left = sides.left.readyJSON();
 		sides.right = sides.right.readyJSON();
+		sides.both = sides.both.readyJSON();
 
 		return {
 			store: store,
 			sides: sides,
-			equal: (sides.left.data._isEmpty() && sides.right.data._isEmpty())
+			equal: (sides.left.STORE._isEmpty() && sides.right.STORE._isEmpty())
 		};
 	};
 
 	Store.isStore = function (object) {
-		return !!(object && object.data && object.props);
+		return !!(object && object.data && object.props) || object.STORE instanceof Object;
 	};
 
 	Object.defineProperty(Store.prototype, 'parent', {
@@ -253,7 +254,7 @@ var Store = (function () {
 			if (store.save) {
 				console.time('SAVED ' + store.id);
 
-				Settings.__method('setJSON', store.id, store.readyJSON());
+				Settings.__method('setItem', store.id, store.readyJSON());
 
 				console.timeEnd('SAVED ' + store.id);
 			}
@@ -265,6 +266,10 @@ var Store = (function () {
 			Utilities.setImmediateTimeout(function (store) {
 				store.parent.__save(true);
 			}, [this]);
+	};
+
+	Store.prototype.savedByteSize = function () {
+		return this.save ? JSON.stringify(Settings.__method('getItem', this.id)).length : -1;
 	};
 
 	Store.prototype.unlock = function () {
@@ -287,14 +292,14 @@ var Store = (function () {
 
 	Store.prototype.load = function (defaultValue) {
 		if (this.save) {
-			var stored = Settings.__method('getJSON', this.id, {
-				data: defaultValue
+			var stored = Settings.__method('getItem', this.id, {
+				STORE: defaultValue
 			});
 
 			if (stored.lock)
 				this.lock = true;
 
-			this.data = stored.data || {};
+			this.data = stored.STORE || stored.data || {};
 		} else
 			this.data = defaultValue;
 	};
@@ -522,7 +527,7 @@ var Store = (function () {
 		if (!this.ignoreSave)
 			if (value instanceof Store)
 				setTimeout(function (store, value) {
-					if (!value.readyJSON().data._isEmpty())
+					if (!value.readyJSON().STORE._isEmpty())
 						store.__save();
 				}, 100, this, value);
 			else
@@ -562,6 +567,7 @@ var Store = (function () {
 				if (!(value instanceof Store)) {
 					if (Store.isStore(value)) {
 						value.name = (this.name || this.id) + ',' + key;
+						value.props = {};
 
 						Store.inherit(value.props, this);
 
@@ -696,7 +702,7 @@ var Store = (function () {
 
 		this.clear();
 
-		this.data = store.readyJSON(swapPrefix).data;
+		this.data = store.readyJSON(swapPrefix).STORE;
 	};
 
 	Store.prototype.clear = function (ignoreSave) {
@@ -811,12 +817,7 @@ var Store = (function () {
 		}
 
 		var stringable = {
-			name: name,
-			save: this.save || undefined,
-			props: this.props,
-			lock: this.lock || undefined,
-			private: this.private || undefined,
-			data: {}
+			STORE: {}
 		};
 
 		for (var key in this.data) {
@@ -828,14 +829,14 @@ var Store = (function () {
 				else {
 					finalValue = value.readyJSON(swapPrefix);
 
-					if (finalValue.data._isEmpty())
+					if (finalValue.STORE._isEmpty())
 						continue;
 				}
 			} else
 				finalValue = value;
 
 			if (finalValue !== undefined) {
-				stringable.data[key] = {
+				stringable.STORE[key] = {
 					accessed: this.data[key].accessed,
 					value: finalValue
 				};

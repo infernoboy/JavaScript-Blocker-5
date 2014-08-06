@@ -32,6 +32,17 @@ var Utilities = {
 
 	noop: function () {},
 
+	OSXVersion: function () {
+		var osx = window.navigator.userAgent.match(/Mac OS X ([^\)]+)\)/);
+
+		if (!osx[1])
+			return null;
+
+		var version = osx[1].split(/_/);
+
+		return version[0] + '.' + version[1];
+	},
+
 	makeArray: function (arrayLikeObject, offset) {
 		if (typeof offset !== 'number')
 			offset = 0;
@@ -581,6 +592,12 @@ var Utilities = {
 			return hostStore.set(cacheKey, parts).get(cacheKey);
 		},
 
+		origin: function (url) {
+			this.__anchor.href = url;
+
+			return this.__anchor.origin;
+		},
+
 		protocol: function (url) {
 			this.__anchor.href = url;
 
@@ -639,7 +656,7 @@ function LogError () {
 	for (var i = 0; i < args.length; i++) {
 		error = args[i];
 
-		if (error && error.constructor && error.constructor.name._endsWith('Error')) {
+		if (error && error.constructor && error.constructor.name && error.constructor.name._endsWith('Error')) {
 			errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
 
 			if (error.sourceURL)
@@ -849,6 +866,23 @@ var Extension = {
 	},
 
 	String: {
+		_lcut: {
+			value: function (length, prefix) {
+				var trimmed = this._reverse().substr(0, length)._reverse();
+
+				if (trimmed !== this && prefix)
+					trimmed = prefix + trimmed;
+
+				return trimmed;
+			}
+		},
+
+		_reverse: {
+			value: function () {
+				return this.split('').reverse().join('');
+			}
+		},
+
 		_rpad: {
 			value: function (length, padding) {
 				if (this.length < length) {
@@ -1145,6 +1179,7 @@ Object._deepFreeze = function (object) {
 };
 
 Utilities.Page.isWebpage = !!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL());
+Utilities.Page.isUserScript = window.location.href._endsWith('.user.js');
 
 Utilities.Group.NOT._createReverseMap();
 Utilities.Group.TYPES = {

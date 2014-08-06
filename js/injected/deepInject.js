@@ -165,10 +165,7 @@ DeepInject.prototype.injectable = function (useURL) {
 DeepInject.prototype.inject = function (useURL) {
 	var injectable = this.injectable(typeof useURL === 'boolean' ? useURL : DeepInject.useURL);
 
-	if (document.documentElement.firstChild)
-		document.documentElement.insertBefore(injectable, document.documentElement.firstChild);
-	else
-		document.documentElement.appendChild(injectable);
+	Element.inject(injectable);
 
 	if ((useURL === false || DeepInject.useURL === false) && !globalSetting.debugMode)
 		injectable.innerText = '';

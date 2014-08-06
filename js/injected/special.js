@@ -74,7 +74,7 @@ var Special = {
 		if (deepInject.script.ignoreHelpers)
 			var JSB = {
 				eventToken: TOKEN.EVENT,
-				temporarySourceID: deepInject.id
+				sourceID: deepInject.id
 			};
 		else
 			var JSB = {
@@ -146,6 +146,9 @@ var Special = {
 			Utilities.Token.expire(preparation.id);
 		}
 
+		if (Utilities.Page.isUserScript)
+			this.inject('installUserScriptPrompt');
+
 		this.enabled = GlobalCommand('specialsForLocation', {
 			pageLocation: Page.info.location,
 			pageProtocol: Page.info.protocol,
@@ -188,6 +191,12 @@ var Special = {
 					delete JSB.eventCallback[callbackID];
 			} catch (error) {
 				console.error('error in callback', '-', error.message);
+
+				if (error.JSB_RETHROW) {
+					delete error.JSB_RETHROW;
+
+					throw error;
+				}
 			}
 		},
 

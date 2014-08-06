@@ -194,12 +194,15 @@ var SettingStore = {
 		}
 	},
 	setItem: function (key, value, noCache) {
+		if (['setItem', 'getItem', 'removeItem']._contains(key))
+			throw new Error(key + ' cannot be used as a setting key.');
+		
 		if (!noCache)
 			this.__setCache(key, value);
 
 		safari.extension.settings.setItem(key, value);
 	},
-	setJSON: function (key, value) {
+	setJSON: function (key, value) {		
 		safari.extension.settings.setItem(key, JSON.stringify(value));
 	},
 	removeItem: function (key) {

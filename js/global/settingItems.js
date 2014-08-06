@@ -68,7 +68,7 @@ Settings.settings = {
 
 	// UI Settings
 	ui: [{
-		setting: 'animations',
+		setting: 'useAnimations',
 		props: {
 			type: 'boolean',
 			label: 'Use animations',
@@ -582,7 +582,57 @@ Settings.settings = {
 					label: 'Automatically block XHRs to:',
 					extendOptions: [['ask', 'Ask when neccessary']],
 					help: 'alwaysBlock help',
-					default: 'blacklist'
+					default: 'blacklist',
+					subSettings: [{
+						when: {
+							hide: true,
+							settings: {
+								group: 'all',
+								items: [{
+									method: Utilities.Group.NONE,
+									key: 'alwaysBlock',
+									needle: {
+										group: 'all',
+										items: [{
+											method: Utilities.Group.IS,
+											key: 'xhr',
+											needle: 'ask'
+										}]
+									}
+								}]
+							}
+						},
+						settings: [{
+							setting: 'synchronousXHRMethod',
+							props: {
+								type: 'option',
+								label: 'Synchronous XHR requests:',
+								options: [[0, 'Automatically allow'], [1, 'Automatically block'], [2, 'Invasively ask']],
+								default: 0,
+								subSettings: [{
+									when: {
+										hide: true,
+										settings: {
+											group: 'all',
+											items: [{
+												method: Utilities.Group.IS_NOT,
+												key: 'synchronousXHRMethod',
+												needle: 2
+											}]
+										}
+									},
+									settings: [{
+										setting: 'showSynchronousXHRNotification',
+										props: {
+											type: 'boolean',
+											label: 'Show synchronous XHR notifications',
+											default: true
+										}
+									}]
+								}]
+							}
+						}]
+					}]
 				}
 			}]
 		}, {
@@ -929,7 +979,11 @@ Settings.settings = {
 				storeKey: 'xhr_intercept',
 				readOnly: true,
 				default: function () {
-					return Settings.getItem('enabledKinds', 'xhr');
+					return Settings.getItem('enabledKinds', 'xhr') && {
+						alwaysBlock: Settings.getItem('alwaysBlock', 'xhr'),
+						synchronousMethod: Settings.getItem('synchronousXHRMethod'),
+						showSynchronousXHRNotification: Settings.getItem('showSynchronousXHRNotification')
+					};
 				}
 			}
 		}, {

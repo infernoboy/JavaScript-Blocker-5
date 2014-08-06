@@ -263,13 +263,19 @@ var UserScript = {
 		var parsed = this.parse(script),
 				detail = parsed.parsed;
 
-		if (detail.name === null || detail.namespace === null)
-			return LogError('unable to add user script because it does not have a name or namespace');
+		if (detail.name === null || detail.namespace === null) {
+			LogError('unable to add user script because it does not have a name or namespace');
+
+			return -1;
+		}
 
 		var canBeUpdated = this.canBeUpdated(detail);
 
-		if (isAutoUpdate && !canBeUpdated)
-			return LogError('attempted to update a script, but the new version will no longer be able to auto update.');
+		if (isAutoUpdate && !canBeUpdated) {
+			LogError('attempted to update a script, but the new version will no longer be able to auto update.');
+
+			return -2;
+		}
 
 		var namespace = detail.trueNamespace,
 				userScript = this.scripts.getStore(namespace),
@@ -320,6 +326,8 @@ var UserScript = {
 		}, 100, this, userScript, detail);
 
 		attributes.clear().setMany(newAttributes);
+
+		return true;
 	}
 };
 

@@ -31,15 +31,11 @@
 	<script src="js/popover/highlight.js"></script>
 </head>
 
-<body class="blocking-mode">
-	<div id="modal">
-		<header class="main-header"><h1 data-i18n="JavaScript Blocker"><span class="console-unread"> 0</span></h1></header>
-	</div>
-	
-	<header class="main-header"><h1 data-i18n="JavaScript Blocker"><span class="console-unread"> 0</span></h1></header>
+<body>
+	<div id="modal-overlay"></div>
 	
 	<div id="container">
-		<div id="quick-add-info">
+		<div id="quick-add-info" class="floating-info-box">
 			<p>
 				<input class="orange" type="button" id="apply-quick-add" data-i18n="Apply Changes" value=" " />
 				<input type="button" id="clear-quick-add" data-i18n="Clear Selection" value=" " />
@@ -47,39 +43,40 @@
 			</p>
 		</div>
 
-		<div id="find-bar">
-			<input type="button" id="find-bar-done" value=" " data-i18n="Done" />
-			<input type="search" id="find-bar-search" incremental="incremental" results="10" autosave="find_on" />
-			<label for="find-bar-search" id="find-bar-matches"></label>
+		<div id="find-bar" class="floating-info-box">
+			<input type="button" id="find-bar-done" data-i18n="Done" />
+			<input type="search" id="find-bar-search" incremental="incremental" results="10" autosave="find" />
+			<label for="find-bar-search" id="find-bar-match-count"></label>
 		</div>
-		<div id="main" class="whoop">
-			<div id="update-warn">
+
+		<div id="main" class="zoomable-view">
+			<div id="outdated-info-displayed" class="floating-info-box">
 				<p data-i18n="This view contains outdated information. Scroll to the top to have it updated."></p>
 			</div>
 			
-			<div id="disabled" class="embossed">
+			<div id="disabled-underlay" class="embossed">
 				<p data-i18n="JavaScript Blocker is disabled."></p>
 			</div>
 
-			<div class="filter-bar actions-bar" id="top-most">
+			<div id="main-toolbar" class="actions-bar text-based">
 				<ul>
-					<li id="unlock" data-i18n="Unlock"></li>
-					<li id="disable" data-i18n="Disable JavaScript Blocker" class="divider"></li>
-					<li id="js-help" data-i18n="Help" class="divider"></li>
-					<li id="js-settings" data-i18n="Settings" class="divider"></li>
-					<li id="view-rules" data-i18n="Rules" class="divider"></li>
-					<li id="toggle-hidden" data-i18n="Show Hidden" class="divider"></li>
-					<li id="jsblocker-name"><span data-i18n="JavaScript Blocker"></span> <div class="console-unread"> 0</div></li>
+					<li id="unlock-jsb" data-i18n="Unlock"></li>
+					<li id="disable-jsb" data-i18n="Disable JavaScript Blocker" class="right-divider"></li>
+					<li id="open-help" data-i18n="Help" class="right-divider"></li>
+					<li id="open-settings" data-i18n="Settings" class="right-divider"></li>
+					<li id="view-rules" data-i18n="Rules" class="right-divider"></li>
+					<li id="toggle-hidden-items" data-i18n="Show Hidden" class="right-divider"></li>
+					<li id="version-info"><span data-i18n="JavaScript Blocker"></span> <div class="console-unread"> 0</div></li>
 				</ul>
 				<br style="clear:both;" />
 			</div>
 
 			<p class="misc-info snapshot-info"></p>
 				
-			<div id="host-sections"></div>
+			<div id="page-frames"></div>
 		</div>
 
-		<div id="rules-list" class="whoop">
+		<div id="rules-list" class="zoomable-view">
 			<div class="info-container">
 				<p class="misc-info" id="rule-counter" data-i18n="{1} domains, {2} rules" data-i18n-fill="[0,0]"></p>
 				<p class="misc-info snapshot-info"></p>
@@ -150,14 +147,17 @@
 				</div>
 			</div>
 		</div>
-		<div id="misc" class="whoop">
+
+		<div id="misc" class="zoomable-view">
 			<div class="info-container">
 				<p class="misc-header"></p>
 				<input type="button" value=" " id="misc-close" data-i18n="Close" />
 			</div>
+
 			<div id="misc-content"></div>
 		</div>
-		<div id="snapshots" class="whoop">
+
+		<div id="snapshots" class="zoomable-view">
 			<div class="info-container">
 				<p class="misc-info" data-i18n="Snapshots"></p>
 				<input id="close-snapshots" value=" " type="button" data-i18n="Close Snapshots" class="purple" />
@@ -193,141 +193,6 @@
 		</div>
 
 		<div id="resize-handler"></div>
-	</div>
-	
-	<div id="hidden-extras">
-		<ul id="jsconsolelogger"><li id="console-header"><p class="misc-info">Console</p></li></ul>
-
-		<textarea id="tmpl_host_section">
-			<div class="host-section" id="host-section-<%=self.id%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>">
-				<div class="host-section-host">
-					<span class="label"><% if(self.is_main) { %><%=_('Main host')%><% } else { %><%=_('Frame host')%><% } %></span><span class="host-divider">&nbsp;</span>
-					<span class="section-host"><%=(self.host === 'blank' && !self.is_main ? 'blank - ' + self.host_host : self.host)%></span>
-					<span class="host-divider">&nbsp;</span><span class="section-hidden section-host">0 hidden</span>
-					<input type="button" class="host-toggler <%=(self.disabled ? 'disabled' : '')%>" value="<%=(self.disabled ? _('Enable') : _('Disable'))%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>" />
-				</div>
-
-				<% if (self.disabled) { %>
-				<div class="domain-disabled">
-					<p class="embossed"><%=_('JavaScript Blocker is disabled on this host.')%></p>
-				</div>
-				<% } else { %>
-
-				<div class="allowed-blocked-columns inner-section">
-					<div class="column allowed-column">
-						<div class="info-container" class="allowed-container">
-							<label class="allowed-label"><%=_('Allowed:')%></label> 
-							<span class="allowed-scripts-count scripts-count">0</span> 
-							<span class="scripts-count-type" data-i18n="hosts"></span> 
-							<input type="button" class="allowed all-action-link" value="<%=_('Block…')%>" />
-						</div>
-		
-						<div class="urls-wrapper allowed-script-urls">
-							<div class="urls-inner"></div>
-						</div>
-					</div>
-									
-					<div class="column blocked-column">
-						<div class="info-container" class="blocked-container">
-							<label class="blocked-label"><%=_('Blocked:')%></label> 
-							<span class="blocked-scripts-count scripts-count">0</span> 
-							<span class="scripts-count-type" data-i18n="hosts"></span> 
-							<input type="button" class="blocked all-action-link" value="<%=_('Allow…')%>" />
-						</div>
-		
-						<div class="urls-wrapper blocked-script-urls">
-							<div class="urls-inner"></div>
-						</div>
-					</div>
-					
-					<br style="clear:both;" />
-				</div>
-				
-				<% if (Settings.getItem('showUnblocked')) { %>
-				<div class="unblocked-section inner-section unblocked-column">
-					<div class="info-container" class="unblocked-container">
-						<label class="unblocked-label"><%=_('Unblocked:')%></label> <span class="unblocked-scripts-count scripts-count">0</span>
-					</div>
-			
-					<div class="urls-wrapper unblocked-script-urls">
-						<div class="urls-inner"></div>
-					</div>
-				</div>
-				<% } %>
-			</div>
-			<% } %>
-		</div>
-		</textarea>
-
-		<textarea id="tmpl_domain_picker">
-			<% if (!self.no_label) { %><label for="domain-picker<%=('id' in self ? '-' + self.id : '')%>"><%=_('On:')%> </label><% } %>
-			<select class="domain-picker" id="domain-picker<%=('id' in self ? '-' + self.id : '')%>" <% if ((self.domain_parts.length === 2 && self.no_all) || (self.domain_parts[0] === null && !self.no_all)) { %>class="single"<% } %>>
-			<%
-				var n;
-				for (n = 0; n < self.domain_parts.length; n++) {
-					if (self.domain_parts[n] === null || (self.no_all && n === self.domain_parts.length - 1)) continue; %>
-					<option value="<%=((n === 0 ? '' : '.') + self.domain_parts[n])%>"><%=(self.domain_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + JB.utils.escape_html(self.domain_parts[n])))%></option>
-			<% } 
-				if (self.pages) {
-					var page, option; %>
-					<optgroup label="<%=_('Pages')%>">
-						<% for (page in self.pages) {
-							option = document.createElement('option');
-							option.value = self.pages[page].regexp;
-							option.innerText = page;
-
-						%><%=option.outerHTML%>
-						<% } %>
-					</optgroup>
-				<% }
-				if (self.show_other) { %>
-					<option value="custom.other"><%=_('Other…')%></option>
-			<% } %>
-			</select>
-		</textarea>
-		
-		<textarea id="tmpl_main_wrapper">
-			<header class="head-<%=self.which%>-<%=self.kind%> kind-header visible">
-				<h3 class="<%=self.which%>-<%=self.kind%>-items"><%=self.local%></h3>
-				<a class="toggle-<%=self.kind%>-<%=self.which%>-items toggle-main">Hide</a>
-				<br style="clear:both;" />
-			</header>
-			<div class="<%=self.which%>-items-<%=self.kind%>-container item-list-container" style="overflow:hidden;">
-				<ul class="<%=self.which%>-items-<%=self.kind%> main-wrapper" data-kind="<%=self.kind%>"></ul>
-			</div>
-		</textarea>
-
-		<textarea id="tmpl_rule_wrapper_inner">
-			<%
-			var li = document.createElement('li');
-			li.id = Math.random().toString(36);
-			li.setAttribute('data-value', self.domain_display);
-			li.className = "domain-name " + (self.collapsed ? 'hidden' : '');
-			li.innerHTML = '<span class="' + self.selectable + '">' + self.domain_display + '</span>';
-			%><%=li.outerHTML%>
-			<% if (!self.no_list) {
-				li = document.createElement('li');
-				li.id = Math.random().toString(36);
-				li.setAttribute('data-value', self.domain);
-				li.setAttribute('data-encoded', JB.utils.utf8_to_b64(self.domain));
-				li.className = "domain-rules";
-				li.innerHTML = '<ul></ul>';
-			%><%=li.outerHTML%>
-			<% } %>
-		</textarea>
-
-		<textarea id="tmpl_rule_item">
-			<li>
-				<div class="bubble bubble-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><div class="inner-bubble"></div></div>
-				<span class="<%=Settings.getItem('traverseRulesRules') ? 'selectable' : ''%> rule type-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><%=self.text%></span>
-				<% if (self.button !== null && self.rtype !== 4 && self.rtype !== 5) { %><input type="button" value="<%=self.button%>" class="<% if (self.is_delete) { %>delete<% } else { %>purple<% } %>" /><% } %>
-				<div class="divider"></div>
-			</li>
-		</textarea>
-		
-		<div id="poppy-arrow-settings"></div>
-		<div id="poppy-arrow-settings-secondary"></div>
-		<div id="select-arrow-settings"></div>
 	</div>
 </body>
 </html>

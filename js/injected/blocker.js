@@ -18,6 +18,7 @@ if (!window.MutationObserver)
 
 var BLOCKED_ELEMENTS = [],
 		FRAMED_PAGES = {},
+		FRAME_ID_ON_PARENT = null,
 		RECOMMEND_PAGE_RELOAD = false,
 		BROKEN = false;
 
@@ -89,9 +90,6 @@ var Page = {
 		state: new Store(TOKEN.PAGE, {
 			ignoreSave: true
 		}),
-		location: Utilities.Page.getCurrentLocation(),
-		host: Utilities.Page.isAbout ? document.location.href.substr(document.location.protocol.length) : (document.location.host || 'blank'),
-		protocol: document.location.protocol,
 		isFrame: !Utilities.Page.isTop
 	}
 };
@@ -150,13 +148,35 @@ var _ = (function () {
 var Handler = {
 	event: new EventListener,
 
+	setPageLocation: function () {
+		Page.info.location = Utilities.Page.getCurrentLocation();
+		Page.info.host = Utilities.Page.isAbout ? document.location.href.substr(document.location.protocol.length) : (document.location.host || 'blank'),
+		Page.info.protocol = document.location.protocol;
+	},
+
 	unloadedFrame: function () {
 		Page.send(true);
+	},
+
+	injectRequiredFiles: function () {
+		var style = document.createElement('link');
+
+		style.rel = 'stylesheet';
+		style.type = 'text/css';
+		style.href = ExtensionURL('css/injected.css');
+
+		Element.inject(style);
+
+		style.addEventListener('load', function (event) {
+			Handler.event.trigger('stylesheetLoaded', null, true);
+		}, true);
 	},
 
 	DOMContentLoaded: function () {
 		var i,
 				b;
+
+		Handler.injectRequiredFiles();
 
 		var scripts = document.getElementsByTagName('script'),
 				anchors = document.getElementsByTagName('a'),
@@ -192,7 +212,24 @@ var Handler = {
 	},
 
 	resetLocation: function (event) {
-		Page.info.location = Utilities.Page.getCurrentLocation();
+		Handler.setPageLocation();
+
+		Page.send();
+	},
+
+	hashChange: function (event) {
+		Handler.setPageLocation();
+
+		if (Page.info.isFrame)
+			window.parent.postMessage({
+				command: 'rerequestFrameURL',
+				data: {
+					id: FRAME_ID_ON_PARENT,
+					reason: {
+						hashDidChange: true
+					}
+				}
+			}, '*');
 
 		Page.send();
 	},
@@ -219,13 +256,32 @@ var Handler = {
 	},
 
 	blockedHiddenPageContent: function (event) {
-		window.top.postMessage({
+		GlobalPage.message('bounce', {
 			command: 'recommendPageReload'
-		}, '*');
+		});
 	}
 };
 
 var Element = {
+	createFromHTML: function (html) {
+		var div = document.createElement('div');
+
+		div.innerHTML = html;
+
+		return div.childNodes;
+	},
+
+	prependTo: function (container, element) {
+		if (container.firstChild)
+			container.insertBefore(element, container.firstChild);
+		else
+			container.appendChild(element);
+	},
+
+	inject: function (element) {
+		Element.prependTo(document.documentElement, element);
+	},
+
 	hide: function (kind, element, source) {
 		if (globalSetting.showPlaceholder[kind]) {
 				// Element.createPlaceholder(element, source);
@@ -284,6 +340,57 @@ var Element = {
 		}
 
 		return false;
+	},
+
+	afterCanLoad: function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
+		if (!canLoad.isAllowed)
+			BLOCKED_ELEMENTS.push(element);
+
+		if (!(meta instanceof Object))
+			meta = {};
+
+		if (element.nodeName._endsWith('FRAME')) {
+			meta.id = element.id;
+
+			element.setAttribute('data-jsbFrameURL', source);
+			element.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(source + 'FrameURL', true));
+		}
+
+		var actionStore = (canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked;
+
+		sourceHost = sourceHost || ((source && source.length) ? Utilities.URL.extractHost(source) : null);
+
+		if (['EMBED', 'OBJECT']._contains(element.nodeName))
+			meta.type = element.getAttribute('type');
+
+		if (excludeFromPage !== true || canLoad.action >= 0) {
+			actionStore.pushSource(kind, source, {
+				action: canLoad.action,
+				unblockable: !!event.unblockable,
+				meta: meta
+			});
+
+			actionStore.incrementHost(kind, sourceHost);
+		}
+
+		if (BLOCKABLE[element.nodeName][1] && !canLoad.isAllowed)
+			Element.hide(kind, element, source);
+
+		Page.send();
+	},
+
+	requestFrameURL: function (frame, reason) {
+		if (!(frame instanceof HTMLElement) || Utilities.Token.valid(frame.getAttribute('jsbShouldSkipLoadEventURLRequest'), 'ShouldSkipLoadEventURLRequest', true))
+			return;
+
+		frame.contentWindow.postMessage({
+			command: 'requestFrameURL',
+			data: {
+				id: frame.id,
+				reason: reason,
+				token: Utilities.Token.create(frame.id)
+			}
+		}, '*');
 	},
 
 	handle: {
@@ -391,30 +498,17 @@ var Element = {
 					});
 			}, 2000, [frame]);
 
-			function postMessage () {
-				if (postMessage.skip)
-					return postMessage.skip = false;
-
-				this.contentWindow.postMessage({
-					command: 'requestFrameURL',
-					data: {
-						id: this.id,
-						token: Utilities.Token.create(this.id)
-					}
-				}, '*');
-			};
-
-			postMessage.skip = false;
-
 			try {
 				if (frame && frame.contentWindow && frame.contentWindow.document && frame.contentWindow.document.readyState === 'complete') {
-					postMessage.skip = true;
+					frame.setAttribute('jsbShouldSkipLoadEventURLRequest', Utilities.Token.create('ShouldSkipLoadEventURLRequest'));
 
-					postMessage.call(frame);
+					Element.requestFrameURL(frame);
 				}
 			} catch (e) {}
 
-			frame.addEventListener('load', postMessage, false);
+			frame.addEventListener('load', function (event) {
+				Element.requestFrameURL(this);
+			}, false);
 		}
 	}
 };
@@ -491,46 +585,10 @@ var Resource = {
 					return canLoad.isAllowed;
 				}
 
-				if (!canLoad.isAllowed) {
-					if (event.preventDefault)
-						event.preventDefault();
+				if (!canLoad.isAllowed && event.preventDefault)
+					event.preventDefault();
 
-					BLOCKED_ELEMENTS.push(element);
-				}				
-
-				Utilities.setImmediateTimeout(function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
-					if (!meta)
-						meta = {};
-
-					if (element.nodeName._endsWith('FRAME')) {
-						meta.id = element.id;
-
-						element.setAttribute('data-jsbFrameURL', source);
-						element.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(source + 'FrameURL', true));
-					}
-
-					var actionStore = (canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked;
-
-					sourceHost = sourceHost || ((source && source.length) ? Utilities.URL.extractHost(source) : null);
-
-					if (['EMBED', 'OBJECT']._contains(element.nodeName))
-						meta.type = element.getAttribute('type');
-
-					if (excludeFromPage !== true || canLoad.action >= 0) {
-						actionStore.pushSource(kind, source, {
-							action: canLoad.action,
-							unblockable: !!event.unblockable,
-							meta: meta
-						});
-
-						actionStore.incrementHost(kind, sourceHost);
-					}
-
-					if (BLOCKABLE[element.nodeName][1] && !canLoad.isAllowed)
-						Element.hide(kind, element, source);
-
-					Page.send();
-				}, [meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind]);
+				Utilities.setImmediateTimeout(Element.afterCanLoad, [meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind]);
 
 				return canLoad.isAllowed;
 			}
@@ -549,6 +607,8 @@ var Resource = {
 	}
 };
 
+Handler.setPageLocation();
+
 var JSBSupport = GlobalCommand('canLoadResource', {
 	kind: 'disable',
 	strict: true,
@@ -560,18 +620,22 @@ var JSBSupport = GlobalCommand('canLoadResource', {
 
 if (!JSBSupport.isAllowed) {
 	globalSetting.disabled = true;
+
+	Page.info.disabled = {
+		action: JSBSupport.action
+	};
 	
-	setTimeout(function () {
-		Page.blocked.pushSource('disable', '*', {
-			action: JSBSupport.action
-		});
+	// setTimeout(function () {
+	// 	Page.blocked.pushSource('disable', '*', {
+	// 		action: JSBSupport.action
+	// 	});
 
-		Page.blocked.incrementHost('disable', '*');
+	// 	Page.blocked.incrementHost('disable', '*');
 
-		// LogDebug('disabled on this page: ' + Page.info.location);
+	// 	// LogDebug('disabled on this page: ' + Page.info.location);
 
-		Page.send(true);
-	}, 0);
+	// 	Page.send(true);
+	// }, 0);
 }
 
 document.addEventListener('visibilitychange', Handler.visibilityChange, true);
@@ -597,7 +661,7 @@ if (!globalSetting.disabled) {
 	document.addEventListener('keyup', Handler.keyUp, true);
 	document.addEventListener('beforeload', Resource.canLoad, true);
 
-	window.addEventListener('hashchange', Handler.resetLocation, true);
+	window.addEventListener('hashchange', Handler.hashChange, true);
 	window.addEventListener('popstate', Handler.resetLocation, true);
 
 	window.addEventListener('error', function (event) {
