@@ -440,7 +440,7 @@ var Element = {
 				}
 
 				if (globalSetting.confirmShortURL)
-					anchor.addEventListener('click', function () {
+					anchor.addEventListener('click', function (event) {
 						var target = this.getAttribute('target');
 
 						if (target !== '_blank' && target !== '_top' && !GlobalCommand('confirmShortURL', {

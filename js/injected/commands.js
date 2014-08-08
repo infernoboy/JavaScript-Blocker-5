@@ -151,27 +151,34 @@ var Command = function (type, event) {
 			});
 
 			if (data.callback) {
-				var callback = new DeepInject(null, data.callback),
-						name = 'TopCallback-' + data.originSourceName + Utilities.Token.generate();
+				if (result && typeof result.then == 'function')
+					var promise = result;
+				else
+					var promise = Promise.resolve(result);
 
-				callback.setArguments({
-					detail: {
-						origin: data.originSourceID,
-						result: result,
-						meta: data.meta.meta
-					}
+				promise.then(function (result) {
+					var callback = new DeepInject(null, data.callback),
+							name = 'TopCallback-' + data.originSourceName + Utilities.Token.generate();
+
+					callback.setArguments({
+						detail: {
+							origin: data.originSourceID,
+							result: result,
+							meta: data.meta.meta
+						}
+					});
+
+					UserScript.inject({
+						attributes: {
+							meta: {
+								name: name,
+								trueNamespace: name
+							},
+
+							script: callback.executable()
+						}
+					}, true);
 				});
-
-				UserScript.inject({
-					attributes: {
-						meta: {
-							name: name,
-							trueNamespace: name
-						},
-
-						script: callback.executable()
-					}
-				}, true);
 			}
 		},
 
@@ -401,7 +408,7 @@ var Command = function (type, event) {
 			GlobalPage.message('bounce', {
 				command: 'executeCommanderCallback',
 				detail: {
-					sourceID: detail.meta.sourceID,
+					sourceID: detail.meta.originSourceID || detail.meta.sourceID,
 					callbackID: detail.meta.callbackID,
 					result: detail.meta.result
 				}
@@ -466,7 +473,10 @@ var Command = function (type, event) {
 				meta: {
 					sourceID: detail.originSourceID,
 					callbackID: detail.meta.onXHRPromptInput,
-					result: false
+					result: {
+						isAllowed: false,
+						send: false
+					}
 				}
 			};
 
@@ -486,7 +496,7 @@ var Command = function (type, event) {
 			var subTitle = detail.viaFrame ? [_('via_frame')] : [];
 
 			if (detail.meta.synchronousInfoOnly)
-				subTitle.push(_('xhr.synchronous'), _(detail.meta.synchronousInfoIsAllowed ? 'xhr.sync_auto_allowed' : 'xhr.sync_auto_blocked'));
+				subTitle.push(_('xhr.synchronous'), _(detail.meta.synchronousInfoIsAllowed ? 'xhr.sync.auto_allowed' : 'xhr.sync.auto_blocked'));
 
 			subTitle.push(Page.info.location);
 
@@ -516,15 +526,70 @@ var Command = function (type, event) {
 					notification.primaryCloseButtonText(optionKeyPressed ? _('xhr.block_once_all') : _('xhr.block_once'));
 				});
 
+				notification.event.addEventListener(['allowXHR', 'blockXHR'], function () {
+					notification.hide();
+
+					if (response.meta.result.send) {
+						var send = [],
+								query = notification.element.querySelectorAll('.jsb-xhr-query-view');
+
+						for (var i = 0; i < query.length; i++)
+							send.push(query[i].querySelector('.jsb-xhr-query-param').getAttribute('data-param') + '=' + query[i].querySelector('.jsb-xhr-query-value').getAttribute('data-value'))
+
+						response.meta.result.send = send.join('&');
+					}
+				}, true);
+
 				notification.event.addEventListener('allowXHR', function () {
-					response.meta.result = true;
+					response.meta.result.isAllowed = true;
 
 					self.executeCommanderCallback(response);
 				}, true);
+
+				notification
+					.addEventListener('dblclick', '.jsb-xhr-query-view', function (notification, event) {
+						notification.bringForward();
+
+						var queryModify = this.nextElementSibling;
+						
+						this.classList.add('jsb-hidden');
+
+						queryModify.classList.remove('jsb-hidden');
+
+						try {
+							queryModify.querySelector('.' + event.target.classList[0] + '-modify').focus();
+						} catch (error) {}
+					})
+					.addEventListener('keypress', '.jsb-xhr-query-modify input', function (notification, event) {
+						if (event.keyCode == 3 || event.keyCode === 13) {
+							this.blur();
+
+							response.meta.result.send = true;
+
+							var queryPartFor,
+									queryPart;
+
+							var inputs = this.parentNode.querySelectorAll('input'),
+									queryView = this.parentNode.previousElementSibling;
+
+							for (var i = 0; i < inputs.length; i++) {
+								queryPartFor = inputs[i].getAttribute('data-for');
+								queryPart = queryView.querySelector('*[' + queryPartFor + ']');
+
+								queryPart.innerText = inputs[i].value;
+
+								queryPart.setAttribute(queryPartFor, encodeURIComponent(inputs[i].value));
+							}
+
+							this.parentNode.classList.add('jsb-hidden');
+
+							queryView.classList.remove('jsb-hidden');
+						}
+					});
 			}
 
 			notification.event.addEventListener('blockXHR', function () {
-				response.meta.result = false;
+				response.meta.result.isAllowed = false;
 
 				self.executeCommanderCallback(response);
 			}, true);
@@ -562,14 +627,11 @@ var Command = function (type, event) {
 			var self = this,
 					notification = new PageNotification(detail.meta);
 
-			Handler.event.addEventListener('stylesheetLoaded', function () {
-				detail.result = notification.element.id;
-				detail.callbackID = detail.meta.onNotificationVisible;
-
-				self.executeCommanderCallback({
-					meta: detail
-				});
-			}, true);
+			return new Promise(function (resolve, reject) {				
+				Handler.event.addEventListener('stylesheetLoaded', function () {
+					resolve(notification.element.id);
+				}, true);
+			});
 		},
 
 		canLoadResource: function (detail) {

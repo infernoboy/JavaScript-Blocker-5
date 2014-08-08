@@ -48,14 +48,21 @@ Special.specials = {
 	},
 
 	installUserScriptPrompt: function () {
-		var onNotificationVisible = registerCallback(function (notificationID) {
-			var notification = document.getElementById(notificationID),
+		messageTopExtension('notification', {
+			title: _localize('user_script'),
+			subTitle: window.location.href,
+			body: messageExtensionSync('template.create', {
+				template: 'injected',
+				section: 'install-user-script-prompt'
+			})
+		}, function (detail) {
+			var notification = document.getElementById(detail.result),
 					notificationBody = notification.querySelector('.jsb-notification-body');
 
 			notification.querySelector('#jsb-install-user-script').addEventListener('click', function (event) {
 				this.disabled = true;
 
-				this.value = messageExtensionSync('localize', { string: 'user_script.adding' });
+				this.value = _localize('user_script.adding');
 
 				setTimeout(function () {
 					messageExtension('installUserScriptFromURL', {
@@ -65,21 +72,12 @@ Special.specials = {
 
 						p.classList.add('jsb-info');
 
-						p.innerHTML = result === true ? messageExtensionSync('localize', { string: 'user_script.add_success' }) : result;
+						p.innerHTML = result === true ? _localize('user_script.add_success') : result;
 
 						notificationBody.innerHTML = p.outerHTML;
 					});
 				}, 0);
 			}, true);
-		});
-
-		messageTopExtension('notification', {
-			onNotificationVisible: onNotificationVisible,
-			title: messageExtensionSync('localize', { string: 'user_script' }),
-			body: messageExtensionSync('template.create', {
-				template: 'injected',
-				section: 'install-user-script-prompt'
-			})
 		});
 	},
 
@@ -95,8 +93,8 @@ Special.specials = {
 				string = string.toString ? string.toString() : '';
 
 			messageTopExtension('notification', {
-				title: messageExtensionSync('localize', { string: 'Alert' }),
-				subTitle: isFrame ? messageExtensionSync('localize', { string: 'via_frame' }) + ' - ' + window.location.href : '',
+				title: _localize('Alert'),
+				subTitle: (isFrame ? _localize('via_frame') + ' - ' : '') + window.location.href,
 				body: messageExtensionSync('template.create', {
 					template: 'injected',
 					section: 'javascript-alert',
@@ -204,10 +202,28 @@ Special.specials = {
 				supportedMethods = ['get', 'post', 'put'],
 				storeToken = Math.random().toString(36);
 
-		function performAction (request, info, args) {
+		function performAction (request, info, args, send) {
 			var xhrError;
 
-			var pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
+			var detail = request[storeToken],
+					newRequest = request,
+					pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
+
+			if (send) {
+				if (detail.method === 'post')
+					args[0] = send;
+				else if (detail.method === 'get') {
+					var anchor = document.createElement('a');
+
+					anchor.href = detail.path;
+
+					var newPath = anchor.origin + anchor.pathname + '?' + send;
+
+					info.source = newPath;
+
+					XHR.open.call(request, 'GET', newPath);
+				}
+			}
 
 			if (info.canLoad.isAllowed) {
 				pageAction = 'addAllowedItem';
@@ -215,7 +231,7 @@ Special.specials = {
 				request[storeToken].resendAllowed = true;
 
 				try {
-					XHR.send.apply(request, args);
+					XHR.send.apply(newRequest, args);
 				} catch (error) {
 					xhrError = error;
 				}
@@ -331,13 +347,13 @@ Special.specials = {
 			var self = this,
 					args = arguments;
 
-			var onXHRPromptInput = registerCallback(function (isAllowed) {
+			var onXHRPromptInput = registerCallback(function (result) {
 				info.canLoad = {
-					action: isAllowed ? -5 : -6,
-					isAllowed: isAllowed
+					action: result.isAllowed ? -5 : -6,
+					isAllowed: result.isAllowed
 				};
 
-				return performAction(self, info, args);
+				return performAction(self, info, args, result.send);
 			});
 
 			if (canLoad.action < 0 && shouldShowPrompt && !detail.sync)
@@ -346,22 +362,15 @@ Special.specials = {
 					meta: info
 				});
 			else if (detail.sync) {
-				var _ = function (string, args) {
-					return messageExtensionSync('localize', {
-						string: string,
-						args: args
-					});
-				};
-
-				if (JSB.value.value.synchronousMethod === SYNCHRONOUS_ASK) {
-					var isAllowed = confirm(_('xhr.sync_prompt', [
-						'Synchronous',
-						_(kind + '.prompt.title'),
-						info.source,
-						info.meta ? JSON.stringify(info.meta.data, null, 2) : ''
+				if (JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ASK) {
+					var isAllowed = confirm(_localize('xhr.sync.prompt', [
+						_localize(kind + '.prompt.title') + ' - ' + _localize('xhr.synchronous'),
+						window.location.href,
+						info.source.substr(0, info.source.indexOf('?')),
+						info.meta ? JSON.stringify(info.meta.data, null, 1) : ''
 					]));
 				} else {
-					var isAllowed = JSB.value.value.synchronousMethod === SYNCHRONOUS_ALLOW;
+					var isAllowed = JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ALLOW;
 
 					if (JSB.value.value.showSynchronousXHRNotification)
 						messageTopExtension('showXHRPrompt', {
@@ -372,7 +381,9 @@ Special.specials = {
 						});
 				}
 
-				executeLocalCallback(onXHRPromptInput, isAllowed);
+				executeLocalCallback(onXHRPromptInput, {
+					isAllowed: isAllowed
+				});
 			} else
 				performAction(this, info, arguments);
 		};
@@ -441,15 +452,10 @@ Special.specials = {
 			path: 'html/canvasFingerprinting.html#'
 		});
 
-		var confirmString = messageExtensionSync('localize', {
-			string: JSB.data.safariBuildVersion < 537 ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt'
-		});
+		var confirmString = _localize(JSB.data.safariBuildVersion < 537 ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt');
 
 		if (shouldAskOnce)
-			confirmString += "\n\n" + messageExtensionSync('localize', {
-				string: JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent',
-				args: [window.location.host]
-			});
+			confirmString += "\n\n" + _localize(JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent', [window.location.host]);
 
 		function protection (dataURL) {
 			var url = baseURL + dataURL;

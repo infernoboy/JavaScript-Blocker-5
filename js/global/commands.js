@@ -153,7 +153,7 @@ function Command (command, data, event) {
 				disabled: false,
 				debugMode: true,
 
-				noAnimations: !Settings.getItem('useAnimations'),
+				useAnimations: Settings.getItem('useAnimations'),
 				enabledKinds: Settings.getItem('enabledKinds'),
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
@@ -485,6 +485,6 @@ Command.messageReceived = function (event) {
 	return Command(command, event.message ? (event.message.data === undefined ? event.message : event.message.data) : null, event);
 };
 
-var globalSetting = Command('globalSetting', null, {});
+window.globalSetting = Command('globalSetting', null, {});
 
 Events.addApplicationListener('message', Command.messageReceived);

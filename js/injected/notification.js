@@ -49,11 +49,11 @@ function PageNotification (detail) {
 
 	this.bindEvents();
 
-	this.element.style.setProperty('z-index', PageNotification.__baseZIndex - PageNotification.all().length, 'important');
+	this.element.style.setProperty('z-index', PageNotification.__baseZIndex - PageNotification.visibleOrderIDs().length, 'important');
 
 	this.element.setAttribute('data-originalZIndex', this.element.style.zIndex);
 
-	this.shouldRestoreLayering = true;
+	this.isEntering = true;
 
 	this.event = new EventListener;
 
@@ -68,7 +68,8 @@ function PageNotification (detail) {
 
 		this.bringForward();
 
-		PageNotification.shift();
+		this.fullyAlignedTop = 0;
+		this.top = 0;
 
 		// this.element.classList.remove('jsb-this-warped');
 
@@ -76,9 +77,7 @@ function PageNotification (detail) {
 
 		this.element.style.setProperty('right', '0px');
 
-		this.fullyAlignedTop = 0;
-		
-		this.top = 0;
+		PageNotification.shift();
 	}.bind(this), true);
 };
 
@@ -110,12 +109,13 @@ PageNotification.keyStateChanged = function (event) {
 		PageNotification.notifications[notificationID].event.trigger('optionKeyStateChange', event.altKey);
 };
 
-PageNotification.shift = function (event) {
-	var notification;
+PageNotification.shift = function () {
+	var notification,
+			previousNotification;
 
 	var fullOffset = 0,
 			stackOffset = 0,
-			notificationIDs = PageNotification.all();
+			notificationIDs = PageNotification.visibleOrderIDs();
 
 	for (var i = 0; i < notificationIDs.length; i++) {
 		notification = PageNotification.notifications[notificationIDs[i]];
@@ -130,6 +130,13 @@ PageNotification.shift = function (event) {
 		notification.element.classList.toggle('jsb-notification-stacked', notification.stacked);
 
 		if (notification.stacked) {
+			if (notification.isEntering) {
+				notification.restoreLayering();
+
+				if (previousNotification)
+					previousNotification.restoreLayering();
+			}
+
 			notification.top = stackOffset;
 
 			stackOffset += PageNotification.__stackOffset;
@@ -139,6 +146,8 @@ PageNotification.shift = function (event) {
 
 			notification.top = notification.fullyAlignedTop;
 		}
+
+		previousNotification = notification;
 	}
 };
 
@@ -169,7 +178,7 @@ PageNotification.willCloseAll = function (should) {
 	}
 };
 
-PageNotification.all = function () {
+PageNotification.visibleOrderIDs = function () {
 	var keys = Object.keys(PageNotification.notifications);
 
 	keys.reverse();
@@ -180,7 +189,7 @@ PageNotification.all = function () {
 PageNotification.relayer = function () {
 	var notification;
 
-	var notificationIDs = PageNotification.all();
+	var notificationIDs = PageNotification.visibleOrderIDs();
 
 	for (var i = 0; i < notificationIDs.length; i++) {
 		notification = PageNotification.notifications[notificationIDs[i]];
@@ -193,17 +202,6 @@ PageNotification.relayer = function () {
 	}
 };
 
-PageNotification.lastUnstackedNotification = function () {
-	var notificationIDs = PageNotification.all();
-
-	notificationIDs.reverse();
-
-	for (var i = 0; i < notificationIDs.length; i++)
-		if (!PageNotification.notifications[notificationIDs[i]].stacked && !PageNotification.notifications[notificationIDs[i]].hidden)
-			return PageNotification.notifications[notificationIDs[i]];
-
-	return null;
-};
 
 Object.defineProperties(PageNotification.prototype, {
 	top: {
@@ -215,7 +213,7 @@ Object.defineProperties(PageNotification.prototype, {
 		set: function (value) {
 			this.element.setAttribute('data-top', value);
 
-			if (!this.forward)
+			if (!this.forward || this.isEntering)
 				this.element.style.top = value + 'px';
 		}
 	},
@@ -254,8 +252,8 @@ PageNotification.prototype.events = {
 		webkitTransitionEnd: function (notification, event) {
 			if (event.propertyName === 'opacity' && this.style.opacity === '0')
 				notification.__remove();
-			else if (notification.shouldRestoreLayering && event.propertyName === 'right') {
-				notification.shouldRestoreLayering = false;
+			else if (notification.isEntering && event.propertyName === 'right') {
+				notification.isEntering = false;
 
 				notification.element.classList.remove('jsb-notification-entering');
 

@@ -12,7 +12,7 @@ globalPage.Template = Template;
 
 // Allow direct access to required variables contained within the global page.
 (function () {
-	var required = ['jQuery', 'console', 'globalSetting', 'Settings', 'Promise', 'Store'];
+	var required = ['jQuery', 'console', 'Settings', 'Promise', 'Store'];
 
 	for (var i = 0; i < required.length; i++)
 		window[required[i]] = globalPage[required[i]];

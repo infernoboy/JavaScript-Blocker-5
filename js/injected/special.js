@@ -252,6 +252,13 @@ var Special = {
 			});
 		},
 
+		_localize: function (string, args) {
+			return messageExtensionSync('localize', {
+				string: string,
+				args: args
+			});
+		},
+
 		JSBCustomEvent: function (name, params) {
 			params = params || {
 				bubbles: false,

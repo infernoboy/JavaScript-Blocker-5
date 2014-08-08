@@ -15,6 +15,13 @@ EventListener.prototype.listeners = function (name) {
 };
 
 EventListener.prototype.addEventListener = function (name, fn, once) {
+	if (Array.isArray(name)) {
+		for (var i = 0; i < name.length; i++)
+			this.addEventListener(name[i], fn, once);
+
+		return;
+	}
+
 	if (typeof fn !== 'function')
 		throw new TypeError(fn + ' is not a function.');
 
@@ -30,6 +37,13 @@ EventListener.prototype.addEventListener = function (name, fn, once) {
 };
 
 EventListener.prototype.addMissingEventListener = function (name, fn, once) {
+	if (Array.isArray(name)) {
+		for (var i = 0; i < name.length; i++)
+			this.addMissingEventListener(name[i], fn, once);
+
+		return;
+	}
+
 	var listeners = this.listeners(name);
 
 	for (var i = 0; i < listeners.fns.length; i++)

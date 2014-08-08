@@ -938,9 +938,16 @@ var Extension = {
 				return this.replace(new RegExp('(\\' + ['/','.','*','+','?','|','$','^','(',')','[',']','{','}','\\'].join('|\\') + ')', 'g'), '\\$1');
 			}
 		},
+
 		_escapeHTML: {
 			value: function () {
 				return this.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+			}
+		},
+
+		_entityQuotes: {
+			value: function () {
+				return this.replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 			}
 		},
 

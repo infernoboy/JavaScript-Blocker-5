@@ -583,6 +583,9 @@ Settings.settings = {
 					extendOptions: [['ask', 'Ask when neccessary']],
 					help: 'alwaysBlock help',
 					default: 'blacklist',
+					onChange: function () {
+						Special.__enabled = null;
+					},
 					subSettings: [{
 						when: {
 							hide: true,
@@ -609,6 +612,9 @@ Settings.settings = {
 								label: 'Synchronous XHR requests:',
 								options: [[0, 'Automatically allow'], [1, 'Automatically block'], [2, 'Invasively ask']],
 								default: 0,
+								onChange: function () {
+									Special.__enabled = null;
+								},
 								subSettings: [{
 									when: {
 										hide: true,
@@ -626,7 +632,10 @@ Settings.settings = {
 										props: {
 											type: 'boolean',
 											label: 'Show synchronous XHR notifications',
-											default: true
+											default: true,
+											onChange: function () {
+												Special.__enabled = null;
+											}
 										}
 									}]
 								}]
@@ -981,7 +990,7 @@ Settings.settings = {
 				default: function () {
 					return Settings.getItem('enabledKinds', 'xhr') && {
 						alwaysBlock: Settings.getItem('alwaysBlock', 'xhr'),
-						synchronousMethod: Settings.getItem('synchronousXHRMethod'),
+						synchronousXHRMethod: Settings.getItem('synchronousXHRMethod'),
 						showSynchronousXHRNotification: Settings.getItem('showSynchronousXHRNotification')
 					};
 				}

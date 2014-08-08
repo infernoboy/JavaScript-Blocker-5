@@ -74,6 +74,13 @@ var Settings = {
 			Settings.map[event.key].props.onChange(event.oldValue, event.newValue);
 	},
 
+	anySettingChanged: function (event) {
+		if (Utilities.Page.isGlobal && event.key in window.globalSetting)
+			setTimeout(function () {
+				window.globalSetting = Command('globalSetting', null, {});
+			});
+	},
+
 	all: function () {
 		var all = {};
 
@@ -180,9 +187,12 @@ var Settings = {
 
 			if (storeSetting.props.onChange)
 				storeSetting.props.onChange(value);
-		} else if (this.__validate(type, value, options, setting.props.otherOption, setting.props.extendOptions))
+		} else if (this.__validate(type, value, options, setting.props.otherOption, setting.props.extendOptions)) {
+			if (setting.props.onChange)
+				setting.props.onChange(value);
+			
 			this.__method('setItem', settingKey, value);
-		else
+		} else
 			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
 	},
 
@@ -242,3 +252,5 @@ var Settings = {
 Settings.__stores = new Store('StoreSettings', {
 	save: true
 });
+
+Events.addSettingsListener(Settings.anySettingChanged);

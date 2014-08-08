@@ -1,5 +1,5 @@
 <noscript id="notification">
-	<div class="jsb-notification <%=globalSetting.noAnimations ? 'jsb-no-animations' : ''%>" id="jsb-notification-<%=self.id || Utilities.Token.generate()%>">
+	<div class="jsb-notification <%=!globalPage.globalSetting.useAnimations ? 'jsb-no-animations' : ''%>" id="jsb-notification-<%=self.id || Utilities.Token.generate()%>">
 		<div class="jsb-notification-toggle-layering"></div>
 		<div class="jsb-notification-inner">
 			<div class="jsb-notification-close-container">
@@ -7,7 +7,7 @@
 			</div>
 			<div class="jsb-notification-title jsb-info"><%=self.title%></div>
 			<% if (self.subTitle) { %>
-				<div class="jsb-notification-sub-title"><%=self.subTitle._lcut(100, '&hellip;')%></div>
+				<div class="jsb-notification-sub-title"><%=self.subTitle.substr(0, 100)%></div>
 			<% } %>
 			<div class="jsb-notification-body"><%=self.body%></div>
 		</div>
@@ -55,18 +55,26 @@
 		<% var sourceOrigin = Utilities.URL.origin(self.info.source),
 					locationOrigin = Utilities.URL.origin(self.info.pageLocation);
 		%>
-		<div class="jsb-info">
+		<div class="jsb-info jsb-xhr-path">
 			<div class="jsb-label jsb-bold jsb-xhr-part-label">Path</div>
 			<span class="jsb-indented"><%=((self.info.isFrame || sourceOrigin !== locationOrigin) ? Utilities.URL.origin(self.info.source) : '') + Utilities.URL.extractPath(self.info.source)%></span>
 		</div>
 		<% if (Utilities.typeOf(self.info.meta) === 'object' && !self.info.meta.data._isEmpty()) { %>
-			<div class="jsb-info">
-				<div class="jsb-label jsb-bold jsb-xhr-part-label">Query</div>
-				<% for (var param in self.info.meta.data) { %>
-					<span class="jsb-indented"><span class="jsb-xhr-query-param"><%=param._escapeHTML()%></span>: <%=self.info.meta.data[param] ? self.info.meta.data[param]._escapeHTML() : null%></span>
-					<br />
-				<% } %>
-			</div>
+		<div class="jsb-info jsb-xhr-query">
+			<div class="jsb-label jsb-bold jsb-xhr-part-label">Query</div>
+			<% for (var param in self.info.meta.data) { %>
+				<span class="jsb-indented">
+					<span class="jsb-xhr-query-view">
+						<span class="jsb-xhr-query-param" data-param="<%=encodeURIComponent(param)%>"><%=param._escapeHTML()%></span>: <span class="jsb-xhr-query-value" data-value="<%=encodeURIComponent(self.info.meta.data[param])%>"><%=self.info.meta.data[param] ? self.info.meta.data[param]._escapeHTML() : null%></span>
+					</span>
+					<span class="jsb-xhr-query-modify jsb-hidden">
+						<input type="text" class="jsb-xhr-query-param-modify" data-for="data-param" value="<%=param._entityQuotes()%>" />:
+						<input type="text" class="jsb-xhr-query-value-modify" data-for="data-value" value="<%=typeof self.info.meta.data[param] === 'string' ? self.info.meta.data[param]._entityQuotes() : self.info.meta.data[param]%>" />
+					</span>
+				</span>
+				<br />
+			<% } %>
+		</div>
 		<% } %>
 	</div>
 </noscript>

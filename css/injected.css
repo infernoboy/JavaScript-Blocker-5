@@ -7,7 +7,6 @@
 	overflow: visible !important;
 	right: -356px;
 	margin-right: 8px !important;
-	-webkit-transform: perspective(0) rotateX(0);
 	-webkit-transition: right 0.35s ease-in-out, top 0.35s ease-in-out, opacity 0.3s ease-out, -webkit-transform 0.35s ease-in !important;
 }
 
@@ -24,6 +23,8 @@
 		height: auto !important;
 		box-shadow: none !important;
 		padding: 0 !important;
+		-webkit-font-smoothing: subpixel-antialiased !important;
+		line-height: 1.2 !important;
 	}
 
 	.jsb-notification input[disabled],
@@ -40,7 +41,7 @@
 		background: #fff !important;
 		border: none !important;
 		-webkit-border-radius: 4px !important;
-		color: #084fd5 !important;
+		color: #0069de !important;
 		text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
 		border: 1px solid rgb(200, 200, 200) !important;
 		border-bottom-color: rgb(168, 168, 168) !important;
@@ -49,6 +50,7 @@
 		cursor: default !important;
 		padding: 3px 8px !important;
 		border-radius: 5px !important;
+		line-height: 1 !important;
 	}
 
 	.jsb-notification input:not([type="checkbox"]):not([type="radio"]):focus,
@@ -74,10 +76,10 @@
 
 	.jsb-notification input[type="button"]:active,
 	.jsb-notification button:not(.delete):active {
-		background: #f3f3f3 !important;
-		border-color: rgb(168, 168, 168) !important;
+		background: #f5f5f5 !important;
+		border-color: rgb(200, 200, 200) !important;
 		-webkit-animation: none !important;
-		text-shadow: 0 0 0 rgba(0, 0, 0, 0.5) !important;
+		text-shadow: 0 0 0 rgba(0, 0, 0, 0.4) !important;
 	}
 
 	.jsb-notification input[type="text"],
@@ -94,7 +96,7 @@
 		border-bottom-color: #a7c1d9 !important;
 		box-shadow: none !important;
 		color: #111 !important;
-		font-size: 8pt !important;
+		font-size: 9pt !important;
 	}
 
 	.jsb-notification input[type="text"]:focus,
@@ -159,7 +161,7 @@
 			margin: 0 !important;
 			color: #222 !important;
 			box-shadow: none !important;
-			text-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) !important;
+			text-shadow: none !important;
 		}
 
 			.jsb-notification input.jsb-notification-close:active {
@@ -199,8 +201,17 @@
 		font-weight: bold !important;
 	}
 
+	.jsb-notification .jsb-xhr-query-param-modify {
+		font-weight: bold !important;
+		width: 90px !important;
+	}
+
+	.jsb-notification .jsb-xhr-query-value-modify {
+		width: 205px !important;
+	}
+
 	.jsb-notification .jsb-xhr-part-label {
-		margin-bottom: 3px !important;
+		margin-bottom: 2px !important;
 	}
 
 	.jsb-notification ::-webkit-scrollbar {
@@ -249,7 +260,8 @@ input.jsb-color-allow,
 }
 
 .jsb-color-block,
-input.jsb-color-block {
+input.jsb-color-block,
+.jsb-notification .jsb-color-block  {
 	color: #920101 !important;
 }
 
@@ -258,7 +270,6 @@ input.jsb-color-block {
 	margin: 4px 0 6px !important;
 	padding-bottom: 1px !important;
 	overflow: auto !important;
-	line-height: 1.3 !important;
 }
 
 .jsb-no-animations,
