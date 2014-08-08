@@ -43,6 +43,8 @@
 	"xhr.sync_auto_allowed": "automatically allowed",
 	"xhr.sync_auto_blocked": "automatically blocked",
 	"xhr.allow_once": "Allow Once",
+	"xhr.allow_once_all": "Allow All Once",
 	"xhr.block_once": "Block Once",
-	"xhr.add_rule": "Add Rule&hellip;"
+	"xhr.block_once_all": "Block All Once",
+	"xhr.create_rule": "Create Rule&hellip;"
 }

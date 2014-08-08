@@ -488,6 +488,8 @@ var Command = function (type, event) {
 			if (detail.meta.synchronousInfoOnly)
 				subTitle.push(_('xhr.synchronous'), _(detail.meta.synchronousInfoIsAllowed ? 'xhr.sync_auto_allowed' : 'xhr.sync_auto_blocked'));
 
+			subTitle.push(Page.info.location);
+
 			var notification = new PageNotification({
 				id: notificationID,
 				title: _(meta.kind + '.prompt.title'),
@@ -496,39 +498,64 @@ var Command = function (type, event) {
 			});
 
 			if (!detail.meta.synchronousInfoOnly) {
-				notification.closeButtonText(_('xhr.block_and_close'));
+				notification.primaryCloseButtonText(_('xhr.block_once'));
 
-				notification
-					.addEventListener('click', '.jsb-xhr-rule-cancel', function (notification) {
-						notification.restoreLayering();
+				var allowOnceButton = notification.addCloseButton(_('xhr.allow_once'), function (notification) {
+					if (notification.willCloseAll) {
+						for (var notificationID in PageNotification.notifications)
+							PageNotification.notifications[notificationID].event.trigger('allowXHR');
+					} else
+						notification.event.trigger('allowXHR');
+				});
 
-						notification.element.querySelector('.jsb-xhr-add-rule-prompt').classList.add('jsb-hidden');
-						notification.element.querySelector('.jsb-xhr-prompt').classList.remove('jsb-hidden');
-					})
-					.addEventListener('click', '.jsb-notification-close', function (notification) {
-						self.executeCommanderCallback(response);
-					})
-					.addEventListener('change', '.jsb-xhr-method', function (notification) {
-						var value = this.options[this.selectedIndex].value;
+				allowOnceButton.classList.add('jsb-color-allow');
 
-						this.classList.toggle('jsb-color-allow', value === '1');
-						this.classList.toggle('jsb-color-block', value === '0');
-					})
-					.addEventListener('click', '.jsb-xhr-action', function (notification) {
-						if (this.classList.contains('jsb-xhr-once')) {
-							response.meta.result = this.getAttribute('data-method') === '1';
+				notification.event.addEventListener('optionKeyStateChange', function (optionKeyPressed) {
+					allowOnceButton.value = optionKeyPressed ? _('xhr.allow_once_all') : _('xhr.allow_once');
 
-							self.executeCommanderCallback(response);
+					notification.primaryCloseButtonText(optionKeyPressed ? _('xhr.block_once_all') : _('xhr.block_once'));
+				});
 
-							notification.hide();;
-						} else {
-							notification.bringForward();
+				notification.event.addEventListener('allowXHR', function () {
+					response.meta.result = true;
 
-							notification.element.querySelector('.jsb-xhr-add-rule-prompt').classList.remove('jsb-hidden');
-							notification.element.querySelector('.jsb-xhr-prompt').classList.add('jsb-hidden');
-						}
-					});
+					self.executeCommanderCallback(response);
+				}, true);
 			}
+
+			notification.event.addEventListener('blockXHR', function () {
+				response.meta.result = false;
+
+				self.executeCommanderCallback(response);
+			}, true);
+
+			notification.onPrimaryClose(function (notification) {
+				if (notification.willCloseAll) {
+					for (var notificationID in PageNotification.notifications)
+						PageNotification.notifications[notificationID].event.trigger('blockXHR');
+				} else
+					notification.event.trigger('blockXHR');
+			});
+
+			notification
+				.addEventListener('click', '.jsb-xhr-rule-cancel', function (notification) {
+					notification.restoreLayering();
+
+					notification.element.querySelector('.jsb-xhr-create-rule-prompt').classList.add('jsb-hidden');
+					notification.element.querySelector('.jsb-xhr-prompt').classList.remove('jsb-hidden');
+				})
+				.addEventListener('change', '.jsb-xhr-rule-action', function (notification) {
+					var value = this.options[this.selectedIndex].value;
+
+					this.classList.toggle('jsb-color-allow', value === '1');
+					this.classList.toggle('jsb-color-block', value === '0');
+				})
+				.addEventListener('click', '.jsb-xhr-create-rule', function (notification) {
+					notification.bringForward();
+
+					notification.element.querySelector('.jsb-xhr-create-rule-prompt').classList.remove('jsb-hidden');
+					notification.element.querySelector('.jsb-xhr-prompt').classList.add('jsb-hidden');
+				});
 		},
 
 		notification: function (detail) {

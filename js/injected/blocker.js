@@ -165,7 +165,7 @@ var Handler = {
 		style.type = 'text/css';
 		style.href = ExtensionURL('css/injected.css');
 
-		Element.inject(style);
+		document.documentElement.appendChild(style);
 
 		style.addEventListener('load', function (event) {
 			Handler.event.trigger('stylesheetLoaded', null, true);

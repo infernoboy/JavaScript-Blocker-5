@@ -45,7 +45,7 @@ function PageNotification (detail) {
 	// 	this.element.style.right = '0px';
 	// }
 
-	this.closeButtonText(_('Close'));
+	this.primaryCloseButtonText(_('Close'));
 
 	this.bindEvents();
 
@@ -54,6 +54,10 @@ function PageNotification (detail) {
 	this.element.setAttribute('data-originalZIndex', this.element.style.zIndex);
 
 	this.shouldRestoreLayering = true;
+
+	this.event = new EventListener;
+
+	this.closeContainer = this.element.querySelector('.' + PageNotification.__closeButtonsContainerClass);
 
 	Handler.event.addEventListener('stylesheetLoaded', function () {
 		Element.prependTo(PageNotification.__container, this.element);
@@ -68,7 +72,11 @@ function PageNotification (detail) {
 
 		// this.element.classList.remove('jsb-this-warped');
 
+		this.element.classList.add('jsb-notification-entering');
+
 		this.element.style.setProperty('right', '0px');
+
+		this.fullyAlignedTop = 0;
 		
 		this.top = 0;
 	}.bind(this), true);
@@ -76,9 +84,9 @@ function PageNotification (detail) {
 
 
 PageNotification.__containerID = 'jsb-notification-container';
+PageNotification.__closeButtonsContainerClass = 'jsb-notification-close-container';
 PageNotification.__offset = -14;
-PageNotification.__stackOffsetPercentage = .15;
-PageNotification.__stackMinimumOffset = 24;
+PageNotification.__stackOffset = 24;
 PageNotification.__baseZIndex = 999999909;
 PageNotification.__forwardedZIndex = 999999959
 
@@ -96,23 +104,68 @@ PageNotification.createContainer = function () {
 };
 
 PageNotification.keyStateChanged = function (event) {
-	PageNotification.setShouldCloseAll(event.altKey);
+	PageNotification.willCloseAll(event.altKey);
+
+	for (var notificationID in PageNotification.notifications)
+		PageNotification.notifications[notificationID].event.trigger('optionKeyStateChange', event.altKey);
 };
 
 PageNotification.shift = function (event) {
-	PageNotification.fullAlign();
-	PageNotification.adjustStack();
+	var notification;
+
+	var fullOffset = 0,
+			stackOffset = 0,
+			notificationIDs = PageNotification.all();
+
+	for (var i = 0; i < notificationIDs.length; i++) {
+		notification = PageNotification.notifications[notificationIDs[i]];
+
+		if (notification.hidden)
+			continue;
+
+		notification.fullyAlignedTop = fullOffset;
+
+		notification.stacked = notification.shouldStack();
+
+		notification.element.classList.toggle('jsb-notification-stacked', notification.stacked);
+
+		if (notification.stacked) {
+			notification.top = stackOffset;
+
+			stackOffset += PageNotification.__stackOffset;
+		} else {
+			stackOffset = fullOffset + PageNotification.__stackOffset;
+			fullOffset += notification.height + PageNotification.__offset;
+
+			notification.top = notification.fullyAlignedTop;
+		}
+	}
 };
 
-PageNotification.setShouldCloseAll = function (should) {
+PageNotification.windowResized = function (event) {
+	var notification;
+
+	PageNotification.shift();
+
+	for (var notificationID in PageNotification.notifications) {
+		notification = PageNotification.notifications[notificationID];
+
+		if (notification.forward) {
+			notification.restoreLayering();
+			notification.bringForward();
+		}
+	}
+};
+
+PageNotification.willCloseAll = function (should) {
 	var notification;
 
 	for (var notificationID in PageNotification.notifications) {
 		notification = PageNotification.notifications[notificationID];
 
-		notification.closeButtonText(should ? 'Close All' : notification.element.getAttribute('data-closeButtonText'), should);
+		notification.primaryCloseButtonText(should ? 'Close All' : notification.element.getAttribute('data-primaryCloseButtonText'), should);
 
-		notification.shouldCloseAll = should;
+		notification.willCloseAll = should;
 	}
 };
 
@@ -140,48 +193,6 @@ PageNotification.relayer = function () {
 	}
 };
 
-PageNotification.fullAlign = function () {
-	var notification;
-
-	var offset = 0,
-			notificationIDs = PageNotification.all();
-
-	for (var i = 0; i < notificationIDs.length; i++) {
-		notification = PageNotification.notifications[notificationIDs[i]];
-
-		if (notification.hidden)
-			continue;
-
-		notification.top = offset;
-		notification.stacked = notification.shouldStack();
-
-		notification.element.classList.toggle('jsb-notification-stacked', notification.stacked);
-
-		offset += notification.height + PageNotification.__offset;
-	}
-};
-
-PageNotification.adjustStack = function () {
-	var notification;
-
-	var offset = 0,
-			notificationIDs = PageNotification.all(),
-			lastUnstackedNotification = PageNotification.lastUnstackedNotification();
-
-	// var stackOffset = lastUnstackedNotification ? Math.floor(lastUnstackedNotification.height * PageNotification.__stackOffsetPercentage) : 0;
-
-	for (var i = 0; i < notificationIDs.length; i++) {
-		notification = PageNotification.notifications[notificationIDs[i]];
-
-		if (!notification.stacked || notification.hidden)
-			continue;
-
-		offset += PageNotification.__stackMinimumOffset; //Math.max(PageNotification.__stackMinimumOffset, stackOffset);
-
-		notification.top = lastUnstackedNotification.top + offset;
-	}
-};
-
 PageNotification.lastUnstackedNotification = function () {
 	var notificationIDs = PageNotification.all();
 
@@ -204,6 +215,16 @@ Object.defineProperties(PageNotification.prototype, {
 		set: function (value) {
 			this.element.setAttribute('data-top', value);
 
+			if (!this.forward)
+				this.element.style.top = value + 'px';
+		}
+	},
+
+	forwardedTop: {
+		get: function () {
+			return parseInt(this.element.style.top);
+		},
+		set: function (value) {
 			this.element.style.top = value + 'px';
 		}
 	},
@@ -236,6 +257,8 @@ PageNotification.prototype.events = {
 			else if (notification.shouldRestoreLayering && event.propertyName === 'right') {
 				notification.shouldRestoreLayering = false;
 
+				notification.element.classList.remove('jsb-notification-entering');
+
 				notification.restoreLayering();
 			}
 		}
@@ -251,11 +274,13 @@ PageNotification.prototype.events = {
 	},
 
 	'.jsb-notification-close': {
-		click: function (notification) {
-			if (notification.shouldCloseAll)
-				for (var displayedNotification in PageNotification.notifications)
-					PageNotification.notifications[displayedNotification].hide();
-			else
+		click: function (notification, event) {
+			notification.disableCloseButtons();
+
+			if (notification.willCloseAll) {
+				for (var notificationID in PageNotification.notifications)
+					PageNotification.notifications[notificationID].disableCloseButtons().hide();
+			} else
 				notification.hide();
 		}
 	}
@@ -271,7 +296,10 @@ PageNotification.prototype.bindEvents = function () {
 };
 
 PageNotification.prototype.addEventListener = function (eventType, selector, fn) {
-	var elements = selector === '*' ? [this.element] : this.element.querySelectorAll(selector);
+	if (Array.isArray(selector))
+		var elements = selector;
+	else
+		var elements = selector === '*' ? [this.element] : this.element.querySelectorAll(selector);
 
 	for (var i = 0; i < elements.length; i++)
 		elements[i].addEventListener(eventType, fn.bind(elements[i], this), true);
@@ -279,15 +307,49 @@ PageNotification.prototype.addEventListener = function (eventType, selector, fn)
 	return this;
 };
 
-PageNotification.prototype.closeButtonText = function (text, ignoreAttribute) {
-	if (!ignoreAttribute)
-		this.element.setAttribute('data-closeButtonText', text);
+PageNotification.prototype.onPrimaryClose = function (fn) {
+	this.addEventListener('click', [this.element.querySelector('.jsb-notification-primary-close')], fn);
+};
 
-	this.element.querySelector('.jsb-notification-close').value = text;
+PageNotification.prototype.primaryCloseButtonText = function (text, ignoreAttribute) {
+	if (!ignoreAttribute)
+		this.element.setAttribute('data-primaryCloseButtonText', text);
+
+	this.element.querySelector('.jsb-notification-primary-close').value = text;
+};
+
+PageNotification.prototype.addCloseButton = function (text, onClick) {
+	var input = document.createElement('input');
+
+	input.type = 'button';
+	input.value = text;
+
+	input.classList.add('jsb-notification-close');
+
+	this.closeContainer.appendChild(input);
+
+	var events = this.events['.jsb-notification-close'];
+
+	for (var eventType in events)
+		this.addEventListener(eventType, [input], events[eventType]);
+
+	if (typeof onClick === 'function')
+		this.addEventListener('click', [input], onClick);
+
+	return input;
+};
+
+PageNotification.prototype.disableCloseButtons = function () {
+	var closeButtons = this.element.querySelectorAll('.jsb-notification-close');
+
+	for (var i = 0; i < closeButtons.length; i++)
+		closeButtons[i].disabled = true;
+
+	return this;
 };
 
 PageNotification.prototype.shouldStack = function () {
-	return this.top + this.height > window.innerHeight;
+	return this.fullyAlignedTop + this.height > window.innerHeight;
 };
 
 PageNotification.prototype.move = function (toTop) {
@@ -325,6 +387,9 @@ PageNotification.prototype.bringForward = function () {
 	this.element.classList.add('jsb-notification-forwarded');
 
 	this.element.style.setProperty('z-index', PageNotification.__forwardedZIndex, 'important');
+
+	if (this.top + this.height > window.innerHeight)
+		this.forwardedTop = window.innerHeight - this.height;
 };
 
 PageNotification.prototype.restoreLayering = function () {
@@ -338,6 +403,8 @@ PageNotification.prototype.restoreLayering = function () {
 	this.element.classList.remove('jsb-notification-forwarded');
 
 	this.element.style.setProperty('z-index', this.element.getAttribute('data-originalZIndex'), 'important');
+
+	this.top = this.top;
 };
 
 PageNotification.prototype.hide = function (removeNow) {
@@ -346,7 +413,7 @@ PageNotification.prototype.hide = function (removeNow) {
 
 	this.hidden = true;
 
-	if (this.forward)
+	if (!this.willCloseAll && this.forward)
 		this.restoreLayering();
 
 	PageNotification.shift();
@@ -359,4 +426,4 @@ PageNotification.prototype.hide = function (removeNow) {
 
 window.addEventListener('keydown', PageNotification.keyStateChanged, true);
 window.addEventListener('keyup', PageNotification.keyStateChanged, true);
-window.addEventListener('resize', Utilities.throttle(PageNotification.shift, 500), true);
+window.addEventListener('resize', Utilities.throttle(PageNotification.windowResized, 500), true);

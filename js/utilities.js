@@ -649,14 +649,16 @@ LogDebug.history = [];
 function LogError () {
 	var	error,
 			errorMessage,
-			errorStack;
+			errorStack,
+			showThisError;
 
 	var args = Utilities.makeArray(arguments);
 			
 	for (var i = 0; i < args.length; i++) {
 		error = args[i];
+		showThisError = false;
 
-		if (error && error.constructor && error.constructor.name && error.constructor.name._endsWith('Error')) {
+		if (error && (error instanceof DOMException || (error.constructor && error.constructor.name && error.constructor.name._endsWith('Error')))) {
 			errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
 
 			if (error.sourceURL)
@@ -671,12 +673,16 @@ function LogError () {
 		LogError.history = LogError.history._chunk(LOG_HISTORY_SIZE)[0];
 
 		if (Utilities.Page.isWebpage)
-			GlobalPage.message('logError', {
-				source: document.location.href,
-				message: errorMessage
-			});
+			try {
+				GlobalPage.message('logError', {
+					source: document.location.href,
+					message: errorMessage
+				});
+			} catch (error) {
+				showThisError = true;
+			}
 
-		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || globalSetting.debugMode) {
+		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || globalSetting.debugMode || showThisError) {
 			if (!Utilities.Page.isWebpage)
 				errorMessage.unshift('(JSB)');
 
