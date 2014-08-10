@@ -248,7 +248,7 @@ Settings.settings = {
 		props: {
 			type: 'boolean',
 			onChange: function () {
-				Log('KIND CHANGED');
+				Special.__enabled = null;
 			}
 		}
 	}, {

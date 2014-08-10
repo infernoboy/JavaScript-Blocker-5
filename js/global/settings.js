@@ -110,7 +110,7 @@ var Settings = {
 					if (!(key in storedValues)) {
 						storeKey = (!hasOwnDefaults && defaultStorage[key].props.remap) ? defaultStorage[key].props.remap : key;
 
-						storedValues[key] = storedValues[storeKey] || (hasOwnDefaults ? defaultStorage[storeKey] : defaultStorage[storeKey].props.default);
+						storedValues[key] = storedValues.hasOwnProperty(storeKey) ? storedValues[storeKey] : (hasOwnDefaults ? defaultStorage[storeKey] : defaultStorage[storeKey].props.default);
 
 						if (typeof storedValues[key] === 'function')
 							storedValues[key] = storedValues[key]();
@@ -125,9 +125,11 @@ var Settings = {
 			storeKey = setting.storeKeySettings[storeKey].props.remap ? setting.storeKeySettings[storeKey].props.remap : storeKey;
 
 			value = this.__stores.getStore(settingKey).get(storeKey);
+
 			defaultValue = hasOwnDefaults ? defaultStorage[storeKey] : defaultStorage[storeKey].props.default;
 		} else {
 			value = this.__method('getItem', settingKey);
+
 			defaultValue = setting.props.default;
 		}
 
@@ -187,6 +189,10 @@ var Settings = {
 
 			if (storeSetting.props.onChange)
 				storeSetting.props.onChange(value);
+
+			Settings.anySettingChanged({
+				key: settingKey
+			});
 		} else if (this.__validate(type, value, options, setting.props.otherOption, setting.props.extendOptions)) {
 			if (setting.props.onChange)
 				setting.props.onChange(value);
@@ -211,6 +217,10 @@ var Settings = {
 				}
 			} else
 				this.__stores.getStore(settingKey).clear();
+
+			Settings.anySettingChanged({
+				key: settingKey
+			});
 		} else
 			this.__method('removeItem', settingKey);
 	},

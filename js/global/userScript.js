@@ -140,6 +140,12 @@ var UserScript = {
 					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && this.canBeUpdated(updateMeta))) {
 						self.download(attributes.get('downloadURL'), !isDeveloperMode).done(function (script) {
 							self.add(script, true);
+
+							if (!isDeveloperMode)
+								Tabs.messageActive('notification', {
+									title: _('user_script.updated'),
+									subTitle: currentMeta.name
+								});
 						});
 					}
 				} else

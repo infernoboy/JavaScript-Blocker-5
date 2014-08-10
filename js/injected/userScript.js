@@ -67,7 +67,8 @@ var UserScript = {
 		TOKEN.INJECTED[userScript.id] = {
 			namespace: attributes.meta.trueNamespace,
 			name: attributes.meta.name,
-			usedURL: DeepInject.useURL
+			usedURL: DeepInject.useURL,
+			isUserScript: true
 		};
 
 		userScript.setArguments(userScript.pieces.args).inject();

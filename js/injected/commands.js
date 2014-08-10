@@ -85,7 +85,7 @@ var Command = function (type, event) {
 		if (!commands.hasOwnProperty(commandParts[0])) {
 			this.status = COMMAND.NOT_FOUND;
 
-			return LogDebug('command not found - ' + commandParts[0]);
+			return LogDebug('command not found - ' + type + ' - ' + commandParts[0]);
 		}
 
 		if (commandParts[0]._startsWith('__')) {
@@ -216,6 +216,34 @@ var Command = function (type, event) {
 
 				window.location.reload();
 			}
+		},
+
+		showJSBUpdatePrompt: function (detail) {
+			if (Page.info.isFrame)
+				return;
+
+			if (SHOWED_UPDATE_PROMPT)
+				return;
+
+			SHOWED_UPDATE_PROMPT = true;
+
+			var notification = new PageNotification({
+				id: 'update-attention-required',
+				highPriority: true,
+				title: 'JSB Update',
+				body: 'Attention required.'
+			});
+
+			notification.primaryCloseButtonText(_('open_popover'));
+
+			notification.onPrimaryClose(function () {
+				GlobalPage.message('showPopover');
+			});
+		},
+
+		notification: function (detail) {
+			if (Utilities.Page.isTop)
+				new PageNotification(detail.data);
 		},
 	};
 
@@ -559,6 +587,8 @@ var Command = function (type, event) {
 						try {
 							queryModify.querySelector('.' + event.target.classList[0] + '-modify').focus();
 						} catch (error) {}
+
+						PageNotification.totalShift();
 					})
 					.addEventListener('keypress', '.jsb-xhr-query-modify input', function (notification, event) {
 						if (event.keyCode == 3 || event.keyCode === 13) {
@@ -584,6 +614,8 @@ var Command = function (type, event) {
 							this.parentNode.classList.add('jsb-hidden');
 
 							queryView.classList.remove('jsb-hidden');
+
+							PageNotification.totalShift();
 						}
 					});
 			}
@@ -608,6 +640,8 @@ var Command = function (type, event) {
 
 					notification.element.querySelector('.jsb-xhr-create-rule-prompt').classList.add('jsb-hidden');
 					notification.element.querySelector('.jsb-xhr-prompt').classList.remove('jsb-hidden');
+
+					PageNotification.totalShift();
 				})
 				.addEventListener('change', '.jsb-xhr-rule-action', function (notification) {
 					var value = this.options[this.selectedIndex].value;
@@ -620,12 +654,21 @@ var Command = function (type, event) {
 
 					notification.element.querySelector('.jsb-xhr-create-rule-prompt').classList.remove('jsb-hidden');
 					notification.element.querySelector('.jsb-xhr-prompt').classList.add('jsb-hidden');
+
+					PageNotification.totalShift();
 				});
 		},
 
 		notification: function (detail) {
-			var self = this,
-					notification = new PageNotification(detail.meta);
+			var self = this;
+
+			if (TOKEN.INJECTED[detail.sourceID].isUserScript)
+				detail.meta.subTitle = TOKEN.INJECTED[detail.sourceID].name + (detail.meta.subTitle ? ' - ' + detail.meta.subTitle : '');
+
+			if (detail.viaFrame)
+				detail.meta.subTitle = _('via_frame') + ' - ' + detail.meta.subTitle;
+
+			var notification = new PageNotification(detail.meta);
 
 			return new Promise(function (resolve, reject) {				
 				Handler.event.addEventListener('stylesheetLoaded', function () {

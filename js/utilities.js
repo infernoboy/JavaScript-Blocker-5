@@ -868,6 +868,12 @@ var Extension = {
 
 				return chunks;
 			}
+		},
+
+		_remove: {
+			value: function (index) {
+				return this.splice(index, 1)[0];
+			}
 		}
 	},
 

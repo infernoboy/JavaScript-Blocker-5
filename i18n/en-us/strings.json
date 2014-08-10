@@ -5,6 +5,7 @@
 	"Cancel": "Cancel",
 
 	"via_frame": "via frame",
+	"open_popover": "Open Popover",
 	
 	"settings.ui": "User Interface",
 	"settings.rules": "Rules",
@@ -29,6 +30,7 @@
 	"rule.block": "Block",
 
 	"user_script": "User Script",
+	"user_script.updated": "User Script Updated",
 	"user_script.add_script": "Add Script",
 	"user_script.add_prompt": "Do you want to add this user script to JavaScript Blocker?",
 	"user_script.adding": "Adding...",

@@ -140,12 +140,21 @@ function Command (command, data, event) {
 		},
 
 		canLoadResource: function (info) {
-			if (info.pageProtocol === 'about:')
-				info.pageLocation = this.event.target.url || info.pageLocation;
+			if (false && info.kind !== 'disable') {
+				MessageTarget(this.event, 'showJSBUpdatePrompt');
 
-			var resource = new Resource(info);
+				this.message = {
+					isAllowed: false,
+					action: ACTION.BLOCKED_ATTENTION_REQUIRED
+				};
+			} else {
+				if (info.pageProtocol === 'about:')
+					info.pageLocation = this.event.target.url || info.pageLocation;
 
-			this.message = resource.canLoad();
+				var resource = new Resource(info);
+
+				this.message = resource.canLoad();
+			}
 		},
 
 		globalSetting: function (setting) {

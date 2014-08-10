@@ -1,16 +1,20 @@
 <noscript id="notification">
 	<div class="jsb-notification <%=!globalPage.globalSetting.useAnimations ? 'jsb-no-animations' : ''%>" id="jsb-notification-<%=self.id || Utilities.Token.generate()%>">
-		<div class="jsb-notification-toggle-layering"></div>
+		<div class="jsb-notification-toggle-layering" title="<%=self.title._entityQuotes()%>"></div>
 		<div class="jsb-notification-inner">
-			<div class="jsb-notification-close-container">
-				<input type="button" class="jsb-notification-close jsb-notification-primary-close" value="<%=_('Close')%>">
-			</div>
+			<div class="jsb-notification-close-container"></div>
 			<div class="jsb-notification-title jsb-info"><%=self.title%></div>
 			<% if (self.subTitle) { %>
-				<div class="jsb-notification-sub-title"><%=self.subTitle.substr(0, 100)%></div>
+				<div class="jsb-notification-sub-title" title="<%=self.subTitle._entityQuotes()%>"><%=self.subTitle.substr(0, 100)%></div>
 			<% } %>
 			<div class="jsb-notification-body"><%=self.body%></div>
 		</div>
+	</div>
+</noscript>
+
+<noscript id="notification-close-wrapper">
+	<div class="jsb-notification-close-wrapper">
+		<input type="button" class="jsb-notification-close <%=self.primary? 'jsb-notification-primary-close-button' : ''%>" value="<%=self.value%>">
 	</div>
 </noscript>
 

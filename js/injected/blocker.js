@@ -20,6 +20,7 @@ var BLOCKED_ELEMENTS = [],
 		FRAMED_PAGES = {},
 		FRAME_ID_ON_PARENT = null,
 		RECOMMEND_PAGE_RELOAD = false,
+		SHOWED_UPDATE_PROMPT = false,
 		BROKEN = false;
 
 var TOKEN = {
@@ -252,7 +253,7 @@ var Handler = {
 
 	keyUp: function (event) {
 		if (event.ctrlKey && event.altKey && event.which === 74)
-			GlobalPage.message('openPopover');
+			GlobalPage.message('showPopover');
 	},
 
 	blockedHiddenPageContent: function (event) {

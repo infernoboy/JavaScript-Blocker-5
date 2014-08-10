@@ -94,7 +94,7 @@ Special.specials = {
 
 			messageTopExtension('notification', {
 				title: _localize('Alert'),
-				subTitle: (isFrame ? _localize('via_frame') + ' - ' : '') + window.location.href,
+				subTitle: window.location.href,
 				body: messageExtensionSync('template.create', {
 					template: 'injected',
 					section: 'javascript-alert',
@@ -356,7 +356,7 @@ Special.specials = {
 				return performAction(self, info, args, result.send);
 			});
 
-			if (canLoad.action < 0 && shouldShowPrompt && !detail.sync)
+			if (canLoad.action < 0 && canLoad.action !== -8 && shouldShowPrompt && !detail.sync)
 				messageTopExtension('showXHRPrompt', {
 					onXHRPromptInput: onXHRPromptInput,
 					meta: info

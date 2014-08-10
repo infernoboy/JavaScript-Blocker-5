@@ -115,7 +115,8 @@ var Special = {
 		TOKEN.INJECTED[special.id] = {
 			namespace: special.name,
 			name: special.name,
-			usedURL: !!useURL
+			usedURL: !!useURL,
+			isUserScript: false
 		};
 
 		special.inject(useURL);
