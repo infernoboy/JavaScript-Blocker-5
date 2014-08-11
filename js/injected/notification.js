@@ -60,7 +60,7 @@ function PageNotification (detail) {
 	this.addCloseButton(_('Close'), null, true);
 
 	Handler.event.addEventListener('stylesheetLoaded', function () {
-		if (this.hidden)
+		if (this.removed)
 			return;
 
 		Element.prependTo(PageNotification.__container, this.element);
@@ -72,6 +72,7 @@ function PageNotification (detail) {
 
 		this.fullyAlignedTop = 0;
 		this.top = 0;
+		this.displayed = true;
 
 		// this.element.classList.remove('jsb-notification-warped');
 
@@ -83,7 +84,6 @@ function PageNotification (detail) {
 		PageNotification.orderByPriority();
 	}.bind(this), true);
 };
-
 
 PageNotification.__containerID = 'jsb-notification-container';
 PageNotification.__closeButtonsContainerClass = 'jsb-notification-close-container';
@@ -102,7 +102,7 @@ PageNotification.createContainer = function () {
 	PageNotification.__container = document.getElementById(PageNotification.__containerID);
 
 	if (!PageNotification.__container) {
-		PageNotification.__container = Element.createFromHTML('<div id="' + PageNotification.__containerID + '" />')[0];
+		PageNotification.__container = Element.createFromHTML('<div id="' + PageNotification.__containerID + '" class="jsb-injected-element" />')[0];
 
 		Element.inject(PageNotification.__container);
 	}
@@ -132,6 +132,21 @@ PageNotification.orderByPriority = function () {
 	PageNotification.shift();
 };
 
+PageNotification.displayAll = function () {
+	var notification;
+
+	for (var notificationID in PageNotification.notifications) {
+		notification = PageNotification.notifications[notificationID];
+
+		if (notification.removed || notification.displayed)
+			continue;
+
+		notification.displayed = true;
+
+		notification.element.classList.remove('jsb-hidden');
+	}
+};
+
 PageNotification.shift = function () {
 	var notification,
 			previousNotification;
@@ -143,7 +158,7 @@ PageNotification.shift = function () {
 	for (var i = notificationCount; i >= 0; i--) {
 		notification = PageNotification.notifications[PageNotification.notificationIDs[i]];
 
-		if (notification.hidden)
+		if (notification.removed || !notification.displayed)
 			continue;
 
 		notification.fullyAlignedTop = fullOffset;
@@ -169,6 +184,11 @@ PageNotification.shift = function () {
 			notification.top = notification.fullyAlignedTop;
 		}
 
+		notification.displayed = notification.shouldDisplay();
+
+		if (notification.displayed)
+			notification.element.classList.remove('jsb-hidden');
+
 		fullOffset += notification.height + PageNotification.__offset;
 
 		previousNotification = notification;
@@ -177,6 +197,8 @@ PageNotification.shift = function () {
 
 PageNotification.totalShift = function (event) {
 	var notification;
+
+	PageNotification.displayAll();
 
 	PageNotification.shift();
 
@@ -335,6 +357,9 @@ PageNotification.prototype.events = {
 				notification.element.classList.remove('jsb-notification-entering');
 
 				notification.restoreLayering();
+			} else if (event.propertyName === 'top') {
+				if (!notification.displayed)
+					notification.element.classList.add('jsb-hidden');
 			}
 		}
 	},
@@ -356,6 +381,8 @@ PageNotification.prototype.events = {
 				PageNotification.shift();
 			} else if (event.wheelDeltaY < -150) {
 				PageNotification.__allowStacking = true;
+
+				PageNotification.displayAll();
 
 				PageNotification.shift();
 			}
@@ -450,7 +477,11 @@ PageNotification.prototype.disableCloseButtons = function () {
 };
 
 PageNotification.prototype.shouldStack = function () {
-	return PageNotification.__allowStacking && this.fullyAlignedTop + this.height > window.innerHeight;
+	return PageNotification.__allowStacking && this.fullyAlignedTop + this.height + PageNotification.__offset > window.innerHeight;
+};
+
+PageNotification.prototype.shouldDisplay = function () {
+	return this.top < window.innerHeight;
 };
 
 PageNotification.prototype.move = function (toTop, orderOnly) {
@@ -498,13 +529,15 @@ PageNotification.prototype.restoreLayering = function () {
 };
 
 PageNotification.prototype.hide = function (removeNow) {
-	if (this.hidden)
+	if (this.removed)
 		return;
 
-	this.hidden = true;
+	this.removed = true;
 
 	if (!this.willCloseAll && this.forward)
 		this.restoreLayering();
+
+	PageNotification.displayAll();
 
 	PageNotification.shift();
 

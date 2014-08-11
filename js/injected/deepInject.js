@@ -130,23 +130,16 @@ DeepInject.prototype.injectable = function (useURL) {
 	if (this.__injectable)
 		return this.__injectable;
 
-	var executable = this.executable(),
-			scriptElement = document.createElement('script');
-
-	scriptElement.id = 'jsb-injected-' + Utilities.Token.generate();
-
-	scriptElement.setAttribute('data-jsbAllowAndIgnore', Utilities.Token.create('AllowAndIgnore'));
-	scriptElement.setAttribute('data-jsbInjectedScript', this.name);
+	var executable = this.executable();
+	
+	var scriptElement = Element.createFromObject('script', {
+		id: 'jsb-injected-' + Utilities.Token.generate(),
+		'data-jsbAllowAndIgnore': Utilities.Token.create('AllowAndIgnore'),
+		'data-jsbInjectedScript': this.name
+	});
 
 	if (useURL) {
-		var URL = window.URL || window.webkitURL;
-
-		if (window.Blob && URL) {
-			var url = URL.createObjectURL(new Blob([executable], {
-				type: 'text/javascript'
-			}));
-		} else
-			var url = 'data:text/javascript;base64,' + Utilities.encode(executable);
+		var url = Utilities.URL.createFromContent(executable, 'text/javascript');
 
 		scriptElement.src = url;
 

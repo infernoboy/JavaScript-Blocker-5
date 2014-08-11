@@ -50,7 +50,7 @@ Special.specials = {
 	installUserScriptPrompt: function () {
 		messageTopExtension('notification', {
 			title: _localize('user_script'),
-			subTitle: window.location.href,
+			subTitle: document.location.href,
 			body: messageExtensionSync('template.create', {
 				template: 'injected',
 				section: 'install-user-script-prompt'
@@ -66,7 +66,7 @@ Special.specials = {
 
 				setTimeout(function () {
 					messageExtension('installUserScriptFromURL', {
-						url: window.location.href
+						url: document.location.href
 					}, function (result) {
 						var p = document.createElement('p');
 
@@ -82,8 +82,6 @@ Special.specials = {
 	},
 
 	alert_dialogs: function () {
-		var isFrame = window !== window.top;
-
 		window.alert = function (string) {
 			if (typeof string === 'undefined')
 				string = 'undefined';
@@ -94,7 +92,7 @@ Special.specials = {
 
 			messageTopExtension('notification', {
 				title: _localize('Alert'),
-				subTitle: window.location.href,
+				subTitle: document.location.href,
 				body: messageExtensionSync('template.create', {
 					template: 'injected',
 					section: 'javascript-alert',
@@ -200,12 +198,13 @@ Special.specials = {
 
 		var shouldShowPrompt = JSB.value.value.alwaysBlock === 'ask',
 				supportedMethods = ['get', 'post', 'put'],
-				storeToken = Math.random().toString(36);
+				openToken = Math.random(),
+				openArguments = {};
 
 		function performAction (request, info, args, send) {
 			var xhrError;
 
-			var detail = request[storeToken],
+			var detail = request[openToken],
 					newRequest = request,
 					pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
 
@@ -228,7 +227,7 @@ Special.specials = {
 			if (info.canLoad.isAllowed) {
 				pageAction = 'addAllowedItem';
 
-				request[storeToken].resendAllowed = true;
+				request[openToken].resendAllowed = true;
 
 				try {
 					XHR.send.apply(newRequest, args);
@@ -247,22 +246,33 @@ Special.specials = {
 		};
 
 		XMLHttpRequest.prototype.open = function () {
-			if (!this[storeToken])
-				Object.defineProperty(this, storeToken, {
-					value: {}
-				});
+			var openID = Math.random();
 
-			this[storeToken].method = arguments[0].toLowerCase();
-			this[storeToken].path = (arguments[1] && arguments[1].path) ? arguments[1].path : arguments[1].toString();
-			this[storeToken].sync = arguments[2] === false;
+			Object.defineProperty(this, openToken, {
+				value: openID
+			});
 
-			Object.freeze(this[storeToken]);
+			var path = arguments[1];
+
+			if (path === null)
+				path = 'null';
+			else if (typeof path !== 'string')
+				path = path.toString ? path.toString() : '';
+
+			openArguments[openID] = {
+				method: typeof arguments[0] === 'string' ? arguments[0].toLowerCase() : arguments[0],
+				path: (arguments[1] && arguments[1].path) ? arguments[1].path : path,
+				sync: arguments[2] === false
+			};
 
 			XHR.open.apply(this, arguments);
 		};
 
 		XMLHttpRequest.prototype.send = function () {
-			var detail = this[storeToken];
+			var detail = openArguments[this[openToken]];
+
+			if (!detail)
+				throw new Error('open arguments for ' + this[openToken] + ' was not found.');
 
 			if (supportedMethods.indexOf(detail.method) === -1)
 				return XHR.send.apply(this, arguments);
@@ -270,7 +280,7 @@ Special.specials = {
 			var JSONsendArguments = window[JSB.eventToken].window$JSON$stringify(arguments);
 
 			if (detail.previousJSONsendArguments === JSONsendArguments) {
-				console.warn('XHR Resend?', arguments, this[storeToken]);
+				console.warn('XHR Resend?', arguments, this[openToken]);
 
 				try {
 					return detail.resendAllowed ? XHR.send.apply(this, arguments) : this.abort();
@@ -365,7 +375,7 @@ Special.specials = {
 				if (JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ASK) {
 					var isAllowed = confirm(_localize('xhr.sync.prompt', [
 						_localize(kind + '.prompt.title') + ' - ' + _localize('xhr.synchronous'),
-						window.location.href,
+						document.location.href,
 						info.source.substr(0, info.source.indexOf('?')),
 						info.meta ? JSON.stringify(info.meta.data, null, 1) : ''
 					]));
@@ -443,7 +453,8 @@ Special.specials = {
 				ASK_ONCE_SESSION = 3,
 				ALWAYS_BLOCK = 4;
 
-		var toDataURL = HTMLCanvasElement.prototype.toDataURL,
+		var useSimplifiedMethod = JSB.data.safariBuildVersion < 537 || document.hidden,
+				toDataURL = HTMLCanvasElement.prototype.toDataURL,
 				toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
 				shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION),
 				autoContinue = {};
@@ -452,7 +463,7 @@ Special.specials = {
 			path: 'html/canvasFingerprinting.html#'
 		});
 
-		var confirmString = _localize(JSB.data.safariBuildVersion < 537 ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt');
+		var confirmString = _localize(useSimplifiedMethod ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt');
 
 		if (shouldAskOnce)
 			confirmString += "\n\n" + _localize(JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent', [window.location.host]);
@@ -465,13 +476,13 @@ Special.specials = {
 			else if (autoContinue.hasOwnProperty(dataURL))
 				var shouldContinue = autoContinue[dataURL];
 			else {
-				if (JSB.data.safariBuildVersion < 537)
+				if (useSimplifiedMethod)
 					var shouldContinue = confirm(confirmString);
 				else {
 					var activeTabIndex = messageExtensionSync('activeTabIndex'),
 							newTabIndex = messageExtensionSync('openTabWithURL', url);
 
-					var shouldContinue = messageExtensionSync('confirm', window.location.href + "\n\n" + confirmString);
+					var shouldContinue = messageExtensionSync('confirm', document.location.href + "\n\n" + confirmString);
 
 					messageExtension('activateTabAtIndex', activeTabIndex);
 					messageExtension('closeTabAtIndex', newTabIndex);

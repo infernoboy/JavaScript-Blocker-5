@@ -53,7 +53,8 @@ var UserScript = {
 				'contextMenu:' +
 				event.userInfo.pageID + ':' +
 				event.userInfo.menuCommand[caption].sourceID + ':' +
-				event.userInfo.menuCommand[caption].callbackID,
+				event.userInfo.menuCommand[caption].callbackID + ':' +
+				event.userInfo.contextMenuTarget,
 			caption);
 
 	},
@@ -65,7 +66,8 @@ var UserScript = {
 			Tabs.messageAll('executeMenuCommand', {
 				pageID: split[1],
 				sourceID: split[2],
-				callbackID: split[3]
+				callbackID: split[3],
+				contextMenuTarget: split[4]
 			});
 		}
 	},

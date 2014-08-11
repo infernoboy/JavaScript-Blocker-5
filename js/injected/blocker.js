@@ -159,12 +159,12 @@ var Handler = {
 		Page.send(true);
 	},
 
-	injectRequiredFiles: function () {
-		var style = document.createElement('link');
-
-		style.rel = 'stylesheet';
-		style.type = 'text/css';
-		style.href = ExtensionURL('css/injected.css');
+	injectStyleSheet: function () {
+		var style = Element.createFromObject('link', {
+			rel: 'stylesheet',
+			type: 'text/css',
+			href: globalSetting.contentURLs.stylesheet
+		});
 
 		document.documentElement.appendChild(style);
 
@@ -177,7 +177,7 @@ var Handler = {
 		var i,
 				b;
 
-		Handler.injectRequiredFiles();
+		Handler.injectStyleSheet();
 
 		var scripts = document.getElementsByTagName('script'),
 				anchors = document.getElementsByTagName('a'),
@@ -244,10 +244,18 @@ var Handler = {
 	},
 
 	contextMenu: function (event) {
+		if (event.target instanceof HTMLElement) {
+			var contextMenuTarget = Utilities.Token.generate();
+
+			event.target.setAttribute('data-jsbContextMenuTarget', contextMenuTarget);
+		} else
+			var contextMenuTarget = null;
+
 		Events.setContextMenuEventUserInfo(event, {
 			pageID: Page.info.id,
 			menuCommand: UserScript.menuCommand,
-			placeholders: document.querySelectorAll('.jsblocker-placeholder').length
+			placeholders: document.querySelectorAll('.jsblocker-placeholder').length,
+			contextMenuTarget: contextMenuTarget
 		});
 	},
 
@@ -264,6 +272,15 @@ var Handler = {
 };
 
 var Element = {
+	createFromObject: function (tag, object) {
+		var element = document.createElement(tag);
+
+		for (var key in object)
+			element.setAttribute(key, object[key]);
+
+		return element;
+	},
+
 	createFromHTML: function (html) {
 		var div = document.createElement('div');
 
@@ -272,15 +289,15 @@ var Element = {
 		return div.childNodes;
 	},
 
-	prependTo: function (container, element) {
-		if (container.firstChild)
+	prependTo: function (container, element, append) {
+		if (!append && container.firstChild)
 			container.insertBefore(element, container.firstChild);
 		else
 			container.appendChild(element);
 	},
 
-	inject: function (element) {
-		Element.prependTo(document.documentElement, element);
+	inject: function (element, append) {
+		Element.prependTo(document.documentElement, element, append);
 	},
 
 	hide: function (kind, element, source) {

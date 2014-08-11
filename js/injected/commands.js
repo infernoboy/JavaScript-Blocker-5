@@ -187,8 +187,11 @@ var Command = function (type, event) {
 		},
 
 		executeMenuCommand: function (detail) {
-			if (detail.data.pageID === Page.info.id)
-				Command.sendCallback(detail.data.sourceID, detail.data.callbackID);
+			if (detail.data.pageID === Page.info.id) {
+				var target = document.querySelector('*[data-jsbContextMenuTarget="' + detail.data.contextMenuTarget + '"]');
+
+				Command.sendCallback(detail.data.sourceID, detail.data.callbackID, target);
+			}
 		},
 
 		receiveFrameInfo: function (detail) {
@@ -290,9 +293,9 @@ var Command = function (type, event) {
 			if (!frame) {
 				LogDebug('received frame URL, but frame does not exist - ' + message.id);
 
-				frame = document.createElement('iframe');
-
-				frame.id = message.id;
+				frame = Element.createFromObject('iframe', {
+					id: message.id
+				});
 			} else {
 				Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
 

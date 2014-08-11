@@ -167,7 +167,9 @@ function Command (command, data, event) {
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
 				confirmShortURL: Settings.getItem('confirmShortURL'),
-				blockReferrer: Settings.getItem('blockReferrer')
+				blockReferrer: Settings.getItem('blockReferrer'),
+
+				contentURLs: window.CONTENT_URLS
 			};
 		},
 
@@ -493,6 +495,19 @@ Command.messageReceived = function (event) {
 
 	return Command(command, event.message ? (event.message.data === undefined ? event.message : event.message.data) : null, event);
 };
+
+Command.setupContentURLs = function () {
+	var stylesheet = $.ajax({
+		url: ExtensionURL('css/injected.css'),
+		async: false
+	});
+
+	window.CONTENT_URLS = {
+		stylesheet: Utilities.URL.createFromContent(stylesheet.responseText, 'text/css', true)
+	};
+};
+
+Command.setupContentURLs();
 
 window.globalSetting = Command('globalSetting', null, {});
 
