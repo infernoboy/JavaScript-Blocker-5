@@ -5,6 +5,8 @@ var ACTION = Object.freeze({
 	blacklist: 4,
 	WHITELIST: 5,
 	whitelist: 5,
+	BLOCK_FIRST_VISIT: 6,
+	BLOCK_FIRST_VISIT_NO_NOTIFICATION: 8,
 	ALLOW: 1,
 	BLOCK: 0,
 	AUTO_ALLOW_USER_SCRIPT: 3,
@@ -16,6 +18,7 @@ var ACTION = Object.freeze({
 	ALLOW_XHR_VIA_PROMPT: -5,
 	BLOCK_XHR_VIA_PROMPT: -6,
 	BLOCKED_ATTENTION_REQUIRED: -8,
+	ALLOW_AFTER_FIRST_VISIT: -9,
 	KIND_DISABLED: -85,
 	UNBLOCKABLE: -87
 });
@@ -480,6 +483,14 @@ Object.defineProperty(Rules, '__kinds', {
 
 Object.defineProperty(Rules, 'list', {
 	value: Object.create({}, {
+		firstVisit: {
+			enumerable: true,
+
+			value: new Rule('FirstVisit', {
+				save: true
+			})
+		},
+
 		temporary: {
 			enumerable: true,
 

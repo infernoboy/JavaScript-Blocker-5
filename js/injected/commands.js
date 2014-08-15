@@ -248,6 +248,10 @@ var Command = function (type, event) {
 			if (Utilities.Page.isTop)
 				new PageNotification(detail.data);
 		},
+
+		blockedAllFirstVisit: function (detail) {
+			Handler.blockedAllFirstVisit(detail.data, true);
+		}
 	};
 
 	Commands.window = {
@@ -533,6 +537,7 @@ var Command = function (type, event) {
 
 			var notification = new PageNotification({
 				id: notificationID,
+				closeAllID: detail.meta.synchronousInfoOnly ? undefined : 'xhr',
 				title: _(meta.kind + '.prompt.title'),
 				subTitle: subTitle.join(' - '),
 				body: xhrPrompt
@@ -542,9 +547,10 @@ var Command = function (type, event) {
 				notification.primaryCloseButtonText(_('xhr.block_once'));
 
 				var allowOnceButton = notification.addCloseButton(_('xhr.allow_once'), function (notification) {
-					if (notification.willCloseAll) {
+					if (PageNotification.willCloseAll) {
 						for (var notificationID in PageNotification.notifications)
-							PageNotification.notifications[notificationID].event.trigger('allowXHR');
+							if (PageNotification.notifications[notificationID].shouldObeyCloseAll())
+								PageNotification.notifications[notificationID].event.trigger('allowXHR');
 					} else
 						notification.event.trigger('allowXHR');
 				});
@@ -630,9 +636,10 @@ var Command = function (type, event) {
 			}, true);
 
 			notification.onPrimaryClose(function (notification) {
-				if (notification.willCloseAll) {
+				if (PageNotification.willCloseAll) {
 					for (var notificationID in PageNotification.notifications)
-						PageNotification.notifications[notificationID].event.trigger('blockXHR');
+						if (PageNotification.notifications[notificationID].shouldObeyCloseAll())
+							PageNotification.notifications[notificationID].event.trigger('blockXHR');
 				} else
 					notification.event.trigger('blockXHR');
 			});
@@ -653,12 +660,12 @@ var Command = function (type, event) {
 					this.classList.toggle('jsb-color-block', value === '0');
 				})
 				.addEventListener('click', '.jsb-xhr-create-rule', function (notification) {
-					notification.bringForward();
-
 					notification.element.querySelector('.jsb-xhr-create-rule-prompt').classList.remove('jsb-hidden');
 					notification.element.querySelector('.jsb-xhr-prompt').classList.add('jsb-hidden');
 
 					PageNotification.totalShift();
+
+					notification.bringForward();
 				});
 		},
 

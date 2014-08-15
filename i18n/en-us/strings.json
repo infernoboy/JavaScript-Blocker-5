@@ -3,9 +3,16 @@
 	"Alert": "Alert",
 	"Save": "Save",
 	"Cancel": "Cancel",
+	"Ignore": "Ignore",
 
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",
+
+	"first_visit.title": "First Visit",
+	"first_visit.body": "All blockable resources were blocked because this is the first time you've visited this {0}.",
+	"first_visit.body.host": "host",
+	"first_visit.body.domain": "domain",
+	"first_visit.unblock": "Unblock",
 	
 	"settings.ui": "User Interface",
 	"settings.rules": "Rules",

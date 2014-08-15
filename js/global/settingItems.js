@@ -259,9 +259,12 @@ Settings.settings = {
 				['nowhere', 'Nowhere'],
 				['blacklist', 'Blacklist only'],
 				['everywhere', 'Anywhere'],
-				['domain', 'Different hostnames'],
-				['topLevel', 'Different hosts &amp; subdomains']
-			]
+				['host', 'Different hostnames'],
+				['domain', 'Different hosts &amp; subdomains'],
+			],
+			onChange: function () {
+				Resource.canLoadCache.clear().saveNow();
+			}
 		}
 	}, {
 		store: 'showPlaceholder',
@@ -375,7 +378,7 @@ Settings.settings = {
 				group: 'all',
 				items: [{
 					method: Utilities.Group.IS,
-					key: 'methodquickAdd',
+					key: 'quickAdd',
 					needle: true
 				}]
 			}
@@ -405,6 +408,23 @@ Settings.settings = {
 		}]
 	}, {
 		divider: true //===================================================================================
+	}, {
+		setting: 'blockFirstVisit',
+		props: {
+			type: 'option',
+			label: 'Block all resources on first visit to:',
+			options: [
+				['nowhere', 'Nowhere'],
+				['host', 'Different hostnames'],
+				['domain', 'Different hosts &amp; subdomains'],
+			],
+			default: 'nowhere',
+			onChange: function () {
+				Rules.list.firstVisit.rules.clear();
+			}
+		}
+	}, {
+		divider: true,
 	}, {
 		setting: 'enabledKinds',
 		props: {

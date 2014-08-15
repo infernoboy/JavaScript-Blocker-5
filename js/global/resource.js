@@ -60,29 +60,7 @@ Resource.__many = function (action, resources, domain, rule, framed, temporary) 
 	}
 };
 
-Resource.blockMany = Resource.__many.bind(null, 0);
-Resource.allowMany = Resource.__many.bind(null, 1);
-
-Resource.prototype.__addRule = function (action, domain, rule, framed, temporary) {
-	if (this.unblockable)
-		return false;
-
-	rule = {
-		rule: rule,
-		action: action
-	};
-
-	domain = this.__mapDomain(this.pageHost, domain);
-
-	if (this.sourceIsURL)
-		rule.rule = this.__mapDomain(this.sourceHost, rule.rule);
-	else if (!Rules.isRegExp(rule.rule))
-		rule.rule = this.source;
-
-	return Rules.list[temporary ? 'temporary' : 'active'].__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, rule);
-};
-
-Resource.prototype.__mapDomain = function (host, domain) {
+Resource.mapDomain = function (host, domain) {
 	var parts = Utilities.URL.hostParts(host, true);
 
 	switch (domain) {
@@ -104,9 +82,31 @@ Resource.prototype.__mapDomain = function (host, domain) {
 	return domain;
 };
 
+Resource.blockMany = Resource.__many.bind(null, 0);
+Resource.allowMany = Resource.__many.bind(null, 1);
+
+Resource.prototype.__addRule = function (action, domain, rule, framed, temporary) {
+	if (this.unblockable)
+		return false;
+
+	rule = {
+		rule: rule,
+		action: action
+	};
+
+	domain = Resource.mapDomain(this.pageHost, domain);
+
+	if (this.sourceIsURL)
+		rule.rule = Resource.mapDomain(this.sourceHost, rule.rule);
+	else if (!Rules.isRegExp(rule.rule))
+		rule.rule = this.source;
+
+	return Rules.list[temporary ? 'temporary' : 'active'].__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, rule);
+};
+
 Resource.prototype.__humanize = function (allow, rule, framed, temporary) {
 	if (this.sourceIsURL)
-		rule = this.__mapDomain(this.sourceHost, rule);
+		rule = Resource.mapDomain(this.sourceHost, rule);
 	else
 		rule = Rules.isRegExp(rule) ? rule : this.source;
 
@@ -146,8 +146,8 @@ Resource.prototype.allowedBySettings = function () {
 				
 		if (sourceProtocol === 'about:' && blockFrom !== 'everywhere')
 			return canLoad;
-		else if ((blockFrom === 'topLevel' && pageParts[0] !== sourceParts[0]) || 
-			(blockFrom === 'domain' && pageParts[pageParts.length - 1] !== sourceParts[sourceParts.length - 1]) ||
+		else if ((blockFrom === 'domain' && pageParts[0] !== sourceParts[0]) || 
+			(blockFrom === 'host' && pageParts[pageParts.length - 1] !== sourceParts[sourceParts.length - 1]) ||
 			(blockFrom === 'everywhere') ||
 			(pageProtocol === 'https:' && (Settings.getItem('secureOnly') && sourceProtocol !== pageProtocol))) {
 
@@ -289,7 +289,7 @@ Resource.prototype.canLoad = function () {
 	
 	self = undefined;
 
-	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE)
+	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE || canLoad.action === ACTION.ALLOW_AFTER_FIRST_VISIT)
 		canLoad = domainCached ? domainCached : this.allowedBySettings.apply(this, arguments);
 
 	canLoad.isAllowed = !!(canLoad.action % 2);

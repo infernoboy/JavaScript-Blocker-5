@@ -55,6 +55,12 @@ Page.frames = new Store('Frames', {
 	maxLife: TIME.ONE.SECOND * 5
 });
 
+Page.FIRST_VISIT = {
+	NO_DOMAIN: 1,
+	NO_RULE: 2,
+	BLOCKED: 3
+};
+
 Page.protocolSupported = function (protocol) {
 	return Page.__protocols._contains(protocol);
 };
@@ -129,7 +135,48 @@ Page.awaitFromTab = function (awaitTab, done) {
 			}
 		});
 	}, 300);
-}
+};
+
+Page.blockFirstVisit = function (host) {
+	return Rules.list.firstVisit.addDomain('*', host, {
+		rule: '*',
+		action: ACTION.BLOCK_FIRST_VISIT
+	});
+};
+
+Page.shouldBlockFirstVisitToHost = function (host) {
+	var blockFirstVisit = Settings.getItem('blockFirstVisit');
+
+	if (blockFirstVisit === 'nowhere')
+		return false;
+
+	if (blockFirstVisit === 'domain')
+		host = Resource.mapDomain(host, RESOURCE.DOMAIN);
+
+	var domainRules = Rules.list.firstVisit.kind('*').domain(host);
+
+	if (domainRules.isEmpty())
+		return {
+			action: Page.FIRST_VISIT.NO_DOMAIN,
+			host: host
+		};
+
+	var rule = domainRules.get('*');
+
+	if (!rule)
+		return {
+			action: Page.FIRST_VISIT.NO_RULE,
+			host: host
+		};
+
+	if (rule.action === ACTION.BLOCK_FIRST_VISIT)
+		return {
+			action: Page.FIRST_VISIT.BLOCKED,
+			host: host
+		};
+
+	return false;
+};
 
 Page.prototype.addFrame = function (frame) {
 	if (!(frame instanceof Page))

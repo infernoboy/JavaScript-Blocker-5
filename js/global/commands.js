@@ -250,6 +250,32 @@ function Command (command, data, event) {
 			}
 		},
 
+		willBlockFirstVisit: function (host) {
+			var	shouldBlockFirstVisit = Page.shouldBlockFirstVisitToHost(host);
+
+			if (shouldBlockFirstVisit) {
+				if (shouldBlockFirstVisit.action !== Page.FIRST_VISIT.BLOCK)
+					Page.blockFirstVisit(shouldBlockFirstVisit.host);
+
+				this.message = shouldBlockFirstVisit;
+			} else
+				this.message = false;
+		},
+
+		unblockFirstVisit: function (host) {
+			Rules.list.firstVisit.addDomain('*', host, {
+				rule: '*',
+				action: ACTION.ALLOW_AFTER_FIRST_VISIT
+			});
+		},
+
+		noFirstVisitNotifications: function (host) {
+			Rules.list.firstVisit.addDomain('*', host, {
+				rule: '*',
+				action: ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION
+			});
+		},
+
 		verifyScriptSafety: function (script) {
 			try {
 				new Function("return function () {\n" + script + "\n}");

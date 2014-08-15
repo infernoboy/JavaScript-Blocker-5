@@ -268,6 +268,46 @@ var Handler = {
 		GlobalPage.message('bounce', {
 			command: 'recommendPageReload'
 		});
+	},
+
+	shouldCheckBlockFirstVisit: function () {
+		return ['http:', 'https:', 'safari-extension:']._contains(Page.info.protocol);
+	},
+
+	blockedAllFirstVisit: function (host, viaFrame) {
+		if (!Utilities.Page.isTop)
+			return;
+
+		var hostDisplay = viaFrame ? _('via_frame') + ' - ' + host : host;
+
+		var notification = new PageNotification({
+			id: Utilities.encode(hostDisplay),
+			closeAllID: 'first-visit',
+			highPriority: true,
+			title: _('first_visit.title'),
+			subTitle: hostDisplay,
+			body: GlobalCommand('template.create', {
+				template: 'injected',
+				section: 'first-visit',
+				data: {
+					isDomain: host.charAt(0) === '.'
+				}
+			})
+		});
+
+		var ignoreButton = notification.addCloseButton(_('Ignore'), function (notification) {
+			GlobalPage.message('noFirstVisitNotifications', host);
+		});
+
+		ignoreButton.classList.add('jsb-color-block');
+
+		var unblockButton = notification.addCloseButton(_('first_visit.unblock'), function (notification) {
+			GlobalCommand('unblockFirstVisit', host);
+
+			window.location.reload();
+		});
+
+		unblockButton.classList.add('jsb-color-allow');
 	}
 };
 
@@ -659,6 +699,22 @@ if (!JSBSupport.isAllowed) {
 document.addEventListener('visibilitychange', Handler.visibilityChange, true);
 
 if (!globalSetting.disabled) {
+	if (Handler.shouldCheckBlockFirstVisit()) {
+		var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
+
+		if (willBlockFirstVisit && willBlockFirstVisit.action !== 8) {
+			Handler.event.addEventListener('readyForPageNotifications', function () {
+				if (Page.info.isFrame)
+					GlobalPage.message('bounce', {
+						command: 'blockedAllFirstVisit',
+						detail: willBlockFirstVisit.host
+					});
+				else
+					Handler.blockedAllFirstVisit(willBlockFirstVisit.host);
+			}, true);
+		}
+	}
+
 	if (Utilities.safariBuildVersion > 535) {
 		var observer = new MutationObserver(function (mutations) {
 			for (var i = 0; i < mutations.length; i++)

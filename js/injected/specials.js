@@ -204,7 +204,7 @@ Special.specials = {
 		function performAction (request, info, args, send) {
 			var xhrError;
 
-			var detail = request[openToken],
+			var detail = openArguments[request[openToken]],
 					newRequest = request,
 					pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
 
@@ -366,35 +366,47 @@ Special.specials = {
 				return performAction(self, info, args, result.send);
 			});
 
-			if (canLoad.action < 0 && canLoad.action !== -8 && shouldShowPrompt && !detail.sync)
-				messageTopExtension('showXHRPrompt', {
-					onXHRPromptInput: onXHRPromptInput,
-					meta: info
-				});
-			else if (detail.sync) {
-				if (JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ASK) {
-					var isAllowed = confirm(_localize('xhr.sync.prompt', [
-						_localize(kind + '.prompt.title') + ' - ' + _localize('xhr.synchronous'),
-						document.location.href,
-						info.source.substr(0, info.source.indexOf('?')),
-						info.meta ? JSON.stringify(info.meta.data, null, 1) : ''
-					]));
-				} else {
-					var isAllowed = JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ALLOW;
-
-					if (JSB.value.value.showSynchronousXHRNotification)
+			var shouldPerformAction = (function () {
+				if (canLoad.action !== -8 && canLoad.action < 0 && shouldShowPrompt) {
+					if (!detail.sync) {
 						messageTopExtension('showXHRPrompt', {
-							synchronousInfoOnly: true,
-							synchronousInfoIsAllowed: isAllowed,
 							onXHRPromptInput: onXHRPromptInput,
 							meta: info
 						});
+
+						return false;
+					} else {
+						if (JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ASK) {
+							var isAllowed = confirm(_localize('xhr.sync.prompt', [
+								_localize(kind + '.prompt.title') + ' - ' + _localize('xhr.synchronous'),
+								document.location.href,
+								info.source.substr(0, info.source.indexOf('?')),
+								info.meta ? JSON.stringify(info.meta.data, null, 1) : ''
+							]));
+						} else {
+							var isAllowed = JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ALLOW;
+
+							if (JSB.value.value.showSynchronousXHRNotification)
+								messageTopExtension('showXHRPrompt', {
+									synchronousInfoOnly: true,
+									synchronousInfoIsAllowed: isAllowed,
+									onXHRPromptInput: onXHRPromptInput,
+									meta: info
+								});
+						}
+
+						executeLocalCallback(onXHRPromptInput, {
+							isAllowed: isAllowed
+						});
+
+						return false;
+					}
 				}
 
-				executeLocalCallback(onXHRPromptInput, {
-					isAllowed: isAllowed
-				});
-			} else
+				return true;
+			})();
+
+			if (shouldPerformAction)
 				performAction(this, info, arguments);
 		};
 	},

@@ -20,8 +20,8 @@ function PageNotification (detail) {
 
 	detail.body = detail.body.replace(/\n/g, '<br />');
 
+	this.closeAllID = detail.closeAllID || true;
 	this.highPriority = !!detail.highPriority;
-
 	this.id = Utilities.Token.generate();
 
 	var notificationTemplate = GlobalCommand('template.create', {
@@ -109,7 +109,7 @@ PageNotification.createContainer = function () {
 };
 
 PageNotification.keyStateChanged = function (event) {
-	PageNotification.willCloseAll(event.altKey);
+	PageNotification.setWillCloseAll(event.altKey);
 
 	for (var notificationID in PageNotification.notifications)
 		PageNotification.notifications[notificationID].event.trigger('optionKeyStateChange', event.altKey);
@@ -132,14 +132,18 @@ PageNotification.orderByPriority = function () {
 	PageNotification.shift();
 };
 
-PageNotification.displayAll = function () {
+PageNotification.displaySomeOverflowed = function () {
 	var notification;
 
-	for (var notificationID in PageNotification.notifications) {
-		notification = PageNotification.notifications[notificationID];
+	var counter = 0;
 
-		if (notification.removed || notification.displayed)
+	for (var i = PageNotification.notificationIDs.length - 1; i >= 0; i--) {
+		notification = PageNotification.notifications[PageNotification.notificationIDs[i]];
+
+		if (notification.removed || notification.displayed || counter >= 20)
 			continue;
+
+		counter++;
 
 		notification.displayed = true;
 
@@ -198,22 +202,22 @@ PageNotification.shift = function () {
 PageNotification.totalShift = function (event) {
 	var notification;
 
-	PageNotification.displayAll();
+	PageNotification.displaySomeOverflowed();
 
 	PageNotification.shift();
 
 	for (var notificationID in PageNotification.notifications) {
 		notification = PageNotification.notifications[notificationID];
 
-		if (notification.forward) {
-			notification.restoreLayering();
-			notification.bringForward();
-		}
+		if (notification.forward)
+			notification.bringForward(notification.restoreLayering());
 	}
 };
 
-PageNotification.willCloseAll = function (should) {
+PageNotification.setWillCloseAll = function (should) {
 	var notification;
+
+	PageNotification.willCloseAll = should;
 
 	for (var notificationID in PageNotification.notifications) {
 		notification = PageNotification.notifications[notificationID];
@@ -222,8 +226,6 @@ PageNotification.willCloseAll = function (should) {
 			continue;
 
 		notification.primaryCloseButtonText(should ? 'Close All' : notification.element.getAttribute('data-primaryCloseButtonText'), should);
-
-		notification.willCloseAll = should;
 	}
 };
 
@@ -382,7 +384,7 @@ PageNotification.prototype.events = {
 			} else if (event.wheelDeltaY < -150) {
 				PageNotification.__allowStacking = true;
 
-				PageNotification.displayAll();
+				PageNotification.displaySomeOverflowed();
 
 				PageNotification.shift();
 			}
@@ -393,17 +395,30 @@ PageNotification.prototype.events = {
 		click: function (notification, event) {
 			var otherNotification;
 
-			if (notification.willCloseAll) {
+			if (PageNotification.willCloseAll) {
+				PageNotification.closeAllTriggerID = notification.closeAllID;
+
 				for (var notificationID in PageNotification.notifications) {
 					otherNotification = PageNotification.notifications[notificationID];
 
-					if (!otherNotification.highPriority || otherNotification === notification)
+					if (!otherNotification.shouldObeyCloseAll())
+						continue;
+
+					if (!otherNotification.highPriority || otherNotification === notification) {
+						if (!notification.displayed)
+							notification.element.classList.add('jsb-no-animations');
+
 						otherNotification.disableCloseButtons().hide();
+					}
 				}
 			} else
 				notification.disableCloseButtons().hide();
 		}
 	}
+};
+
+PageNotification.prototype.shouldObeyCloseAll = function () {
+	return PageNotification.willCloseAll && !this.highPriority && PageNotification.closeAllTriggerID === this.closeAllID;
 };
 
 PageNotification.prototype.bindEvents = function () {
@@ -499,17 +514,15 @@ PageNotification.prototype.move = function (toTop, orderOnly) {
 	}
 };
 
-PageNotification.prototype.bringForward = function () {
-	if (this.forward)
-		return;
-
+PageNotification.prototype.bringForward = function (zIndex) {
 	this.forward = true;
 
-	PageNotification.__forwardedZIndex++;
+	if (!zIndex)
+		PageNotification.__forwardedZIndex++;
 
 	this.element.classList.add('jsb-notification-forwarded');
 
-	this.element.style.setProperty('z-index', PageNotification.__forwardedZIndex++, 'important');
+	this.element.style.setProperty('z-index', zIndex || PageNotification.__forwardedZIndex++, 'important');
 
 	if (this.top + this.height > window.innerHeight)
 		this.forwardedTop = window.innerHeight - this.height;
@@ -519,6 +532,8 @@ PageNotification.prototype.restoreLayering = function () {
 	if (!this.forward)
 		return;
 
+	var zIndex = this.element.style.zIndex;
+
 	this.forward = false;
 
 	this.element.classList.remove('jsb-notification-forwarded');
@@ -526,6 +541,8 @@ PageNotification.prototype.restoreLayering = function () {
 	this.element.style.setProperty('z-index', this.element.getAttribute('data-originalZIndex'), 'important');
 
 	this.top = this.top;
+
+	return zIndex;
 };
 
 PageNotification.prototype.hide = function (removeNow) {
@@ -534,10 +551,10 @@ PageNotification.prototype.hide = function (removeNow) {
 
 	this.removed = true;
 
-	if (!this.willCloseAll && this.forward)
+	if (!this.shouldObeyCloseAll() && this.forward)
 		this.restoreLayering();
 
-	PageNotification.displayAll();
+	PageNotification.displaySomeOverflowed();
 
 	PageNotification.shift();
 
@@ -550,3 +567,5 @@ PageNotification.prototype.hide = function (removeNow) {
 window.addEventListener('keydown', PageNotification.keyStateChanged, true);
 window.addEventListener('keyup', PageNotification.keyStateChanged, true);
 window.addEventListener('resize', Utilities.throttle(PageNotification.totalShift, 500), true);
+
+Handler.event.trigger('readyForPageNotifications');

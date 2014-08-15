@@ -22,6 +22,10 @@
 	<p class="jsb-info"><%=self.body%></p>
 </noscript>
 
+<noscript id="first-visit">
+	<p class="jsb-info"><%=_('first_visit.body', [_(self.isDomain ? 'first_visit.body.domain' : 'first_visit.body.host')])%></p>
+</noscript>
+
 <noscript id="install-user-script-prompt">
 	<p class="jsb-info"><%=_('user_script.add_prompt')%></p>
 	<p class="jsb-info">

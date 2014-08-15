@@ -66,6 +66,7 @@
 		border-radius: 5px !important;
 		line-height: 1 !important;
 		text-shadow: none !important;
+		font-weight: normal !important;
 
 		&[disabled] {
 			opacity: 0.5 !important;
@@ -113,6 +114,11 @@
 		color: #111 !important;
 		font-size: 9pt !important;
 		cursor: text !important;
+	}
+
+	select {
+		.color-allow;
+		.color-block;
 	}
 
 	&#jsb-notification-container {
@@ -177,6 +183,8 @@
 					width: 92px !important;
 					margin-top: -7px !important;
 					margin-right: -10px !important;
+					margin-bottom: 2px !important;
+					margin-left: 5px !important;
 
 					.jsb-notification- {
 						&close-wrapper {
@@ -221,6 +229,7 @@
 							}
 
 							.color-allow;
+							.color-block;
 						}
 					}
 				}
@@ -244,7 +253,7 @@
 				}
 
 				&body {
-					clear: both !important;
+					/*clear: both !important;*/
 
 					.jsb-info {
 						max-height: 100px !important;
@@ -294,12 +303,15 @@
 		}
 
 		&info {
+			text-indent: 0 !important;
 			padding: 1px !important;
 			margin: 4px 0 6px !important;
 			padding-bottom: 1px !important;
 			overflow: auto !important;
 		}
 
+		&hidden,
+		&hidden *,
 		&no-animations,
 		&no-animations * {
 			-webkit-transition-duration: 0.0001s !important;
