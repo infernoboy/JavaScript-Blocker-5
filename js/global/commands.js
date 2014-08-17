@@ -251,10 +251,10 @@ function Command (command, data, event) {
 		},
 
 		willBlockFirstVisit: function (host) {
-			var	shouldBlockFirstVisit = Page.shouldBlockFirstVisitToHost(host);
+			var	shouldBlockFirstVisit = Page.shouldBlockFirstVisit(host);
 
 			if (shouldBlockFirstVisit) {
-				if (shouldBlockFirstVisit.action !== Page.FIRST_VISIT.BLOCK)
+				if (shouldBlockFirstVisit.action !== Page.FIRST_VISIT.BLOCKED)
 					Page.blockFirstVisit(shouldBlockFirstVisit.host);
 
 				this.message = shouldBlockFirstVisit;
@@ -263,17 +263,11 @@ function Command (command, data, event) {
 		},
 
 		unblockFirstVisit: function (host) {
-			Rules.list.firstVisit.addDomain('*', host, {
-				rule: '*',
-				action: ACTION.ALLOW_AFTER_FIRST_VISIT
-			});
+			Page.unblockFirstVisit(host);
 		},
 
 		noFirstVisitNotifications: function (host) {
-			Rules.list.firstVisit.addDomain('*', host, {
-				rule: '*',
-				action: ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION
-			});
+			Page.blockFirstVisit(host, true);
 		},
 
 		verifyScriptSafety: function (script) {

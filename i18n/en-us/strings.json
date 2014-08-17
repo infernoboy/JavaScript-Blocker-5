@@ -3,15 +3,16 @@
 	"Alert": "Alert",
 	"Save": "Save",
 	"Cancel": "Cancel",
-	"Ignore": "Ignore",
-
+	"Help": "Help",
+	
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",
 
 	"first_visit.title": "First Visit",
-	"first_visit.body": "All blockable resources were blocked because this is the first time you've visited this {0}.",
+	"first_visit.body": "All resources are blocked because this is the first time you've visited this {0}.",
 	"first_visit.body.host": "host",
 	"first_visit.body.domain": "domain",
+	"first_visit.keep_blocked": "Keep Blocked",
 	"first_visit.unblock": "Unblock",
 	
 	"settings.ui": "User Interface",
@@ -21,9 +22,6 @@
 	"settings.other": "Other Features",
 	"settings.userScript": "User Scripts",
 	"settings.search": "Search",
-
-	"Help": "Help",
-	"tears": "😂",
 
 	"special.canvas_data_url.prompt": "This page may be attempting to use canvas fingerprinting to identify you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there is no image, use your best judgement.",
 	"special.canvas_data_url.prompt_old": "This page may be attempting to use canvas fingerprinting to identify you. If this is unexpected and you are not on a site you trust, click Cancel.",

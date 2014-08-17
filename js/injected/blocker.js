@@ -168,9 +168,9 @@ var Handler = {
 
 		document.documentElement.appendChild(style);
 
-		style.addEventListener('load', function (event) {
+		setTimeout(function () {
 			Handler.event.trigger('stylesheetLoaded', null, true);
-		}, true);
+		}, 50);
 	},
 
 	DOMContentLoaded: function () {
@@ -274,7 +274,7 @@ var Handler = {
 		return ['http:', 'https:', 'safari-extension:']._contains(Page.info.protocol);
 	},
 
-	blockedAllFirstVisit: function (host, viaFrame) {
+	showBlockedAllFirstVisitNotification: function (host, viaFrame) {
 		if (!Utilities.Page.isTop)
 			return;
 
@@ -295,7 +295,7 @@ var Handler = {
 			})
 		});
 
-		var ignoreButton = notification.addCloseButton(_('Ignore'), function (notification) {
+		var ignoreButton = notification.addCloseButton(_('first_visit.keep_blocked'), function (notification) {
 			GlobalPage.message('noFirstVisitNotifications', host);
 		});
 
@@ -304,7 +304,9 @@ var Handler = {
 		var unblockButton = notification.addCloseButton(_('first_visit.unblock'), function (notification) {
 			GlobalCommand('unblockFirstVisit', host);
 
-			window.location.reload();
+			Utilities.Timer.timeout('FirstVisitReload', function () {
+				window.location.reload();
+			}, 1200);
 		});
 
 		unblockButton.classList.add('jsb-color-allow');
@@ -312,6 +314,14 @@ var Handler = {
 };
 
 var Element = {
+	__placeholderProperties: ['display', 'position', 'top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
+	__collapsibleProperties: ['height', 'width', 'padding', 'margin'],
+
+	setCSS: function (element, important, properties) {
+		for (var key in properties)
+			element.style.setProperty(key, properties[key], important && 'important');
+	},
+
 	createFromObject: function (tag, object) {
 		var element = document.createElement(tag);
 
@@ -340,18 +350,94 @@ var Element = {
 		Element.prependTo(document.documentElement, element, append);
 	},
 
+	remove: function (element) {
+		if (element && element.parentNode)
+			return element.parentNode.removeChild(element);
+
+		return element;
+	},
+
 	hide: function (kind, element, source) {
 		if (globalSetting.showPlaceholder[kind]) {
-				// Element.createPlaceholder(element, source);
+			Element.createPlaceholder(kind, element, source);
 		} else
 			Element.collapse(element);
 	},
 
-	collapse: function (element) {
-		var collapsible = ['height', 'width', 'padding', 'margin'];
+	repaint: function (element) {
+		var display = element.style.display;
 
-		for (var i = 0; i < collapsible.length; i++)
-			element.style.setProperty(collapsible[i], 0, 'important');
+		element.style.setProperty('display', 'none', 'important');
+		element.offsetHeight;
+		element.style.setProperty('display', display, 'important');
+	},
+
+	createPlaceholder: function (kind, element, source) {
+		var placeholderTemplate = GlobalCommand('template.create', {
+			template: 'injected',
+			section: 'element-placeholder',
+			data: {
+				kind: kind,
+				nodeName: element.nodeName,
+				source: source
+			}
+		});
+
+		var cssValue;
+
+		var height = element.offsetHeight - 1,
+				width = element.offsetWidth,
+				elementStyle = window.getComputedStyle(element, null),
+				placeholder = Element.createFromHTML(placeholderTemplate)[0];
+
+		for (var i = 0; i < Element.__placeholderProperties.length; i++) {
+			cssValue = elementStyle.getPropertyValue(Element.__placeholderProperties[i]);
+
+			if (cssValue === 'inline' && Element.__placeholderProperties[i] === 'display')
+				cssValue = 'inline-block';
+			else if (cssValue === 'static' && Element.__placeholderProperties[i] === 'position')
+				cssValue = 'relative';
+
+			placeholder.style.setProperty(Element.__placeholderProperties[i], cssValue, 'important');
+		}
+
+		var kindString = placeholder.querySelector('.jsb-element-placeholder-kind'),
+				properties = {
+					height: height + 'px',
+					width: width + 'px'
+				};
+
+		Element.setCSS(placeholder, true, properties);
+
+		Element.setCSS(kindString, true, {
+			height: '100px',
+			width: '100%'
+		});
+
+		placeholder.title = kind + ' - ' + source;
+
+		placeholder.addEventListener('click', function (event) {
+			if (event.isTrigger)
+				return;
+
+			element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
+
+			placeholder.parentNode.replaceChild(element, placeholder);
+		}, true);
+
+		element.parentNode.replaceChild(placeholder, element);
+
+		kindString.style.setProperty('line-height', (placeholder.offsetHeight - 2) + 'px', 'important');
+
+		Utilities.Element.fitFontWithin(placeholder, kindString);
+
+		// Avoids flickering when hovering on the placeholder.
+		Element.repaint(placeholder);
+	},
+
+	collapse: function (element) {
+		for (var i = 0; i < Element.__collapsibleProperties.length; i++)
+			element.style.setProperty(Element.__collapsibleProperties[i], 0, 'important');
 
 		element.style.setProperty('display', 'none', 'important');
 		element.style.setProperty('visibility', 'hidden', 'important');
@@ -437,8 +523,8 @@ var Element = {
 		Page.send();
 	},
 
-	requestFrameURL: function (frame, reason) {
-		if (!(frame instanceof HTMLElement) || Utilities.Token.valid(frame.getAttribute('jsbShouldSkipLoadEventURLRequest'), 'ShouldSkipLoadEventURLRequest', true))
+	requestFrameURL: function (frame, reason, force) {
+		if (!(frame instanceof HTMLElement) && (!force || Utilities.Token.valid(frame.getAttribute('jsbShouldSkipLoadEventURLRequest'), 'ShouldSkipLoadEventURLRequest', true)))
 			return;
 
 		frame.contentWindow.postMessage({
@@ -560,7 +646,7 @@ var Element = {
 				if (frame && frame.contentWindow && frame.contentWindow.document && frame.contentWindow.document.readyState === 'complete') {
 					frame.setAttribute('jsbShouldSkipLoadEventURLRequest', Utilities.Token.create('ShouldSkipLoadEventURLRequest'));
 
-					Element.requestFrameURL(frame);
+					Element.requestFrameURL(frame, undefined, true);
 				}
 			} catch (e) {}
 
@@ -594,10 +680,12 @@ var Resource = {
 
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad')) {
 			if (kind in Resource.staticActions) {
-				if (!Resource.staticActions[kind] && event.preventDefault)
+				if (!Resource.staticActions[kind].isAllowed && event.preventDefault)
 					event.preventDefault();
 
 				Page.send();
+
+				Utilities.setImmediateTimeout(Element.afterCanLoad, [meta, element, excludeFromPage, Resource.staticActions[kind], source, event, sourceHost, kind]);
 
 				return Resource.staticActions[kind];
 			} else {
@@ -635,13 +723,8 @@ var Resource = {
 						isFrame: !Utilities.Page.isTop
 					});
 
-				if (canLoad.action === -85) {
-					Resource.staticActions[kind] = canLoad.isAllowed;
-
-					Page.send();
-
-					return canLoad.isAllowed;
-				}
+				if (canLoad.action === -85)
+					Resource.staticActions[kind] = canLoad;
 
 				if (!canLoad.isAllowed && event.preventDefault)
 					event.preventDefault();
@@ -706,11 +789,11 @@ if (!globalSetting.disabled) {
 			Handler.event.addEventListener('readyForPageNotifications', function () {
 				if (Page.info.isFrame)
 					GlobalPage.message('bounce', {
-						command: 'blockedAllFirstVisit',
+						command: 'showBlockedAllFirstVisitNotification',
 						detail: willBlockFirstVisit.host
 					});
 				else
-					Handler.blockedAllFirstVisit(willBlockFirstVisit.host);
+					Handler.showBlockedAllFirstVisitNotification(willBlockFirstVisit.host);
 			}, true);
 		}
 	}

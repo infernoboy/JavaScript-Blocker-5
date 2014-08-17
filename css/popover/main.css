@@ -1,0 +1,170 @@
+.jsb-popover ::-webkit-scrollbar,
+.jsb-injected-element ::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+.jsb-popover ::-webkit-scrollbar-corner,
+.jsb-injected-element ::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+.jsb-popover ::-webkit-scrollbar-track,
+.jsb-injected-element ::-webkit-scrollbar-track {
+  border-radius: 5px !important;
+  background: rgba(0, 0, 0, 0.07);
+}
+.jsb-popover ::-webkit-scrollbar-thumb,
+.jsb-injected-element ::-webkit-scrollbar-thumb {
+  border-radius: 5px !important;
+  background: rgba(0, 0, 0, 0.3);
+}
+.jsb-popover ::-webkit-scrollbar-thumb:hover,
+.jsb-injected-element ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+.jsb-popover *,
+.jsb-injected-element *,
+.jsb-popover,
+.jsb-injected-element {
+  margin: 0 !important;
+  color: #222 !important;
+  font-family: 'Helvetica Neue', Helvetica, sans-serif !important;
+  font-size: 9pt !important;
+  height: auto !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  line-height: 1.2 !important;
+  text-transform: none !important;
+  clear: none !important;
+}
+.jsb-popover input,
+.jsb-injected-element input,
+.jsb-popover select,
+.jsb-injected-element select,
+.jsb-popover button,
+.jsb-injected-element button,
+.jsb-popover textarea,
+.jsb-injected-element textarea {
+  background: #fff !important;
+  border: none !important;
+  -webkit-border-radius: 4px !important;
+  color: #0069de !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid #c8c8c8 !important;
+  border-bottom-color: #a8a8a8 !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) !important;
+  width: auto !important;
+  cursor: default !important;
+  padding: 3px 8px !important;
+  border-radius: 5px !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
+  font-weight: normal !important;
+}
+.jsb-popover input[disabled],
+.jsb-injected-element input[disabled],
+.jsb-popover select[disabled],
+.jsb-injected-element select[disabled],
+.jsb-popover button[disabled],
+.jsb-injected-element button[disabled],
+.jsb-popover textarea[disabled],
+.jsb-injected-element textarea[disabled] {
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+}
+.jsb-popover input:not([type="checkbox"]):not([type="radio"]):focus,
+.jsb-injected-element input:not([type="checkbox"]):not([type="radio"]):focus,
+.jsb-popover select:not([type="checkbox"]):not([type="radio"]):focus,
+.jsb-injected-element select:not([type="checkbox"]):not([type="radio"]):focus,
+.jsb-popover button:not([type="checkbox"]):not([type="radio"]):focus,
+.jsb-injected-element button:not([type="checkbox"]):not([type="radio"]):focus,
+.jsb-popover textarea:not([type="checkbox"]):not([type="radio"]):focus,
+.jsb-injected-element textarea:not([type="checkbox"]):not([type="radio"]):focus {
+  outline: none !important;
+  border-color: rgba(31, 169, 255, 0.5) !important;
+  box-shadow: 0 1px 0 rgba(31, 169, 255, 0.4), 0 -1px 0 rgba(31, 169, 255, 0.4), 1px 0 0 rgba(31, 169, 255, 0.4), -1px 0 0 rgba(31, 169, 255, 0.4), inset 0 1px 0 rgba(31, 169, 255, 0.4), inset 0 -1px 0 rgba(31, 169, 255, 0.4), inset 1px 0 0 rgba(31, 169, 255, 0.4), inset -1px 0 0 rgba(31, 169, 255, 0.4) !important;
+}
+.jsb-popover input[type="text"],
+.jsb-injected-element input[type="text"],
+.jsb-popover select[type="text"],
+.jsb-injected-element select[type="text"],
+.jsb-popover button[type="text"],
+.jsb-injected-element button[type="text"],
+.jsb-popover textarea[type="text"],
+.jsb-injected-element textarea[type="text"],
+.jsb-popover input[type="search"],
+.jsb-injected-element input[type="search"],
+.jsb-popover select[type="search"],
+.jsb-injected-element select[type="search"],
+.jsb-popover button[type="search"],
+.jsb-injected-element button[type="search"],
+.jsb-popover textarea[type="search"],
+.jsb-injected-element textarea[type="search"] {
+  padding: 2px !important;
+}
+.jsb-popover input[type="button"]:not(.delete):active,
+.jsb-injected-element input[type="button"]:not(.delete):active,
+.jsb-popover button:not(.delete):active,
+.jsb-injected-element button:not(.delete):active {
+  background: #f5f5f5 !important;
+  border-color: #b9b9b9 !important;
+  -webkit-animation: none !important;
+  text-shadow: 0 0 0 rgba(0, 0, 0, 0.4) !important;
+}
+.jsb-popover input[type="text"],
+.jsb-injected-element input[type="text"],
+.jsb-popover input[type="search"],
+.jsb-injected-element input[type="search"],
+.jsb-popover textarea,
+.jsb-injected-element textarea {
+  -webkit-border-radius: 0 !important;
+  background: #fff !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-bottom-color: #a7c1d9 !important;
+  box-shadow: none !important;
+  color: #111 !important;
+  font-size: 9pt !important;
+  cursor: text !important;
+}
+.jsb-popover select.jsb-color-allow,
+.jsb-injected-element select.jsb-color-allow {
+  color: #008913 !important;
+}
+.jsb-popover select.jsb-color-block,
+.jsb-injected-element select.jsb-color-block {
+  color: #920101 !important;
+}
+.jsb-popover .jsb-hidden,
+.jsb-injected-element .jsb-hidden {
+  display: none !important;
+}
+.jsb-popover .jsb-indented,
+.jsb-injected-element .jsb-indented {
+  margin-left: 7px !important;
+}
+.jsb-popover .jsb-bold,
+.jsb-injected-element .jsb-bold {
+  font-weight: bold !important;
+}
+.jsb-popover .jsb-label,
+.jsb-injected-element .jsb-label {
+  color: #6f6f6f !important;
+}
+.jsb-popover .jsb-info,
+.jsb-injected-element .jsb-info {
+  text-indent: 0 !important;
+  padding: 1px !important;
+  margin: 4px 0 6px !important;
+  padding-bottom: 1px !important;
+  overflow: auto !important;
+}
+.jsb-popover .jsb-hidden,
+.jsb-injected-element .jsb-hidden,
+.jsb-popover .jsb-hidden *,
+.jsb-injected-element .jsb-hidden *,
+.jsb-popover .jsb-no-animations,
+.jsb-injected-element .jsb-no-animations,
+.jsb-popover .jsb-no-animations *,
+.jsb-injected-element .jsb-no-animations * {
+  -webkit-transition-duration: 0.0001s !important;
+}

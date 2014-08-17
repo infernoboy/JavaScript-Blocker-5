@@ -34,33 +34,12 @@
 </noscript>
 
 <noscript id="xhr-prompt">
-	<% var temporaryID = Utilities.Token.generate(); %>
-	<div class="jsb-xhr-create-rule-prompt jsb-hidden">
-		<input id="jsb-xhr-temporary-<%=temporaryID%>" class="jsb-xhr-temporary" type="checkbox" />
-		<label for="jsb-xhr-temporary-<%=temporaryID%>"> <%=_('rule.make_this_temporary')%></label>
-		<br />
-		<span class="jsb-label"><%=_('rule.on')%> </span>
-			<select class="jsb-xhr-on-domain">
-				<option value="lion.toggleable.com:160">lion.toggleable.com:160</option>
-				<option value=".toggleable.com:160">.toggleable.com:160</option>
-				<option value=".*">All Domains</option>
-		</select>
-		<br />
-		<select class="jsb-xhr-rule-action jsb-color-allow">
-			<option value="1"><%=_('rule.allow')%></option>
-			<option value="0"><%=_('rule.block')%></option>
-		</select>
-		<textarea class="jsb-xhr-rule-input" wrap="off" spellcheck="false">Loading...</textarea>
-		<input type="button" class="jsb-xhr-rule-save jsb-bold" value="<%=_('Save')%>" />
-		<br>
-		<input type="button" class="jsb-xhr-rule-cancel" value="<%=_('Cancel')%>" />
-		<br>
-	</div>
 	<div class="jsb-xhr-prompt">
 		<div class="jsb-info">
 			<input type="button" class="jsb-xhr-create-rule" value="<%=_('xhr.create_rule')%>" />
 		</div>
-		<% var sourceOrigin = Utilities.URL.origin(self.info.source),
+		<%
+			var sourceOrigin = Utilities.URL.origin(self.info.source),
 					locationOrigin = Utilities.URL.origin(self.info.pageLocation);
 		%>
 		<div class="jsb-info jsb-xhr-path">
@@ -84,5 +63,26 @@
 			<% } %>
 		</div>
 		<% } %>
+	</div>
+</noscript>
+
+<noscript id="element-placeholder">
+	<div class="jsb-injected-element jsb-element-placeholder">
+		<div class="jsb-element-placeholder-source">
+		<%
+			var host = Utilities.URL.host(self.source);
+
+			self.source = self.source
+				.replace(/</g, '&lt;')
+				.replace(/\//g, '/<wbr />')
+				.replace(/\?/g, '?<wbr />')
+				.replace(/&(?!lt;)/g, '&<wbr />')
+				.replace(/\=/g, '=<wbr />');
+
+			if (host)
+				self.source = self.source.replace(new RegExp('(' + host._escapeRegExp() + ')'), '<span class="jsb-element-placeholder-source-origin">$1</span>');
+		%><%=self.kind + ' - ' + self.source%>
+		</div>
+		<div class="jsb-element-placeholder-kind"><%=self.kind%></div>
 	</div>
 </noscript>

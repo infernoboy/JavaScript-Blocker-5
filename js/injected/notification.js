@@ -59,30 +59,10 @@ function PageNotification (detail) {
 
 	this.addCloseButton(_('Close'), null, true);
 
-	Handler.event.addEventListener('stylesheetLoaded', function () {
-		if (this.removed)
-			return;
-
-		Element.prependTo(PageNotification.__container, this.element);
-
-		PageNotification.removePending(this);
-		PageNotification.add(this);
-
-		this.bringForward();
-
-		this.fullyAlignedTop = 0;
-		this.top = 0;
-		this.displayed = true;
-
-		// this.element.classList.remove('jsb-notification-warped');
-
-		this.element.classList.toggle('jsb-notification-high-priority', this.highPriority);
-		this.element.classList.add('jsb-notification-entering');
-
-		this.element.style.setProperty('right', '0px');
-
-		PageNotification.orderByPriority();
-	}.bind(this), true);
+	if (document.hidden)
+		Handler.event.addEventListener('documentBecameVisible', this.show.bind(this), true);
+	else
+		this.show();
 };
 
 PageNotification.__containerID = 'jsb-notification-container';
@@ -322,6 +302,33 @@ PageNotification.prototype.__remove = function () {
 	PageNotification.removePending(this);
 };
 
+PageNotification.prototype.show = function () {
+	Handler.event.addEventListener('stylesheetLoaded', function () {
+		if (this.removed)
+			return;
+
+		Element.prependTo(PageNotification.__container, this.element);
+
+		PageNotification.removePending(this);
+		PageNotification.add(this);
+
+		this.bringForward();
+
+		this.fullyAlignedTop = 0;
+		this.top = 0;
+		this.displayed = true;
+
+		// this.element.classList.remove('jsb-notification-warped');
+
+		this.element.classList.toggle('jsb-notification-high-priority', this.highPriority);
+		this.element.classList.add('jsb-notification-entering');
+
+		this.element.style.setProperty('right', '0px');
+
+		PageNotification.orderByPriority();
+	}.bind(this), true);
+};
+
 PageNotification.prototype.removeNotificationsWithElementID = function () {
 	var notification;
 
@@ -329,14 +336,14 @@ PageNotification.prototype.removeNotificationsWithElementID = function () {
 		notification = PageNotification.notifications[notificationID];
 
 		if (notification.element.id === this.element.id)
-			notification.hide(true);
+			notification.hide();
 	}
 
 	for (notificationID in PageNotification.pendingNotifications) {
 		notification = PageNotification.pendingNotifications[notificationID];
 
 		if (notification.element.id === this.element.id)
-			notification.hide(true);
+			notification.hide();
 	}
 };
 
@@ -404,12 +411,8 @@ PageNotification.prototype.events = {
 					if (!otherNotification.shouldObeyCloseAll())
 						continue;
 
-					if (!otherNotification.highPriority || otherNotification === notification) {
-						if (!notification.displayed)
-							notification.element.classList.add('jsb-no-animations');
-
+					if (!otherNotification.highPriority || otherNotification === notification)
 						otherNotification.disableCloseButtons().hide();
-					}
 				}
 			} else
 				notification.disableCloseButtons().hide();

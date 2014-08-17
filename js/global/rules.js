@@ -483,14 +483,6 @@ Object.defineProperty(Rules, '__kinds', {
 
 Object.defineProperty(Rules, 'list', {
 	value: Object.create({}, {
-		firstVisit: {
-			enumerable: true,
-
-			value: new Rule('FirstVisit', {
-				save: true
-			})
-		},
-
 		temporary: {
 			enumerable: true,
 
@@ -538,6 +530,14 @@ Object.defineProperty(Rules, 'list', {
 			value: new Rule('Rules', {
 				save: true,
 				snapshot: true
+			})
+		},
+
+		firstVisit: {
+			enumerable: true,
+
+			value: new Rule('FirstVisit', {
+				save: true
 			})
 		},
 

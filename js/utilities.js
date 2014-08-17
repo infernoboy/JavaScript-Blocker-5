@@ -433,27 +433,24 @@ var Utilities = {
 		@param {Element} textNode - Element that will have its font size adjusted.
 		@param (Element) wrapperNode - Parent element of textNode whose top margin is adjusted so as to be centered within containerNode.
 		*/
-		fitFontWithin: function (containerNode, textNode, wrapperNode) {
-			var currentFontSize = 22,
-					maxWrapperHeight = containerNode.offsetHeight,
-					maxWrapperWidth = containerNode.offsetWidth - 10, textNodeHeight, textNodeWidth;
+		fitFontWithin: function (containerNode, textNode) {
+			var textNodeHeight,
+					textNodeWidth;
+
+			var currentFontSize = 30,
+					maxWrapperHeight = containerNode.offsetHeight + containerNode.offsetHeight,
+					maxWrapperWidth = containerNode.offsetWidth;
 						
 			do {
 				textNode.style.setProperty('font-size', currentFontSize + 'pt', 'important');
-				wrapperNode.style.setProperty('margin-top', '-' + ((textNode.offsetHeight / 2) - 3) + 'px', 'important');
 
 				textNodeHeight = textNode.offsetHeight;
 				textNodeWidth = textNode.offsetWidth;
 
 				currentFontSize -= 1;
-			} while ((textNodeHeight + 3 > maxWrapperHeight || textNodeWidth + 3 > maxWrapperWidth) && currentFontSize > 4);
+			} while ((textNodeHeight > maxWrapperHeight || textNodeWidth > maxWrapperWidth) && currentFontSize > 10);
 
-			this.setCSSProperties(textNode, {
-				position: 'absolute',
-				top: 'auto',
-				left: '50%',
-				'margin-left': '-' + Math.round(textNodeWidth / 2) + 'px'
-			});
+			return textNodeHeight;		
 		}
 	},
 
@@ -601,6 +598,12 @@ var Utilities = {
 				parts.splice(1, 0, '.' + parts[0]);
 			
 			return hostStore.set(cacheKey, parts).get(cacheKey);
+		},
+
+		host: function (url) {
+			this.__anchor.href = url;
+
+			return this.__anchor.host;
 		},
 
 		origin: function (url) {
@@ -1115,6 +1118,22 @@ var Extension = {
 		}
 	}
 };
+
+if (Utilities.safariBuildVersion < 537) {
+	Extension.DOMTokenList = {
+		toggle: {
+			value: function (className, force) {
+				var contains = this.contains(className),
+						method = contains ? force !== true && 'remove' : force !== false && 'add';
+
+				if (method)
+					this[method](className);
+
+				return !contains;
+			}
+		}
+	};
+}
 
 (function () {
 	for (var object in Extension)

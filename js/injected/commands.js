@@ -249,8 +249,8 @@ var Command = function (type, event) {
 				new PageNotification(detail.data);
 		},
 
-		blockedAllFirstVisit: function (detail) {
-			Handler.blockedAllFirstVisit(detail.data, true);
+		showBlockedAllFirstVisitNotification: function (detail) {
+			Handler.showBlockedAllFirstVisitNotification(detail.data, true);
 		}
 	};
 
@@ -312,18 +312,21 @@ var Command = function (type, event) {
 				var frameSources = Page.allowed.getStore('frame').getStore('source'),
 						allFrameSources = frameSources.all();
 
-				for (locationURL in allFrameSources)
+				for (locationURL in allFrameSources) {
 					locationURLStore = frameSources.getStore(locationURL);
 
-					for (frameURL in allFrameSources[locationURL])
+					for (frameURL in allFrameSources[locationURL]) {
 						frameURLStore = locationURLStore.getStore(frameURL);
 
-						for (frameItemID in allFrameSources[locationURL][frameURL])
+						for (frameItemID in allFrameSources[locationURL][frameURL]) {
 							if (allFrameSources[locationURL][frameURL][frameItemID].meta && allFrameSources[locationURL][frameURL][frameItemID].meta.waiting && allFrameSources[locationURL][frameURL][frameItemID].meta.id === message.id) {
 								frameURLStore.remove(frameItemID);
 
 								Page.allowed.decrementHost('frame', Utilities.URL.extractHost(frameURL));
 							}
+						}
+					}
+				}
 			}
 
 			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank',
@@ -515,13 +518,10 @@ var Command = function (type, event) {
 				}
 			};
 
-			var notificationID = Utilities.Token.generate();
-
 			var xhrPrompt = GlobalCommand('template.create', {
 				template: 'injected',
 				section: 'xhr-prompt',
 				data: {
-					notificationID: notificationID,
 					synchronousInfoOnly: detail.meta.synchronousInfoOnly,
 					synchronousInfoIsAllowed: detail.meta.synchronousInfoIsAllowed,
 					info: detail.meta.meta
@@ -536,7 +536,6 @@ var Command = function (type, event) {
 			subTitle.push(Page.info.location);
 
 			var notification = new PageNotification({
-				id: notificationID,
 				closeAllID: detail.meta.synchronousInfoOnly ? undefined : 'xhr',
 				title: _(meta.kind + '.prompt.title'),
 				subTitle: subTitle.join(' - '),
@@ -644,29 +643,9 @@ var Command = function (type, event) {
 					notification.event.trigger('blockXHR');
 			});
 
-			notification
-				.addEventListener('click', '.jsb-xhr-rule-cancel', function (notification) {
-					notification.restoreLayering();
-
-					notification.element.querySelector('.jsb-xhr-create-rule-prompt').classList.add('jsb-hidden');
-					notification.element.querySelector('.jsb-xhr-prompt').classList.remove('jsb-hidden');
-
-					PageNotification.totalShift();
-				})
-				.addEventListener('change', '.jsb-xhr-rule-action', function (notification) {
-					var value = this.options[this.selectedIndex].value;
-
-					this.classList.toggle('jsb-color-allow', value === '1');
-					this.classList.toggle('jsb-color-block', value === '0');
-				})
-				.addEventListener('click', '.jsb-xhr-create-rule', function (notification) {
-					notification.element.querySelector('.jsb-xhr-create-rule-prompt').classList.remove('jsb-hidden');
-					notification.element.querySelector('.jsb-xhr-prompt').classList.add('jsb-hidden');
-
-					PageNotification.totalShift();
-
-					notification.bringForward();
-				});
+			notification.addEventListener('click', '.jsb-xhr-create-rule', function (notification) {
+				GlobalPage.message('showPopover');
+			});
 		},
 
 		notification: function (detail) {

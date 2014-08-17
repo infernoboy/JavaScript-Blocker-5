@@ -56,9 +56,8 @@ Page.frames = new Store('Frames', {
 });
 
 Page.FIRST_VISIT = {
-	NO_DOMAIN: 1,
-	NO_RULE: 2,
-	BLOCKED: 3
+	NO_RULE: 1,
+	BLOCKED: 2
 };
 
 Page.protocolSupported = function (protocol) {
@@ -137,14 +136,21 @@ Page.awaitFromTab = function (awaitTab, done) {
 	}, 300);
 };
 
-Page.blockFirstVisit = function (host) {
+Page.blockFirstVisit = function (host, withoutNotification) {
 	return Rules.list.firstVisit.addDomain('*', host, {
 		rule: '*',
-		action: ACTION.BLOCK_FIRST_VISIT
+		action: withoutNotification ? ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION : ACTION.BLOCK_FIRST_VISIT
 	});
 };
 
-Page.shouldBlockFirstVisitToHost = function (host) {
+Page.unblockFirstVisit = function (host) {
+	Rules.list.firstVisit.addDomain('*', host, {
+		rule: '*',
+		action: ACTION.ALLOW_AFTER_FIRST_VISIT
+	});
+};
+
+Page.shouldBlockFirstVisit = function (host) {
 	var blockFirstVisit = Settings.getItem('blockFirstVisit');
 
 	if (blockFirstVisit === 'nowhere')
@@ -153,15 +159,7 @@ Page.shouldBlockFirstVisitToHost = function (host) {
 	if (blockFirstVisit === 'domain')
 		host = Resource.mapDomain(host, RESOURCE.DOMAIN);
 
-	var domainRules = Rules.list.firstVisit.kind('*').domain(host);
-
-	if (domainRules.isEmpty())
-		return {
-			action: Page.FIRST_VISIT.NO_DOMAIN,
-			host: host
-		};
-
-	var rule = domainRules.get('*');
+	var rule = Rules.list.firstVisit.kind('*').domain(host).get('*');
 
 	if (!rule)
 		return {
