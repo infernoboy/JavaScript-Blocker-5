@@ -23,7 +23,7 @@
 	"settings.userScript": "User Scripts",
 	"settings.search": "Search",
 
-	"special.canvas_data_url.prompt": "This page may be attempting to use canvas fingerprinting to identify you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there is no image, use your best judgement.",
+	"special.canvas_data_url.prompt": "This page may be attempting to use canvas fingerprinting to track you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there isn't, use your best judgement.",
 	"special.canvas_data_url.prompt_old": "This page may be attempting to use canvas fingerprinting to identify you. If this is unexpected and you are not on a site you trust, click Cancel.",
 	"special.canvas_data_url.subsequent": "Subsequent attempts from {0} will be handled automatically.",
 	"special.canvas_data_url.subsequent_session": "Subsequent attempts from {0} will be handled automatically until you restart Safari.",

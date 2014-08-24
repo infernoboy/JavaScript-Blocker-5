@@ -1,16 +1,14 @@
 "use strict";
 
-var ACTION = Object.freeze({
-	BLACKLIST: 4,
-	blacklist: 4,
-	WHITELIST: 5,
-	whitelist: 5,
-	BLOCK_FIRST_VISIT: 6,
+var ACTION = {
 	BLOCK_FIRST_VISIT_NO_NOTIFICATION: 8,
-	ALLOW: 1,
-	BLOCK: 0,
+	BLOCK_FIRST_VISIT: 6,
+	WHITELIST: 5,
+	BLACKLIST: 4,	
 	AUTO_ALLOW_USER_SCRIPT: 3,
 	AUTO_BLOCK_USER_SCRIPT: 2,
+	ALLOW: 1,
+	BLOCK: 0,	
 	ALLOW_WITHOUT_RULE: -1,
 	BLOCK_WITHOUT_RULE: -2,
 	AUTO_ALLOW_UNBLOCKABLE: -3,
@@ -21,7 +19,11 @@ var ACTION = Object.freeze({
 	ALLOW_AFTER_FIRST_VISIT: -9,
 	KIND_DISABLED: -85,
 	UNBLOCKABLE: -87
-});
+};
+
+ACTION._createReverseMap();
+
+Object.freeze(ACTION);
 
 var Rule = function (store, storeProps, ruleProps) {
 	this.action = (ruleProps && typeof ruleProps.action === 'number') ? ruleProps.action : null;
@@ -578,7 +580,7 @@ Rules.list.active = Rules.list.user;
 
 		Rules.list[list].rules.all();
 
-		Rules.list[list].rules.addEventListener('save', function () {
+		Rules.list[list].rules.addCustomEventListener('save', function () {
 			Resource.canLoadCache.saveNow();
 		});
 	}

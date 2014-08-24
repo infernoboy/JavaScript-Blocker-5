@@ -27,7 +27,7 @@ function Snapshot (store, props) {
 	this.firstKept = this.__outerMost.bind(this, false, true);
 	this.firstUnkept = this.__outerMost.bind(this, false, false);
 
-	store.addEventListener('save', function () {
+	store.addCustomEventListener('save', function () {
 		Utilities.Timer.timeout('CheckForChanges' + this.snapshots.name, function (snapshot) {
 			snapshot.checkForChanges();
 		}, TIME.ONE.SECOND * 30, [this]);

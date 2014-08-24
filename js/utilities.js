@@ -495,7 +495,7 @@ var Utilities = {
 		createFromContent: function (content, type, base64) {
 			var URL = window.URL || window.webkitURL;
 
-			if (!base64 && window.Blob && URL)
+			if (!base64 && window.Blob && URL && URL.createObjectURL)
 				return URL.createObjectURL(new Blob([content], {
 					type: type
 				}));

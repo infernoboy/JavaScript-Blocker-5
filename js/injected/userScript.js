@@ -68,7 +68,8 @@ var UserScript = {
 			namespace: attributes.meta.trueNamespace,
 			name: attributes.meta.name,
 			usedURL: DeepInject.useURL,
-			isUserScript: true
+			isUserScript: true,
+			private: script.private
 		};
 
 		userScript.setArguments(userScript.pieces.args).inject();
@@ -80,6 +81,8 @@ var UserScript = {
 			Page.allowed.pushSource('user_script', attributes.meta.trueNamespace, {
 				action: -1
 			});
+
+		return userScript;
 	},
 
 	begin: function () {

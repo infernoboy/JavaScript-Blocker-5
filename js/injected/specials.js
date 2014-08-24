@@ -37,14 +37,14 @@ Special.specials = {
 			}, '*');
 		};
 
-		var evt = document.createEvent('CustomEvent');
+		var myEvent = document.createEvent('CustomEvent');
 
-		evt.initCustomEvent('JSBCommander:' + JSB.sourceID + ':' + JSB.eventToken, false, false, {
+		myEvent.initCustomEvent('JSBCommander:' + JSB.sourceID + ':' + JSB.eventToken, false, false, {
 			commandToken: JSB.commandToken,
 			command: 'inlineScriptsAllowed'
 		});
 
-		document.dispatchEvent(evt);
+		document.dispatchEvent(myEvent);
 	},
 
 	installUserScriptPrompt: function () {
@@ -483,8 +483,10 @@ Special.specials = {
 		function protection (dataURL) {
 			var url = baseURL + dataURL;
 
-			if (JSB.value.value === ALWAYS_BLOCK || (shouldAskOnce && JSB.value.action >= 0))
+			if (JSB.value.value === ALWAYS_BLOCK)
 				var shouldContinue = false;
+			else if (shouldAskOnce && JSB.value.action >= 0)
+				var shouldContinue = !!(JSB.value.action % 2);
 			else if (autoContinue.hasOwnProperty(dataURL))
 				var shouldContinue = autoContinue[dataURL];
 			else {
@@ -536,11 +538,15 @@ Special.specials = {
 	}
 };
 
+(function () {
+	for (var special in Special.specials)
+		Special.specials[special].private = true;
+})();
+
 Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
 
 Special.specials.canvas_data_url.data = {
-	safariBuildVersion: Utilities.safariBuildVersion,
-	key: Utilities.Token.create('addResourceRuleKey', true)
+	safariBuildVersion: Utilities.safariBuildVersion
 };
 
 Special.specials.prepareScript.ignoreHelpers = true;

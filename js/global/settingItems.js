@@ -415,8 +415,8 @@ Settings.settings = {
 			label: 'Block all resources on first visit to:',
 			options: [
 				['nowhere', 'Nowhere'],
-				['host', 'Different hostnames'],
-				['domain', 'Different hosts &amp; subdomains'],
+				['host', 'Different hosts &amp; subdomains'],
+				['domain', 'Different hostnames'],
 			],
 			default: 'nowhere',
 			onChange: function () {

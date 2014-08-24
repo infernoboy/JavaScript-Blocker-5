@@ -53,17 +53,17 @@ function PageNotification (detail) {
 
 	this.isEntering = true;
 
-	this.event = new EventListener;
-
 	this.closeContainer = this.element.querySelector('.' + PageNotification.__closeButtonsContainerClass);
 
 	this.addCloseButton(_('Close'), null, true);
 
 	if (document.hidden)
-		Handler.event.addEventListener('documentBecameVisible', this.show.bind(this), true);
+		Handler.event.addCustomEventListener('documentBecameVisible', this.show.bind(this), true);
 	else
 		this.show();
 };
+
+PageNotification = PageNotification._extendClass(EventListener);
 
 PageNotification.__containerID = 'jsb-notification-container';
 PageNotification.__closeButtonsContainerClass = 'jsb-notification-close-container';
@@ -92,7 +92,7 @@ PageNotification.keyStateChanged = function (event) {
 	PageNotification.setWillCloseAll(event.altKey);
 
 	for (var notificationID in PageNotification.notifications)
-		PageNotification.notifications[notificationID].event.trigger('optionKeyStateChange', event.altKey);
+		PageNotification.notifications[notificationID].trigger('optionKeyStateChange', event.altKey);
 };
 
 PageNotification.orderByPriority = function () {	
@@ -292,6 +292,12 @@ Object.defineProperties(PageNotification.prototype, {
 
 			return this.height;
 		}
+	},
+
+	primaryCloseButton: {
+		get: function () {
+			return this.element.querySelector('.jsb-notification-primary-close-button');
+		}
 	}
 });
 
@@ -303,7 +309,7 @@ PageNotification.prototype.__remove = function () {
 };
 
 PageNotification.prototype.show = function () {
-	Handler.event.addEventListener('stylesheetLoaded', function () {
+	Handler.event.addCustomEventListener('stylesheetLoaded', function () {
 		if (this.removed)
 			return;
 
@@ -446,14 +452,16 @@ PageNotification.prototype.addEventListener = function (eventType, selector, fn)
 };
 
 PageNotification.prototype.onPrimaryClose = function (fn) {
-	this.addEventListener('click', [this.element.querySelector('.jsb-notification-primary-close-button')], fn);
+	this.addEventListener('click', [this.primaryCloseButton], fn);
 };
 
 PageNotification.prototype.primaryCloseButtonText = function (text, ignoreAttribute) {
 	if (!ignoreAttribute)
 		this.element.setAttribute('data-primaryCloseButtonText', text);
 
-	this.element.querySelector('.jsb-notification-primary-close-button').value = text;
+	this.primaryCloseButton.value = text;
+
+	return this;
 };
 
 PageNotification.prototype.addCloseButton = function (text, onClick, primary) {
@@ -495,7 +503,7 @@ PageNotification.prototype.disableCloseButtons = function () {
 };
 
 PageNotification.prototype.shouldStack = function () {
-	return PageNotification.__allowStacking && this.fullyAlignedTop + this.height + PageNotification.__offset > window.innerHeight;
+	return PageNotification.__allowStacking && this.fullyAlignedTop + this.height + (PageNotification.__offset / 2) > window.innerHeight;
 };
 
 PageNotification.prototype.shouldDisplay = function () {

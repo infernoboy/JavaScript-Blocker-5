@@ -116,7 +116,8 @@ var Special = {
 			namespace: special.name,
 			name: special.name,
 			usedURL: !!useURL,
-			isUserScript: false
+			isUserScript: false,
+			private: !!this.specials[name].private
 		};
 
 		special.inject(useURL);
@@ -206,7 +207,7 @@ var Special = {
 				command: command,
 				meta: {
 					args: meta,
-					meta: meta.meta
+					meta: meta ? meta.meta : null
 				},
 				callback: typeof callback === 'function' ? callback.toString() : null
 			});

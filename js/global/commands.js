@@ -523,7 +523,10 @@ Command.setupContentURLs = function () {
 	});
 
 	window.CONTENT_URLS = {
-		stylesheet: Utilities.URL.createFromContent(stylesheet.responseText, 'text/css', true)
+		stylesheet: {
+			type: 'text/css',
+			url: Utilities.URL.createFromContent(stylesheet.responseText, 'text/css', true)
+		}
 	};
 };
 

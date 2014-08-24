@@ -14,12 +14,12 @@ EventListener.prototype.listeners = function (name) {
 	return this.__listeners[name];
 };
 
-EventListener.prototype.addEventListener = function (name, fn, once) {
+EventListener.prototype.addCustomEventListener = function (name, fn, once) {
 	if (Array.isArray(name)) {
 		for (var i = 0; i < name.length; i++)
-			this.addEventListener(name[i], fn, once);
+			this.addCustomEventListener(name[i], fn, once);
 
-		return;
+		return this;
 	}
 
 	if (typeof fn !== 'function')
@@ -32,16 +32,18 @@ EventListener.prototype.addEventListener = function (name, fn, once) {
 		fn: fn
 	});
 
-	if (listeners.triggerSubsequentAdditions)
+	if (listeners.triggerSubsequentListeners)
 		this.trigger(name, null, true);
+
+	return this;
 };
 
-EventListener.prototype.addMissingEventListener = function (name, fn, once) {
+EventListener.prototype.addMissingCustomEventListener = function (name, fn, once) {
 	if (Array.isArray(name)) {
 		for (var i = 0; i < name.length; i++)
-			this.addMissingEventListener(name[i], fn, once);
+			this.addMissingCustomEventListener(name[i], fn, once);
 
-		return;
+		return this;
 	}
 
 	var listeners = this.listeners(name);
@@ -50,10 +52,10 @@ EventListener.prototype.addMissingEventListener = function (name, fn, once) {
 		if (listeners.fns[i].fn === fn)
 			return this;
 
-	return this.addEventListener(name, fn, once);
+	return this.addCustomEventListener(name, fn, once);
 };
 
-EventListener.prototype.removeEventListener = function (name, fn) {
+EventListener.prototype.removeCustomEventListener = function (name, fn) {
 	var listeners = this.listeners(name);
 
 	listeners.fns = listeners.fns.filter(function (testFn) {
@@ -61,11 +63,11 @@ EventListener.prototype.removeEventListener = function (name, fn) {
 	});
 };
 
-EventListener.prototype.trigger = function (name, data, triggerSubsequentAdditions) {
+EventListener.prototype.trigger = function (name, data, triggerSubsequentListeners) {
 	var newListeners = [],
 			listeners = this.listeners(name);
 
-	listeners.triggerSubsequentAdditions = !!triggerSubsequentAdditions;
+	listeners.triggerSubsequentListeners = !!triggerSubsequentListeners;
 
 	for (var i = 0; i < listeners.fns.length; i++) {
 		Utilities.setImmediateTimeout(listeners.fns[i].fn, [data]);

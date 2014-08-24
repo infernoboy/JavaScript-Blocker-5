@@ -94,8 +94,16 @@ var Command = function (type, event) {
 			return LogDebug('cannot call commands that begin with __');
 		}
 
+		var command = commands[commandParts[0]];
+
+		if (command.private && !TOKEN.INJECTED[detail.sourceID].private) {
+			this.status = COMMAND.UNAUTHORIZED;
+
+			return LogDebug('not authorized to execute private command - ' + detail.sourceName + ' => ' + detail.command);
+		}
+
 		try {
-			this.result = commands[commandParts[0]].call(commands, detail, event);
+			this.result = command.call(commands, detail, event);
 
 			this.status = COMMAND.SUCCESS;
 		} catch (error) {
@@ -157,10 +165,10 @@ var Command = function (type, event) {
 					var promise = Promise.resolve(result);
 
 				promise.then(function (result) {
-					var callback = new DeepInject(null, data.callback),
+					var script = new DeepInject(null, data.callback),
 							name = 'TopCallback-' + data.originSourceName + Utilities.Token.generate();
 
-					callback.setArguments({
+					script.setArguments({
 						detail: {
 							origin: data.originSourceID,
 							result: result,
@@ -168,14 +176,16 @@ var Command = function (type, event) {
 						}
 					});
 
-					UserScript.inject({
+					var callback = UserScript.inject({
+						private: TOKEN.INJECTED[foundSourceID].private,
+
 						attributes: {
 							meta: {
 								name: name,
 								trueNamespace: name
 							},
 
-							script: callback.executable()
+							script: script.executable()
 						}
 					}, true);
 				});
@@ -457,7 +467,7 @@ var Command = function (type, event) {
 			if (document.hidden) {
 				event.detail.commandToken = Command.requestToken('messageTopExtension');
 
-				Handler.event.addEventListener('documentBecameVisible', Command.bind(window, 'injected', event), true);
+				Handler.event.addCustomEventListener('documentBecameVisible', Command.bind(window, 'injected', event), true);
 			} else {
 				detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].namespace;
 				detail.meta.originSourceID = detail.sourceID;
@@ -543,44 +553,43 @@ var Command = function (type, event) {
 			});
 
 			if (!detail.meta.synchronousInfoOnly) {
-				notification.primaryCloseButtonText(_('xhr.block_once'));
+				notification.primaryCloseButtonText(_('xhr.block_once')).primaryCloseButton.classList.add('jsb-color-block');
 
 				var allowOnceButton = notification.addCloseButton(_('xhr.allow_once'), function (notification) {
 					if (PageNotification.willCloseAll) {
 						for (var notificationID in PageNotification.notifications)
 							if (PageNotification.notifications[notificationID].shouldObeyCloseAll())
-								PageNotification.notifications[notificationID].event.trigger('allowXHR');
+								PageNotification.notifications[notificationID].trigger('allowXHR');
 					} else
-						notification.event.trigger('allowXHR');
+						notification.trigger('allowXHR');
 				});
 
 				allowOnceButton.classList.add('jsb-color-allow');
 
-				notification.event.addEventListener('optionKeyStateChange', function (optionKeyPressed) {
-					allowOnceButton.value = optionKeyPressed ? _('xhr.allow_once_all') : _('xhr.allow_once');
+				notification
+					.addCustomEventListener('optionKeyStateChange', function (optionKeyPressed) {
+						allowOnceButton.value = optionKeyPressed ? _('xhr.allow_once_all') : _('xhr.allow_once');
 
-					notification.primaryCloseButtonText(optionKeyPressed ? _('xhr.block_once_all') : _('xhr.block_once'));
-				});
+						notification.primaryCloseButtonText(optionKeyPressed ? _('xhr.block_once_all') : _('xhr.block_once'));
+					})
+					.addCustomEventListener(['allowXHR', 'blockXHR'], function () {
+						notification.hide();
 
-				notification.event.addEventListener(['allowXHR', 'blockXHR'], function () {
-					notification.hide();
+						if (response.meta.result.send) {
+							var send = [],
+									query = notification.element.querySelectorAll('.jsb-xhr-query-view');
 
-					if (response.meta.result.send) {
-						var send = [],
-								query = notification.element.querySelectorAll('.jsb-xhr-query-view');
+							for (var i = 0; i < query.length; i++)
+								send.push(query[i].querySelector('.jsb-xhr-query-param').getAttribute('data-param') + '=' + query[i].querySelector('.jsb-xhr-query-value').getAttribute('data-value'))
 
-						for (var i = 0; i < query.length; i++)
-							send.push(query[i].querySelector('.jsb-xhr-query-param').getAttribute('data-param') + '=' + query[i].querySelector('.jsb-xhr-query-value').getAttribute('data-value'))
+							response.meta.result.send = send.join('&');
+						}
+					}, true)
+					.addCustomEventListener('allowXHR', function () {
+						response.meta.result.isAllowed = true;
 
-						response.meta.result.send = send.join('&');
-					}
-				}, true);
-
-				notification.event.addEventListener('allowXHR', function () {
-					response.meta.result.isAllowed = true;
-
-					self.executeCommanderCallback(response);
-				}, true);
+						self.executeCommanderCallback(response);
+					}, true);
 
 				notification
 					.addEventListener('dblclick', '.jsb-xhr-query-view', function (notification, event) {
@@ -628,7 +637,7 @@ var Command = function (type, event) {
 					});
 			}
 
-			notification.event.addEventListener('blockXHR', function () {
+			notification.addCustomEventListener('blockXHR', function () {
 				response.meta.result.isAllowed = false;
 
 				self.executeCommanderCallback(response);
@@ -638,9 +647,9 @@ var Command = function (type, event) {
 				if (PageNotification.willCloseAll) {
 					for (var notificationID in PageNotification.notifications)
 						if (PageNotification.notifications[notificationID].shouldObeyCloseAll())
-							PageNotification.notifications[notificationID].event.trigger('blockXHR');
+							PageNotification.notifications[notificationID].trigger('blockXHR');
 				} else
-					notification.event.trigger('blockXHR');
+					notification.trigger('blockXHR');
 			});
 
 			notification.addEventListener('click', '.jsb-xhr-create-rule', function (notification) {
@@ -660,7 +669,7 @@ var Command = function (type, event) {
 			var notification = new PageNotification(detail.meta);
 
 			return new Promise(function (resolve, reject) {				
-				Handler.event.addEventListener('stylesheetLoaded', function () {
+				Handler.event.addCustomEventListener('stylesheetLoaded', function () {
 					resolve(notification.element.id);
 				}, true);
 			});
@@ -723,9 +732,6 @@ var Command = function (type, event) {
 		},
 
 		addResourceRule: function (detail) {
-			if (!Utilities.Token.valid(detail.meta.key, 'addResourceRuleKey'))
-				throw new Error('invalid addResourceRuleKey');
-
 			var ruleInfo = detail.meta.resource;
 
 			ruleInfo.pageLocation = Page.info.location;
@@ -741,6 +747,7 @@ var Command = function (type, event) {
 		},
 
 		installUserScriptFromURL: function (detail) {
+			Log(TOKEN.INJECTED[detail.sourceID]);
 			return {
 				callbackID: detail.callbackID,
 				result: GlobalCommand('installUserScriptFromURL', detail.meta.url)
@@ -782,6 +789,10 @@ var Command = function (type, event) {
 			}
 		}
 	};
+
+	Commands.injected.inlineScriptsAllowed.private = true;
+	Commands.injected.addResourceRule.private = true;
+	Commands.injected.installUserScriptFromURL.private = true;
 
 	var command = new InternalCommand(detail, event);
 
@@ -830,7 +841,6 @@ Command.window = function (event) {
 
 	Command('window', event);
 };
-
 
 Events.addTabListener('message', Command.global, true);
 

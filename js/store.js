@@ -17,12 +17,14 @@ var Store = (function () {
 		this.save = !!props.save;
 		this.useSnapshot = !!props.snapshot;
 		this.ignoreSave = !!props.ignoreSave;
-		this.private = !!props.private;
 
-		if (typeof name === 'string' && name.length)
+		if (typeof name === 'string' && name.length) {
 			this.id = (props.save ? Store.STORE_STRING : Store.CACHE_STRING) + name;
-		else
+			this.private = !!props.private;
+		} else {
 			this.id = Utilities.Token.generate();
+			this.private = true;
+		}
 
 		this.isNew = this.private || !data[this.id];
 
@@ -74,7 +76,7 @@ var Store = (function () {
 		}
 
 		if (this.save)
-			this.addEventListener('save', function () {
+			this.addCustomEventListener('save', function () {
 				LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(this.savedByteSize()));
 			}.bind(this));
 	};

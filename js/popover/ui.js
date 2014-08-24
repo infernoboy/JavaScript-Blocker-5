@@ -12,6 +12,32 @@ var UI = {
 
 		$('#main').html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a><br/><pre>' + JSON.stringify(tree, null, 1)._escapeHTML() + '</pre>');
 	},
+
+	init: function () {
+		var i18n,
+				i18nArgs,
+				localized,
+				attribute;
+
+		$('*[data-i18n]').each(function (index) {
+			attribute = null;
+			i18n = this.getAttribute('data-i18n');
+			i18nArgs = this.getAttribute('data-i18n-args');
+			localized = _(i18n, i18nArgs ? JSON.parse(i18nArgs) : null);
+
+			if (this.type === 'search')
+				attribute = 'placeholder';
+			else if (this.nodeName === 'INPUT')
+				attribute = 'value';
+			else if (this.nodeName === 'OPTGROUP')
+				attribute = 'label';
+			else
+				attribute = 'innerHTML';
+
+			if (attribute)
+				this[attribute] = localized;
+		});
+	},
 	
 	clear: function () {
 		$('#main').html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a>');
@@ -31,3 +57,5 @@ var UI = {
 globalPage.UI = UI;
 
 Events.addApplicationListener('popover', UI.events.openedPopover);
+
+document.addEventListener('DOMContentLoaded', UI.init, true);

@@ -75,7 +75,7 @@ var Page = {
 					else
 						fn.timeout = setTimeout(fn, 150);
 				} else
-					Handler.event.addEventListener('documentBecameVisible', Page.send.bind(window, now), true);
+					Handler.event.addCustomEventListener('documentBecameVisible', Page.send.bind(window, now), true);
 			} catch (error) {
 				if (!BROKEN) {
 					BROKEN = true;
@@ -159,11 +159,27 @@ var Handler = {
 		Page.send(true);
 	},
 
+	transformContentURLs: function () {
+		var base64,
+				uri;
+
+		var URL = window.webkitURL || window.URL || {};
+
+		for (var key in globalSetting.contentURLs)
+			if (window.Blob && URL.createObjectURL) {
+				uri = globalSetting.contentURLs[key].url;
+
+				uri = Utilities.decode(uri.substr(uri.indexOf(',') + 1));
+
+				globalSetting.contentURLs[key].url = Utilities.URL.createFromContent(uri, globalSetting.contentURLs[key].type);
+			}
+	},
+
 	injectStyleSheet: function () {
 		var style = Element.createFromObject('link', {
 			rel: 'stylesheet',
 			type: 'text/css',
-			href: globalSetting.contentURLs.stylesheet
+			href: globalSetting.contentURLs.stylesheet.url
 		});
 
 		document.documentElement.appendChild(style);
@@ -313,6 +329,9 @@ var Handler = {
 	}
 };
 
+if (globalSetting.debugMode)
+	Handler.transformContentURLs();
+
 var Element = {
 	__placeholderProperties: ['display', 'position', 'top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
 	__collapsibleProperties: ['height', 'width', 'padding', 'margin'],
@@ -436,11 +455,11 @@ var Element = {
 	},
 
 	collapse: function (element) {
-		for (var i = 0; i < Element.__collapsibleProperties.length; i++)
-			element.style.setProperty(Element.__collapsibleProperties[i], 0, 'important');
+		var div = document.createElement('div');
 
-		element.style.setProperty('display', 'none', 'important');
-		element.style.setProperty('visibility', 'hidden', 'important');
+		div.style.setProperty('display', 'none', 'important');
+
+		element.parentNode.replaceChild(div, element);
 	},
 
 	shouldIgnore: function (element) {
@@ -713,7 +732,7 @@ var Resource = {
 						isAllowed: false
 					};
 
-					Handler.event.addMissingEventListener('documentBecameVisible', Handler.blockedHiddenPageContent, true);
+					Handler.event.addMissingCustomEventListener('documentBecameVisible', Handler.blockedHiddenPageContent, true);
 				} else
 					var canLoad = GlobalCommand('canLoadResource', {
 						kind: kind,
@@ -786,7 +805,7 @@ if (!globalSetting.disabled) {
 		var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
 
 		if (willBlockFirstVisit && willBlockFirstVisit.action !== 8) {
-			Handler.event.addEventListener('readyForPageNotifications', function () {
+			Handler.event.addCustomEventListener('readyForPageNotifications', function () {
 				if (Page.info.isFrame)
 					GlobalPage.message('bounce', {
 						command: 'showBlockedAllFirstVisitNotification',

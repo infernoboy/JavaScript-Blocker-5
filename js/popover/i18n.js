@@ -7,7 +7,7 @@ var Strings = {
 	defaultLanguage: 'en-us',
 
 	loadLanguage: function (language) {
-		if (this.strings.hasOwnProperty(language))
+		if (this.strings[language])
 			return Log(language, 'is already loaded.');
 
 		if (!this.strings[this.defaultLanguage] && language !== this.defaultLanguage)
@@ -41,6 +41,10 @@ var Strings = {
 		this.__currentLanguage = useLanguage;
 
 		return this.__currentLanguage;
+	},
+
+	localizedCSSPath: function (path) {
+		return ExtensionURL('i18n/' + this.getLanguage() + '/css/' + path);
 	}
 };
 
@@ -51,9 +55,9 @@ function _ (string, args, hideNotLocalized) {
 	var localized = null,
 			language = Strings.getLanguage();
 
-	if (Strings.strings.hasOwnProperty(language) && typeof Strings.strings[language][string] === 'string')
+	if (Strings.strings[language] && typeof Strings.strings[language][string] === 'string')
 		localized = Strings.strings[language][string];
-	else if (Strings.strings.hasOwnProperty(Strings.defaultLanguage) && typeof Strings.strings[Strings.defaultLanguage][string] === 'string') {
+	else if (Strings.strings[Strings.defaultLanguage] && typeof Strings.strings[Strings.defaultLanguage][string] === 'string') {
 		localized = Strings.strings[Strings.defaultLanguage][string];
 
 		LogDebug('"' + string + '" is not localized in ' + language);
@@ -68,5 +72,7 @@ function _ (string, args, hideNotLocalized) {
 };
 
 
-if (window.globalPage)
+if (window.globalPage) {
+	globalPage.Strings = Strings;
 	globalPage._ = _;
+}

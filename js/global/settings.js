@@ -263,4 +263,5 @@ Settings.__stores = new Store('StoreSettings', {
 	save: true
 });
 
-Events.addSettingsListener(Settings.anySettingChanged);
+if (Utilities.Page.isGlobal)
+	Events.addSettingsListener(Settings.anySettingChanged);

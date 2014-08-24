@@ -1,4 +1,8 @@
+@importantDeclaration: !important;
+
 @import "shared-before.less";
+
+.shared-before(@importantDeclaration);
 
 .jsb-injected-element {
 	&#jsb-notification-container {
@@ -124,10 +128,10 @@
 				}
 
 				&sub-title {
-					margin-top: -5px !important;
+					margin-top: -4px !important;
 					color: #888 !important;
 					font-weight: normal !important;
-					margin-bottom: 7px !important;
+					margin-bottom: 8px !important;
 					overflow: hidden !important;
 					text-overflow: ellipsis !important;
 				}
@@ -175,7 +179,7 @@
 
 		*,
 		& {
-			-webkit-transition: opacity 0.2s ease-in-out !important;
+			-webkit-transition: opacity 0.15s ease-in-out !important;
 		}
 
 		.jsb-element-placeholder-source {
@@ -215,3 +219,7 @@
 		}
 	}
 }
+
+@import "shared-after.less";
+
+.shared-after(@importantDeclaration);
