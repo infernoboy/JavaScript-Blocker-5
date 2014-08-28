@@ -266,7 +266,7 @@ function Command (command, data, event) {
 			Page.unblockFirstVisit(host);
 		},
 
-		noFirstVisitNotifications: function (host) {
+		noFirstVisitNotification: function (host) {
 			Page.blockFirstVisit(host, true);
 		},
 

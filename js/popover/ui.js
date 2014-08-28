@@ -3,6 +3,7 @@
 var UI = {
 	show: ToolbarItems.showPopover,
 	disabled: false,
+	event: new EventListener,
 
 	__renderPage: function (page) {
 		if (!Popover.visible())
@@ -10,10 +11,22 @@ var UI = {
 
 		var tree = page.tree();
 
-		$('#main').html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a><br/><pre>' + JSON.stringify(tree, null, 1)._escapeHTML() + '</pre>');
+		UI.pageStateContainer.html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a><br/><pre>' + JSON.stringify(tree, null, 1)._escapeHTML() + '</pre>');
+	},
+
+	onReady: function (fn) {
+		UI.event.addCustomEventListener('UIReady', fn, true);
 	},
 
 	init: function () {
+		UI.container = Template.create('main', 'container');
+
+		UI.container.append(Template.create('main', 'main'));
+
+		UI.pageStateContainer = $('#page-state-container', UI.container);
+
+		$('body').html('').append(UI.container);
+
 		var i18n,
 				i18nArgs,
 				localized,
@@ -37,14 +50,16 @@ var UI = {
 			if (attribute)
 				this[attribute] = localized;
 		});
+
+		UI.event.trigger('UIReady', null, true);
 	},
 	
 	clear: function () {
-		$('#main').html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a>');
+		UI.pageStateContainer.html('<a href="' + ExtensionURL('settings.html') + '">SETTINGS</a>');
 	},
 
 	renderPage: Utilities.throttle(function (page) {
-		UI.__renderPage(page);
+		UI.onReady(UI.__renderPage.bind(UI, page));
 	}, 50, null, true),
 
 	events: {

@@ -61,13 +61,13 @@ var UserScript = {
 
 	onExecuteMenuCommand: function (event) {
 		if (event.command._startsWith('contextMenu:')) {
-			var split = event.command.split(':');
+			var splitCommand = event.command.split(':');
 
 			Tabs.messageAll('executeMenuCommand', {
-				pageID: split[1],
-				sourceID: split[2],
-				callbackID: split[3],
-				contextMenuTarget: split[4]
+				pageID: splitCommand[1],
+				sourceID: splitCommand[2],
+				callbackID: splitCommand[3],
+				contextMenuTarget: splitCommand[4]
 			});
 		}
 	},

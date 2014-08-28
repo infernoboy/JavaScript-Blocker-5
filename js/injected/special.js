@@ -172,6 +172,22 @@ var Special = {
 	},
 
 	helpers: {
+		deepFreezeObject: function (object) {
+			try {
+				Object.freeze(object);
+			} catch (error) {
+				return object;
+			}
+
+			var props = Object.getOwnPropertyNames(object);
+
+			for (var i = 0; i < props.length; i++)
+				if (object[props[i]] !== null && (typeof object[props[i]] === 'object' || typeof object[props[i]] === 'function'))
+					deepFreezeObject(object[props[i]]);
+
+			return object;
+		},
+
 		executeCallback: function (sourceID, callbackID, result) {
 			messageExtension('executeCommanderCallback', {
 				sourceID: sourceID,
@@ -276,15 +292,24 @@ var Special = {
 		},
 
 		JSBCallbackSetup: function (event) {
+			var doNotFreeze = ['commandGeneratorToken', 'eventCallback'];
+
 			window[JSB.eventToken].document$removeEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackSetup, true);
 			window[JSB.eventToken].document$addEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackHandler, true);
 
 			messageExtension('registerDeepInjectedScript', null, function (result) {
 				window[JSB.eventToken].document$removeEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackHandler, true);
 
-				Object.defineProperty(JSB, 'sourceID', {
-					value: result.newSourceID
-				});
+				JSB.sourceID = result.newSourceID;
+
+				for (var key in JSB)
+					if (JSB.hasOwnProperty(key) && doNotFreeze.indexOf(key) === -1)
+						Object.defineProperty(JSB, key, {
+							configurable: false,
+							enumerable: false,
+							writable: false,
+							value: deepFreezeObject(JSB[key])
+						});
 
 				window[JSB.eventToken].document$addEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackHandler, true);
 			});

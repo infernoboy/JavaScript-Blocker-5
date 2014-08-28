@@ -120,8 +120,11 @@ PageNotification.displaySomeOverflowed = function () {
 	for (var i = PageNotification.notificationIDs.length - 1; i >= 0; i--) {
 		notification = PageNotification.notifications[PageNotification.notificationIDs[i]];
 
-		if (notification.removed || notification.displayed || counter >= 20)
+		if (notification.removed || notification.displayed)
 			continue;
+
+		if (counter >= 20)
+			break;
 
 		counter++;
 
@@ -579,4 +582,6 @@ window.addEventListener('keydown', PageNotification.keyStateChanged, true);
 window.addEventListener('keyup', PageNotification.keyStateChanged, true);
 window.addEventListener('resize', Utilities.throttle(PageNotification.totalShift, 500), true);
 
-Handler.event.trigger('readyForPageNotifications');
+Handler.event.addCustomEventListener('documentBecameVisible', function () {
+	Handler.event.trigger('readyForPageNotifications', null, true);
+}, true);

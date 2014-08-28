@@ -3,7 +3,8 @@ var COMMAND = {
 	UNAUTHORIZED: -1,
 	NOT_FOUND: -2,
 	EXECUTION_FAILED: -3,
-	WAITING: -4
+	WAITING: -4,
+	METHOD_NOT_ALLOWED: -5
 };
 
 COMMAND._createReverseMap();
@@ -102,6 +103,12 @@ var Command = function (type, event) {
 			return LogDebug('not authorized to execute private command - ' + detail.sourceName + ' => ' + detail.command);
 		}
 
+		if (!detail.originSourceID && command.topCallbackOnly) {
+			this.status = COMMAND.METHOD_NOT_ALLOWED;
+
+			return LogDebug('command must called with messageTopExtension - ' + detail.sourceName + ' => ' + detail.command);
+		}
+
 		try {
 			this.result = command.call(commands, detail, event);
 
@@ -165,8 +172,8 @@ var Command = function (type, event) {
 					var promise = Promise.resolve(result);
 
 				promise.then(function (result) {
-					var script = new DeepInject(null, data.callback),
-							name = 'TopCallback-' + data.originSourceName + Utilities.Token.generate();
+					var name = 'TopCallback$' + data.originSourceName + '$' + Utilities.Token.generate(),
+							script = new DeepInject(name, data.callback);
 
 					script.setArguments({
 						detail: {
@@ -658,17 +665,17 @@ var Command = function (type, event) {
 		},
 
 		notification: function (detail) {
-			var self = this;
-
-			if (TOKEN.INJECTED[detail.sourceID].isUserScript)
-				detail.meta.subTitle = TOKEN.INJECTED[detail.sourceID].name + (detail.meta.subTitle ? ' - ' + detail.meta.subTitle : '');
-
-			if (detail.viaFrame)
-				detail.meta.subTitle = _('via_frame') + ' - ' + detail.meta.subTitle;
-
-			var notification = new PageNotification(detail.meta);
-
 			return new Promise(function (resolve, reject) {				
+				var info = TOKEN.INJECTED[detail.sourceID];
+
+				if (info.isUserScript)
+					detail.meta.subTitle = info.name + (detail.meta.subTitle ? ' - ' + detail.meta.subTitle : '');
+
+				if (detail.viaFrame)
+					detail.meta.subTitle = _('via_frame') + ' - ' + detail.meta.subTitle;
+
+				var notification = new PageNotification(detail.meta);
+
 				Handler.event.addCustomEventListener('stylesheetLoaded', function () {
 					resolve(notification.element.id);
 				}, true);
@@ -790,6 +797,8 @@ var Command = function (type, event) {
 		}
 	};
 
+	Commands.injected.notification.topCallbackOnly = true;
+	Commands.injected.showXHRPrompt.topCallbackOnly = true;
 	Commands.injected.inlineScriptsAllowed.private = true;
 	Commands.injected.addResourceRule.private = true;
 	Commands.injected.installUserScriptFromURL.private = true;

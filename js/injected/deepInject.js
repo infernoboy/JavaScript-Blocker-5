@@ -3,7 +3,7 @@ function DeepInject (name, script, noToken) {
 		name = '';
 
 	this.name = name;
-	this.cleanName = name.replace(/([^a-zA-Z_0-9])/g, '_');
+	this.cleanName = name.replace(/([^a-zA-Z_0-9\$])/g, '_');
 	this.fnName = this.cleanName;
 	this.script = script;
 	this.scriptString = script.toString();

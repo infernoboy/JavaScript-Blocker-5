@@ -159,20 +159,26 @@ var Handler = {
 		Page.send(true);
 	},
 
-	transformContentURLs: function () {
-		var base64,
-				uri;
+	contentURLsToBlob: function () {
+		if (globalSetting.contentURLs.BLOBIFIED)
+			return;
 
 		var URL = window.webkitURL || window.URL || {};
 
-		for (var key in globalSetting.contentURLs)
-			if (window.Blob && URL.createObjectURL) {
+		if (window.Blob && URL.createObjectURL) {
+			var base64,
+					uri;
+
+			for (var key in globalSetting.contentURLs) {
 				uri = globalSetting.contentURLs[key].url;
 
 				uri = Utilities.decode(uri.substr(uri.indexOf(',') + 1));
 
 				globalSetting.contentURLs[key].url = Utilities.URL.createFromContent(uri, globalSetting.contentURLs[key].type);
 			}
+		}
+
+		globalSetting.contentURLs.BLOBIFIED = true;
 	},
 
 	injectStyleSheet: function () {
@@ -225,7 +231,7 @@ var Handler = {
 			}
 		}
 
-		Page.send(true);
+		Handler.visibilityChange();
 	},
 
 	resetLocation: function (event) {
@@ -251,11 +257,11 @@ var Handler = {
 		Page.send();
 	},
 
-	visibilityChange: function (event) {
+	visibilityChange: function (event, sendNow) {
 		if (!document.hidden) {
 			Handler.event.trigger('documentBecameVisible');
 
-			Page.send();
+			Page.send(sendNow);
 		}
 	},
 
@@ -312,7 +318,7 @@ var Handler = {
 		});
 
 		var ignoreButton = notification.addCloseButton(_('first_visit.keep_blocked'), function (notification) {
-			GlobalPage.message('noFirstVisitNotifications', host);
+			GlobalPage.message('noFirstVisitNotification', host);
 		});
 
 		ignoreButton.classList.add('jsb-color-block');
@@ -330,7 +336,7 @@ var Handler = {
 };
 
 if (globalSetting.debugMode)
-	Handler.transformContentURLs();
+	Handler.contentURLsToBlob();
 
 var Element = {
 	__placeholderProperties: ['display', 'position', 'top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
