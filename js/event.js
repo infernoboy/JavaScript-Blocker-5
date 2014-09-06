@@ -14,7 +14,7 @@ EventListener.prototype.listeners = function (name) {
 	return this.__listeners[name];
 };
 
-EventListener.prototype.addCustomEventListener = function (name, fn, once) {
+EventListener.prototype.addCustomEventListener = function (name, fn, once, shouldBeDelayed) {
 	if (Array.isArray(name)) {
 		for (var i = 0; i < name.length; i++)
 			this.addCustomEventListener(name[i], fn, once);
@@ -29,7 +29,8 @@ EventListener.prototype.addCustomEventListener = function (name, fn, once) {
 
 	listeners.fns.push({
 		once: once,
-		fn: fn
+		fn: fn,
+		shouldBeDelayed: shouldBeDelayed
 	});
 
 	if (listeners.triggerSubsequentListeners)
@@ -38,7 +39,7 @@ EventListener.prototype.addCustomEventListener = function (name, fn, once) {
 	return this;
 };
 
-EventListener.prototype.addMissingCustomEventListener = function (name, fn, once) {
+EventListener.prototype.addMissingCustomEventListener = function (name, fn, once, shouldBeDelayed) {
 	if (Array.isArray(name)) {
 		for (var i = 0; i < name.length; i++)
 			this.addMissingCustomEventListener(name[i], fn, once);
@@ -70,7 +71,10 @@ EventListener.prototype.trigger = function (name, data, triggerSubsequentListene
 	listeners.triggerSubsequentListeners = !!triggerSubsequentListeners;
 
 	for (var i = 0; i < listeners.fns.length; i++) {
-		Utilities.setImmediateTimeout(listeners.fns[i].fn, [data]);
+		if (listeners.fns[i].shouldBeDelayed)
+			Utilities.setImmediateTimeout(listeners.fns[i].fn, [data]);
+		else
+			listeners.fns[i].fn(data);
 
 		if (!listeners.fns[i].once)
 			newListeners.push(listeners.fns[i]);

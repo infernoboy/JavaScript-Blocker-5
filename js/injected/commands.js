@@ -234,15 +234,40 @@ var Command = function (type, event) {
 			if (Utilities.Page.isTop && !RECOMMEND_PAGE_RELOAD) {
 				RECOMMEND_PAGE_RELOAD = true;
 
-				window.location.reload();
+				var autoReload = GlobalCommand('settingStore.getItem', {
+					setting: 'recommendReloadAlways'
+				});
+
+				if (autoReload)
+					window.location.reload();
+				else {
+					var notification = new PageNotification({
+						title: _('recommend_reload.title'),
+						subTitle: document.location.href,
+						body: GlobalCommand('template.create', {
+							template: 'injected',
+							section: 'recommend-reload'
+						})
+					});
+
+					var reloadPageButton = notification.addCloseButton(_('recommend_reload.reload_once'), function (notification) {
+						GlobalPage.message('settingStore.setItem', {
+							setting: 'recommendReloadAlways',
+							value: PageNotification.willCloseAll
+						});
+
+						window.location.reload();
+					});
+
+					notification.addCustomEventListener('optionKeyStateChange', function (optionKeyPressed) {
+						reloadPageButton.value = optionKeyPressed ? _('recommend_reload.reload_always') : _('recommend_reload.reload_once');
+					});
+				}
 			}
 		},
 
 		showJSBUpdatePrompt: function (detail) {
-			if (Page.info.isFrame)
-				return;
-
-			if (SHOWED_UPDATE_PROMPT)
+			if (Page.info.isFrame || SHOWED_UPDATE_PROMPT)
 				return;
 
 			SHOWED_UPDATE_PROMPT = true;
@@ -254,9 +279,7 @@ var Command = function (type, event) {
 				body: 'Attention required.'
 			});
 
-			notification.primaryCloseButtonText(_('open_popover'));
-
-			notification.onPrimaryClose(function () {
+			notification.primaryCloseButtonText(_('open_popover')).onPrimaryClose(function () {
 				GlobalPage.message('showPopover');
 			});
 		},
@@ -661,6 +684,16 @@ var Command = function (type, event) {
 
 			notification.addEventListener('click', '.jsb-xhr-create-rule', function (notification) {
 				GlobalPage.message('showPopover');
+
+				var originalValue = this.value;
+
+				this.disabled = true;
+				this.value = 'Popover Opened';
+
+				setTimeout(function (self) {
+					self.disabled = false;
+					self.value = originalValue;
+				}, 2000, this);
 			});
 		},
 
@@ -754,7 +787,6 @@ var Command = function (type, event) {
 		},
 
 		installUserScriptFromURL: function (detail) {
-			Log(TOKEN.INJECTED[detail.sourceID]);
 			return {
 				callbackID: detail.callbackID,
 				result: GlobalCommand('installUserScriptFromURL', detail.meta.url)
@@ -799,6 +831,7 @@ var Command = function (type, event) {
 
 	Commands.injected.notification.topCallbackOnly = true;
 	Commands.injected.showXHRPrompt.topCallbackOnly = true;
+
 	Commands.injected.inlineScriptsAllowed.private = true;
 	Commands.injected.addResourceRule.private = true;
 	Commands.injected.installUserScriptFromURL.private = true;

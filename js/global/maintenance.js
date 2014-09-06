@@ -1,5 +1,9 @@
 "use strict";
 
+window.$$ = function (selector, context) {
+	return $(selector, context || Popover.window().document);
+};
+
 var Maintenance = {
 	maintainPopover: function () {
 		var popover = Popover.window(),

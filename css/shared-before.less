@@ -1,15 +1,40 @@
 @empty:;
+@baseColor: rgb(23, 126, 251);
+@allowColor: #008913;
+@blockColor: #920101;
 
 .shared-before(@important) {
+	@-webkit-keyframes shake {
+		0% { -webkit-transform: translateX(0); }
+		14% { -webkit-transform: translateX(-13px); }
+		28% { -webkit-transform: translateX(13px); }
+		43% { -webkit-transform: translateX(-9px); }
+		57% { -webkit-transform: translateX(9px); }
+		71% { -webkit-transform: translateX(-7px); }
+		86% { -webkit-transform: translateX(7px); }
+		100% { -webkit-transform: translateX(0); }
+	}
+
+	@-webkit-keyframes unshake {
+		0% { -webkit-transform: translateX(0); }
+		14% { -webkit-transform: translateX(13px); }
+		28% { -webkit-transform: translateX(-13px); }
+		43% { -webkit-transform: translateX(9px); }
+		57% { -webkit-transform: translateX(-9px); }
+		71% { -webkit-transform: translateX(7px); }
+		86% { -webkit-transform: translateX(-7px); }
+		100% { -webkit-transform: translateX(0); }
+	}
+	
 	.color-allow() {
 		&.jsb-color-allow {
-			color: #008913 @important;
+			color: @allowColor @important;
 		}
 	}
 
 	.color-block() {
 		&.jsb-color-block {
-			color: #920101 @important;
+			color: @blockColor @important;
 		}
 	}
 
@@ -45,7 +70,11 @@
 			font-family: 'Helvetica Neue', Helvetica, sans-serif @important;
 			font-size: 9pt @important;
 			height: auto @important;
+			min-height: 0 @important;
+			width: auto @important;
+			min-width: 0 @important;
 			box-shadow: none @important;
+			text-shadow: none @important;
 			padding: 0 @important;
 			-webkit-font-smoothing: subpixel-antialiased @important;
 			line-height: 1.2 @important;
@@ -53,6 +82,10 @@
 			clear: none @important;
 			text-rendering: optimizeLegibility @important;
 			text-align: left @important;
+			white-space: normal;
+			border: none @important;
+			background: none @important;
+			-webkit-transition-property: none @important;
 		}
 
 		*.jsb-large-font,
@@ -67,7 +100,7 @@
 			background: #fff @important;
 			border: none @important;
 			border-radius: 4px @important;
-			color: #0069de @important;
+			color: @baseColor @important;
 			text-shadow: 0 1px 0 rgba(255,255,255,0.5) @important;
 			border: 1px solid rgb(200, 200, 200) @important;
 			border-bottom-color: rgb(168, 168, 168) @important;
@@ -143,6 +176,24 @@
 		select {
 			.color-allow;
 			.color-block;
+		}
+
+		.horizontal-divider {
+			height: 1px @important;
+			background: rgba(0, 0, 0, 0.08) @important;
+			margin: 6px 0 @important;
+		}
+
+		.vertical-divider {
+			display: inline-block;
+			width: 1px @important;
+			height: 100% @important;
+			background: rgba(0, 0, 0, 0.08) @important;
+			margin: 0 4px @important;
+		}
+
+		.generic-container {
+			margin-bottom: 5px;
 		}
 	}
 }

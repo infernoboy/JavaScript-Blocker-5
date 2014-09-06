@@ -80,6 +80,7 @@ var Utilities = {
 			return str;
 		}
 	},
+
 	encode: function (str) {
 		return btoa(unescape(encodeURIComponent(str)));
 	},
@@ -160,6 +161,10 @@ var Utilities = {
 
 	typeOf: function (object) {
 		return ({}).toString.call(object).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+	},
+
+	isFloat: function (subject) {
+		return typeof subject === 'number' && isFinite(subject) && subject % 1 !== 0;
 	},
 
 	Group: {
@@ -633,6 +638,9 @@ function Log () {
 
 	Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
 
+	if (window.localConsole)
+		window.localConsole.log.apply(window.localConsole, logMessages);
+
 	console.log.apply(console, logMessages);
 };
 
@@ -646,6 +654,9 @@ function LogDebug () {
 		LogDebug.history.unshift(debugMessages.join(' '));
 
 		LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
+
+		if (window.localConsole)
+			window.localConsole.warn.apply(window.localConsole, debugMessages);
 
 		console.warn.apply(console, debugMessages);
 
@@ -697,8 +708,11 @@ function LogError () {
 			}
 
 		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || globalSetting.debugMode || showThisError) {
-			if (!Utilities.Page.isWebpage)
+			if (Utilities.Page.isWebpage)
 				errorMessage.unshift('(JSB)');
+
+			if (window.localConsole)
+				window.localConsole.error.apply(window.localConsole, errorMessage);
 
 			console.error.apply(console, errorMessage);
 
@@ -886,6 +900,9 @@ var Extension = {
 
 		_remove: {
 			value: function (index) {
+				if (index < 0)
+					return;
+
 				return this.splice(index, 1)[0];
 			}
 		}
@@ -1118,22 +1135,6 @@ var Extension = {
 		}
 	}
 };
-
-if (Utilities.safariBuildVersion < 537) {
-	Extension.DOMTokenList = {
-		toggle: {
-			value: function (className, force) {
-				var contains = this.contains(className),
-						method = contains ? force !== true && 'remove' : force !== false && 'add';
-
-				if (method)
-					this[method](className);
-
-				return !contains;
-			}
-		}
-	};
-}
 
 (function () {
 	for (var object in Extension)

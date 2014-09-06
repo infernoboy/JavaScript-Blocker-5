@@ -151,17 +151,15 @@ var SettingStore = {
 	available:  !!(window.safari && safari.extension && safari.extension.settings),
 
 	__setCache: function (key, value) {
-		Utilities.setImmediateTimeout(function (self, key, value) {
-			if (key._startsWith(Store.STORE_STRING) || value === undefined || typeof value === 'object')
-				return;
+		if (key._startsWith(Store.STORE_STRING) || value === undefined || typeof value === 'object')
+			return;
 
-			Object.defineProperty(self.__cache, key, {
-				configurable: true,
-				enumerable: true,
+		Object.defineProperty(this.__cache, key, {
+			configurable: true,
+			enumerable: true,
 
-				value: value
-			});
-		}, [this, key, value]);
+			value: value
+		});
 	},
 
 	getItem: function (key, defaultValue, noCache) {
@@ -196,6 +194,8 @@ var SettingStore = {
 	setItem: function (key, value, noCache) {
 		if (['setItem', 'getItem', 'removeItem']._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
+
+		delete this.__cache[key];
 		
 		if (!noCache)
 			this.__setCache(key, value);

@@ -1,0 +1,60 @@
+@-webkit-keyframes openPoppy  {
+	0% {
+		-webkit-transform: scale(0);
+		opacity: 0.5;
+	}
+
+	45% {
+		-webkit-transform: scale(1.22);
+		-webkit-animation-timing-function: ease;
+		opacity: 0.7;
+	}
+
+	100% {
+		-webkit-transform: scale(1);
+		opacity: 1;
+	}
+}
+
+.poppy {
+	position: fixed;
+	min-width: 37px;
+	min-height: 20px;
+	max-width: 98%;
+	border-radius: 6px;
+	padding: 2px;
+	background: -webkit-linear-gradient(top, #ffffff, #fafafa);
+	box-shadow: 0 0px 10px rgba(0, 0, 0, 0.3);
+
+	&.poppy-up .poppy-arrow {
+		background: -webkit-canvas(poppy-arrow-up);
+	}
+
+	&.poppy-open {
+		-webkit-animation: openPoppy 0.4s 1 normal linear;
+	}
+
+	.poppy-content {
+		border-radius: 6px;
+		padding: 5px;
+		overflow: auto;
+	}
+
+	.poppy-arrow {
+		pointer-events: none;
+		position: absolute;
+		height: 19px;
+		width: 30px;
+		background: -webkit-canvas(poppy-arrow);
+
+		&-settings {
+			background-color: #fafafa;
+
+			&-up {
+				background-color: #fff;
+			}
+		}
+	}
+
+	@import 'poppies.less';
+}

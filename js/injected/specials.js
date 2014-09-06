@@ -465,7 +465,7 @@ Special.specials = {
 				ASK_ONCE_SESSION = 3,
 				ALWAYS_BLOCK = 4;
 
-		var useSimplifiedMethod = JSB.data.safariBuildVersion < 537 || document.hidden,
+		var useSimplifiedMethod = document.hidden,
 				toDataURL = HTMLCanvasElement.prototype.toDataURL,
 				toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
 				shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION),

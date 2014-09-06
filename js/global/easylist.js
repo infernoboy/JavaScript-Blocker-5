@@ -36,7 +36,7 @@ EasyList.fetch = function () {
 
 EasyList.prototype.merge = function () {
 	Utilities.setImmediateTimeout(function (self) {
-		Rules.list[self.name].rules.addCustomEventListener('save', function () {
+		Rules.list[self.name].rules.addCustomEventListener('storeDidSave', function () {
 			self.temporaryRules.rules.clear();
 
 			self = undefined;

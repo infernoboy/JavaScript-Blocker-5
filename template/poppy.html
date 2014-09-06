@@ -1,0 +1,36 @@
+<noscript id="poppy">
+	<div id="poppy-<%=self.id%>" class="poppy" data-id="<%=self.id%>">
+		<div class="poppy-content"></div>
+		<div class="poppy-arrow"></div>
+		<div class="poppy-arrow-settings"></div>
+		<div class="poppy-arrow-settings-up"></div>
+	</div>
+</noscript>
+
+<noscript id="main-menu">
+	<h3 class="jsb-centered">JavaScript Blocker v5</h3>
+	<div id="main-menu">
+		<ul>
+			<li><input type="checkbox" id="main-menu-show-hidden" /> <label for="main-menu-show-hidden">Show hidden page items</label></li>
+			<li><div class="horizontal-divider"></div></li>
+		</ul>
+		<div>
+			<input type="button" id="main-menu-contribute" value="Unlock" />
+			<input type="button" id="main-menu-help" value="Help" />
+			<input type="button" id="main-menu-settings" value="Settings" />
+		</div>
+		<div class="horizontal-divider"></div>
+		<div id="console-container">
+			<% var errorMessageCount = LogError.history.concat(globalPage.LogError.history).length; %>
+			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" />
+			<span id="main-menu-console-message-count"><%=_('main_menu.console.message' + (errorMessageCount === 1 ? '' : 's'), [errorMessageCount])%></span> 
+		</div>
+	</div>
+</noscript>
+
+<noscript id="console">
+	<h4 class="jsb-centered">Console</h4>
+	<input type="button" id="console-clear" value="Clear" />
+	<input type="button" id="console-report" value="Report" />
+	<pre id="console"><%=JSON.stringify(LogError.history.concat(globalPage.LogError.history), null, 1)%></pre>
+</noscript>

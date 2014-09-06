@@ -2,6 +2,10 @@
 	<div id="<%=self.id || ('jsb-' + Utilities.Token.generate())%>" class="jsb-injected-element"></div>
 </noscript>
 
+<noscript id="recommend-reload">
+	<p class="jsb-info"><%=_('recommend_reload.body')%></p>
+</noscript>
+
 <noscript id="notification">
 	<div class="jsb-notification <%=!globalPage.globalSetting.useAnimations ? 'jsb-no-animations' : ''%>" id="jsb-notification-<%=self.id || Utilities.Token.generate()%>">
 		<div class="jsb-notification-toggle-layering" title="<%=self.title._entityQuotes()%>"></div>

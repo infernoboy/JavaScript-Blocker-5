@@ -76,7 +76,7 @@ var Store = (function () {
 		}
 
 		if (this.save)
-			this.addCustomEventListener('save', function () {
+			this.addCustomEventListener('storeDidSave', function () {
 				LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(this.savedByteSize()));
 			}.bind(this));
 	};
@@ -246,12 +246,15 @@ var Store = (function () {
 	Store.prototype.__data = {};
 	Store.prototype.__children = {};
 
-	Store.prototype.__save = function (bypassIgnore, now) {
+	Store.prototype.__save = function (bypassIgnore, now, notModified) {
+		if (!notModified)
+			this.triggerEvent('storeWasModified');
+
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
 		Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
-			store.triggerEvent('presave');
+			store.triggerEvent('storeWillSave');
 
 			if (store.save) {
 				console.time('SAVED ' + store.id);
@@ -261,7 +264,7 @@ var Store = (function () {
 				console.timeEnd('SAVED ' + store.id);
 			}
 
-			store.triggerEvent('save');
+			store.triggerEvent('storeDidSave');
 		}, now ? 0 : this.saveDelay, [this]);
 
 		if (this.parent)
@@ -560,7 +563,7 @@ var Store = (function () {
 						if (!store.destroyed && store.data[key]) {
 							store.data[key].accessed = Date.now();
 
-							store.__save();
+							store.__save(null, null, true);
 						}
 					}, [this, key]);
 

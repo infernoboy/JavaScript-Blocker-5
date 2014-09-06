@@ -3,11 +3,6 @@
 Settings.settings = {
 	// Misc settings that are not user editable
 	__misc: [{
-		setting: 'extendedSupport',
-		props: {
-			default: Utilities.safariBuildVersion >= 537
-		}
-	}, {
 		setting: 'donationVerified',
 		props: {
 			default: false
@@ -30,6 +25,7 @@ Settings.settings = {
 	}, {
 		setting: 'isDisabled',
 		props: {
+			type: 'boolean',
 			default: false
 		}
 	}, {
@@ -72,7 +68,10 @@ Settings.settings = {
 		props: {
 			type: 'boolean',
 			label: 'Use animations',
-			default: true
+			default: true,
+			onChange: function () {
+				Popover.window().document.body.classList.toggle('jsb-no-animations', !Settings.getItem('useAnimations'));
+			}
 		}
 	}, {
 		setting: 'largeFont',
@@ -140,6 +139,13 @@ Settings.settings = {
 		props: {
 			type: 'boolean',
 			label: 'Automatically hide whitelisted and blacklisted items',
+			default: false
+		}
+	}, {
+		setting: 'recommendReloadAlways',
+		props: {
+			type: 'boolean',
+			label: 'recommend_reload.always',
 			default: false
 		}
 	}, {

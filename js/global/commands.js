@@ -159,8 +159,8 @@ function Command (command, data, event) {
 
 		globalSetting: function (setting) {
 			this.message = {
-				disabled: false,
-				debugMode: true,
+				disabled: window.globalSetting.disabled,
+				debugMode: window.globalSetting.debugMode,
 
 				useAnimations: Settings.getItem('useAnimations'),
 				enabledKinds: Settings.getItem('enabledKinds'),
@@ -507,6 +507,8 @@ function Command (command, data, event) {
 	return result.message;
 };
 
+Command.event = new EventListener;
+
 Command.messageReceived = function (event) {
 	if (!event.name)
 		throw new Error('invalid message');
@@ -530,8 +532,28 @@ Command.setupContentURLs = function () {
 	};
 };
 
+Command.toggleDisabled = function (force) {
+	window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
+
+	Settings.setItem('isDisabled', window.globalSetting.disabled);
+
+	Command.event.addCustomEventListener('UIReady', function () {
+		$('#full-toggle', UI.view.viewToolbar).toggleClass('is-disabled', window.globalSetting.disabled);
+	}, true);
+
+	Tabs.messageAll('reload');
+};
+
 Command.setupContentURLs();
 
-window.globalSetting = Command('globalSetting', null, {});
+window.globalSetting = {
+	disabled: false,
+	debugMode: true
+};
+
+Object._extend(window.globalSetting, Command('globalSetting', null, {}));
+
+if (Settings.getItem('persistDisabled'))
+	Command.toggleDisabled(Settings.getItem('isDisabled'));
 
 Events.addApplicationListener('message', Command.messageReceived);

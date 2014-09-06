@@ -270,4 +270,3 @@ Events.addApplicationListener('beforeNavigate', Page.clearBadge);
 Events.addApplicationListener('beforeNavigate', Page.removePagesWithTab);
 Events.addApplicationListener('close', Page.removeMissingPages);
 Events.addApplicationListener('activate', Page.requestPage);
-Events.addApplicationListener('popover', Page.requestPageFromActive);

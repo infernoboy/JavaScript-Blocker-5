@@ -522,6 +522,11 @@ Object.defineProperty(Rules, 'list', {
 				if (this.__active instanceof Rule)
 					Resource.canLoadCache.clear();
 
+				if (rules === this.user)
+					$$('.snapshot-info').empty();
+				else
+					$$('.snapshot-info').html('Snapshot in use?????????????????????');
+
 				this.__active = rules;
 			}
 		},
@@ -580,7 +585,7 @@ Rules.list.active = Rules.list.user;
 
 		Rules.list[list].rules.all();
 
-		Rules.list[list].rules.addCustomEventListener('save', function () {
+		Rules.list[list].rules.addCustomEventListener('storeDidSave', function () {
 			Resource.canLoadCache.saveNow();
 		});
 	}

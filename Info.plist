@@ -26,11 +26,11 @@
 				<key>Filename</key>
 				<string>popover.html</string>
 				<key>Height</key>
-				<real>350</real>
+				<real>380</real>
 				<key>Identifier</key>
 				<string>manageItems</string>
 				<key>Width</key>
-				<real>460</real>
+				<real>480</real>
 			</dict>
 		</array>
 		<key>Toolbar Items</key>

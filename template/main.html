@@ -1,25 +1,96 @@
 <noscript id="container">
 	<div id="container">
+		<div id="modal-overlay">
 
-	</div>
-</noscript>
-
-<noscript id="main">
-	<div id="main-view">
-		<div id="main-toolbar-container">
-			<ul id="main-toolbar">
-				<li id="main-toolbar-unlock" data-i18n="Unlock"></li>
-				<li id="main-toolbar-disable" data-i18n="Disable JavaScript Blocker" class="bordered-divider"></li>
-				<li id="main-toolbar-js-help" data-i18n="Help" class="bordered-divider"></li>
-				<li id="main-toolbar-js-settings" data-i18n="Settings" class="bordered-divider"></li>
-				<li id="main-toolbar-view-rules" data-i18n="Rules" class="bordered-divider"></li>
-				<li id="main-toolbar-toggle-hidden" data-i18n="Show Hidden" class="bordered-divider"></li>
-				<li id="main-toolbar-jsblocker-name"><span data-i18n="JavaScript Blocker"></span></li>
-			</ul>
 		</div>
 
-		<input type="button" value="A Button" />
+		<div id="view-container">
+			<div id="view-toolbar">
+				<span id="full-toggle" data-disable="1"><%=_('view_toolbar.disable')%></span>
 
-		<div id="page-state-container"></div>
+				<div id="view-switcher-container">
+					<ul id="view-switcher">
+						<li data-view="#page-view"><%=_('view_toolbar.page')%></li><li class="view-switcher-hidden" data-view="#resource-content-view"><%=_('view_toolbar.resource')%></li><li class="view-switcher-hidden" data-view="#help-view"><%=_('view_toolbar.help')%></li><li class="view-switcher-hidden" data-view="#setting-view"><%=_('view_toolbar.setting')%></li><li data-view="#rule-view"><%=_('view_toolbar.rules')%></li><li data-view="#snapshot-view"><%=_('view_toolbar.snapshots')%></li>
+					</ul>
+
+					<br style="clear: both;" />
+				</div>
+
+				<span id="open-menu"><%=_('view_toolbar.menu')%></span>
+			</div>
+
+			<div id="views">
+				<div id="page-view">
+					<p class="snapshot-info jsb-info"></p>
+					<a href="<%=ExtensionURL('settings.html')%>">Settings Page</a>
+					<div id="page-state-container"></div>
+				</div>
+
+				<div id="rule-view">
+					<p class="snapshot-info jsb-info"></p>
+					<div id="rules">RULE VIEW</div>
+				</div>
+
+				<div id="snapshot-view">
+					<p class="jsb-info">SNAPSHOT VIEW</p>
+				</div>
+
+				<div id="resource-content-view">
+					<p class="jsb-info">RESOURCE CONTENT VIEW</p>
+				</div>
+
+				<div id="help-view">
+					<p class="jsb-info">HELP VIEW</p>
+				</div>
+
+				<div id="setting-view">
+					<p class="jsb-info">SETTING VIEW</p>
+				</div>
+			</div>
+		</div>
+
+		<div id="too-old">
+			<p class="jsb-info">JavaScript Blocker 5 requires Safari 6.1 or greater.</p>
+		</div>
 	</div>
 </noscript>
+
+<noscript id="page-info">
+	<div class="page-info">
+		<div class="page-info-header">
+			<span class="page-info-type">Main</span>
+			<span class="vertical-divider"></span>
+			<span class="page-info-host">www.google.com</span>
+			<span class="page-info-hidden-count-container">
+				<span class="vertical-divider"></span>
+				<span class="page-info-hidden-count">4 hidden</span>
+			</span>
+			<input type="button" class="page-info-disable" value="Disable" />
+		</div>
+
+		<div class="page-info-columns">
+			<div class="page-info-column page-info-allowed">
+				<div class="page-info-column-header" data-expander="> label">
+					<label class="jsb-color-allow">Allowed:</label>
+					<span class="page-info-state-count">3</span>
+					<span class="page-info-state-count-type">hosts</span>
+				</div>
+
+				<div class="page-info-item-container">
+					<header class="page-info-kind" data-expander="> a">
+						<h3>scripts</h3>
+						<a href="javascript:void(0);">Hide</a>
+					</header>
+
+					<ul class="page-info-items" data-kind="script">
+						<li>
+							<div class="info-link">?</div>
+							<span class="page-info-item" data-protocol="http:">www.google.com</span>
+							<a class="page-info-host-count">3</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

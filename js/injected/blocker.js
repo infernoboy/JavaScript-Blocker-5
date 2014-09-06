@@ -731,7 +731,7 @@ var Resource = {
 						action: -3
 					}
 				else if (document.hidden && Page.info.isFrame && Page.info.protocol === 'about:') {
-					LogDebug('blocked source from loading within blank frame because the document was hidden when it loaded and the frame\'s parent address could not be determined: ' + source);
+					LogDebug('blocked source from loading within blank frame because the document was hidden when it loaded and the frame\'s parent address could not reliably be determined: ' + source);
 
 					var canLoad = {
 						action: -4,
@@ -761,11 +761,6 @@ var Resource = {
 		} else {
 			Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
 
-			if (element === event && Utilities.Token.valid(element.getAttribute('data-jsbWasPlaceholder'), 'WasPlaceholder', true)) {
-				element.removeAttribute('data-jsbWasPlaceholder');
-				element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
-			}
-
 			Page.send();
 
 			return true;
@@ -775,85 +770,92 @@ var Resource = {
 
 Handler.setPageLocation();
 
-var JSBSupport = GlobalCommand('canLoadResource', {
-	kind: 'disable',
-	strict: true,
-	pageLocation: Page.info.location,
-	pageProtocol: Page.info.protocol,
-	source: '*',
-	isFrame: !Utilities.Page.isTop
-});
-
-if (!JSBSupport.isAllowed) {
-	globalSetting.disabled = true;
-
-	Page.info.disabled = {
-		action: JSBSupport.action
-	};
-	
-	// setTimeout(function () {
-	// 	Page.blocked.pushSource('disable', '*', {
-	// 		action: JSBSupport.action
-	// 	});
-
-	// 	Page.blocked.incrementHost('disable', '*');
-
-	// 	// LogDebug('disabled on this page: ' + Page.info.location);
-
-	// 	Page.send(true);
-	// }, 0);
-}
-
 document.addEventListener('visibilitychange', Handler.visibilityChange, true);
 
 if (!globalSetting.disabled) {
-	if (Handler.shouldCheckBlockFirstVisit()) {
-		var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
-
-		if (willBlockFirstVisit && willBlockFirstVisit.action !== 8) {
-			Handler.event.addCustomEventListener('readyForPageNotifications', function () {
-				if (Page.info.isFrame)
-					GlobalPage.message('bounce', {
-						command: 'showBlockedAllFirstVisitNotification',
-						detail: willBlockFirstVisit.host
-					});
-				else
-					Handler.showBlockedAllFirstVisitNotification(willBlockFirstVisit.host);
-			}, true);
-		}
-	}
-
-	if (Utilities.safariBuildVersion > 535) {
-		var observer = new MutationObserver(function (mutations) {
-			for (var i = 0; i < mutations.length; i++)
-				if (mutations[i].type === 'childList')
-					for (var j = 0; j < mutations[i].addedNodes.length; j++)
-						Element.handle.node(mutations[i].addedNodes[j]);
-		});
-
-		observer.observe(document, {
-			childList: true,
-			subtree: true
-		});
-	} else
-		document.addEventListener('DOMNodeInserted', Element.handle.node, true);
-
-	document.addEventListener('contextmenu', Handler.contextMenu, false);
-	document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
-	document.addEventListener('keyup', Handler.keyUp, true);
-	document.addEventListener('beforeload', Resource.canLoad, true);
-
-	window.addEventListener('hashchange', Handler.hashChange, true);
-	window.addEventListener('popstate', Handler.resetLocation, true);
-
-	window.addEventListener('error', function (event) {
-		if (typeof event.filename === 'string' && event.filename._contains('JavaScriptBlocker')) {
-			var errorMessage =  event.message + ', ' + event.filename + ', ' + event.lineno;
-
-			LogError(errorMessage);
-		}
+	var JSBSupport = GlobalCommand('canLoadResource', {
+		kind: 'disable',
+		strict: true,
+		pageLocation: Page.info.location,
+		pageProtocol: Page.info.protocol,
+		source: '*',
+		isFrame: !Utilities.Page.isTop
 	});
 
-	if (Page.info.isFrame)
-		window.addEventListener('beforeunload', Handler.unloadedFrame, true);
+	if (!JSBSupport.isAllowed) {
+		globalSetting.disabled = true;
+
+		Page.info.disabled = {
+			action: JSBSupport.action
+		};
+		
+		// setTimeout(function () {
+		// 	Page.blocked.pushSource('disable', '*', {
+		// 		action: JSBSupport.action
+		// 	});
+
+		// 	Page.blocked.incrementHost('disable', '*');
+
+		// 	// LogDebug('disabled on this page: ' + Page.info.location);
+
+		// 	Page.send(true);
+		// }, 0);
+	} else {
+		if (Handler.shouldCheckBlockFirstVisit()) {
+			var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
+
+			if (willBlockFirstVisit && willBlockFirstVisit.action !== 8) {
+				Handler.event.addCustomEventListener('readyForPageNotifications', function () {
+					if (Page.info.isFrame)
+						GlobalPage.message('bounce', {
+							command: 'showBlockedAllFirstVisitNotification',
+							detail: willBlockFirstVisit.host
+						});
+					else
+						Handler.showBlockedAllFirstVisitNotification(willBlockFirstVisit.host);
+				}, true);
+			}
+		}
+
+		if (Utilities.safariBuildVersion > 535) {
+			var observer = new MutationObserver(function (mutations) {
+				for (var i = 0; i < mutations.length; i++)
+					if (mutations[i].type === 'childList')
+						for (var j = 0; j < mutations[i].addedNodes.length; j++)
+							Element.handle.node(mutations[i].addedNodes[j]);
+			});
+
+			observer.observe(document, {
+				childList: true,
+				subtree: true
+			});
+		} else
+			document.addEventListener('DOMNodeInserted', Element.handle.node, true);
+
+		document.addEventListener('contextmenu', Handler.contextMenu, false);
+		document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
+		document.addEventListener('keyup', Handler.keyUp, true);
+		document.addEventListener('beforeload', Resource.canLoad, true);
+
+		window.addEventListener('hashchange', Handler.hashChange, true);
+		window.addEventListener('popstate', Handler.resetLocation, true);
+
+		window.addEventListener('error', function (event) {
+			if (typeof event.filename === 'string' && event.filename._contains('JavaScriptBlocker')) {
+				var errorMessage =  event.message + ', ' + event.filename + ', ' + event.lineno;
+
+				LogError(errorMessage);
+			}
+		});
+
+		if (Page.info.isFrame)
+			window.addEventListener('beforeunload', Handler.unloadedFrame, true);
+	}
+} else {
+	Page.info.disabled = {
+		action: -1
+	};
+
+	if (Utilities.Page.isTop)
+		Page.send();
 }

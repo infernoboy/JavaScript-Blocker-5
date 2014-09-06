@@ -18,6 +18,10 @@
 				color: #6f6f6f @important;
 			}
 
+			&centered {
+				text-align: center @important;
+			}
+
 			&info {
 				text-indent: 0 @important;
 				padding: 1px @important;
@@ -31,12 +35,40 @@
 			&hidden *,
 			&no-animations,
 			&no-animations * {
-				-webkit-transition-duration: 0.0001s @important;
+				-webkit-transition-duration: 0.001s !important;
+				-webkit-animation-duration: 0.001s !important;
 			}
 		}
 
 		pre {
+			white-space: pre;
 			font-family: "Menlo-Regular", Courier, monospace @important;
+		}
+
+		ul,
+		ol {
+			list-style: none;
+		}
+
+		h1,
+		h2,
+		h3,
+		h4 {
+			color: #666;
+			font-weight: normal;
+			margin: 0 7px 10px;
+		}
+
+		h1 {
+			font-size: 130%;
+		}
+
+		h2 {
+			font-size: 120%;
+		}
+
+		h3 {
+			font-size: 110%;
 		}
 	}
 }

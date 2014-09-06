@@ -77,7 +77,7 @@ var Settings = {
 	anySettingChanged: function (event) {
 		if (Utilities.Page.isGlobal && event.key in window.globalSetting)
 			setTimeout(function () {
-				window.globalSetting = Command('globalSetting', null, {});
+				window.globalSetting[event.key] = Settings.getItem(event.key);
 			});
 	},
 
@@ -193,11 +193,11 @@ var Settings = {
 			Settings.anySettingChanged({
 				key: settingKey
 			});
-		} else if (this.__validate(type, value, options, setting.props.otherOption, setting.props.extendOptions)) {
+		} else if (this.__validate(type, value, options, setting.props.otherOption, setting.props.extendOptions)) {			
+			this.__method('setItem', settingKey, value);
+
 			if (setting.props.onChange)
 				setting.props.onChange(value);
-			
-			this.__method('setItem', settingKey, value);
 		} else
 			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
 	},

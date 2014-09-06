@@ -3,10 +3,27 @@
 	"Alert": "Alert",
 	"Save": "Save",
 	"Cancel": "Cancel",
-	"Help": "Help",
 	
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",
+
+	"view_toolbar.disable": "Disable",
+	"view_toolbar.menu": "Menu",
+	"view_toolbar.page": "Page",
+	"view_toolbar.resource": "Resource",
+	"view_toolbar.help": "Help",
+	"view_toolbar.setting": "Settings",
+	"view_toolbar.rules": "Rules",
+	"view_toolbar.snapshots": "Snapshots",
+
+	"main_menu.console": "Console",
+	"main_menu.console.message": "{0} message",
+	"main_menu.console.messages": "{0} messages",
+
+	"recommend_reload.reload_once": "Reload Once",
+	"recommend_reload.reload_always": "Reload Always",
+	"recommend_reload.title": "Page Reload Recommended",
+	"recommend_reload.body": "Some resources were forcibly blocked because the page was hidden while it loaded. Reload the page if it isn't functioning as expected.",
 
 	"first_visit.title": "First Visit",
 	"first_visit.body": "All resources are blocked because this is the first time you've visited this {0}.",
