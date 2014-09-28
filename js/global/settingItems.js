@@ -29,16 +29,6 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		setting: 'popoverSimpleHeight',
-		props: {
-			default: 350
-		}
-	}, {
-		setting: 'popoverHeight',
-		props: {
-			default: 400
-		}
-	}, {
 		setting: 'settingsPageTab',
 		props: {
 			default: 'for-welcome'
@@ -55,22 +45,50 @@ Settings.settings = {
 			default: 0
 		}
 	}, {
-		setting: 'settingsPageCurrentSection',
+		setting: 'settingCurrentView',
 		props: {
 			type: 'string',
-			default: 'ui'
+			default: '#setting-view-general'
+		}
+	}, {
+		setting: 'popoverWidth',
+		props: {
+			type: 'number',
+			default: 501
+		}
+	}, {
+		setting: 'popoverWidthExpanded',
+		props: {
+			type: 'number',
+			default: 601
+		}
+	}, {
+		setting: 'popoverHeight',
+		props: {
+			type: 'number',
+			default: 391
+		}
+	}, {
+		setting: 'popoverHeightExpanded',
+		props: {
+			type: 'number',
+			default: 441
 		}
 	}],
 
-	// UI Settings
-	ui: [{
+	// General Settings
+	general: [{
 		setting: 'useAnimations',
 		props: {
 			type: 'boolean',
 			label: 'Use animations',
 			default: true,
 			onChange: function () {
-				Popover.window().document.body.classList.toggle('jsb-no-animations', !Settings.getItem('useAnimations'));
+				var useAnimations = Settings.getItem('useAnimations');
+
+				window.globalSetting.speedMultiplier = useAnimations ? 1 : 0.001;
+
+				Popover.window.document.body.classList.toggle('jsb-no-animations', !useAnimations);
 			}
 		}
 	}, {
@@ -78,7 +96,10 @@ Settings.settings = {
 		props: {
 			type: 'boolean',
 			label: 'Use a large font',
-			default: false
+			default: false,
+			onChange: function () {
+				Popover.window.document.documentElement.classList.toggle('jsb-large-font', Settings.getItem('largeFont'));
+			}
 		}
 	}, {
 		setting: 'persistDisabled',
@@ -88,7 +109,7 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		setting: 'showUnblocked',
+		setting: 'showUnblockedScripts',
 		props: {
 			type: 'boolean',
 			label: 'Show scripts that can\'t be blocked',
@@ -101,7 +122,7 @@ Settings.settings = {
 						group: 'all',
 						items: [{
 							method: Utilities.Group.IS,
-							key: 'showUnblocked',
+							key: 'showUnblockedScripts',
 							needle: true
 						}]
 					}
@@ -186,7 +207,7 @@ Settings.settings = {
 			options: [
 				['blocked', 'Blocked items'],
 				['allowed', 'Allowed items'],
-				['neither', 'Neither']
+				[null, 'Neither']
 			]
 		}
 	}, {
@@ -212,11 +233,10 @@ Settings.settings = {
 				default: true
 			}
 		}, {
-			setting: 'expertMode',
+			setting: 'showResourceURLs',
 			props: {
 				type: 'boolean',
-				label: 'Enable expert features',
-				subLabel: 'Create rules using regular expressions to block or allow individual items rather than hosts.',
+				label: 'Show resource URLs',
 				helpText: 'simpleMode help',
 				default: false,
 				confirm: [{
@@ -225,24 +245,19 @@ Settings.settings = {
 					onConfirm: function () {
 						GlobalPage.message('convertSimpleToExpert');
 					}
-				}]
-			}
-		}, {
-			setting: 'temporaryExpertSwitch',
-			props: {
-				type: 'boolean',
-				label: 'Temporarily switch to expert mode when clicked',
-				default: true,
-				when: {
-					hide: true,
-					settings: {
-						group: 'all',
-						items: [{
-							method: Utilities.Group.IS,
-							key: 'expertMode',
-							needle: false
-						}]
-					}
+				}],
+				onChange: function () {
+					var showResourceURLs = Settings.getItem('showResourceURLs');
+
+					UI.__popoverWidthSetting = 'popoverWidth' + (showResourceURLs ? 'Expanded' : '');
+					UI.__popoverHeightSetting = 'popoverHeight' + (showResourceURLs ? 'Expanded' : '');
+
+					UI.resizePopover(Settings.getItem(UI.__popoverWidthSetting), Settings.getItem(UI.__popoverHeightSetting));
+
+					if (Popover.visible())
+						setTimeout(function () {
+							Page.requestPageFromActive();
+						}, 300);
 				}
 			}
 		}]
@@ -886,58 +901,38 @@ Settings.settings = {
 		}]
 	}],
 
-	// Keyboard settings
-	keyboard: [{
-		store: 'keyboardTraverse',
-		props: {
-			type: 'boolean'
+	// User script settings
+	userScripts: {
+		userScriptsContainer: {
+			extras: 1,
+			description: 'custom helper description',
+		},
+		createUserScript: {
+			classes: 'single-click',
+			setting: 'Create Script',
+			label: '',
+			extra: 1,
+			divider: 1
+		},
+		user_script_last_update: {
+			id: 'user-script-update',
+			label: '',
+			classes: 'description',
+			extra: 1
+		},
+		userScriptNow: {
+			classes: 'single-click',
+			label: 'Update user scripts now:',
+			setting: 'Update Now',
+			extra: 1
+		},
+		userScriptRedownload: {
+			classes: 'single-click',
+			label: 'Re-download user scripts:',
+			setting: 'Download',
+			extra: 1
 		}
-	}, {
-		description: 'Keyboard navigation helps you get around JavaScript Blocker using only the keyboard.'
-	}, {
-		setting: 'keyboardTraverse',
-		props: {
-			storeKey: 'mainActionsBar',
-			label: 'Main window actions bar',
-			default: false
-		}
-	}, {
-		setting: 'keyboardTraverse',
-		props: {
-			storeKey: 'mainItems',
-			label: 'Main window allowed/blocked/unblockable items',
-			help: 'Holding option rule',
-			default: false
-		}
-	}, {
-		setting: 'keyboardTraverse',
-		props: {
-			storeKey: 'rulesFilterBar',
-			label: 'Rule list filter bar',
-			default: false
-		}
-	}, {
-		setting: 'keyboardTraverse',
-		props: {
-			storeKey: 'rulesDomains',
-			label: 'Rule list domains',
-			default: false
-		}
-	}, {
-		setting: 'keyboardTraverse',
-		props: {
-			storeKey: 'rulesRules',
-			label: 'Rule list rules',
-			default: false
-		}
-	}, {
-		setting: 'keyboardTraverse',
-		props: {
-			storeKey: 'snapshots',
-			label: 'Snapshots',
-			default: false
-		}
-	}],
+	},
 
 	// Other Features settings
 	other: [{
@@ -1163,39 +1158,6 @@ Settings.settings = {
 			}
 		}]
 	}],
-
-	// User script settings
-	userScript: {
-		userScriptsContainer: {
-			extras: 1,
-			description: 'custom helper description',
-		},
-		createUserScript: {
-			classes: 'single-click',
-			setting: 'Create Script',
-			label: '',
-			extra: 1,
-			divider: 1
-		},
-		user_script_last_update: {
-			id: 'user-script-update',
-			label: '',
-			classes: 'description',
-			extra: 1
-		},
-		userScriptNow: {
-			classes: 'single-click',
-			label: 'Update user scripts now:',
-			setting: 'Update Now',
-			extra: 1
-		},
-		userScriptRedownload: {
-			classes: 'single-click',
-			label: 'Re-download user scripts:',
-			setting: 'Download',
-			extra: 1
-		}
-	},
 
 	// About page
 	__about: {

@@ -205,7 +205,7 @@ var UserScript = {
 		},
 
 		GM_log: function () {
-			console.warn.apply(console, arguments);
+			console.debug.apply(console, arguments);
 		},
 
 		GM_openInTab: function (url) {

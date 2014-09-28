@@ -24,7 +24,7 @@ var Strings = {
 
 			$('#language-style').attr('href', ExtensionURL('i18n/' + language + '/style.css'));
 		}).fail(function (error) {
-			LogError(['failed to load language', language, error]);
+			LogError('failed to load language - ' + language, error);
 		});
 	},
 

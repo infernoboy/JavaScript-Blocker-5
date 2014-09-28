@@ -2,6 +2,38 @@
 
 function EventListener () {
 	this.__listeners = {};
+
+	Object.defineProperty(this, 'fnWrapper', {
+		value: function (fn) {
+			this.defaultPrevented = false;
+			this.fn = fn;
+		}
+	});
+
+	this.fnWrapper.prototype.__run = function () {
+		this.fn(this);
+
+		return this;
+	};
+
+	this.fnWrapper.prototype.preventDefault = function () {
+		this.defaultPrevented = true;
+	};
+};
+
+EventListener.eventInfo = {};
+
+EventListener.onMouseMove =  function (event) {
+	Object._extend(EventListener.eventInfo, {
+		pageX: event.pageX,
+		pageY: event.pageY
+	});
+};
+
+EventListener.onClick =  function (event) {
+	Object._extend(EventListener.eventInfo, {
+		target: event.target
+	});
 };
 
 EventListener.prototype.listeners = function (name) {
@@ -42,7 +74,7 @@ EventListener.prototype.addCustomEventListener = function (name, fn, once, shoul
 EventListener.prototype.addMissingCustomEventListener = function (name, fn, once, shouldBeDelayed) {
 	if (Array.isArray(name)) {
 		for (var i = 0; i < name.length; i++)
-			this.addMissingCustomEventListener(name[i], fn, once);
+			this.addMissingCustomEventListener(name[i], fn, once, shouldBeDelayed);
 
 		return this;
 	}
@@ -53,7 +85,7 @@ EventListener.prototype.addMissingCustomEventListener = function (name, fn, once
 		if (listeners.fns[i].fn === fn)
 			return this;
 
-	return this.addCustomEventListener(name, fn, once);
+	return this.addCustomEventListener.apply(this, arguments);
 };
 
 EventListener.prototype.removeCustomEventListener = function (name, fn) {
@@ -64,21 +96,40 @@ EventListener.prototype.removeCustomEventListener = function (name, fn) {
 	});
 };
 
-EventListener.prototype.trigger = function (name, data, triggerSubsequentListeners) {
+EventListener.prototype.trigger = function (name, detail, triggerSubsequentListeners) {
+	var info,
+			fnInstance;
+
 	var newListeners = [],
+			defaultPrevented = false,
 			listeners = this.listeners(name);
 
 	listeners.triggerSubsequentListeners = !!triggerSubsequentListeners;
 
 	for (var i = 0; i < listeners.fns.length; i++) {
-		if (listeners.fns[i].shouldBeDelayed)
-			Utilities.setImmediateTimeout(listeners.fns[i].fn, [data]);
-		else
-			listeners.fns[i].fn(data);
+		info = listeners.fns[i];
+
+		if (info.shouldBeDelayed)
+			Utilities.setImmediateTimeout(info.fn, [detail]);
+		else {
+			fnInstance = new this.fnWrapper(info.fn);
+
+			fnInstance.type = name;
+			fnInstance.detail = detail;
+
+			Object._extend(fnInstance, EventListener.eventInfo)
+
+			defaultPrevented = fnInstance.__run().defaultPrevented || defaultPrevented;
+		}
 
 		if (!listeners.fns[i].once)
 			newListeners.push(listeners.fns[i]);
 	}
 
 	this.__listeners[name].fns = newListeners;
+
+	return defaultPrevented;
 };
+
+document.addEventListener('mousemove', EventListener.onMouseMove, true);
+document.addEventListener('click', EventListener.onClick, true);

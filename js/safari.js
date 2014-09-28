@@ -7,6 +7,11 @@ var beforeLoad = {
 	currentTarget: null
 };
 
+var Version = {
+	display: safari.extension.displayVersion,
+	bundle: safari.extension.bundleVersion
+};
+
 var ToolbarItems = {
 	badge: function (number, tab) {
 		safari.extension.toolbarItems.forEach(function (toolbarItem) {		
@@ -34,6 +39,13 @@ var ToolbarItems = {
 
 		return this;
 	},
+
+	setPopover: function () {
+		safari.extension.toolbarItems.forEach(function (toolbarItem) {
+			toolbarItem.popover = Popover.popover;
+		});
+	},
+
 	showPopover: function () {
 		safari.extension.toolbarItems.forEach(function (toolbarItem) {				
 			if (toolbarItem.browserWindow && toolbarItem.browserWindow === BrowserWindows.active())
@@ -43,27 +55,25 @@ var ToolbarItems = {
 };
 
 var Popover = {
-	object: function () {
-		return ToolbarItems.visible() ? safari.extension.toolbarItems[0].popover : false;
+	popover: null,
+
+	create: function (id, file, width, height) {
+		this.popover = safari.extension.createPopover(id, file, width, height);
+
+		return this.popover;
 	},
-	window: function () {
-		return this.object().contentWindow;
+
+	get window () {
+		return this.popover ? this.popover.contentWindow : window;
 	},
+
 	hide: function () {
-		var popover = this.object();
-
-		if (popover)
-			popover.hide();
+		if (this.popover)
+			this.popover.hide();
 	},
+
 	visible: function () {
-		var visible = false;
-
-		safari.extension.toolbarItems.forEach(function (toolbarItem) {
-			if (toolbarItem.popover && toolbarItem.popover.visible)
-				visible = true;
-		});
-
-		return visible;
+		return this.popover && this.popover.visible;
 	}
 };
 
@@ -133,15 +143,20 @@ var Tabs = {
 var GlobalPage = {
 	tab: safari.self.tab,
 	
-	window: function () {
+	get window () {
 		try {
 			return safari.extension.globalPage.contentWindow;
 		} catch (e) {
 			return null;
 		}
 	},
+
 	message: function (message, data) {
-		GlobalPage.tab.dispatchMessage(message, data);
+		try {
+			GlobalPage.tab.dispatchMessage(message, data);
+		} catch (e) {
+			Log(message, e, data);
+		}
 	}
 };
 
@@ -258,3 +273,23 @@ function GlobalCommand (command, data) {
 		data: data
 	});
 };
+
+(function () {
+	var SetPopoverToToolbarItem = function (event) {
+		if (event.target instanceof SafariBrowserWindow)
+			ToolbarItems.setPopover();
+	};
+
+	if (window.GlobalPage && GlobalPage.window === window) {
+		Popover.create('manager', ExtensionURL('popover.html'), 480, 250);
+
+		ToolbarItems.setPopover();
+
+		Events.addApplicationListener('open', SetPopoverToToolbarItem, true);
+	} else {
+		var globalPage = GlobalPage.window;
+
+		if (globalPage)
+			Popover.popover = globalPage.Popover.popover;
+	}
+})();

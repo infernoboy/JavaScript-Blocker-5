@@ -170,7 +170,7 @@ var UserScript = {
 				'Accept': 'text/x-userscript-meta'
 			}
 		}).fail(function (error) {
-			LogError(error);
+			LogError('failed to download user script - ' + url, error.statusText);
 		});
 	},
 

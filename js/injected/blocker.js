@@ -74,8 +74,9 @@ var Page = {
 						fn();
 					else
 						fn.timeout = setTimeout(fn, 150);
-				} else
-					Handler.event.addCustomEventListener('documentBecameVisible', Page.send.bind(window, now), true);
+				} else {
+					Handler.event.addMissingCustomEventListener('documentBecameVisible', Page.send, true);
+				}
 			} catch (error) {
 				if (!BROKEN) {
 					BROKEN = true;
@@ -89,7 +90,8 @@ var Page = {
 	info: {
 		id: TOKEN.PAGE,
 		state: new Store(TOKEN.PAGE, {
-			ignoreSave: true
+			ignoreSave: true,
+			private: true
 		}),
 		isFrame: !Utilities.Page.isTop
 	}
@@ -151,6 +153,7 @@ var Handler = {
 
 	setPageLocation: function () {
 		Page.info.location = Utilities.Page.getCurrentLocation();
+		Page.info.locations = [Page.info.location];
 		Page.info.host = Utilities.Page.isAbout ? document.location.href.substr(document.location.protocol.length) : (document.location.host || 'blank'),
 		Page.info.protocol = document.location.protocol;
 	},
@@ -257,12 +260,9 @@ var Handler = {
 		Page.send();
 	},
 
-	visibilityChange: function (event, sendNow) {
-		if (!document.hidden) {
+	visibilityChange: function (event) {
+		if (!document.hidden)
 			Handler.event.trigger('documentBecameVisible');
-
-			Page.send(sendNow);
-		}
 	},
 
 	contextMenu: function (event) {
@@ -321,7 +321,7 @@ var Handler = {
 			GlobalPage.message('noFirstVisitNotification', host);
 		});
 
-		ignoreButton.classList.add('jsb-color-block');
+		ignoreButton.classList.add('jsb-color-blocked');
 
 		var unblockButton = notification.addCloseButton(_('first_visit.unblock'), function (notification) {
 			GlobalCommand('unblockFirstVisit', host);
@@ -331,7 +331,7 @@ var Handler = {
 			}, 1200);
 		});
 
-		unblockButton.classList.add('jsb-color-allow');
+		unblockButton.classList.add('jsb-color-allowed');
 	}
 };
 
@@ -525,7 +525,7 @@ var Element = {
 			element.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(source + 'FrameURL', true));
 		}
 
-		var actionStore = (canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked;
+		var actionStore = event.unblockable ? Page.unblocked : ((canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked);
 
 		sourceHost = sourceHost || ((source && source.length) ? Utilities.URL.extractHost(source) : null);
 
@@ -551,6 +551,9 @@ var Element = {
 	requestFrameURL: function (frame, reason, force) {
 		if (!(frame instanceof HTMLElement) && (!force || Utilities.Token.valid(frame.getAttribute('jsbShouldSkipLoadEventURLRequest'), 'ShouldSkipLoadEventURLRequest', true)))
 			return;
+
+		if (!frame.contentWindow)
+			return LogError('frame does not have a window', frame);
 
 		frame.contentWindow.postMessage({
 			command: 'requestFrameURL',
@@ -804,16 +807,20 @@ if (!globalSetting.disabled) {
 		if (Handler.shouldCheckBlockFirstVisit()) {
 			var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
 
-			if (willBlockFirstVisit && willBlockFirstVisit.action !== 8) {
-				Handler.event.addCustomEventListener('readyForPageNotifications', function () {
-					if (Page.info.isFrame)
-						GlobalPage.message('bounce', {
-							command: 'showBlockedAllFirstVisitNotification',
-							detail: willBlockFirstVisit.host
-						});
-					else
-						Handler.showBlockedAllFirstVisitNotification(willBlockFirstVisit.host);
-				}, true);
+			if (willBlockFirstVisit) {
+				Page.info.blockedByFirstVisit = willBlockFirstVisit;
+
+				if (willBlockFirstVisit.action !== 8) {
+					Handler.event.addCustomEventListener('readyForPageNotifications', function () {
+						if (Page.info.isFrame)
+							GlobalPage.message('bounce', {
+								command: 'showBlockedAllFirstVisitNotification',
+								detail: willBlockFirstVisit.host
+							});
+						else
+							Handler.showBlockedAllFirstVisitNotification(willBlockFirstVisit.host);
+					}, true);
+				}
 			}
 		}
 

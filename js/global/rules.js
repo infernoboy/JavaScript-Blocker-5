@@ -25,7 +25,7 @@ ACTION._createReverseMap();
 
 Object.freeze(ACTION);
 
-var Rule = function (store, storeProps, ruleProps) {
+function Rule (store, storeProps, ruleProps) {
 	this.action = (ruleProps && typeof ruleProps.action === 'number') ? ruleProps.action : null;
 	this.longRuleAllowed = (ruleProps && typeof ruleProps.longRuleAllowed === 'boolean') ? ruleProps.longRuleAllowed : null;
 

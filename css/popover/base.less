@@ -3,6 +3,8 @@
 .shared-before(@empty);
 
 @toolbarBaseColor: #dd4c0d;
+@toolbarBaseColor: darken(@baseColor, 11%);
+@toolbarBaseColor: #0073CF;
 
 .jsb-element {
 	& {
@@ -16,7 +18,7 @@
 		}
 
 		&.yosemite {
-			padding: 1px;
+			padding: 2px 1px 1px;
 		}
 	}
 
@@ -27,8 +29,8 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: rgba(0, 0, 0, 0.7);
 		z-index: 600;
+		-webkit-user-select: none;
 	}
 
 	#container {
@@ -37,16 +39,21 @@
 		#too-old {
 			display: none;
 			position: fixed;
+			padding-top: 80px;
 			top: 0;
 			left: 0;
-			background: #000;
+			background: #111;
 			width: 100%;
 			height: 100%;
 			z-index: 214159;
 
-			* {
+			.jsb-info {
 				color: #eee;
-				text-align: center;
+			
+				&,
+				& * {
+					font-size: 15pt;
+				}
 			}
 		}
 
@@ -54,17 +61,25 @@
 			height: 100%;
 			display: -webkit-flex;
 			-webkit-flex-direction: column;
+			-webkit-transform: translateZ(0px);
+			-webkit-filter: blur(0px) contrast(100%) brightness(100%);
+
+			.transition() {
+				-webkit-transition: -webkit-filter 0.25s ease-out, width 0.25s ease-out, padding 0.25s ease-out, background 0.11s ease-out, color 0.11s ease-out;
+			}
+
+			&.modal-blur {
+				-webkit-filter: blur(12px) contrast(109%) brightness(105%);
+			}
 
 			#view-toolbar {
-				.toolbarTransition() {
-					-webkit-transition: width 0.35s ease-out, padding 0.35s ease-out, background 0.15s ease-out, color 0.15s ease-out;
-				}
-
 				position: relative;
-				margin: 1px 0;
+				margin: 0 0 1px;
+				padding-top: 2px;
 				z-index: 500;
-				-webkit-flex: 0 0 23px;
+				-webkit-flex: 0 0 24px;
 				border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+				background: #fff;
 
 				&,
 				& * {
@@ -74,26 +89,38 @@
 				#full-toggle,
 				#open-menu {
 					position: absolute;
-					top: 0;
+					top: 2px;
 					padding: 1px 5px 0;
-					margin: 0 1px;
+					margin: 0 2px;
 					color: @toolbarBaseColor;
 					cursor: default;
 					line-height: 19px;
 					border-radius: 4px;
 					
-					.toolbarTransition;
+					.transition;
 
 					&:active {
 						color: darken(@toolbarBaseColor, 10%);
 					}
 
-					&.is-disabled {
+					&.is-disabled,
+					&.unread-error {
 						color: #fff;
+					}
+
+					&.is-disabled {
 						background: @toolbarBaseColor;
 
 						&:active {
 							background: darken(@toolbarBaseColor, 5%);
+						}
+					}
+
+					&.unread-error {
+						background: darken(red, 10%);
+
+						&:active {
+							background: darken(red, 15%);
 						}
 					}
 				}
@@ -101,75 +128,149 @@
 				#open-menu {
 					right: 0;
 				}
+			}
 
-				#view-switcher-container {
-					position: absolute;
-					left: 50%;
+			.view-switcher-container {
+				position: absolute;
+				left: 50%;
 
-					#view-switcher {
-						position: relative;
-						left: -50%;
-						white-space: nowrap;
-						height: 18px;
+				&,
+				& * {
+					-webkit-user-select: none;
+				}
+
+				.view-switcher {
+					position: relative;
+					left: -50%;
+					white-space: nowrap;
+					height: 18px;
+					list-style: none;
+
+					li {
 						border: 1px solid @toolbarBaseColor;
-						border-radius: 4px;
-						overflow: hidden;
-						list-style: none;
+						margin-left: -1px;
+						display: inline-block;
+						list-style-type: none;
+						text-align: center;
+						height: 100%;
+						width: 63px;
+						padding: 0 5px;
+						cursor: default;
 
-						li {
-							display: inline-block;
-							color: @toolbarBaseColor;
-							list-style-type: none;
-							text-align: center;
-							line-height: 18px;
-							height: 100%;
-							width: 63px;
-							padding: 0 5px;
-							border-right: 1px solid @toolbarBaseColor;
-							cursor: default;
+						.jsb-large-font& {
+							width: 77px;
+						}
+
+						.transition;
+
+						&:first-child {
+							border-top-left-radius: 4px;
+							border-bottom-left-radius: 4px;
+						}
+
+						&:last-child {
+							border-top-right-radius: 4px;
+							border-bottom-right-radius: 4px;
+						}
+
+						&:active {
+							background: lighten(@toolbarBaseColor, 52%);
+						}
+
+						&.active-view {
+							background: @toolbarBaseColor;
+
+							.view-switcher-item-container {
+								color: #fff;
+							}
+						}
+
+						&.view-switcher-hidden:not(.active-view) {
+							width: 0;
+							min-width: 0;
+							padding: 0;
+							margin: 0;
 							overflow: hidden;
+							border-right-width: 0;
+							border-left-width: 0;
+						}
+
+						.view-switcher-item-container {
+							position: relative;
+							color: @toolbarBaseColor;
+							line-height: 18px;
 
 							.jsb-large-font& {
-								width: 77px;
+								line-height: 17px;
 							}
 
-							.toolbarTransition;
+							.transition;
 
-							&:last-child {
-								border: none;
-							}
-
-							&:active {
-								background: lighten(@toolbarBaseColor, 49%);
-							}
-
-							&.active-view {
+							.view-switcher-item-notification {
+								display: none;
+								position: absolute;
+								bottom: 3px;
+								left: 103%;
+								height: 8px;
+								min-width: 7px;
+								padding: 3px 4px;
+								border-radius: 10px;
+								background: red;
+								text-align: center;
+								line-height: 6px;
 								color: #fff;
-								background: @toolbarBaseColor;
-							}
+								border: 1px solid rgba(0, 0, 0, 0.3);
+								font-size: 85%;
+								text-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+								box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+								z-index: 2;
 
-							&.view-switcher-hidden:not(.active-view) {
-								width: 0;
-								min-width: 0;
-								padding: 0;
-								border-right-width: 0;
+								.jsb-large-font& {
+									bottom: 4px;
+									line-height: 8px;
+								}
 							}
 						}
 					}
 				}
 			}
 
-			#views {
+			.ui-view {
+				&.active-view {
+					display: block;
+				}
+
+				.floated-header {
+					position: absolute;
+					z-index: 5;
+				}
+			}
+
+			.ui-view,
+			.ui-view:not(.active-view) .ui-view {
+				display: none;
+			}
+
+
+			#main-views {
 				-webkit-flex: 1 1 auto;
 				overflow-y: scroll;
-				overflow-x: auto;
+				overflow-x: hidden;
+				padding: 2px 0;
 
-				&::-webkit-scrollbar {
+				&::-webkit-scrollbar,
+				#setting-views-container::-webkit-scrollbar {
 					width: 9px;
 					height: 9px;
 				}
 
+				.snapshot-info {
+					display: none;
+				}
+
 				@import "view.page.less";
+				@import "view.resource.less";
+				@import "view.setting.less";
 				@import "view.rule.less";
 			}
 		}

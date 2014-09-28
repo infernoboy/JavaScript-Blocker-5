@@ -1,0 +1,46 @@
+&[data-activeview="#setting-view"] {
+	overflow: hidden;
+}
+
+#setting-view {
+	height: 100%;
+	width: 100%;
+	-webkit-flex-direction: column;
+
+	&.active-view {
+		display: -webkit-flex;
+	}
+
+	#setting-toolbar {
+		padding-top: 3px;
+		margin-top: -3px;
+		-webkit-flex: 0 0 25px;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+		background: #fff;
+
+		.view-switcher-container {
+			position: absolute;
+
+			.view-switcher {
+				margin-top: 1px;
+				
+				li {
+					width: 73px;
+
+					.jsb-large-font& {
+						width: 88px;
+						padding: 0 2px;
+					}
+				}
+			}
+		}
+	}
+
+	#setting-views-container {
+		position: relative;
+		-webkit-flex: 1 1 auto;
+		overflow-y: scroll;
+		overflow-x: auto;
+		margin-top: 1px;
+	}
+}

@@ -223,7 +223,7 @@ var Special = {
 				command: command,
 				meta: {
 					args: meta,
-					meta: meta ? meta.meta : null
+					meta: meta ? meta.meta : undefined
 				},
 				callback: typeof callback === 'function' ? callback.toString() : null
 			});
@@ -292,6 +292,9 @@ var Special = {
 		},
 
 		JSBCallbackSetup: function (event) {
+			if (!window[JSB.eventToken])
+				return console.error('frame disappeared?');
+
 			var doNotFreeze = ['commandGeneratorToken', 'eventCallback'];
 
 			window[JSB.eventToken].document$removeEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackSetup, true);
@@ -323,6 +326,9 @@ var Special = {
 		},
 
 		JSBCommander: function (detail, meta, callback, preserve) {
+			if (!window[JSB.eventToken])
+				return console.error('unable to send JSB command');
+			
 			var callbackID = registerCallback(callback, preserve);
 
 			window[JSB.eventToken].document$dispatchEvent(new JSBCustomEvent('JSBCommander:' + JSB.sourceID + ':' + JSB.eventToken, {

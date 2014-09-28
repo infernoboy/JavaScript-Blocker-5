@@ -158,19 +158,23 @@ function Command (command, data, event) {
 		},
 
 		globalSetting: function (setting) {
-			this.message = {
-				disabled: window.globalSetting.disabled,
-				debugMode: window.globalSetting.debugMode,
+			var self = this;
 
-				useAnimations: Settings.getItem('useAnimations'),
-				enabledKinds: Settings.getItem('enabledKinds'),
-				showPlaceholder: Settings.getItem('showPlaceholder'),
-				hideInjected: Settings.getItem('hideInjected'),
-				confirmShortURL: Settings.getItem('confirmShortURL'),
-				blockReferrer: Settings.getItem('blockReferrer'),
+			Command.event.addCustomEventListener('UIReady', function () {
+				self.message = {
+					disabled: window.globalSetting.disabled,
+					debugMode: window.globalSetting.debugMode,
 
-				contentURLs: window.CONTENT_URLS
-			};
+					useAnimations: Settings.getItem('useAnimations'),
+					enabledKinds: Settings.getItem('enabledKinds'),
+					showPlaceholder: Settings.getItem('showPlaceholder'),
+					hideInjected: Settings.getItem('hideInjected'),
+					confirmShortURL: Settings.getItem('confirmShortURL'),
+					blockReferrer: Settings.getItem('blockReferrer'),
+
+					contentURLs: window.CONTENT_URLS
+				};
+			}, true);
 		},
 
 		specialsForLocation: function (page) {
@@ -200,17 +204,23 @@ function Command (command, data, event) {
 			if (!Page.protocolSupported(thePage.protocol)) {
 				ToolbarItems.badge(0, activeTab);
 
-				UI.clear();
+				UI.Page.clear();
+
+				if (thePage.protocol === 'topsites:')
+					return;
 
 				return LogDebug('received page from unsupported protocol:', thePage.protocol);
 			}
 
-			var page = new Page(thePage, tab);
+			var page = new Page(thePage, tab),
+					renderPage = page;
 
-			if (thePage.isFrame) {				
+			if (thePage.isFrame) {		
 				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
-					if (parent.isTop && parent.tab === tab) {
+					if (parent.info.state.data && parent.isTop && parent.tab === tab) {
 						parent.addFrame(page);
+
+						renderPage = parent;
 
 						return true;
 					}
@@ -219,34 +229,26 @@ function Command (command, data, event) {
 				if (!pageParent)
 					if (page.retries < 3)
 						return Utilities.Timer.timeout('WaitForParent' + page.info.id, function (page) {
-							Log('Waiting for top page...', page.retries, page.info);
+							if (page.retries > 0)
+								Log('Waiting for top page...', page.retries, page.info.host);
 
 							page.retries++;
-
-							Page.requestPage({
-								target: tab
-							});
 						}, 500, [page]);
 					else
 						return LogError(['frame does not seem to have a parent', page.info.id]);
+			}
 
-				Page.withActive(function (activePage) {
-					activePage.badgeState('blocked');
+			if (!activeTab || !activeTab.url) {
+				ToolbarItems.badge(0, activeTab);
 
-					if (activeTab === activePage.tab)
-						UI.renderPage(activePage);
-				});
-			} else {
-				if (!activeTab || !activeTab.url) {
-					ToolbarItems.badge(0, activeTab);
+				UI.Page.clear();
+			} else if (renderPage.isTop) {
+				Page.awaitFromTab(tab, true);
 
-					UI.clear();
-				} else {
-					page.badgeState('blocked');
+				renderPage.badgeState(Settings.getItem('toolbarDisplay'));
 
-					if (activeTab === page.tab)
-						UI.renderPage(page);
-				}
+				if (activeTab === renderPage.tab)
+					UI.Page.renderPage(renderPage);
 			}
 		},
 
@@ -535,25 +537,40 @@ Command.setupContentURLs = function () {
 Command.toggleDisabled = function (force) {
 	window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
 
+	ToolbarItems.image(window.globalSetting.disabled ? 'image/toolbar-disabled.png' : 'image/toolbar.png');
+
 	Settings.setItem('isDisabled', window.globalSetting.disabled);
 
 	Command.event.addCustomEventListener('UIReady', function () {
-		$('#full-toggle', UI.view.viewToolbar).toggleClass('is-disabled', window.globalSetting.disabled);
+		UI.event.trigger('disabled', window.globalSetting.disabled);
+
+		if (!window.globalSetting.disabled && Popover.visible())
+			Page.requestPageFromActive();
 	}, true);
 
-	Tabs.messageAll('reload');
+	if (window.UI)
+		setTimeout(function () {
+			Tabs.messageAll('reload');
+		}, 150);
 };
 
 Command.setupContentURLs();
 
 window.globalSetting = {
 	disabled: false,
-	debugMode: true
+	debugMode: true,
+	speedMultiplier: 1
 };
 
 Object._extend(window.globalSetting, Command('globalSetting', null, {}));
 
 if (Settings.getItem('persistDisabled'))
 	Command.toggleDisabled(Settings.getItem('isDisabled'));
+
+window.addEventListener('error', function (event) {
+	event.preventDefault();
+
+	LogError(event.filename.replace(ExtensionURL(), '/') + ' - ' + event.lineno, new Error(event.message));
+});
 
 Events.addApplicationListener('message', Command.messageReceived);

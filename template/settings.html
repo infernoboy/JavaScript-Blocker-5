@@ -1,13 +1,11 @@
-<noscript id="toolbar-item">
-	<li id="toolbar-<%=self.sectionID%>">
-		<% if (self.toolbarHTML) { %>
-			<%=self.toolbarHTML%>
-		<% } else { %>
-			<input id="toolbar-button-<%=self.sectionID%>" type="button" value="<%=self.sectionName%>" />
-		<% } %>
-	</li>
+<noscript id="setting-container">
+	<div id="setting-toolbar"></div>
+	<div id="setting-views-container">
+		<div id="setting-views"></div>
+	</div>
 </noscript>
 
-<noscript id="section">
-	<section class="standard-section" id="section-<%=self.sectionID%>"></section>
+
+<noscript id="view">
+	<div class="ui-view setting-view" id="setting-view-<%=self.viewID%>"></div>
 </noscript>

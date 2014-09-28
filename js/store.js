@@ -9,6 +9,7 @@ var Store = (function () {
 		if (!(props instanceof Object))
 			props = {};
 
+		this.destructionTimer = null;
 		this.maxLife = (typeof props.maxLife === 'number') ? props.maxLife : Infinity;
 		this.selfDestruct = (typeof props.selfDestruct === 'number') ? props.selfDestruct : 0;
 		this.saveDelay = (typeof props.saveDelay === 'number') ? props.saveDelay : 2000;
@@ -43,6 +44,7 @@ var Store = (function () {
 				get: function () {
 					return this.private ? this.__data : data[this.id];
 				},
+
 				set: function (value) {
 					if (this.private)
 						this.__data = value;
@@ -92,12 +94,6 @@ var Store = (function () {
 		return (storeName in data);
 	};
 
-	Store.destroyAll = function () {
-		for (var key in Utilities.Timer.timers.timeout)
-			if (key._startsWith('SelfDestruct'))
-				Utilities.Timer.timers.timeout[key].script.apply(null, Utilities.Timer.timers.timeout[key].args);
-	};
-
 	Store.promote = function (object) {
 		if (object instanceof Store)
 			return object;
@@ -106,6 +102,9 @@ var Store = (function () {
 			throw new TypeError('cannot create store from object');
 
 		var store = new Store(object.name, object.props);
+
+		if (!store.isNew)
+			store.prolongDestruction();
 
 		store.data = object.data || object.STORE;
 
@@ -146,7 +145,7 @@ var Store = (function () {
 				private: true
 			});
 
-		var store = Store.compareCache.getStore(left.name + '-' + right.name);
+		var store = Store.compareCache.getStore(left.id + '-' + right.id);
 
 		var sides = {
 			left: store.getStore('left'),
@@ -247,25 +246,24 @@ var Store = (function () {
 	Store.prototype.__children = {};
 
 	Store.prototype.__save = function (bypassIgnore, now, notModified) {
-		if (!notModified)
-			this.triggerEvent('storeWasModified');
+		// if (!notModified)
+			// this.triggerEvent('storeWasModified');
 
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
-		Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
-			store.triggerEvent('storeWillSave');
+		if (this.save)
+			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
+				// store.triggerEvent('storeWillSave');
 
-			if (store.save) {
 				console.time('SAVED ' + store.id);
 
 				Settings.__method('setItem', store.id, store.readyJSON());
 
 				console.timeEnd('SAVED ' + store.id);
-			}
 
-			store.triggerEvent('storeDidSave');
-		}, now ? 0 : this.saveDelay, [this]);
+				store.triggerEvent('storeDidSave');
+			}, now ? 0 : this.saveDelay, [this]);
 
 		if (this.parent)
 			Utilities.setImmediateTimeout(function (store) {
@@ -518,8 +516,12 @@ var Store = (function () {
 			store.prolongDestruction();
 		}, 50, this);
 
-		if ((typeof key !== 'string' && typeof key !== 'number') || this.data._hasPrototypeKey(key))
-			throw new Error(key + ' cannot be used as key.');
+		try {
+			if ((typeof key !== 'string' && typeof key !== 'number') || this.data._hasPrototypeKey(key))
+				throw new Error(key + ' cannot be used as key.');
+		} catch (e) {
+			return LogError(['ERROR IN SET', this.lock, this.destroyed, this.data, this], e);
+		}
 
 		this.data[key] = {
 			accessed: this.data[key] ? this.data[key].accessed : Date.now(),
@@ -595,7 +597,7 @@ var Store = (function () {
 			} else if (defaultValue !== undefined && defaultValue !== null)
 				return this.set(key, defaultValue).get(key, null, asReference);
 		} catch (error) {
-			LogError(['ERROR IN GET', this.id, key, this.destroyed], error);
+			LogError(['ERROR IN GET', this.id, key, this.destroyed, this, this.data], error, '------');
 		}
 	};
 
@@ -609,13 +611,13 @@ var Store = (function () {
 		var store = this.get(key),
 				requiredName = (this.name || this.id) + ',' + key;
 
-		if (!(store instanceof Store)) {
+		if (!(store instanceof Store) || !store.data) {
 			if (!(defaultProps instanceof Object))
 				defaultProps = {};
 
 			Store.inherit(defaultProps, this);
 
-			return this.set(key, new Store(requiredName, defaultProps));
+			store = this.set(key, new Store(requiredName, defaultProps));
 		}
 
 		return store;
@@ -729,6 +731,8 @@ var Store = (function () {
 		if (this.destroyed)
 			return;
 
+		this.destroyed = true;
+
 		if (this.cleanupName)
 			Utilities.Timer.remove('interval', this.cleanupName);
 
@@ -756,20 +760,16 @@ var Store = (function () {
 		this.data = undefined;
 
 		delete data[this.id];
-
-		Object.defineProperty(this, 'destroyed', {
-			configurable: true,
-			value: true
-		});
 	};
 
 	Store.prototype.prolongDestruction = function () {
-		if (this.selfDestruct > 0)
-			Utilities.Timer.timeout('ProlongDestruction' + this.id, function (store) {
-				Utilities.Timer.timeout('SelfDestruct' + store.id, function (store) {
-					store.destroy();
-				}, store.selfDestruct, [store]);
-			}, 500, [this]);
+		if (this.selfDestruct > 0) {
+			clearTimeout(this.destructionTimer);
+
+			this.destructionTimer = setTimeout(function (store) {
+				store.destroy();
+			}, this.selfDestruct, this);
+		}
 	};
 
 	Store.prototype.all = function () {

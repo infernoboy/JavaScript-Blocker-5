@@ -1,5 +1,6 @@
 <noscript id="poppy">
 	<div id="poppy-<%=self.id%>" class="poppy" data-id="<%=self.id%>">
+		<input type="button" class="poppy-close" value="<%=_('Close')%>" />
 		<div class="poppy-content"></div>
 		<div class="poppy-arrow"></div>
 		<div class="poppy-arrow-settings"></div>
@@ -8,29 +9,73 @@
 </noscript>
 
 <noscript id="main-menu">
-	<h3 class="jsb-centered">JavaScript Blocker v5</h3>
+	<h3 class="jsb-centered">JavaScript Blocker <%=Version.display%></h3>
 	<div id="main-menu">
-		<ul>
-			<li><input type="checkbox" id="main-menu-show-hidden" /> <label for="main-menu-show-hidden">Show hidden page items</label></li>
-			<li><div class="horizontal-divider"></div></li>
-		</ul>
-		<div>
-			<input type="button" id="main-menu-contribute" value="Unlock" />
-			<input type="button" id="main-menu-help" value="Help" />
-			<input type="button" id="main-menu-settings" value="Settings" />
+	<%
+		switch (UI.view.views.attr('data-activeView')) {
+			case '#page-view': %>
+				<ul id="main-menu-options">
+					<li><input type="checkbox" id="main-menu-show-hidden" /> <label for="main-menu-show-hidden"><%=_('main_menu.show_hidden')%></label></li>
+					<li><input type="checkbox" id="main-menu-show-unblocked-scripts" /> <label for="main-menu-show-unblocked-scripts"><%=_('main_menu.show_unblocked_scripts')%></label></li>
+					<li><input type="checkbox" id="main-menu-show-resource-url" /> <label for="main-menu-show-resource-url"><%=_('main_menu.show_resource_url')%></label></li>
+					<li><div class="horizontal-divider"></div></li>
+				</ul>
+			<% break;
+		}
+	%>
+		<div id="main-menu-menu">
+			<input type="button" id="main-menu-contribute" class="jsb-color-blocked" value="<%=_('main_menu.unlock')%>" />
+			<input type="button" id="main-menu-help" value="<%=_('main_menu.help')%>" />
+			<input type="button" id="main-menu-settings" value="<%=_('main_menu.settings')%>" />
+			<input type="button" id="main-menu-about" value="<%=_('main_menu.about')%>" />
 		</div>
 		<div class="horizontal-divider"></div>
 		<div id="console-container">
-			<% var errorMessageCount = LogError.history.concat(globalPage.LogError.history).length; %>
+			<%
+				var messageHistory = Utilities.messageHistory(),
+						messageCount = messageHistory.error.length + messageHistory.debug.length;
+			%>
 			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" />
-			<span id="main-menu-console-message-count"><%=_('main_menu.console.message' + (errorMessageCount === 1 ? '' : 's'), [errorMessageCount])%></span> 
+			<span id="main-menu-console-message-count"><%=_('main_menu.console.message' + (messageCount === 1 ? '' : 's'), [messageCount])%></span> 
 		</div>
 	</div>
 </noscript>
 
 <noscript id="console">
-	<h4 class="jsb-centered">Console</h4>
-	<input type="button" id="console-clear" value="Clear" />
-	<input type="button" id="console-report" value="Report" />
-	<pre id="console"><%=JSON.stringify(LogError.history.concat(globalPage.LogError.history), null, 1)%></pre>
+	<div id="console-container">
+		<h3 class="jsb-centered"><%=_('main_menu.console')%></h3>
+		<input type="button" id="console-clear" value="<%=_('console.clear')%>" />
+		<input type="button" id="console-report" value="<%=_('console.report')%>" />
+		<ul class="console">
+			<li><h4 class="jsb-centered"><%=_('console.error_messages')%></h4></li>
+		<%
+			var messageHistory = Utilities.messageHistory();
+
+			for (var i = 0; i < messageHistory.error.length; i++) {
+				%><li>
+						<span class="console-error-message"><%=messageHistory.error[i].message.join(' ')%></span>
+						<% if (i !== messageHistory.error.length - 1) %>
+							<div class="horizontal-divider"></div>
+					</li><%
+				if (messageHistory.error[i].stack.length) { %>
+					<li>
+						<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack%></span>
+					</li><%
+				}
+			}
+		%>
+		</ul>
+		<ul class="console">
+			<li><h4 class="jsb-centered"><%=_('console.debug_messages')%></h4></li>
+		<%
+			for (var i = 0; i < messageHistory.debug.length; i++) {
+				%><li>
+						<span class="console-debug-message"><%=messageHistory.debug[i]%></span>
+						<% if (i !== messageHistory.debug.length - 1) %>
+							<div class="horizontal-divider"></div>
+					</li><%
+			}
+		%>
+		</ul>
+	</div>
 </noscript>

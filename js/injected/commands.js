@@ -129,7 +129,8 @@ var Command = function (type, event) {
 		},
 
 		sendPage: function () {
-			Page.send();
+			if (Utilities.Page.isTop)
+				Page.send();
 		},
 
 		nextImmediateTimeout: function () {
@@ -259,8 +260,8 @@ var Command = function (type, event) {
 						window.location.reload();
 					});
 
-					notification.addCustomEventListener('optionKeyStateChange', function (optionKeyPressed) {
-						reloadPageButton.value = optionKeyPressed ? _('recommend_reload.reload_always') : _('recommend_reload.reload_once');
+					notification.addCustomEventListener('optionKeyStateChange', function (event) {
+						reloadPageButton.value = event.detail ? _('recommend_reload.reload_always') : _('recommend_reload.reload_once');
 					});
 				}
 			}
@@ -583,7 +584,7 @@ var Command = function (type, event) {
 			});
 
 			if (!detail.meta.synchronousInfoOnly) {
-				notification.primaryCloseButtonText(_('xhr.block_once')).primaryCloseButton.classList.add('jsb-color-block');
+				notification.primaryCloseButtonText(_('xhr.block_once')).primaryCloseButton.classList.add('jsb-color-blocked');
 
 				var allowOnceButton = notification.addCloseButton(_('xhr.allow_once'), function (notification) {
 					if (PageNotification.willCloseAll) {
@@ -594,13 +595,13 @@ var Command = function (type, event) {
 						notification.trigger('allowXHR');
 				});
 
-				allowOnceButton.classList.add('jsb-color-allow');
+				allowOnceButton.classList.add('jsb-color-allowed');
 
 				notification
-					.addCustomEventListener('optionKeyStateChange', function (optionKeyPressed) {
-						allowOnceButton.value = optionKeyPressed ? _('xhr.allow_once_all') : _('xhr.allow_once');
+					.addCustomEventListener('optionKeyStateChange', function (event) {
+						allowOnceButton.value = event.detail ? _('xhr.allow_once_all') : _('xhr.allow_once');
 
-						notification.primaryCloseButtonText(optionKeyPressed ? _('xhr.block_once_all') : _('xhr.block_once'));
+						notification.primaryCloseButtonText(event.detail ? _('xhr.block_once_all') : _('xhr.block_once'));
 					})
 					.addCustomEventListener(['allowXHR', 'blockXHR'], function () {
 						notification.hide();

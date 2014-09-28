@@ -12,10 +12,6 @@ Template.__templates = {};
 
 Template.event = new EventListener;
 
-Template.ref = function (template) {
-	return Template.__templates[template];
-};
-
 Template.load = function (file) {
 	if (Template.__templates[file])
 		return Template.__templates[file];
@@ -29,17 +25,17 @@ Template.load = function (file) {
 			Template.event.trigger('load.' + file, template, true);
 		})
 		.fail(function (error) {
-			LogError(['unable to load template file', file, error]);
+			LogError('failed to load template file - ' + file, error);
 		});
 
 	return Template.__templates[file];
 };
 
-Template.create = function (template, section, data, shouldBeWrapped) {
+Template.create = function (template, section, data, shouldBeWrapped, returnString) {
 	if (!Template.__templates.hasOwnProperty(template))
 		throw new Error('template file not loaded - ' + template);
 
-	var element = Template.__templates[template].create(section, data);
+	var element = Template.__templates[template].create(section, data, false, returnString);
 
 	if (shouldBeWrapped)
 		return $('<div />').append(element);
@@ -47,7 +43,7 @@ Template.create = function (template, section, data, shouldBeWrapped) {
 	return element;
 };
 
-Template.prototype.create = function (section, data, isHTML) {
+Template.prototype.create = function (section, data, isHTML, returnString) {
 	// Simple JavaScript Templating
 	// John Resig - http://ejohn.org/ - MIT Licensed
 
@@ -64,7 +60,7 @@ Template.prototype.create = function (section, data, isHTML) {
 		if (!template.length)
 			throw new Error('section not found in template: ' + this.name + ' - ' + section);
 
-		fn = this.create(template.text(), false, true);
+		fn = this.create(template.text(), false, true, returnString);
 
 		this.cache[section] = fn;
 	} else
@@ -77,7 +73,7 @@ Template.prototype.create = function (section, data, isHTML) {
 				.replace(/<%=(.+?)%>/g, "',$1,'")
 				.replace(/<%/g, "');")
 				.replace(/%>/g, "p.push('")
-			+ "');return $(p.join(''));");
+			+ "');return " + (returnString ? "p.join('');" : "$(p.join(''));"));
 
 	section = undefined;
 

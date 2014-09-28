@@ -201,22 +201,21 @@ Special.specials = {
 				openToken = Math.random(),
 				openArguments = {};
 
-		function performAction (request, info, args, send) {
+		function performAction (request, info, args, sendData) {
 			var xhrError;
 
 			var detail = openArguments[request[openToken]],
-					newRequest = request,
 					pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
 
-			if (send) {
+			if (sendData) {
 				if (detail.method === 'post')
-					args[0] = send;
+					args[0] = sendData;
 				else if (detail.method === 'get') {
 					var anchor = document.createElement('a');
 
 					anchor.href = detail.path;
 
-					var newPath = anchor.origin + anchor.pathname + '?' + send;
+					var newPath = anchor.origin + anchor.pathname + '?' + sendData;
 
 					info.source = newPath;
 
@@ -230,7 +229,7 @@ Special.specials = {
 				request[openToken].resendAllowed = true;
 
 				try {
-					XHR.send.apply(newRequest, args);
+					XHR.send.apply(request, args);
 				} catch (error) {
 					xhrError = error;
 				}
@@ -295,7 +294,7 @@ Special.specials = {
 
 			var kind = 'xhr_' + detail.method,
 					info = {
-						meta: null,
+						meta: undefined,
 						kind: kind,
 						source: detail.path,
 						canLoad: {}
@@ -469,7 +468,8 @@ Special.specials = {
 				toDataURL = HTMLCanvasElement.prototype.toDataURL,
 				toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
 				shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION),
-				autoContinue = {};
+				autoContinue = {},
+				alwaysContinue = false;
 
 		var baseURL = messageExtensionSync('extensionURL', {
 			path: 'html/canvasFingerprinting.html#'
@@ -481,17 +481,21 @@ Special.specials = {
 			confirmString += "\n\n" + _localize(JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent', [window.location.host]);
 
 		function protection (dataURL) {
+			var shouldContinue;
+
 			var url = baseURL + dataURL;
 
 			if (JSB.value.value === ALWAYS_BLOCK)
-				var shouldContinue = false;
+				shouldContinue = false;
+			else if (alwaysContinue !== false)
+				shouldContinue = alwaysContinue;
 			else if (shouldAskOnce && JSB.value.action >= 0)
-				var shouldContinue = !!(JSB.value.action % 2);
+				shouldContinue = !!(JSB.value.action % 2);
 			else if (autoContinue.hasOwnProperty(dataURL))
-				var shouldContinue = autoContinue[dataURL];
+				shouldContinue = autoContinue[dataURL];
 			else {
 				if (useSimplifiedMethod)
-					var shouldContinue = confirm(confirmString);
+					shouldContinue = confirm(confirmString);
 				else {
 					var activeTabIndex = messageExtensionSync('activeTabIndex'),
 							newTabIndex = messageExtensionSync('openTabWithURL', url);
@@ -516,6 +520,8 @@ Special.specials = {
 							source: 'canvas_data_url',
 						}
 					});
+
+					alwaysContinue = JSB.value.action;
 				}
 
 				autoContinue[dataURL] = shouldContinue;

@@ -8,89 +8,99 @@
 			<div id="view-toolbar">
 				<span id="full-toggle" data-disable="1"><%=_('view_toolbar.disable')%></span>
 
-				<div id="view-switcher-container">
-					<ul id="view-switcher">
-						<li data-view="#page-view"><%=_('view_toolbar.page')%></li><li class="view-switcher-hidden" data-view="#resource-content-view"><%=_('view_toolbar.resource')%></li><li class="view-switcher-hidden" data-view="#help-view"><%=_('view_toolbar.help')%></li><li class="view-switcher-hidden" data-view="#setting-view"><%=_('view_toolbar.setting')%></li><li data-view="#rule-view"><%=_('view_toolbar.rules')%></li><li data-view="#snapshot-view"><%=_('view_toolbar.snapshots')%></li>
-					</ul>
-
-					<br style="clear: both;" />
-				</div>
+				<%
+					var mainSwitcher = Template.create('main', 'view-switcher', {
+						container: '#main-views',
+						views: {
+							'#page-view': {
+								value: _('view_toolbar.page')
+							},
+							'#resource-content-view': {
+								hide: true,
+								value: _('view_toolbar.resource')
+							},
+							'#help-view': {
+								hide: true,
+								value: _('view_toolbar.help')
+							},
+							'#setting-view': {
+								hide: true,
+								value: _('view_toolbar.setting')
+							},
+							'#welcome-view': {
+								hide: true,
+								value: _('view_toolbar.welcome')
+							},
+							'#about-view': {
+								hide: true,
+								value: _('main_menu.about')
+							},
+							'#rule-view': {
+								value: _('view_toolbar.rules')
+							},
+							'#snapshot-view': {
+								value: _('view_toolbar.snapshots')
+							}
+						}
+					}, true);
+				%><%=mainSwitcher.html()%>
 
 				<span id="open-menu"><%=_('view_toolbar.menu')%></span>
 			</div>
 
-			<div id="views">
-				<div id="page-view">
+			<div id="main-views">
+				<div id="page-view" class="ui-view">
+					<div id="page-modal-info" class="jsb-hidden">
+						<p class="jsb-info jsb-centered jsb-embossed">JavaScript Blocker is disabled.</p>
+					</div>
 					<p class="snapshot-info jsb-info"></p>
-					<a href="<%=ExtensionURL('settings.html')%>">Settings Page</a>
 					<div id="page-state-container"></div>
 				</div>
 
-				<div id="rule-view">
+				<div id="rule-view" class="ui-view">
 					<p class="snapshot-info jsb-info"></p>
 					<div id="rules">RULE VIEW</div>
 				</div>
 
-				<div id="snapshot-view">
+				<div id="snapshot-view" class="ui-view">
 					<p class="jsb-info">SNAPSHOT VIEW</p>
 				</div>
 
-				<div id="resource-content-view">
+				<div id="resource-content-view" class="ui-view">
 					<p class="jsb-info">RESOURCE CONTENT VIEW</p>
 				</div>
 
-				<div id="help-view">
+				<div id="help-view" class="ui-view">
 					<p class="jsb-info">HELP VIEW</p>
 				</div>
 
-				<div id="setting-view">
-					<p class="jsb-info">SETTING VIEW</p>
+				<div id="setting-view" class="ui-view"></div>
+
+				<div id="welcome-view" class="ui-view">
+					<p class="jsb-info">WELCOME VIEW</p>
+				</div>
+
+				<div id="about-view" class="ui-view">
+					<p class="jsb-info">ABOUT VIEW</p>
 				</div>
 			</div>
 		</div>
 
 		<div id="too-old">
-			<p class="jsb-info">JavaScript Blocker 5 requires Safari 6.1 or greater.</p>
+			<p class="jsb-info jsb-centered">JavaScript Blocker 5 requires Safari 6.1 or greater.</p>
+			<p class="jsb-info jsb-centered">You can use <a href="http://javascript-blocker.toggleable.com/">JavaScript Blocker 4</a> instead.</p>
 		</div>
 	</div>
 </noscript>
 
-<noscript id="page-info">
-	<div class="page-info">
-		<div class="page-info-header">
-			<span class="page-info-type">Main</span>
-			<span class="vertical-divider"></span>
-			<span class="page-info-host">www.google.com</span>
-			<span class="page-info-hidden-count-container">
-				<span class="vertical-divider"></span>
-				<span class="page-info-hidden-count">4 hidden</span>
-			</span>
-			<input type="button" class="page-info-disable" value="Disable" />
-		</div>
-
-		<div class="page-info-columns">
-			<div class="page-info-column page-info-allowed">
-				<div class="page-info-column-header" data-expander="> label">
-					<label class="jsb-color-allow">Allowed:</label>
-					<span class="page-info-state-count">3</span>
-					<span class="page-info-state-count-type">hosts</span>
-				</div>
-
-				<div class="page-info-item-container">
-					<header class="page-info-kind" data-expander="> a">
-						<h3>scripts</h3>
-						<a href="javascript:void(0);">Hide</a>
-					</header>
-
-					<ul class="page-info-items" data-kind="script">
-						<li>
-							<div class="info-link">?</div>
-							<span class="page-info-item" data-protocol="http:">www.google.com</span>
-							<a class="page-info-host-count">3</a>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</div>
+<noscript id="view-switcher">
+	<div class="view-switcher-container">
+		<ul class="view-switcher" data-container="<%=self.container%>">
+		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" class="<%=self.views[viewID].hide ? 'view-switcher-hidden' : ''%>"><span class="view-switcher-item-container"><%=self.views[viewID].value%><span class="view-switcher-item-notification"></span></span></li><% } %>
+		</ul>
 	</div>
-</div>
+</noscript>
+
+<noscript id="jsb-readable">
+	<p class="jsb-info jsb-readable"><%=self.string%></p>
+</noscript>

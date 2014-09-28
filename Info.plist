@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>9537.85.10.12</string>
+	<string>9537.85.10.17.1</string>
 	<key>CFBundleDisplayName</key>
 	<string>JavaScript Blocker 5</string>
 	<key>CFBundleIdentifier</key>
@@ -13,39 +13,26 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5.0.0</string>
+	<string>5</string>
 	<key>CFBundleVersion</key>
 	<string>140708</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
 		<string>global.html</string>
-		<key>Popovers</key>
-		<array>
-			<dict>
-				<key>Filename</key>
-				<string>popover.html</string>
-				<key>Height</key>
-				<real>380</real>
-				<key>Identifier</key>
-				<string>manageItems</string>
-				<key>Width</key>
-				<real>480</real>
-			</dict>
-		</array>
 		<key>Toolbar Items</key>
 		<array>
 			<dict>
 				<key>Identifier</key>
 				<string>popoverTrigger</string>
 				<key>Image</key>
-				<string>image/toolbar-attn.png</string>
+				<string>image/toolbar.png</string>
 				<key>Label</key>
 				<string>JavaScript Blocker 5</string>
 				<key>Palette Label</key>
 				<string>JavaScript Blocker 5</string>
 				<key>Popover</key>
-				<string>manageItems</string>
+				<string></string>
 				<key>Tool Tip</key>
 				<string>JavaScript Blocker 5</string>
 			</dict>

@@ -19,7 +19,7 @@
 	<link rel="stylesheet" href="" type="text/css" id="large-style"/>
 	<link rel="stylesheet" href="" type="text/css" id="theme-style"/>
 	<link rel="stylesheet" href="i18n/en-us/style.css" type="text/css" id="language-style"/>
-	<link rel="stylesheet" href="css/highlight.css" />
+	<link rel="stylesheet" href="css/popover/highlight.css" />
 
 	<script src="js/safari.js"></script>	
 	<script src="js/event.js"></script>	
@@ -27,174 +27,21 @@
 	<script src="js/utilities.js"></script>
 	<script src="js/popover/popover.js"></script>
 	<script src="js/popover/ui.js"></script>
+	<script src="js/popover/ui.settings.js"></script>
+	<script src="js/popover/ui.page.js"></script>
 	<script src="js/popover/poppy.js"></script>
 	<script src="js/popover/poppies.js"></script>
 	<script src="js/popover/i18n.js"></script>
+	<script src="js/popover/beautify.js"></script>
 	<script src="js/popover/highlight.js"></script>
 </head>
 
-<body>
-	<div id="modal-overlay"></div>
-	
+<body>	
 	<div id="container">
-		<div id="quick-add-info" class="floating-info-box">
-			<p>
-				<input class="orange" type="button" id="apply-quick-add" data-i18n="Apply Changes" value=" " />
-				<input type="button" id="clear-quick-add" data-i18n="Clear Selection" value=" " />
-				<span class="label" data-i18n="Closing the popover will apply changes."></span>
-			</p>
+		<div id="too-old">
+			<p class="jsb-info jsb-centered">JavaScript Blocker 5 requires Safari 6.1 or greater.</p>
+			<p class="jsb-info jsb-centered">You can use <a href="http://javascript-blocker.toggleable.com/">JavaScript Blocker 4</a> instead.</p>
 		</div>
-
-		<div id="find-bar" class="floating-info-box">
-			<input type="button" id="find-bar-done" data-i18n="Done" />
-			<input type="search" id="find-bar-search" incremental="incremental" results="10" autosave="find" />
-			<label for="find-bar-search" id="find-bar-match-count"></label>
-		</div>
-
-		<div id="main" class="zoomable-view">
-			<div id="outdated-info-displayed" class="floating-info-box">
-				<p data-i18n="This view contains outdated information. Scroll to the top to have it updated."></p>
-			</div>
-			
-			<div id="disabled-underlay" class="embossed">
-				<p data-i18n="JavaScript Blocker is disabled."></p>
-			</div>
-
-			<div id="main-toolbar" class="actions-bar text-based">
-				<ul>
-					<li id="unlock-jsb" data-i18n="Unlock"></li>
-					<li id="disable-jsb" data-i18n="Disable JavaScript Blocker" class="right-divider"></li>
-					<li id="open-help" data-i18n="Help" class="right-divider"></li>
-					<li id="open-settings" data-i18n="Settings" class="right-divider"></li>
-					<li id="view-rules" data-i18n="Rules" class="right-divider"></li>
-					<li id="toggle-hidden-items" data-i18n="Show Hidden" class="right-divider"></li>
-					<li id="version-info"><span data-i18n="JavaScript Blocker"></span> <div class="console-unread"> 0</div></li>
-				</ul>
-				<br style="clear:both;" />
-			</div>
-
-			<p class="misc-info snapshot-info"></p>
-				
-			<div id="page-frames"></div>
-		</div>
-
-		<div id="rules-list" class="zoomable-view">
-			<div class="info-container">
-				<p class="misc-info" id="rule-counter" data-i18n="{1} domains, {2} rules" data-i18n-fill="[0,0]"></p>
-				<p class="misc-info snapshot-info"></p>
-				<input class="orange" type="button" value=" " id="rules-list-back" data-i18n="Close Rules List" />
-			</div>
-			<div id="data">
-				<div id="rules-filter-bar" class="filter-bar">
-					<ul id="filter-type-collapse">
-						<li class="label" data-i18n="Visibility:"></li>
-						<li id="filter-all" class="selected orange" data-i18n="Any"></li>
-						<li class="orange" id="filter-collapsed" data-i18n="Collapsed"></li>
-						<li class="orange" id="filter-expanded" data-i18n="Expanded"></li>
-					</ul>
-					<div class="divider"></div>
-					<ul id="filter-type-page">
-						<li class="label" data-i18n="Type:"></li>
-						<li class="selected orange" id="filter-domain-hidden" data-i18n="Domain Based {1}" data-i18n-fill="[0]"></li>
-						<li class="orange" id="filter-page-hidden" data-i18n="Page Based {1}" data-i18n-fill="[0]"></li>
-					</ul>
-					<div class="divider"></div>
-					<ul id="filter-type-not-used" class="age-filter">
-						<li class="label" data-i18n="Not Used Within:"></li>
-						<li id="filter-age-all" class="selected orange" data-i18n="All"></li>
-						<li class="orange" id="filter-age-hour" data-i18n="Past Hour"></li>
-						<li class="orange" id="filter-age-day" data-i18n="Past Day"></li>
-						<li class="orange" id="filter-age-week" data-i18n="Past Week"></li>
-						<li class="orange" id="filter-age-month" data-i18n="Past Month"></li>
-						<li class="orange" id="filter-age-year" data-i18n="Past Year"></li>
-					</ul>
-					<div class="divider"></div>
-					<ul id="filter-type-used" class="age-filter">
-						<li class="label" data-i18n="Used Within:"></li>
-						<li id="filter-only-all" class="selected orange" data-i18n="All"></li>
-						<li class="orange" id="filter-only-hour" data-i18n="Past Hour"></li>
-						<li class="orange" id="filter-only-day" data-i18n="Past Day"></li>
-						<li class="orange" id="filter-only-week" data-i18n="Past Week"></li>
-						<li class="orange" id="filter-only-month" data-i18n="Past Month"></li>
-						<li class="orange" id="filter-only-year" data-i18n="Past Year"></li>
-					</ul>
-					<div class="divider"></div>
-					<ul id="filter-type-domain">
-						<li class="label" data-i18n="Filter:"></li>
-						<li id="li-domain-filter" class="li-text-filter">
-							<input type="search" placeholder="Domains" data-i18n="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" class="text-filter orange" />
-							<br style="clear:both;" />
-						</li>
-					</ul>
-					<div class="divider"></div>
-					<br style="clear:both;" />
-				</div>
-				<div id="rules-actions-bar" class="filter-bar actions-bar">
-					<ul id="rule-list-actions">
-						<li id="collapse-all" title=" " data-i18n="Collapse All"></li>
-						<li id="expand-all" title=" " data-i18n="Expand All"></li>
-						<li id="show-active-rules" class="divider" title=" " data-i18n="Show Active"></li>
-						<li id="show-temporary-rules" class="divider" title=" " data-i18n="Show Temporary"></li>
-						<li id="edit-domains" class="divider" title=" " data-i18n="Edit"></li>
-						<li id="make-temp-perm" class="divider" title=" " data-i18n="Make Temporary Rules Permanent"></li>
-						<li id="remove-all-temp" title=" " data-i18n="Remove Temporary Rules"></li>
-						<li id="time-machine" class="divider" title=" " data-i18n="Snapshots"></li>
-						<li id="reload-rules" title=" " data-i18n="Reload Rules"></li>
-					</ul>
-					<br style="clear:both;" />
-				</div>
-
-				<div id="rule-container">
-					<ul class="rules-wrapper"></ul>
-				</div>
-			</div>
-		</div>
-
-		<div id="misc" class="zoomable-view">
-			<div class="info-container">
-				<p class="misc-header"></p>
-				<input type="button" value=" " id="misc-close" data-i18n="Close" />
-			</div>
-
-			<div id="misc-content"></div>
-		</div>
-
-		<div id="snapshots" class="zoomable-view">
-			<div class="info-container">
-				<p class="misc-info" data-i18n="Snapshots"></p>
-				<input id="close-snapshots" value=" " type="button" data-i18n="Close Snapshots" class="purple" />
-				<input id="create-snapshot" value=" " type="button" data-i18n="Create Snapshot" class="purple" />
-			</div>
-
-			<p id="snapshots-info"></p>
-			<ul id="current-snapshots">
-				<li id="kept-snapshots">
-					<header id="head-kept-snapshots" class="snapshots-header">
-						<h3 id="kept-snapshots-header" data-i18n="Kept"></h3>
-						<a id="toggle-kept-snapshots" class="toggle-snapshots" data-i18n="Hide"></a>
-						<br style="clear:both;" />
-					</header>
-				</li>
-
-				<li id="snapshots-list-kept-container" class="snapshots-list-container">
-					<ul id="snapshots-list-kept" class="snapshots-wrapper"></ul>
-				</li>
-
-				<li id="unkept-snapshots">
-					<header id="head-unkept-snapshots" class="snapshots-header">
-						<h3 id="unkept-snapshots-header" data-i18n="Unkept"></h3>
-						<a id="toggle-unkept-snapshots" class="toggle-snapshots" data-i18n="Hide"></a>
-						<br style="clear:both;" />
-					</header>
-				</li>
-
-				<li id="snapshots-list-unkept-container" class="snapshots-list-container">
-					<ul id="snapshots-list-unkept" class="snapshots-wrapper"></ul>
-				</li>
-			</ul>
-		</div>
-
-		<div id="resize-handler"></div>
 	</div>
 </body>
 </html>

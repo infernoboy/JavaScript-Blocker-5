@@ -1,9 +1,23 @@
-#main-menu {
+#main-menu,
+#console-container {
 	input[type="button"] {
-		margin-right: 3px;
+		margin-right: 4px;
 	}
+}
 
-	#console {
+#main-menu {
+	&-options li {
+		margin-bottom: 5px;
+	}
+	
+	&-menu input:last-child {
+		margin-right: 0
+	}
+}
+
+#console-container {
+	.console {
+		width: 400px;
 		margin-top: 10px;
 	}
 }

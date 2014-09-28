@@ -50,7 +50,7 @@ EasyList.prototype.merge = function () {
 
 EasyList.prototype.download = function () {
 	return $.get(this.url).fail(function (error) {
-		LogError(error);
+		LogError('failed to download easy list ' + this.name, error.statusText);
 	});
 };
 

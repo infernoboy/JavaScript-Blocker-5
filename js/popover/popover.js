@@ -2,7 +2,7 @@
 
 window.localConsole = console;
 
-var globalPage = GlobalPage.window();
+var globalPage = GlobalPage.window;
 
 if (!globalPage.GlobalPageReady) {
 	Log('Waiting for global page to be ready...');
@@ -14,7 +14,7 @@ globalPage.Template = Template;
 
 // Allow direct access to required variables contained within the global page.
 (function () {
-	var required = ['jQuery', 'console', 'globalSetting', 'Settings', 'Promise', 'Store'];
+	var required = ['jQuery', 'console', 'globalSetting', 'Settings', 'Promise', 'Store', 'EffectiveTLDs', 'SimpleTLDs'];
 
 	for (var i = 0; i < required.length; i++)
 		window[required[i]] = globalPage[required[i]];
@@ -50,12 +50,33 @@ globalPage.Template = Template;
 
 		return this;
 	};
+
+	$.fn.scrollIntoView = function (scrollContainer, speed, offset) {
+		if (this.length) {
+			if (typeof offset !== 'number')
+				offset = 0;
+
+			var originalScrollTop = scrollContainer.scrollTop();
+
+			this[0].scrollIntoView(true);
+
+			var newScrollTop = scrollContainer.scrollTop();
+
+			scrollContainer
+				.scrollTop(originalScrollTop)
+				.animate({
+					scrollTop: newScrollTop + offset
+				}, speed);
+		}
+
+		return this;
+	};
 })();
 
 window.addEventListener('error', function (event) {
 	console.group('Popover Error');
 
-	LogError([event.filename.replace(ExtensionURL(), '/'), event.lineno], event.message);
+	LogError(event.filename.replace(ExtensionURL(), '/') + ' - ' + event.lineno, event.message);
 
 	console.groupEnd();
 });

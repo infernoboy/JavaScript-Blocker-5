@@ -1,30 +1,36 @@
 "use strict";
 
 var UI = {
+	__popoverWidthSetting: 'popoverWidth',
+	__popoverHeightSetting: 'popoverHeight',
+
+	readyState: {
+		Page: false
+	},
 	show: ToolbarItems.showPopover,
-	disabled: false,
 	event: new EventListener,
 	document: document,
-
-	__renderPage: function (page) {
-		if (!Popover.visible())
-			return;
-
-		var tree = page.tree();
-
-		UI.pageStateContainer.html('<pre>' + JSON.stringify(tree, null, 1)._escapeHTML() + '</pre>');
-	},
 
 	onReady: function (fn) {
 		UI.event.addCustomEventListener('UIReady', fn, true);
 	},
 
 	init: function () {
+		$(document).on('click', 'a', UI.events.anchor);
+
+		if (!Utilities.safariVersionSupported) {
+			globalPage.Command.toggleDisabled(true);
+
+			$('#too-old').show();
+
+			throw new Error('safari version too old');
+		}
+
 		var userAgent = window.navigator.userAgent;
 
 		Settings.map.useAnimations.props.onChange();
-		
-		document.documentElement.classList.toggle('jsb-large-font', Settings.getItem('largeFont'));
+		Settings.map.largeFont.props.onChange();
+
 		document.documentElement.classList.toggle('yosemite', userAgent._contains('10_10'));
 		document.documentElement.classList.toggle('mavericks', userAgent._contains('10_9'));
 		document.documentElement.classList.toggle('mountain-lion', userAgent._contains('10_8'));
@@ -32,8 +38,6 @@ var UI = {
 		document.documentElement.classList.toggle('snow-leopard', userAgent._contains('10_6'));
 		
 		UI.container = Template.create('main', 'container');
-
-		UI.pageStateContainer = $('#page-state-container', UI.container);
 
 		$('body').empty().append(UI.container);
 
@@ -61,34 +65,112 @@ var UI = {
 				this[attribute] = localized;
 		});
 
+		UI.event
+			.addCustomEventListener('viewWillSwitch', function (event) {
+				if (event.detail.to.id === '#rule-view')
+					event.detail.to.view.find('#rules').html('<pre>' + JSON.stringify(globalPage.Rules.list.active.rules.all(), null, 1) + '</pre>');
+				else if (event.detail.to.id === '#snapshot-view')
+					event.detail.to.view.html('<pre>' + JSON.stringify(globalPage.Rules.list.user.rules.snapshot.snapshots.all(), null, 1) + '</pre>');
+			})
+			.addCustomEventListener('disabled', function (event) {
+				$('#full-toggle', UI.view.viewToolbar).toggleClass('is-disabled', event.detail);
+			});
+
 		UI.view.init();
 
-		UI.event.addCustomEventListener('viewWillSwitch', function (event) {
-			if (event.viewID === '#page-view')
-				UI.events.openedPopover();
-			else if (event.viewID === '#rule-view')
-				event.view.find('#rules').html('<pre>' + JSON.stringify(globalPage.Rules.list.active.rules.all(), null, 1) + '</pre>');
-			else if (event.viewID === '#snapshot-view')
-				event.view.html('<pre>' + JSON.stringify(globalPage.Rules.list.user.rules.snapshot.snapshots.all(), null, 1) + '</pre>');
-		});
+		Settings.map.showResourceURLs.props.onChange();
 
-		UI.event.trigger('UIReady', null, true);
-		globalPage.Command.event.trigger('UIReady', null, true);
-	},
-	
-	clear: function () {
-		UI.pageStateContainer.empty();
+		window.addEventListener('keydown', UI.events.keyboardShortcut, true);
+		window.addEventListener('keypress', UI.events.keyboardShortcut, true);
+		window.addEventListener('keyup', UI.events.keyup, true);
 	},
 
-	renderPage: Utilities.throttle(function (page) {
-		UI.onReady(UI.__renderPage.bind(UI, page));
-	}, 50, null, true),
+	resizePopover: function (width, height) {
+		width = Math.max(Settings.map[UI.__popoverWidthSetting].props.default, width);
+		height = Math.max(Settings.map[UI.__popoverHeightSetting].props.default, height);
+
+		var popover = Popover.popover,
+				originalWidth = parseInt(popover.width, 10),
+				originalHeight = parseInt(popover.height, 10);
+
+		popover.width = width;
+		popover.height = height;
+
+		setTimeout(function (originalWidth, originalHeight, popover) {
+			Utilities.Timer.timeout('savePopoverDimensions', function (popover) {
+				Settings.setItem(UI.__popoverWidthSetting, popover.width);
+				Settings.setItem(UI.__popoverHeightSetting, popover.height);
+			}, 100, [popover]);
+
+			UI.event.trigger('popoverDidResize', {
+				widthDifference: originalWidth - popover.width,
+				heightDifference: originalHeight - popover.height,
+			});
+		}, 10, originalWidth, originalHeight, popover);
+	},
 
 	events: {
-		openedPopover: function () {
-			globalPage.Page.requestPageFromActive();
+		__keys: {
+			UP: 38,
+			DOWN: 40,
+			LEFT: 37,
+			RIGHT: 39,
+			SHIFT: 16,
+			ESCAPE: 27
+		},
 
-			UI.event.trigger('popoverOpened');
+		keyboardShortcut: function (event) {
+			var metaKey = Utilities.OSXVersion() ? event.metaKey : event.ctrlKey,
+					metaShift = metaKey && event.shiftKey;
+
+			var key = String.fromCharCode(event.which).toLowerCase();
+
+			if (event.type === 'keypress') {
+				if (metaShift) {
+					if (key ==='c') {
+						event.preventDefault();
+
+						var consolePoppy = new Poppy(.999, 0, true, 'console');
+
+						consolePoppy
+							.setContent(Template.create('poppy', 'console'))
+							.stayOpenOnScroll()
+							.show();
+					}
+				}
+			} else {
+				if (event.which === UI.events.__keys.ESCAPE) {
+					if (Poppy.poppyExist()) {
+						event.preventDefault();
+
+						Poppy.closeAll();
+					}
+				} else if (metaShift) {
+					if (event.which in UI.events.__keys)
+						event.preventDefault();
+
+					if (event.which === UI.events.__keys.UP)
+						UI.resizePopover(Popover.popover.width, Popover.popover.height - 6);
+					else if (event.which === UI.events.__keys.DOWN)
+						UI.resizePopover(Popover.popover.width, Popover.popover.height + 6);
+					else if (event.which === UI.events.__keys.LEFT)
+						UI.resizePopover(Popover.popover.width - 6, Popover.popover.height);
+					else if (event.which === UI.events.__keys.RIGHT)
+						UI.resizePopover(Popover.popover.width + 6, Popover.popover.height);
+				}
+			}
+		},
+
+		keyup: function (event) {
+
+		},
+
+		anchor: function (event) {
+			if (this.href._startsWith('http')) {
+				Tabs.create(this.href);
+
+				Popover.hide();
+			}
 		}
 	},
 
@@ -100,31 +182,14 @@ var UI = {
 			above: 1.2
 		},
 
-		get active () {
-			return this.viewSwitcher.data('active-view');
-		},
-
-		set active (view) {
-			this.viewSwitcher.data('active-view', view)
-		},
-
 		init: function () {
-			if (Utilities.safariBuildVersion < 537) {
-				globalPage.Command.toggleDisabled(true);
-
-				$('#too-old').show();
-
-				return;
-			}
-
-			this.views = $('#views', UI.container);
-			this.viewToolbar = $('#view-toolbar');
-			this.viewSwitcher = $('#view-switcher');
-
-			this.views.children().hide();
+			this.views = $('#main-views', UI.container);
+			this.viewContainer = $('#view-container', UI.container);
+			this.viewToolbar = $('#view-toolbar', this.viewContainer);
+			this.viewSwitcher = $('.view-switcher', this.viewToolbar);
 
 			this.viewSwitcher.on('click', 'li', function () {
-				UI.view.switchTo(this.getAttribute('data-view'));
+				UI.view.switchTo(UI.view.viewSwitcher, this.getAttribute('data-view'));
 			});
 
 			this.viewToolbar
@@ -132,9 +197,11 @@ var UI = {
 					globalPage.Command.toggleDisabled();
 				})
 				.on('click', '#open-menu', function (event) {
+					this.classList.remove('unread-error');
+
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'mainMenu');
 
-					poppy.setContent(Template.create('poppy', 'main-menu')).moveWithView().show();
+					poppy.setContent(Template.create('poppy', 'main-menu')).stayOpenOnScroll().show();
 				});
 
 			$('#container').click(function (event) {
@@ -145,52 +212,193 @@ var UI = {
 				var poppy = new Poppy(event.pageX, event.pageY);
 
 				poppy
-					.setContent('hello there at ' + Date.now() + 'hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>')
-					.moveWithView()
+					.setContent('hello there at ' + Date.now() + 'hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>')
+					.moveWithView(UI.view.views)
 					.show();
 			});
 
-			this.switchTo(this.__default);
+			UI.event
+				.addCustomEventListener('poppyDidShow', function () {
+					UI.view.views.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
+				})
+				.addCustomEventListener('poppyModalOpened', function () {
+					UI.view.viewContainer.addClass('modal-blur');
+				})
+				.addCustomEventListener('poppyModalClosed', function () {
+					UI.view.viewContainer.removeClass('modal-blur');
+				});
+
+			this.switchTo(this.viewSwitcher, this.__default);
 		},
 
-		switchTo: function (viewID) {
-			if (this.active === viewID)
-				return;
+		toTop: function (viewContainer) {
+			viewContainer.scrollTop(0).scrollLeft(0).trigger('scroll')
+		},
 
-			var previousView = this.views.find(this.active),
-					activeView = this.views.find(viewID);
+		switchTo: function (viewSwitcher, viewID) {
+			var viewContainer = $(viewSwitcher.attr('data-container')),
+					activeID = viewContainer.attr('data-activeView');
+
+			if (activeID === viewID)
+				return UI.view.toTop(viewContainer);
+
+			var previousView = viewContainer.find(activeID),
+					activeView = viewContainer.find(viewID);
 
 			if (!activeView.length)
 				throw new Error('view not found - ' + viewID);
 
-			UI.event.trigger('viewWillSwitch', {
-				view: activeView,
-				viewID: viewID
+			var defaultPrevented = UI.event.trigger('viewWillSwitch', {
+				from: {
+					view: previousView,
+					id: activeID,
+				},
+				to: {
+					view: activeView,
+					id: viewID
+				}
 			});
 
-			this.active = viewID;
+			if (defaultPrevented)
+				return;
 
-			$('li', this.viewSwitcher)
+			$('li', viewSwitcher)
 				.removeClass('active-view')
 				.filter('[data-view="' + viewID + '"]')
-				.addClass('active-view');
+				.addClass('active-view')
 
-			previousView.hide().find('*:focus').blur();
+			document.activeElement.blur();
 
-			activeView.show();
+			UI.view.toTop(viewContainer.attr('data-activeView', viewID));
 
-			this.views.scrollTop(0);
+			previousView.removeClass('active-view');
+
+			activeView.addClass('active-view');
+
+			viewContainer.trigger('scroll');
 
 			UI.event.trigger('viewDidSwitch', {
 				view: activeView,
-				viewID: viewID
+				id: viewID
 			});
+
+		},
+
+		isActive: function (viewSwitcher, viewID) {
+			var viewContainer = $(viewSwitcher.attr('data-container'));
+
+			if (viewContainer.find(viewID).length)
+				throw new Error('view not found - ' + viewID);
+
+			return viewContainer.data('data-activeView') === viewID;
+		},
+
+		floatingHeaders: {
+			__floating: {},
+
+			__onScroll: function (event, viewContainerSelector) {
+				var viewContainer,
+						viewContainerOffsetTop,
+						offset,
+						related;
+
+				var headersInView = UI.view.floatingHeaders.__floating[viewContainerSelector];
+
+				for (var headerSelector in headersInView) {
+					viewContainer = headersInView[headerSelector].viewContainer;
+					viewContainerOffsetTop = headersInView[headerSelector].viewContainerOffsetTop;
+					offset = headersInView[headerSelector].offset;
+					related = headersInView[headerSelector].related;
+
+					if (typeof offset === 'function')
+						offset = offset(viewContainer, headerSelector, offset);
+
+					var top = viewContainerOffsetTop + offset,
+							allHeaders = $(headerSelector, viewContainer),
+							unfloatedHeaders = allHeaders.not('.floated-header');
+
+					var currentHeader =
+						unfloatedHeaders
+							.filter(function () {
+								return $(this).offset().top <= viewContainerOffsetTop + offset;
+							})
+							.filter(':last');
+
+					var nextHeader = unfloatedHeaders.eq(unfloatedHeaders.index(currentHeader) + 1);
+
+					$(headerSelector, viewContainer).remove('.floated-header');
+
+					if (!currentHeader.length)
+						return;
+
+					var floatedHeaderID = 'floated-header-' + Utilities.Token.generate();
+					
+					var currentHeaderClone =
+						currentHeader
+							.clone(true, true)
+							.insertBefore(currentHeader)
+							.attr('id', floatedHeaderID)
+							.addClass('floated-header');
+
+					var relatedElement = typeof related === 'function' ? related(viewContainer, currentHeader) : null,
+							relatedShifted = false,
+							currentHeaderMarginHeight = currentHeader.outerHeight(true);
+
+					if (relatedElement) {
+						var offsetTop = relatedElement.offset().top + relatedElement.outerHeight() + currentHeaderMarginHeight - currentHeader.outerHeight();
+
+						if (offsetTop <= currentHeaderMarginHeight + offset + viewContainerOffsetTop) {
+							top = offsetTop - currentHeaderMarginHeight;
+							relatedShifted = true;
+
+							currentHeaderClone.addClass('floated-header-related-push');
+						}
+					}
+
+					if (nextHeader.length && !relatedShifted) {
+						var offsetTop = nextHeader.offset().top + offset - currentHeader.innerHeight() - viewContainerOffsetTop;
+
+						if (offsetTop < 0) {
+							top += offsetTop;
+
+							currentHeaderClone.addClass('floated-header-push');
+						}
+					}
+
+					currentHeaderClone.css({
+						top: top,
+						left: currentHeader.offset().left,
+						width: currentHeader.width()
+					});
+				}
+			},
+
+			add: function (viewContainerSelector, headerSelector, related, offset) {
+				var headersInView = UI.view.floatingHeaders.__floating._getWithDefault(viewContainerSelector, {});
+
+				if (headerSelector in headersInView)
+					return;
+
+				var viewContainer = $(viewContainerSelector, UI.container);
+
+				headersInView[headerSelector] = {
+					viewContainer: viewContainer,
+					viewContainerOffsetTop: viewContainer.offset().top,
+					related: related,
+					offset: offset
+				};
+
+				if (viewContainer.data('floatingHeaders'))
+					return;
+
+				viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 20, [viewContainerSelector]));
+			}
 		}
 	}
 };
 
-globalPage.UI = UI;
+UI.events.__keys._createReverseMap();
 
-Events.addApplicationListener('popover', UI.events.openedPopover);
+globalPage.UI = UI;
 
 document.addEventListener('DOMContentLoaded', UI.init, true);

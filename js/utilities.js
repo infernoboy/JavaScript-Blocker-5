@@ -32,6 +32,18 @@ var Utilities = {
 
 	noop: function () {},
 
+	beautifyScript: function (script) {
+		var beautiful = js_beautify(script, {
+			indent_size: 2
+		});
+
+		var code = $('<pre><code class="javascript"></code></pre>').find('code').text(beautiful);
+
+		hljs.highlightBlock(code[0]);
+
+		return code.end();
+	},
+
 	OSXVersion: function () {
 		var osx = window.navigator.userAgent.match(/Mac OS X ([^\)]+)\)/);
 
@@ -165,6 +177,14 @@ var Utilities = {
 
 	isFloat: function (subject) {
 		return typeof subject === 'number' && isFinite(subject) && subject % 1 !== 0;
+	},
+
+	messageHistory: function () {
+		return {
+			log: Popover.window.Log.history.concat(GlobalPage.window.Log.history).reverse(),
+			error: Popover.window.LogError.history.concat(GlobalPage.window.LogError.history).reverse(),
+			debug: Popover.window.LogDebug.history.concat(GlobalPage.window.LogDebug.history).reverse(),
+		};
 	},
 
 	Group: {
@@ -307,10 +327,23 @@ var Utilities = {
 				timer.create.apply(timer, ['interval'].concat(Utilities.makeArray(args)));
 			}, [this, arguments]);
 		},
+
 		timeout: function () {
 			Utilities.setImmediateTimeout(function (timer, args) {
 				timer.create.apply(timer, ['timeout'].concat(Utilities.makeArray(args)));
 			}, [this, arguments]);
+		},
+
+		timeoutNow: function (reference) {
+			var timerID = this.__findReference('timeout', reference);
+
+			if (timerID) {
+				clearTimeout(this.timers.timeout[timerID].timer);
+
+				this.timers.timeout[timerID].script.apply(null, this.timers.timeout[timerID].args);
+
+				this.remove('timeout', reference);
+			}
 		},
 		
 		create: function (type, reference, script, time, args) {
@@ -349,6 +382,7 @@ var Utilities = {
 			if (type === 'interval')
 				this.__run_interval(timerID, true);
 		},
+
 		remove: function () {
 			var timerID;
 
@@ -461,8 +495,8 @@ var Utilities = {
 
 	Page: {
 		isXML: document.xmlVersion !== null,
-		isGlobal: (window.GlobalPage && GlobalPage.window() === window),
-		isPopover: Popover.window() === window,
+		isGlobal: (window.GlobalPage && GlobalPage.window === window),
+		isPopover: Popover.window === window,
 		isTop: window === window.top,
 		isAbout: document.location.protocol === 'about:',
 
@@ -605,6 +639,28 @@ var Utilities = {
 			return hostStore.set(cacheKey, parts).get(cacheKey);
 		},
 
+		pageParts: function (url) {
+			this.__anchor.href = url;
+
+			var parts = [this.__anchor.origin + '/'],
+					splitPath = this.__anchor.pathname.split(/\//g);
+		
+			splitPath._remove(0);
+
+			if (splitPath[0].length)
+				for (var i = 0; i < splitPath.length; i++)
+					if (splitPath[i].length)
+						parts.push(parts[i] + splitPath[i] + (i < splitPath.length - 1 ? '/' : ''));
+
+			return {
+				parts: parts,
+				search: this.__anchor.search,
+				hash: this.__anchor.hash,
+				pageSearch: parts[parts.length - 1] + this.__anchor.search,
+				pageHash: parts[parts.length - 1] + this.__anchor.search + this.__anchor.hash
+			};
+		},
+
 		host: function (url) {
 			this.__anchor.href = url;
 
@@ -621,6 +677,24 @@ var Utilities = {
 			this.__anchor.href = url;
 
 			return this.__anchor.protocol;
+		},
+
+		href: function (url) {
+			this.__anchor.href = url;
+
+			return this.__anchor.href;
+		},
+
+		hash: function (url) {
+			this.__anchor.href = url;
+
+			return this.__anchor.hash;
+		},
+
+		search: function (url) {
+			this.__anchor.href = url;
+
+			return this.__anchor.search;
 		}
 	}
 };
@@ -656,9 +730,9 @@ function LogDebug () {
 		LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
 
 		if (window.localConsole)
-			window.localConsole.warn.apply(window.localConsole, debugMessages);
+			window.localConsole.debug.apply(window.localConsole, debugMessages);
 
-		console.warn.apply(console, debugMessages);
+		console.debug.apply(console, debugMessages);
 
 		if (Utilities.Page.isWebpage)
 			for (var i = 0; i < args.length; i++)
@@ -687,13 +761,16 @@ function LogError () {
 			errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
 
 			if (error.sourceURL)
-				errorMessage = [error.message, '-', error.sourceURL.replace(ExtensionURL(), '/'),  'line', error.line];
+				errorMessage = [error.message, '-', error.sourceURL.replace(ExtensionURL(), '/'),  '-', error.line];
 			else
 				errorMessage = [error.message];
 		} else
 			errorMessage = [error];
 
-		LogError.history.unshift(errorMessage);
+		LogError.history.unshift({
+			message: errorMessage,
+			stack: errorStack || ''
+		});
 
 		LogError.history = LogError.history._chunk(LOG_HISTORY_SIZE)[0];
 
@@ -723,6 +800,9 @@ function LogError () {
 			}
 		}
 	}
+
+	if (window.UI)
+		$('#open-menu', UI.view.viewToolbar).addClass('unread-error');
 };
 
 LogError.history = [];
@@ -905,6 +985,18 @@ var Extension = {
 
 				return this.splice(index, 1)[0];
 			}
+		},
+
+		_sortUsingArray: {
+			value: function (array) {
+				var newArray = [];
+
+				for (var i = 0; i < array.length; i++)
+					if (this._contains(array[i]))
+						newArray.push(array[i]);
+
+				return newArray;
+			}
 		}
 	},
 
@@ -1004,6 +1096,22 @@ var Extension = {
 	},
 
 	Object: {
+		_findKey: {
+			value: function (findKey) {
+				if (this.hasOwnProperty(findKey))
+					return this[findKey];
+
+				var found;
+
+				for (var key in this)
+					if (this.hasOwnProperty(key) && Object._isPlainObject(this[key]))
+						if (found = this[key]._findKey(findKey))
+							return found;
+
+				return undefined;
+			}
+		},
+
 		_hasPrototypeKey: {
 			value: function (key) {
 				return ((key in this) && !this.hasOwnProperty(key));
@@ -1012,12 +1120,23 @@ var Extension = {
 
 		_getWithDefault: {
 			value: function (key, defaultValue) {
-				if (key in this)
+				if (this.hasOwnProperty(key))
 					return this[key];
 
 				this[key] = defaultValue;
 
 				return this[key];
+			}
+		},
+
+		_setWithDefault: {
+			value: function (key, defaultValue) {
+				if (this.hasOwnProperty(key))
+					return this;
+
+				this[key] = defaultValue;
+
+				return this;
 			}
 		},
 
@@ -1227,6 +1346,11 @@ Object._deepFreeze = function (object) {
 
 	return object;
 };
+
+Utilities.safariVersionSupported = Utilities.safariBuildVersion >= 537;
+
+if (!Utilities.safariVersionSupported)
+	throw new Error('safari version too old.');
 
 Utilities.Page.isWebpage = !!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL());
 Utilities.Page.isUserScript = window.location.href._endsWith('.user.js');

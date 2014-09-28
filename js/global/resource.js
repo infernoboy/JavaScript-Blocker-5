@@ -12,10 +12,12 @@ function Resource (resource) {
 	this.framedKind = 'framed:' + this.kind;
 	this.sourceIsURL = Rules.kindShouldBadge(this.kind) ? Utilities.URL.isURL(resource.source) : false;
 	this.isFrame = resource.isFrame;
-	this.pageLocation = resource.pageLocation.toLowerCase();
+	this.pageLocation = resource.pageLocation;
+	this.fullLocation = resource.pageLocation;
 	this.pageHost = Utilities.URL.extractHost(this.pageLocation);
-	this.source = this.sourceIsURL ? resource.source.toLowerCase() : resource.source;
-	this.sourceHost = Utilities.URL.extractHost(this.source);
+	this.source = this.sourceIsURL ? resource.source : resource.source;
+	this.fullSource = this.source;
+	this.sourceHost = Rules.kindShouldBadge(this.kind) ? Utilities.URL.extractHost(this.source) : '';
 	this.action = resource.action;
 	this.unblockable = resource.unblockable;
 	this.meta = resource.meta;

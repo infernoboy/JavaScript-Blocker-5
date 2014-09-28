@@ -2,6 +2,7 @@
 @baseColor: rgb(23, 126, 251);
 @allowColor: #008913;
 @blockColor: #920101;
+@focusShadow: rgb(171, 221, 254);
 
 .shared-before(@important) {
 	@-webkit-keyframes shake {
@@ -27,13 +28,13 @@
 	}
 	
 	.color-allow() {
-		&.jsb-color-allow {
+		&.jsb-color-allowed {
 			color: @allowColor @important;
 		}
 	}
 
 	.color-block() {
-		&.jsb-color-block {
+		&.jsb-color-blocked {
 			color: @blockColor @important;
 		}
 	}
@@ -43,32 +44,33 @@
 		::-webkit-scrollbar {
 			width: 6px @important;
 			height: 6px @important;
-		}
 
-		::-webkit-scrollbar-corner {
-			background: transparent @important;
-		}
+			&-corner {
+				background: transparent @important;
+			}
 
-		::-webkit-scrollbar-track {
-			border-radius: 5px @important;
-			background: rgba(0, 0, 0, 0.07) @important;
-		}
+			&-track {
+				border-radius: 5px @important;
+				background: rgba(0, 0, 0, 0.07) @important;
+			}
 
-		::-webkit-scrollbar-thumb {
-			border-radius: 5px @important;
-			background: rgba(0, 0, 0, 0.3) @important;
-		
-			&:hover {
-				background: rgba(0, 0, 0, 0.5) @important;
+			&-thumb {
+				border-radius: 5px @important;
+				background: rgba(0, 0, 0, 0.3) @important;
+				
+				&:hover {
+					background: rgba(0, 0, 0, 0.5) @important;
+				}
 			}
 		}
 
-		*,
-		& {
+		font-size: 9pt @important;
+
+		* {
 			margin: 0 @important;
 			color: #222 @important;
 			font-family: 'Helvetica Neue', Helvetica, sans-serif @important;
-			font-size: 9pt @important;
+			font-size: 1em @important;
 			height: auto @important;
 			min-height: 0 @important;
 			width: auto @important;
@@ -86,10 +88,16 @@
 			border: none @important;
 			background: none @important;
 			-webkit-transition-property: none @important;
+
+			&:after {
+				content: none @important;
+			}
+
+			.color-allow;
+			.color-block;
 		}
 
-		*.jsb-large-font,
-		&.jsb-large-font * {
+		&.jsb-large-font {
 			font-size: 11pt @important;
 		}
 
@@ -100,7 +108,8 @@
 			background: #fff @important;
 			border: none @important;
 			border-radius: 4px @important;
-			color: @baseColor @important;
+			// color: #272727 @important;
+			color: darken(@baseColor, 5%);
 			text-shadow: 0 1px 0 rgba(255,255,255,0.5) @important;
 			border: 1px solid rgb(200, 200, 200) @important;
 			border-bottom-color: rgb(168, 168, 168) @important;
@@ -123,19 +132,17 @@
 				pointer-events: none @important;
 			}
 
-			&:not([type="checkbox"]):not([type="radio"]):focus {
-				@inputFocusShadow: rgba(31, 169, 255, 0.4);
-
+			&:not([type="radio"]):focus {
 				outline: none @important;
-				border-color: rgba(31, 169, 255, 0.5) @important;
-				box-shadow: 0 1px 0 rgba(31, 169, 255, 0.4),
-					0 -1px 0 @inputFocusShadow,
-					1px 0 0 @inputFocusShadow,
-					-1px 0 0 @inputFocusShadow,
-					inset 0 1px 0 @inputFocusShadow,
-					inset 0 -1px 0 @inputFocusShadow,
-					inset 1px 0 0 @inputFocusShadow,
-					inset -1px 0 0 @inputFocusShadow @important;
+				border-color: darken(@focusShadow, 5%);
+				box-shadow: 0 1px 0 @focusShadow,
+					0 -1px 0 @focusShadow,
+					1px 0 0 @focusShadow,
+					-1px 0 0 @focusShadow,
+					inset 0 1px 0 @focusShadow,
+					inset 0 -1px 0 @focusShadow,
+					inset 1px 0 0 @focusShadow,
+					inset -1px 0 0 @focusShadow @important;
 			}
 
 
@@ -145,12 +152,18 @@
 			}
 		}
 
-		input[type="button"]:not(.delete):active,
-		button:not(.delete):active {
-			background: #f5f5f5 @important;
-			border-color: rgb(185, 185, 185) @important;
-			-webkit-animation: none @important;
-			text-shadow: 0 0 0 rgba(0, 0, 0, 0.3) @important;
+		input[type="button"],
+		button {
+			.jsb-large-font& {
+				padding: 2px 8px 4px;
+			}
+
+			&:active {
+				background: #f5f5f5 @important;
+				border-color: rgb(185, 185, 185) @important;
+				-webkit-animation: none @important;
+				text-shadow: 0 0 0 rgba(0, 0, 0, 0.3) @important;
+			}
 		}
 
 		input[type="text"],
@@ -173,15 +186,136 @@
 			padding: 2px 2px 1px @important;
 		}
 
+		input[type="checkbox"] {
+			display: inline-block;
+			position: relative;
+			-webkit-appearance: none @important;
+			height: 14px @important;
+			width: 14px @important;
+			background: -webkit-linear-gradient(top, #fff, #f8f8f8) @important;
+			padding: 1px 4px 3px 1px @important;
+			border-radius: 3px @important;
+			font-size: 12pt @important;
+			margin-bottom: -2px @important;
+			border-bottom-color: rgb(190, 190, 190) @important;
+
+			&:active {
+				background: #f8f8f8 @important;
+			}
+
+			&:after {
+				display: inline-block @important;
+				content: '✔︎' @important;
+				-webkit-transform: translate(0, -4px) @important;
+				opacity: 0 @important;
+				-webkit-transition: opacity 0.1s ease-out @important;
+			}
+
+			&:checked {
+				&:active:after {
+					color: darken(@baseColor, 10%) @important;
+				}
+
+				&:after {
+					opacity: 1 @important;
+				}
+			}
+		}
+
 		select {
 			.color-allow;
 			.color-block;
+
+			color: #3a3a3a @important;
+			-webkit-appearance: none @important;
+			border-bottom-color: rgb(200, 200, 200) @important;
+			z-index: 1 @important;
+			padding-right: 20px @important;
+			white-space: pre @important;
+			overflow: hidden @important;
+
+			+ label {
+				z-index: 2 @important;
+				font-size: 9pt @important;
+				margin-left: -16px @important;
+				margin-right: 3px @important;
+				pointer-events: none @important;
+				color: darken(@baseColor, 5%) @important;
+				color: #fff;
+				font-weight: bold @important;
+				background: -webkit-linear-gradient(top, lighten(@baseColor, 15%), lighten(@baseColor, 12%));
+				height: 18px @important;
+				position: relative @important;
+				top: -2px @important;
+				border-top: 1px solid lighten(@baseColor, 5%) @important;
+				border-right: 1px solid lighten(@baseColor, 5%) @important;
+				border-bottom: 1px solid @baseColor @important;
+				border-top-right-radius: 4px @important;
+				border-bottom-right-radius: 4px @important;
+				-webkit-font-smoothing: antialiased @important;
+
+				.jsb-large-font& {
+					height: 21px @important;
+					top: -5px @important;
+				}
+
+				&,
+				&:before,
+				&:after {
+					width: 15px @important;
+					display: inline-block @important;
+					text-align: right @important;
+				}
+
+				&:before {
+					content: '⌃' @important;
+					-webkit-transform: translate(-1px, 0px) scale(0.85) @important;
+
+					.jsb-large-font& {
+						-webkit-transform: translate(-1px, 1px) scale(0.85) @important;
+					}
+				}
+
+				&:after {
+					content: '⌃' @important;
+					margin-left: -15px @important;
+					-webkit-transform: translate(2px, 4px) scale(0.85) rotate(180deg) @important;
+
+					.jsb-large-font& {
+						-webkit-transform: translate(2px, 5px) scale(0.85) rotate(180deg) @important;
+					}
+				}
+			}
+
+			&:not(.css-is-dumb).select-single {
+				background: none @important;
+				border-color: transparent @important;
+				box-shadow: none @important;
+				padding-left: 0 @important;
+				padding-right: 0 @important;
+
+				+ label {
+					visibility: hidden @important;
+				}
+
+				&:focus {
+					box-shadow: none @important;
+					border-color: transparent @important;
+				}
+			}
+
+			&:focus + label {
+				border-top-right-radius: 5px @important;
+				border-bottom-right-radius: 5px @important;
+				border-color: darken(@focusShadow, 5%) @important;
+				box-shadow: inset -1px 0 @focusShadow, inset 0 1px @focusShadow, inset 0 -1px @focusShadow @important;
+			}
 		}
 
 		.horizontal-divider {
 			height: 1px @important;
 			background: rgba(0, 0, 0, 0.08) @important;
-			margin: 6px 0 @important;
+			margin: 7px 0 @important;
 		}
 
 		.vertical-divider {
@@ -193,7 +327,37 @@
 		}
 
 		.generic-container {
-			margin-bottom: 5px;
+			margin: 7px 0;
+		}
+
+		.more-info {
+			display: inline-block;
+			height: 15px;
+			width: 15px;
+			border: 1px solid @baseColor;
+			color: @baseColor;
+			border-radius: 20px;
+			text-align: center;
+			line-height: 16px;
+			background: #fff;
+			cursor: default;
+			-webkit-user-select: none;
+			font-family: Georgia;
+
+			&:active {
+				border-color: lighten(@baseColor, 15%);
+				color: lighten(@baseColor, 15%);
+			}
+
+			&:before {
+				content: 'i';
+			}
+
+			.jsb-large-font& {
+				height: 17px;
+				width: 17px;
+				line-height: 18px;
+			}
 		}
 	}
 }

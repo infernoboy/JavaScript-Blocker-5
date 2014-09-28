@@ -31,6 +31,16 @@
 				font-weight: normal @important;
 			}
 
+			&readable {
+				max-width: 300px;
+			}
+
+			&embossed {
+				color: rgba(0, 0, 0, 0.23);
+				font-weight: bold;
+				text-shadow: 0 1px 1px #fff, 0 0 0 rgba(0, 0, 0, 0.2), 0 0 1px #fff;
+			}
+
 			&hidden,
 			&hidden *,
 			&no-animations,
@@ -38,11 +48,25 @@
 				-webkit-transition-duration: 0.001s !important;
 				-webkit-animation-duration: 0.001s !important;
 			}
+
+			&align-right {
+				text-align: right;
+			}
 		}
 
 		pre {
-			white-space: pre;
-			font-family: "Menlo-Regular", Courier, monospace @important;
+			font-size: 8pt;
+
+			.jsb-large-font& {
+				font-size: 9pt;
+			}
+
+			&,
+			* {
+				tab-size: 2;
+				white-space: pre;
+				font-family: "Menlo-Regular", Courier, monospace @important;
+			}
 		}
 
 		ul,
@@ -54,7 +78,7 @@
 		h2,
 		h3,
 		h4 {
-			color: #666;
+			color: #5a668c;
 			font-weight: normal;
 			margin: 0 7px 10px;
 		}
@@ -69,6 +93,14 @@
 
 		h3 {
 			font-size: 110%;
+		}
+
+		a {
+			color: @baseColor;
+
+			&:active {
+				color: darken(@baseColor, 10%);
+			}
 		}
 	}
 }

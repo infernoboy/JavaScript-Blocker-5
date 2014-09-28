@@ -1,4 +1,6 @@
 {
+	"JSB": "JavaScript Blocker",
+
 	"Close": "Close",
 	"Alert": "Alert",
 	"Save": "Save",
@@ -7,18 +9,60 @@
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",
 
+	"view.page.full_disable": "JavaScript Blocker is disabled.",
+	"view.page.no_info": "Did not receive a page from the active tab.",
+	"view.page.from_cache": "This page was loaded from the cache and may not contain all of the page's items.",
+
+	"view.page.host.editor.selected_items": "selected items",
+
+	"view.page.host.disabled": "JavaScript Blocker is disabled on this page.",
+	"view.page.host.done": "Done",
+	"view.page.host.edit": "Edit",
+	"view.page.host.column.allowed": "Allowed:",
+	"view.page.host.column.blocked": "Blocked:",
+	"view.page.host.column.unblocked": "Not Blockable:",
+	"view.page.host.count_type.item": "item",
+	"view.page.host.count_type.items": "items",
+	"view.page.host.count_type.host": "host",
+	"view.page.host.count_type.hosts": "hosts",
+
+	"view.page.host.kind.disable": "Disable",
+	"view.page.host.kind.script": "Scripts",
+	"view.page.host.kind.frame": "Frames",
+	"view.page.host.kind.embed": "Embeds and Objects",
+	"view.page.host.kind.video": "Videos",
+	"view.page.host.kind.image": "Images",
+	"view.page.host.kind.xhr_get": "XHR GETs",
+	"view.page.host.kind.xhr_post": "XHR POSTs",
+	"view.page.host.kind.xhr_put": "XHR PUTs",
+	"view.page.host.kind.special": "Other Features",
+	"view.page.host.kind.user_script": "User Scripts",
+
 	"view_toolbar.disable": "Disable",
 	"view_toolbar.menu": "Menu",
 	"view_toolbar.page": "Page",
 	"view_toolbar.resource": "Resource",
 	"view_toolbar.help": "Help",
 	"view_toolbar.setting": "Settings",
+	"view_toolbar.welcome": "Welcome",
 	"view_toolbar.rules": "Rules",
 	"view_toolbar.snapshots": "Snapshots",
 
+	"main_menu.show_resource_url": "Show resource URLs",
+	"main_menu.show_hidden": "Show hidden items",
+	"main_menu.show_unblocked_scripts": "Show scripts that can't be blocked",
+	"main_menu.unlock": "Unlock",
+	"main_menu.help": "Help",
+	"main_menu.settings": "Settings",
+	"main_menu.about": "About",
 	"main_menu.console": "Console",
 	"main_menu.console.message": "{0} message",
 	"main_menu.console.messages": "{0} messages",
+
+	"console.error_messages": "Error Messages",
+	"console.debug_messages": "Debug Messages",
+	"console.clear": "Clear",
+	"console.report": "Report",
 
 	"recommend_reload.reload_once": "Reload Once",
 	"recommend_reload.reload_always": "Reload Always",
@@ -31,13 +75,14 @@
 	"first_visit.body.domain": "domain",
 	"first_visit.keep_blocked": "Keep Blocked",
 	"first_visit.unblock": "Unblock",
-	
-	"settings.ui": "User Interface",
+	"first_visit.gray_items": "Items with a gray background cannot be modified until choosing an action below.",
+	"first_visit.unblock_more_info": "Unblocking resources will let your settings determine which items should be blocked; it doesn't necessarily mean everything will be allowed.",
+
+	"settings.general": "General",
 	"settings.rules": "Rules",
 	"settings.snapshots": "Snapshots",
-	"settings.keyboard": "Keyboard",
-	"settings.other": "Other Features",
-	"settings.userScript": "User Scripts",
+	"settings.other": "Other",
+	"settings.userScripts": "User Scripts",
 	"settings.search": "Search",
 
 	"special.canvas_data_url.prompt": "This page may be attempting to use canvas fingerprinting to track you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there isn't, use your best judgement.",
@@ -70,5 +115,7 @@
 	"xhr.allow_once_all": "Allow All Once",
 	"xhr.block_once": "Block Once",
 	"xhr.block_once_all": "Block All Once",
-	"xhr.create_rule": "Create Rule&hellip;"
+	"xhr.create_rule": "Create Rule&hellip;",
+
+	"poppy.beautifying_script": "Beautifying script..."
 }

@@ -5,8 +5,7 @@ function Page (page, tab) {
 		throw new TypeError('page state is not an instance of Object');
 
 	page.state.props = {
-		destroyChildren: true,
-		selfDestruct: TIME.ONE.SECOND * 6
+		destroyChildren: true
 	};
 
 	page.state = Store.promote(page.state);
@@ -108,6 +107,12 @@ Page.removeMissingPages = function (event) {
 };
 
 Page.requestPage = function (event) {
+	if (window.globalSetting.disabled)
+		return;
+
+	if (event.type === 'activate' && Popover.visible())
+		UI.view.toTop(UI.view.views);
+
 	if (event.target instanceof SafariBrowserTab) {
 		MessageTarget(event, 'sendPage');
 
@@ -116,24 +121,32 @@ Page.requestPage = function (event) {
 };
 
 Page.requestPageFromActive = function (event) {
+	if (window.globalSetting.disabled)
+		return;
+
 	Tabs.messageActive('sendPage');
 
 	Page.awaitFromTab(Tabs.active());
 };
 
 Page.awaitFromTab = function (awaitTab, done) {
-	if (done)
+	if (done) {
+		UI.event.trigger('awaitPageFromTabDone', this);
+
 		return Utilities.Timer.remove('timeout', awaitTab);
+	}
+
+	UI.event.trigger('awaitPageFromTab', this);
 
 	Utilities.Timer.timeout(awaitTab, function () {
 		Tabs.all(function (tab) {
 			if (tab === awaitTab) {
 				ToolbarItems.badge(0, tab);
 
-				UI.clear();
+				UI.event.trigger('awaitPageFromTabTimeout', tab);
 			}
 		});
-	}, 300);
+	}, 600);
 };
 
 Page.blockFirstVisit = function (host, withoutNotification) {
@@ -176,6 +189,12 @@ Page.shouldBlockFirstVisit = function (host) {
 	return false;
 };
 
+Page.lastPageForTab = function (tab) {
+	return Page.pages.findLast(function (pageID, page) {
+		return page.isTop && page.tab === tab;
+	});
+};
+
 Page.prototype.addFrame = function (frame) {
 	if (!(frame instanceof Page))
 		frame = new Page(frame);
@@ -183,22 +202,31 @@ Page.prototype.addFrame = function (frame) {
 	if (this.info.id === frame.info.id)
 		throw new Error('a page cannot be its own frame');
 
-	if (frame.info.protocol === 'about:' || this.info.host === frame.info.host) {		
+	var mergeInto;
+
+	if (frame.info.protocol === 'about:' || this.info.host === frame.info.host)
+		mergeInto = this;
+	else {
+		this.frames.forEach(function (frameID, framePage, frameStore) {
+			if (framePage.info.host === frame.info.host) {
+				mergeInto = framePage;
+
+				return Store.BREAK;
+			}
+		});
+	}
+
+	if (mergeInto) {
 		frame.merged = true;
 
 		var myState,
 				myResources,
 				myHosts;
 
-		var self = this;
-
-		if (!Array.isArray(this.info.locations))
-			this.info.locations = [this.info.location];
-
-		this.info.locations._pushMissing(frame.info.location);			
+		mergeInto.info.locations._pushMissing(frame.info.location);			
 
 		frame.info.state.forEach(function (state, kinds, stateStore) {
-			myState = self.info.state.getStore(state);
+			myState = mergeInto.info.state.getStore(state);
 
 			kinds.forEach(function (kind, resources, kindStore) {
 				if (!myState.keyExist(kind))
@@ -215,18 +243,15 @@ Page.prototype.addFrame = function (frame) {
 				}
 			});
 		});
-	}
-
-	this.frames.set(frame.info.id, frame);
+	} else
+		this.frames.set(frame.info.id, frame);
 	
 	return this;
 };
 
 Page.prototype.badgeState = function (state) {
-	if (!this.isTop)
+	if (!this.isTop || window.globalSetting.disabled)
 		return;
-
-	Page.awaitFromTab(this.tab, true);
 
 	Utilities.Timer.timeout('badgeToolbar', function (self) {
 		var tree = self.tree(),
