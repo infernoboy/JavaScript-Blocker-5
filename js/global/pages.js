@@ -204,7 +204,7 @@ Page.prototype.addFrame = function (frame) {
 
 	var mergeInto;
 
-	if (frame.info.protocol === 'about:' || this.info.host === frame.info.host)
+	if (frame.info.protocol === 'about:' || frame.info.protocol === 'data:' || this.info.host === frame.info.host)
 		mergeInto = this;
 	else {
 		this.frames.forEach(function (frameID, framePage, frameStore) {

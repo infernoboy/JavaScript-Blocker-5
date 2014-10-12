@@ -24,7 +24,7 @@ var Special = {
 			for (var script in specials)
 				enabled[script] = false;
 
-		Rule.withLocationRules(forLocation, function (ruleList, ruleKind, ruleType, domain, rules) {
+		Rule.withLocationRules(forLocation, function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
 			for (rule in rules.data)
 				for (special in specials)
 					if (Rules.matches(rule.toLowerCase(), rules.data[rule].value.regexp, special.toLowerCase(), location)) {
@@ -68,6 +68,7 @@ var Special = {
 
 		return this.enabled;
 	},
+	
 	set enabled () {
 		this.__enabled = null;
 	}

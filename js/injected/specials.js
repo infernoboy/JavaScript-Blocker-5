@@ -81,6 +81,18 @@ Special.specials = {
 		});
 	},
 
+	inline_script_execution: function () {
+		var meta = document.createElement('meta');
+		
+		meta.setAttribute('http-equiv', 'content-security-policy');
+		meta.setAttribute('content', "script-src *");
+		
+		if (document.documentElement.firstChild)
+			document.documentElement.insertBefore(meta, document.documentElement.firstChild);
+		else
+			document.documentElement.appendChild(meta);
+	},
+
 	alert_dialogs: function () {
 		window.alert = function (string) {
 			if (typeof string === 'undefined')
@@ -224,8 +236,6 @@ Special.specials = {
 			}
 
 			if (info.canLoad.isAllowed) {
-				pageAction = 'addAllowedItem';
-
 				request[openToken].resendAllowed = true;
 
 				try {
@@ -510,7 +520,6 @@ Special.specials = {
 					JSB.value.action = shouldContinue ? 1 : 0;
 
 					messageExtension('addResourceRule', {
-						key: JSB.data.key,
 						temporary: JSB.value.value === ASK_ONCE_SESSION,
 						action: shouldContinue ? 1 : 0,
 						domain: 2, // RESOURCE.HOST

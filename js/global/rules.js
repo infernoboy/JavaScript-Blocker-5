@@ -62,7 +62,7 @@ Rule.withLocationRules = function (allRules, callback) {
 					domains = allRules[ruleList][ruleKind][ruleType].data._sort(Rules.__prioritize);
 
 					for (domain in domains)
-						if (callback(ruleList, ruleKind, ruleType, domain, domains[domain].value))
+						if (callback(allRules[ruleList].rule, ruleList, ruleKind, ruleType, domain, domains[domain].value))
 							break matchingRulesLoop;
 				}
 			}
@@ -71,7 +71,7 @@ Rule.withLocationRules = function (allRules, callback) {
 }
 
 Rule.prototype.__add = function (type, kind, domain, rule) {
-	if (!(rule instanceof Object))
+	if (!Object._isPlainObject(rule))
 		throw new TypeError(rule + ' is not an instance of Object');
 
 	if (rule.rule instanceof Object) {
@@ -97,9 +97,9 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 
 	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
-	else {
-		Resource.canLoadCache.remove(kind, true);
-		Resource.canLoadCache.remove('framed:' + kind, true);
+	else {		
+		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind + '-?'));
+		Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind + '-?'));
 	}
 
 	rules.set(rule.rule, {
@@ -107,7 +107,12 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 		action: typeof this.action === 'number' ? this.action : rule.action
 	});
 
-	return rules;
+	return {
+		kind: kind,
+		domain: domain,
+		rule: rule.rule,
+		rules: rules
+	};
 };
 
 Rule.prototype.__remove = function (type, kind, domain, rule) {
@@ -134,15 +139,26 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
 	else {
-		Resource.canLoadCache.remove(kind, true);
-		Resource.canLoadCache.remove('framed:' + kind, true)
+		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind + '-?'));
+		Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind + '-?'));
 	}
 };
 
-Rule.prototype.kind = function (kindName, hide) {
-	if (hide)
-		kindName = 'hide:' + kindName;
+Rule.prototype.hasAffectOnResource = function (rule, resource) {
+	var canLoad = resource.canLoad(true);
 
+	if (!canLoad.detail)
+		return false;
+
+	var detail = canLoad.detail;
+
+	return {
+		hasAffect: detail.ruleList === this && detail.ruleKind === rule.kind && detail.domain === rule.domain && detail.rule === rule.rule,
+		detail: detail
+	};
+};
+
+Rule.prototype.kind = function (kindName) {
 	if (typeof kindName !== 'string')
 		throw new Error(Rules.ERROR.KIND.NOT_STRING);
 
@@ -165,7 +181,8 @@ Rule.prototype.kind = function (kindName, hide) {
 
 			rules = new Store(domains.name + ',' + domain.join(), {
 				selfDestruct: TIME.ONE.HOUR,
-				ignoreSave: true
+				ignoreSave: true,
+				private: true
 			});
 
 			rules.parent = this;
@@ -258,6 +275,10 @@ Rule.prototype.forLocation = function (params) {
 				rules[params.searchKind[i]] = this.forLocation(localParams);
 			}
 
+		Object.defineProperty(rules, 'rule', {
+			value: this
+		});
+
 		return rules;
 	}
 
@@ -318,7 +339,11 @@ Rule.prototype.forLocation = function (params) {
 				return rules.filter(function (rule, value, ruleStore) {
 					return (!!(value.action % 2) === params.isAllowed);
 				});
-			})
+			});
+
+	Object.defineProperty(rules, 'rule', {
+		value: this
+	});
 
 	return rules;
 };
@@ -376,7 +401,7 @@ var Rules = {
 	},
 
 	kindShouldBadge: function (kind) {
-		return !['special', 'user_script', 'disable']._contains(kind);
+		return !['*', 'special', 'user_script', 'disable']._contains(kind);
 	},
 
 	isRegExp: function (rule) {
@@ -402,7 +427,7 @@ var Rules = {
 			var protoArray = rule.split('|')[0].split(',');
 
 			for (var i = 0; i < protoArray.length; i++)
-				parts.protocols[protoArray[i].toLowerCase() + ':'] = 1;
+				parts.protocols[protoArray[i].toLowerCase()] = 1;
 		}
 
 		return this.__partsCache.set(rule, parts).get(rule);

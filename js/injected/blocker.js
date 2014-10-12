@@ -297,7 +297,7 @@ var Handler = {
 	},
 
 	showBlockedAllFirstVisitNotification: function (host, viaFrame) {
-		if (!Utilities.Page.isTop)
+		if (!Utilities.Page.isTop || Utilities.Page.isXML)
 			return;
 
 		var hostDisplay = viaFrame ? _('via_frame') + ' - ' + host : host;
@@ -359,9 +359,13 @@ var Element = {
 	createFromHTML: function (html) {
 		var div = document.createElement('div');
 
-		div.innerHTML = html;
+		try {
+			div.innerHTML = html;
 
-		return div.childNodes;
+			return div.childNodes;
+		} catch (error) {
+			return div.childNodes;
+		}
 	},
 
 	prependTo: function (container, element, append) {
@@ -482,8 +486,11 @@ var Element = {
 	},
 
 	processUnblockable: function (kind, element, doesNotTrigger) {
-		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {
-			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element, true));
+		if (kind === 'script' && Special.isEnabled('inline_script_execution'))
+			return false;
+
+		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {			
+			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element));
 
 			if (!doesNotTrigger && Element.triggersBeforeLoad(element)) {
 				if (!globalSetting.hideInjected)

@@ -8,17 +8,13 @@
 
 .jsb-element {
 	& {
-		background: rgba(255, 255, 255, 0.6);
+		background: #fff;
 
 		&,
 		body {
 			height: 100%;
 			overflow: hidden;
 			box-sizing: border-box;
-		}
-
-		&.yosemite {
-			padding: 2px 1px 1px;
 		}
 	}
 
@@ -63,9 +59,10 @@
 			-webkit-flex-direction: column;
 			-webkit-transform: translateZ(0px);
 			-webkit-filter: blur(0px) contrast(100%) brightness(100%);
+			padding: 0 2px;
 
 			.transition() {
-				-webkit-transition: -webkit-filter 0.25s ease-out, width 0.25s ease-out, padding 0.25s ease-out, background 0.11s ease-out, color 0.11s ease-out;
+				-webkit-transition: background 0.15s ease-out, width 0.25s ease-out, padding 0.25s ease-out;
 			}
 
 			&.modal-blur {
@@ -74,12 +71,16 @@
 
 			#view-toolbar {
 				position: relative;
-				margin: 0 0 1px;
+				margin: 0;
 				padding-top: 2px;
 				z-index: 500;
 				-webkit-flex: 0 0 24px;
-				border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+				border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 				background: #fff;
+
+				.yosemite& {
+					padding-top: 4px;
+				}
 
 				&,
 				& * {
@@ -96,6 +97,10 @@
 					cursor: default;
 					line-height: 19px;
 					border-radius: 4px;
+
+					.yosemite& {
+						top: 4px;
+					}
 					
 					.transition;
 
@@ -109,10 +114,10 @@
 					}
 
 					&.is-disabled {
-						background: @toolbarBaseColor;
+						background: lighten(@toolbarBaseColor, 4%);
 
 						&:active {
-							background: darken(@toolbarBaseColor, 5%);
+							background: @toolbarBaseColor;
 						}
 					}
 
@@ -145,47 +150,81 @@
 					white-space: nowrap;
 					height: 18px;
 					list-style: none;
+					border-radius: 4px;
 
 					li {
-						border: 1px solid @toolbarBaseColor;
-						margin-left: -1px;
+						border: 1px solid rgb(210, 210, 210);
+						border-bottom-color: rgb(178, 178, 178);
 						display: inline-block;
+						margin-left: -1px;
 						list-style-type: none;
 						text-align: center;
 						height: 100%;
-						width: 63px;
-						padding: 0 5px;
 						cursor: default;
+						background: #fff;
 
-						.jsb-large-font& {
-							width: 77px;
+						&:not(:first-child) {
+							border-left: none;
 						}
-
-						.transition;
 
 						&:first-child {
 							border-top-left-radius: 4px;
 							border-bottom-left-radius: 4px;
+							border-right-color: transparent;
+
+							&.active-view {
+								border-left-color: lighten(@baseColor, 10%);
+							}
+
+							.view-switcher-item-container {
+								border-left-color: transparent;
+							}
 						}
 
 						&:last-child {
 							border-top-right-radius: 4px;
 							border-bottom-right-radius: 4px;
+
+							&.active-view {
+								border-right-color: lighten(@baseColor, 10%);
+							}
 						}
 
 						&:active {
-							background: lighten(@toolbarBaseColor, 52%);
+							background: #f0f0f0;
 						}
 
 						&.active-view {
-							background: @toolbarBaseColor;
+							.view-switcher-item-container {
+								border-left-color: transparent;
+							}
 
+							+ li,
+							~ li[data-view="#rule-view"] {	
+								.view-switcher-item-container {
+									border-left-color: #fff;
+								}
+
+								&:active .view-switcher-item-container {
+									border-left-color: #f0f0f0;
+								}
+							}
+
+							background: -webkit-linear-gradient(top, lighten(@baseColor, 19%), @baseColor);
+							border-top-color: lighten(@baseColor, 10%);
+							border-bottom-color: darken(@baseColor, 14%);
+
+							&:active {
+								background: -webkit-linear-gradient(top, lighten(@baseColor, 11%), darken(@baseColor, 8%));
+							}
+
+							&,
 							.view-switcher-item-container {
 								color: #fff;
 							}
 						}
 
-						&.view-switcher-hidden:not(.active-view) {
+						&.view-switcher-hidden:not(.active-view) .view-switcher-item-container {
 							width: 0;
 							min-width: 0;
 							padding: 0;
@@ -196,12 +235,21 @@
 						}
 
 						.view-switcher-item-container {
+							display: block;
 							position: relative;
-							color: @toolbarBaseColor;
 							line-height: 18px;
+							color: #333;
+							text-align: center;
+							border-left: 1px solid rgb(225, 225, 225);
+							padding: 0 5px;
+							width: 63px;
+							white-space: nowrap;
+
+							.transition;
 
 							.jsb-large-font& {
 								line-height: 17px;
+								width: 77px;
 							}
 
 							.transition;
@@ -209,8 +257,8 @@
 							.view-switcher-item-notification {
 								display: none;
 								position: absolute;
-								bottom: 3px;
-								left: 103%;
+								bottom: 5px;
+								left: 71%;
 								height: 8px;
 								min-width: 7px;
 								padding: 3px 4px;
@@ -236,6 +284,8 @@
 			}
 
 			.ui-view {
+				background: #fff;
+
 				&.active-view {
 					display: block;
 				}
@@ -257,6 +307,11 @@
 				overflow-y: scroll;
 				overflow-x: hidden;
 				padding: 2px 0;
+				margin-top: 1px;
+
+				.yosemite& {
+					margin-bottom: 2px;
+				}
 
 				&::-webkit-scrollbar,
 				#setting-views-container::-webkit-scrollbar {

@@ -158,23 +158,19 @@ function Command (command, data, event) {
 		},
 
 		globalSetting: function (setting) {
-			var self = this;
+			this.message = {
+				disabled: window.globalSetting.disabled,
+				debugMode: window.globalSetting.debugMode,
 
-			Command.event.addCustomEventListener('UIReady', function () {
-				self.message = {
-					disabled: window.globalSetting.disabled,
-					debugMode: window.globalSetting.debugMode,
+				useAnimations: Settings.getItem('useAnimations'),
+				enabledKinds: Settings.getItem('enabledKinds'),
+				showPlaceholder: Settings.getItem('showPlaceholder'),
+				hideInjected: Settings.getItem('hideInjected'),
+				confirmShortURL: Settings.getItem('confirmShortURL'),
+				blockReferrer: Settings.getItem('blockReferrer'),
 
-					useAnimations: Settings.getItem('useAnimations'),
-					enabledKinds: Settings.getItem('enabledKinds'),
-					showPlaceholder: Settings.getItem('showPlaceholder'),
-					hideInjected: Settings.getItem('hideInjected'),
-					confirmShortURL: Settings.getItem('confirmShortURL'),
-					blockReferrer: Settings.getItem('blockReferrer'),
-
-					contentURLs: window.CONTENT_URLS
-				};
-			}, true);
+				contentURLs: window.CONTENT_URLS
+			};
 		},
 
 		specialsForLocation: function (page) {

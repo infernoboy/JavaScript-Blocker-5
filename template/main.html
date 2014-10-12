@@ -96,7 +96,7 @@
 <noscript id="view-switcher">
 	<div class="view-switcher-container">
 		<ul class="view-switcher" data-container="<%=self.container%>">
-		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" class="<%=self.views[viewID].hide ? 'view-switcher-hidden' : ''%>"><span class="view-switcher-item-container"><%=self.views[viewID].value%><span class="view-switcher-item-notification"></span></span></li><% } %>
+		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container"><%=self.views[viewID].value%><span class="view-switcher-item-notification"></span></span></li><% } %>
 		</ul>
 	</div>
 </noscript>

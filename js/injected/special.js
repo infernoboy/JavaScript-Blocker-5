@@ -7,7 +7,7 @@ var Special = {
 	enabled: {},
 
 	isEnabled: function (special) {
-		return (this.enabled.hasOwnProperty(special) && this.enabled[special] !== false);
+		return (this.enabled.hasOwnProperty(special) && this.enabled[special] !== false && this.enabled[special].enabled);
 	},
 
 	JSBCommanderHandler: function (event) {

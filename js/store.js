@@ -562,7 +562,7 @@ var Store = (function () {
 			if (this.data.hasOwnProperty(key)) {
 				if (this.maxLife < Infinity && !noAccess)
 					Utilities.setImmediateTimeout(function (store, key) {
-						if (!store.destroyed && store.data[key]) {
+						if (!store.destroyed && store.data && store.data[key]) {
 							store.data[key].accessed = Date.now();
 
 							store.__save(null, null, true);
@@ -615,6 +615,8 @@ var Store = (function () {
 			if (!(defaultProps instanceof Object))
 				defaultProps = {};
 
+			defaultProps.private = true;
+
 			Store.inherit(defaultProps, this);
 
 			store = this.set(key, new Store(requiredName, defaultProps));
@@ -645,7 +647,7 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.remove = function (key, deep) {
+	Store.prototype.remove = function (key) {
 		if (this.lock)
 			return;
 
@@ -659,16 +661,24 @@ var Store = (function () {
 			return this;
 		}
 
-		if (this.data.hasOwnProperty(key)) {
-			var value = this.get(key, null, null, true);
-
-			if (value instanceof Store)
-				value.destroy(deep, false, true);
-
+		if (this.data.hasOwnProperty(key))
 			delete this.data[key];
-		}
 
 		this.__save();
+
+		return this;
+	};
+
+	Store.prototype.removeMatching = function (regexp) {
+		if (this.lock)
+			return;
+
+		var keys = Object.keys(this.data).filter(function (value, i) {
+			return regexp.test(value);
+		});
+
+		for (var i = keys.length; i--;)
+			this.remove(keys[i]);
 
 		return this;
 	};
@@ -696,6 +706,23 @@ var Store = (function () {
 				} else if (value instanceof Store)
 					value.removeExpired();
 			}, [this, key, now]);
+	};
+
+	Store.prototype.swap = function (oldKey, newKey, newValue) {
+		if (typeof oldKey !== 'string' || typeof newKey !== 'string')
+			throw new TypeError('oldKey or newKey is not a string.');
+
+		var oldValue = newValue !== undefined ? this.get(oldKey) : undefined;
+
+		if (oldValue !== undefined)
+			this.remove(oldKey);
+
+		var useValue = newValue !== undefined ? newValue : oldKey;
+
+		if (useValue !== undefined)
+			this.set(newKey, useValue);
+
+		return this;
 	};
 
 	Store.prototype.replaceWith = function (store) {

@@ -12,7 +12,6 @@
 					<p class="jsb-info">
 						<%=_('first_visit.body', [_(Settings.getItem('blockFirstVisit') === 'domain' ? 'first_visit.body.domain' : 'first_visit.body.host')])%>
 					</p>
-					<p class="jsb-info"><%=_('first_visit.gray_items')%></p>
 					<p class="jsb-info jsb-align-right">
 						<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" />&nbsp;
 						<input type="button" class="page-host-first-visit-unblock jsb-color-allowed" value="<%=_('first_visit.unblock')%>" />&nbsp;
@@ -22,35 +21,74 @@
 
 		<div class="page-host-editor">
 			<span class="more-info"></span>
+
+			<%
+				if (self.isFrame) { %>
+					<div class="jsb-info">
+						<input type="checkbox" id="page-host-editor-when-framed-<%=self.id%>" class="page-host-editor-when-framed" />
+						<label for="page-host-editor-when-framed-<%=self.id%>"><%=_('view.page.host.editor.when_framed')%></label>
+					</div><%
+				} %>
+
 			<div class="jsb-info">
 				<select class="page-host-editor-duration">
-					<option value="always">Always</option>
-					<option value="temporarily">Temporarily</option>
+					<option value="always"><%=_('view.page.host.editor.always')%></option>
+					<option value="temporarily"><%=_('view.page.host.editor.temporarily')%></option>
 				</select><label></label>
 
 				<select class="page-host-editor-kind">
 					<%
 						if (!self.disabled) { %>
-							<option value="block/allow">block/allow</option>
-							<option value="hide">hide</option><%
+							<option value="block/allow"><%=_('view.page.host.editor.block_allow')%></option>
+							<option value="block"><%=_('view.page.host.editor.block')%></option>
+							<option value="allow"><%=_('view.page.host.editor.allow')%></option>
+							<option value="hide"><%=_('view.page.host.editor.hide')%></option><%
 						} %>
-					<option value="enable">enable</option>
-					<option value="disable">disable</option>
+					<option value="enable"><%=_('view.page.host.editor.enable')%></option>
+					<option value="disable"><%=_('view.page.host.editor.disable')%></option>
 				</select><label></label>
 
-				<span class="page-host-editor-kind-subtext"><%=self.disabled ? _('JSB') : _('view.page.host.editor.selected_items')%></span>
+				<select class="page-host-editor-which-items <%=self.disabled ? 'select-single' : ''%>">
+					<option value="<%=self.disabled ? 'jsb' : 'items-checked'%>"><%=self.disabled ? _('JSB') : _('view.page.host.editor.checked_items')%></option>
+					<%
+						if (!self.disabled) { %>
+							<option value="items-all"><%=_('view.page.host.editor.all_resources')%></option>
+							<option value="items-of-kind"><%=_('view.page.host.editor.checked_kinds')%></option>
+							<option value="jsb" disabled="disabled"><%=_('JSB')%><%
+						} %>
+				</select><label></label>
+			</div>
+
+			<div class="page-host-editor-kinds jsb-info">
+			<%
+				var didBreak = false,
+						kinds = globalPage.Rules.__kinds,
+						b = 0;
+
+				for (var i = 0; i < kinds.length; i++) {
+					if (!['*', 'disable', 'user_script']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
+						b++; %>
+						<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i]%>" data-kind="<%=kinds[i]%>" />
+						<label for="page-host-editor-kinds-<%=kinds[i]%>"><%=_('view.page.host.kind.' + kinds[i])%></label><%
+
+						if (b > 4 && !didBreak) {
+							didBreak = true; %>
+							<br /> <%
+						}
+					}
+				} %>
 			</div>
 
 			<div class="jsb-info page-host-editor-bottom">
 				<div class="page-host-editor-where-wrapper">
 					<select class="page-host-editor-where">
-						<option value="domain-all">on all domains</option>
-						<option value="domain-0" data-domain="<%=self.host%>" selected="selected">on <%=self.host%></option>
+						<option value="domain-all"><%=_('view.page.editor.on_all_domains')%></option>
+						<option value="domain-0" data-domain="<%=self.host%>" selected="selected"><%=_('view.page.editor.on_domain', [self.host])%></option>
 						<%
 							var hostParts = Utilities.URL.hostParts(self.host);
 
 							for (var i = 0; i < hostParts.length; i++) { %>
-								<option value="domain-<%=i + 1%>" data-domain=".<%=hostParts[i]%>">within <%=hostParts[i]%></option><%
+								<option value="domain-<%=i + 1%>" data-domain=".<%=hostParts[i]%>"><%=_('view.page.editor.within_domain', [hostParts[i]])%></option><%
 							} %>
 					<%
 						for (var i = 0; i < self.locations.length; i++) {
@@ -63,15 +101,15 @@
 								<optgroup label="<%=(pageParts.parts[1] || pageParts.parts[0])._entityQuotes()%>" data-location="<%=self.locations[i]._entityQuotes()%>"><%
 
 								for (var b = (pageParts.parts[1] ? 1 : 0); b < pageParts.parts.length; b++) { %>
-									<option value="page-<%=b%>" data-page="<%=pageParts.parts[b]._entityQuotes()%>">on <%=pageParts.parts[b]._escapeHTML()%></option><%
+									<option value="page-<%=b%>" data-page="<%=pageParts.parts[b]._entityQuotes()%>"><%=_('view.page.editor.on_domain',[pageParts.parts[b]._escapeHTML()])%></option><%
 								}
 
 								if (pageParts.search.length) { %>
-									<option value="page-search" data-page="<%=pageParts.pageSearch._entityQuotes()%>">on <%=pageParts.pageSearch._escapeHTML()%></option><%
+									<option value="page-search" data-page="<%=pageParts.pageSearch._entityQuotes()%>"><%=_('view.page.editor.on_domain', [pageParts.pageSearch._escapeHTML()])%></option><%
 								}
 
 								if (pageParts.hash.length) { %>
-									<option value="page-hash" data-page="<%=pageParts.pageHash._entityQuotes()%>">on <%=pageParts.pageHash._escapeHTML()%></option><%
+									<option value="page-hash" data-page="<%=pageParts.pageHash._entityQuotes()%>"><%=_('view.page.editor.on_domain', [pageParts.pageHash._escapeHTML()])%></option><%
 								} %>
 								</optgroup><%
 							}
@@ -233,14 +271,38 @@
 											}
 										%>
 
-										<div class="page-host-item-edit-container jsb-hidden">
+										<div class="page-host-item-edit-container">
 											<div class="page-host-item-edit-check-wrapper">
-												<input type="checkbox" class="page-host-item-edit-check" />
+												<input type="checkbox" class="page-host-item-edit-check" title="<%=_('view.page.editor.check_to_' + (self.stateType === 'blocked' ? 'allow' : 'block'))%>" />
 											</div>
 											<div class="page-host-item-edit-select-wrapper">
-												<select class="page-host-item-edit-select <%=globalPage.Rules.kindShouldBadge(kind) ? '' : 'select-single'%>">
-													<option><%=sourceName._escapeHTML()%></option>
-												</select><label></label>
+											<%
+												var shouldBadge = globalPage.Rules.kindShouldBadge(kind),
+														hasOptions = shouldBadge && !Settings.getItem('showResourceURLs') && protocol !== 'none:';
+
+												if (hasOptions || !shouldBadge) { %>
+													<select class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
+
+													var sourceDomains = Utilities.URL.hostParts(source, true);
+
+													for (var b = 0; b < sourceDomains.length; b++) {
+														var sourceDomain = b === 0 ? sourceDomains[b] : sourceDomains[b].substr(1);
+
+														if (b === 0)
+															var displaySource = kind._startsWith('xhr') ? 'view.page.editor.to_domain' : 'view.page.editor.from_domain';
+														else
+															var displaySource = kind._startsWith('xhr') ? 'view.page.editor.to_within_domain' : 'view.page.editor.from_within_domain';%>
+
+														<option value="<%=sourceDomains[b]._entityQuotes()%>"><%=shouldBadge ? _(displaySource, [sourceDomain._escapeHTML()]) : sourceName._escapeHTML()%></option><%
+													} %>
+
+													</select><label></label><%
+												} else { %>
+													<textarea class="render-as-input select-custom-input" spellcheck="off" wrap="off" rows="0"></textarea>
+													<select class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%>">
+														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
+													</select><label></label><%
+												} %>
 											</div>
 										</div>
 

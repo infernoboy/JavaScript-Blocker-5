@@ -74,6 +74,12 @@ Settings.settings = {
 			type: 'number',
 			default: 441
 		}
+	}, {
+		setting: 'createRulesOnClose',
+		props: {
+			type: 'boolean',
+			default: true
+		}
 	}],
 
 	// General Settings
@@ -154,6 +160,20 @@ Settings.settings = {
 					}]
 				}
 			}
+		}
+	}, {
+		setting: 'quickCyclePageItems',
+		props: {
+			type: 'boolean',
+			label: 'Quick cycle page items',
+			default: false
+		}
+	}, {
+		setting: 'createRulesOnClose',
+		props: {
+			type: 'boolean',
+			label: 'Create rules when closing the popover',
+			default: false
 		}
 	}, {
 		setting: 'autoHideEasyList',
@@ -248,6 +268,8 @@ Settings.settings = {
 				}],
 				onChange: function () {
 					var showResourceURLs = Settings.getItem('showResourceURLs');
+
+					Popover.window.document.documentElement.classList.toggle('popover-expanded', showResourceURLs);
 
 					UI.__popoverWidthSetting = 'popoverWidth' + (showResourceURLs ? 'Expanded' : '');
 					UI.__popoverHeightSetting = 'popoverHeight' + (showResourceURLs ? 'Expanded' : '');
@@ -459,6 +481,13 @@ Settings.settings = {
 			readOnly: true,
 			storeKey: 'disable',
 			default: 'nowhere'
+		}
+	}, {
+		setting: 'enabledKinds',
+		props: {
+			readOnly: true,
+			storeKey: 'special',
+			default: true
 		}
 	}, {
 		setting: 'enabledKinds',
@@ -1099,7 +1128,7 @@ Settings.settings = {
 				setting: 'enabledSpecials',
 				props: {
 					type: 'boolean',
-					storeKey: 'inline_scripts',
+					storeKey: 'inline_script_execution',
 					label: 'Prevent inline scripts from being executed',
 					subLabel: 'Inline script execution',
 					default: false

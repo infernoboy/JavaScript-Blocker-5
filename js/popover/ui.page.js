@@ -34,7 +34,12 @@ UI.Page = {
 
 		UI.Page.events.bindSectionEvents(renderedSections, page, pageInfo);
 
-		UI.Page.stateContainer.empty().append(renderedSections.children());
+		UI.Page.stateContainer
+			.empty()
+			.data('page', page)
+			.append(renderedSections.children())
+			.find('.page-host-editor-kind')
+			.trigger('change');
 
 		UI.view.toTop(UI.view.views);
 
@@ -101,28 +106,127 @@ UI.Page = {
 	},
 
 	section: {
-		toggleEditMode: function (section) {
-			$('.page-host-section', section.parent()).not(section).toggleClass('page-host-section-disabled');
+		toggleEditMode: function (section, force, scrollToTop) {
+			var pageHostEditor = section.find('.page-host-editor').stop(true, true),
+					wasInEditMode = pageHostEditor.is(':visible');
+
+			if ((wasInEditMode && force === true) || (!wasInEditMode && force === false))
+				return;
 
 			section.toggleClass('page-host-editing');
 
 			var editButtons = $('.page-host-edit', section),
-					items = $('.page-host-columns .page-host-item:not([data-action="6"])', section).find('.page-host-item-container, .page-host-item-edit-container'),
-					pageHostEditor = section.find('.page-host-editor').stop(true, true),
-					wasInEditMode = pageHostEditor.is(':visible');
-
-			if (!wasInEditMode)
-				section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 1);
+					items = $('.page-host-columns .page-host-item', section).find('.page-host-item-container, .page-host-item-edit-container');
 
 			editButtons.val(wasInEditMode ? _('view.page.host.edit') : _('view.page.host.done'));
 
 			pageHostEditor
 				.stop(true, true)
-				.slideToggle(225 * window.globalSetting.speedMultiplier);
+				.slideToggle(225 * window.globalSetting.speedMultiplier, function () {
+					if (!wasInEditMode && scrollToTop)
+						section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 1);
+				});
 		
-			items.toggle()
+			items.toggle();
 
 			UI.event.trigger(wasInEditMode ? 'sectionSwitchOutOfEditMode' : 'sectionSwitchedToEditMode', section);
+		},
+
+		createRules: function (section) {
+			var ruleAction;
+
+			var Rules = globalPage.Rules,
+					ruleKindPrefix = section.find('.page-host-editor-when-framed').is(':checked') ? 'framed:' : '',
+					ruleList = section.find('.page-host-editor-duration').val() === 'always' ? Rules.list.user : Rules.list.temporary,
+					ruleList = Rules.list.temporary,
+					ruleType = section.find('.page-host-editor-kind').val(),
+					ruleWhere = section.find('.page-host-editor-where'),
+					ruleWhereValue = ruleWhere.val(),
+					ruleWhichItems = section.find('.page-host-editor-which-items').val(),
+					items = section.find('.page-host-columns .page-host-item:not(.page-host-item-disabled)');
+
+			if (ruleType === 'hide')
+				ruleKindPrefix = 'hide:' + ruleKindPrefix;
+
+			if (ruleWhereValue === 'domain-all')
+				var ruleDomain = '*';
+			else if (ruleWhereValue._startsWith('domain'))
+				var ruleDomain = $('option', ruleWhere).eq(ruleWhere[0].selectedIndex).attr('data-domain');
+			else
+				throw new Error('not supported');
+
+			if (ruleType === 'disable' || ruleType === 'enable') {
+				ruleAction = ruleType === 'disable' ? 0 : 1;
+
+				ruleList.addDomain(ruleKindPrefix + 'disable', ruleDomain, {
+					rule: '*',
+					action: ruleAction
+				});
+
+				setTimeout(function () {
+					globalPage.Page.requestPageFromActive();
+				}, 1000);
+			} else if (ruleWhichItems === 'items-all') {
+				ruleList.addDomain(ruleKindPrefix + '*', ruleDomain, {
+					rule: '*',
+					action: (ruleType === 'block' || ruleType === 'hide') ? 0 : 1
+				});
+			} else if (ruleWhichItems === 'items-of-kind') {
+				var checked = $('.page-host-editor-kinds input:checked', section),
+						ruleAction = (ruleType === 'block' || ruleType === 'hide') ? 0 : 1;
+
+				checked.each(function () {
+					ruleList.addDomain(ruleKindPrefix + this.getAttribute('data-kind'), ruleDomain, {
+						rule: '*',
+						action: ruleAction
+					});
+				});
+			} else {
+				items.each(function () {
+					var item = $(this),
+							isBlocked = item.parents('.page-host-column').is('.page-host-column-blocked'),
+							ruleAction = isBlocked ? 1 : 0,
+							checked = item.find('.page-host-item-edit-check');
+
+					if (!checked.is(':checked'))
+						return;
+
+					var itemSource = item.find('.select-custom-input, .page-host-item-edit-select').val(),
+							kind = item.parents('.page-host-items').attr('data-kind'),
+							protocol = item.attr('data-protocol'),
+							resources = item.data('resources');
+
+					if (ruleType === 'block/allow') {
+						var hasAffect;
+
+						var rule = ruleList.addDomain(ruleKindPrefix + kind, ruleDomain, {
+							rule: protocol === 'none:' ? itemSource : protocol + '|' + itemSource,
+							action: ruleAction
+						});
+
+						for (var resourceID in resources)
+							do {
+								hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID]);
+
+								if (hasAffect.hasAffect || !hasAffect.detail)
+									break;
+
+								hasAffect.detail.ruleList.__remove(hasAffect.detail.ruleType, hasAffect.detail.ruleKind, hasAffect.detail.domain, hasAffect.detail.rule);
+							} while (true);
+					} else
+						throw new Error('not yet supported');
+				});
+			}
+
+			UI.Page.section.toggleEditMode(section, false);
+
+			UI.view.toTop(UI.view.views);
+
+			setTimeout(function () {
+				MessageTarget({
+					target: UI.Page.stateContainer.data('page').tab
+				}, 'reload');
+			}, 225);
 		}
 	},
 
@@ -171,7 +275,7 @@ UI.Page = {
 								pageToolbarHeight = pageToolbar.outerHeight(),
 								poppy = new Poppy(Math.floor(pageToolbarOffset + pageToolbarWidth / 2), Math.floor(pageToolbarHeight) - 6);
 
-						poppy.setContent(_('view.page.from_cache')).show();
+						poppy.setContent(_('view.page.from_cache')).stayOpenOnScroll().show();
 
 						UI.event.addCustomEventListener('awaitPageFromTabDone', function () {
 							poppy.close();
@@ -180,7 +284,7 @@ UI.Page = {
 				}, true);
 
 				UI.Page.renderPage(lastPage);
-			} else
+			} else if (UI.Page.canRender())
 				UI.Page.showModalInfo(_('view.page.no_info'));
 		},
 
@@ -213,6 +317,8 @@ UI.Page = {
 					else
 						globalPage.Page.unblockFirstVisit(thisPageInfo.blockedByFirstVisit.host);
 
+					UI.Page.section.toggleEditMode(section, false);
+
 					UI.view.toTop(UI.view.views);
 
 					MessageTarget({
@@ -237,21 +343,60 @@ UI.Page = {
 					section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 1);
 				})
 
+				.on('change', '.page-host-editor-create-on-close', function (event) {
+					Settings.setItem('createRulesOnClose', this.checked);
+				})
+
 				.on('change', '.page-host-editor-kind', function (event) {
+					var enableOptions;
+
 					var editor = $(this).parents('.page-host-editor'),
-							subtext = $('.page-host-editor-kind-subtext', editor);
+							whichItems = $('.page-host-editor-which-items', editor),
+							options = $('option', whichItems);
+
+					options.prop('disabled', true)
 
 					if (this.value === 'disable' || this.value === 'enable')
-						subtext.text(_('JSB'));
+						enableOptions = options.filter('[value="jsb"]');
+					else if (this.value === 'block/allow')
+						enableOptions = options.filter('[value="items-checked"]');
+					else if (this.value === 'block' || this.value === 'allow')
+						enableOptions = options.filter('[value="items-all"], [value="items-of-kind"]');
+					else if (this.value === 'hide')
+						enableOptions = options.not('[value="jsb"]');
+
+					enableOptions.prop('disabled', false).eq(0).prop('selected', true);
+
+					whichItems.trigger('change');
+				})
+
+				.on('change', '.page-host-editor-which-items', function (event) {
+					var section = $(this).parents('.page-host-section'),
+							kinds = section.find('.page-host-editor-kinds');
+
+					if (this.value === 'items-of-kind')
+						kinds.slideDown(225 * window.globalSetting.speedMultiplier);
 					else
-						subtext.text(_('view.page.host.editor.selected_items'));
+						kinds.slideUp(225 * window.globalSetting.speedMultiplier);
+
+					$('.page-host-columns .page-host-item', section).toggleClass('page-host-item-disabled', this.value !== 'items-checked');
+				})
+
+				.on('click', '.page-host-editor-create', function (event) {
+					this.disabled = true;
+
+					UI.Page.section.createRules($(this).parents('.page-host-section'));
 				})
 
 				.on('change', '.page-host-editor-where', function (event) {
 					var section = $(this).parents('.page-host-section'),
+							whichItems = $('.page-host-editor-which-items', section),
 							items = $('.page-host-columns .page-host-item', section),
 							option = $('option', this).eq(this.selectedIndex),
 							optgroup = option.parent();
+
+					if (whichItems.val() !== 'items-checked')
+						return;
 
 					if (optgroup.is('optgroup')) {
 						var resources,
@@ -291,13 +436,14 @@ UI.Page = {
 					poppy.setContent('<pre>' + JSON.stringify(items, null, 1)._escapeHTML() + '</pre>').show();
 				})
 
-				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="6"]) .page-host-item-source', function (event) {
-					var self = $(this);
+				.on('click', '.page-host-edit, .page-host-columns .page-host-item .page-host-item-source', function (event) {
+					var self = $(this),
+							isItem = self.is('.page-host-item-source');
 
-					if (self.is('.page-host-item-source'))
+					if (isItem)
 						self.parents('.page-host-item').find('.page-host-item-edit-check').prop('checked', true);
 
-					UI.Page.section.toggleEditMode(self.parents('.page-host-section'));							
+					UI.Page.section.toggleEditMode(self.parents('.page-host-section'), null, !isItem);
 				})
 
 				.on('click', '.page-host-unblocked .page-host-items[data-kind="script"] .page-host-item-source', function (event) {
@@ -315,6 +461,37 @@ UI.Page = {
 					});
 
 					loadingPoppy.setContent(_('poppy.beautifying_script')).show(true);
+				})
+
+				.on('mousedown', '.page-host-item-edit-container .select-single', function (event) {
+					event.preventDefault();
+				})
+
+				.on('click', '.page-host-item-edit-container .select-single', function (event) {
+					var check = $(this).parent().prev().find('input');
+
+					check.prop('checked', !check.prop('checked'));
+				})
+
+				.on('mousedown', '.page-host-item-edit-select', function (event) {
+					if (Settings.getItem('quickCyclePageItems') && !this.classList.contains('select-single')) {
+						event.preventDefault();
+
+						var optionLength = $(this).parent().find('option').length - 1;
+
+						if (this.selectedIndex === optionLength)
+							this.selectedIndex = 0;
+						else
+							this.selectedIndex++;
+
+						$(this).trigger('change');
+					}
+				})
+
+				.on('change', '.page-host-item-edit-select', function (event) {
+					var check = $(this).parent().prev().find('input');
+
+					check.prop('checked', true);
 				});
 		}
 	}

@@ -44,7 +44,7 @@ var Utilities = {
 		return code.end();
 	},
 
-	OSXVersion: function () {
+	OSXVersion: (function () {
 		var osx = window.navigator.userAgent.match(/Mac OS X ([^\)]+)\)/);
 
 		if (!osx[1])
@@ -53,7 +53,7 @@ var Utilities = {
 		var version = osx[1].split(/_/);
 
 		return version[0] + '.' + version[1];
-	},
+	})(),
 
 	makeArray: function (arrayLikeObject, offset) {
 		if (typeof offset !== 'number')
@@ -1265,7 +1265,7 @@ var Extension = {
 Extension = undefined;
 
 Object._isPlainObject = function (object) {
-	return (typeof object === 'object' && object !== null && object.constructor && object.constructor === Object);
+	return (typeof object === 'object' && object !== null && object.constructor && object.constructor.name === 'Object');
 };
 
 Object._copy = function (object, defaultValue) {

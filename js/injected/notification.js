@@ -38,7 +38,7 @@ function PageNotification (detail) {
 
 	// Element.prependTo(document.documentElement, this.element);
 
-	// if (['10.7', '10.8', '10.9']._contains(Utilities.OSXVersion())) {
+	// if (['10.7', '10.8', '10.9']._contains(Utilities.OSXVersion) {
 	// 	this.element.classList.add('jsb-notification-warped');
 
 	// 	this.top = -this.height - PageNotification.__offset + 24;
@@ -69,8 +69,8 @@ PageNotification.__containerID = 'jsb-notification-container';
 PageNotification.__closeButtonsContainerClass = 'jsb-notification-close-container';
 PageNotification.__offset = -14;
 PageNotification.__stackOffset = 24;
-PageNotification.__baseZIndex = 999999929;
-PageNotification.__forwardedZIndex = 999999969;
+PageNotification.__baseZIndex = 900000000000;
+PageNotification.__forwardedZIndex = 900000000100;
 PageNotification.__allowStacking = true;
 
 PageNotification.notificationIDs = [];
@@ -84,7 +84,7 @@ PageNotification.createContainer = function () {
 	if (!PageNotification.__container) {
 		PageNotification.__container = Element.createFromHTML('<div id="' + PageNotification.__containerID + '" class="jsb-injected-element" />')[0];
 
-		Element.inject(PageNotification.__container);
+		Element.inject(PageNotification.__container, true);
 	}
 };
 

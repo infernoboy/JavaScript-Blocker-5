@@ -137,7 +137,7 @@ var Settings = {
 			defaultValue = defaultValue();
 
 		try {
-			value = (value === null || value === undefined) ? defaultValue : value;
+			value = (value === null || value === undefined || setting.props.readOnly) ? defaultValue : value;
 
 			if (typeof defaultValue === 'object' && typeof value !== 'object')
 				value = JSON.parse(value);

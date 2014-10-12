@@ -3,6 +3,7 @@
 @allowColor: #008913;
 @blockColor: #920101;
 @focusShadow: rgb(171, 221, 254);
+@background: rgb(239, 239, 244);
 
 .shared-before(@important) {
 	@-webkit-keyframes shake {
@@ -88,6 +89,8 @@
 			border: none @important;
 			background: none @important;
 			-webkit-transition-property: none @important;
+			visibility: visible @important;
+			opacity: 1;
 
 			&:after {
 				content: none @important;
@@ -109,7 +112,7 @@
 			border: none @important;
 			border-radius: 4px @important;
 			// color: #272727 @important;
-			color: darken(@baseColor, 5%);
+			color: desaturate(darken(@baseColor, 30%), 60%);
 			text-shadow: 0 1px 0 rgba(255,255,255,0.5) @important;
 			border: 1px solid rgb(200, 200, 200) @important;
 			border-bottom-color: rgb(168, 168, 168) @important;
@@ -152,6 +155,21 @@
 			}
 		}
 
+		textarea {
+			padding: 3px @important;
+
+			&.render-as-input {
+				height: 16px @important;
+				overflow-x: scroll;
+				overflow-y: hidden;
+				vertical-align: bottom;
+
+				.jsb-large-font& {
+					height: 18px @important;
+				}
+			}
+		}
+
 		input[type="button"],
 		button {
 			.jsb-large-font& {
@@ -171,7 +189,6 @@
 		textarea {
 			border-radius: 0 @important;
 			color: #111 @important;
-			font-size: 9pt @important;
 			cursor: text @important;
 
 			&,
@@ -192,33 +209,48 @@
 			-webkit-appearance: none @important;
 			height: 14px @important;
 			width: 14px @important;
-			background: -webkit-linear-gradient(top, #fff, #f8f8f8) @important;
+			background: #fff @important;
 			padding: 1px 4px 3px 1px @important;
 			border-radius: 3px @important;
 			font-size: 12pt @important;
 			margin-bottom: -2px @important;
 			border-bottom-color: rgb(190, 190, 190) @important;
+			-webkit-transition: background 0.15s ease-out, border-color 0.15s ease-out @important;
 
 			&:active {
-				background: #f8f8f8 @important;
+				background: #f0f0f0 @important;
 			}
 
 			&:after {
 				display: inline-block @important;
+				color: #fff @important;
+				font-weight: bold @important;
 				content: '✔︎' @important;
-				-webkit-transform: translate(0, -4px) @important;
+				font-family: "Menlo-Regular" @important;
+				-webkit-transform: translate(0px, -4px) scaleY(0.9) scaleX(0.8) @important;
 				opacity: 0 @important;
-				-webkit-transition: opacity 0.1s ease-out @important;
+				-webkit-transition: opacity 0.15s ease-out @important;
+				-webkit-font-smoothing: antialiased @important;
+				text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15) @important;
 			}
 
 			&:checked {
+				background: lighten(@baseColor, 7%) @important;
+				border-color: lighten(@baseColor, 1%) @important;
+
 				&:active:after {
-					color: darken(@baseColor, 10%) @important;
+					color: #ddd @important;
 				}
 
 				&:after {
 					opacity: 1 @important;
 				}
+			}
+
+			+ label {
+				display: inline-block @important;
+				margin-bottom: 3px @important;
+				margin-right: 7px @important;
 			}
 		}
 
@@ -228,9 +260,9 @@
 
 			color: #3a3a3a @important;
 			-webkit-appearance: none @important;
-			border-bottom-color: rgb(200, 200, 200) @important;
+			border-bottom-color: rgb(190, 190, 190) @important;
 			z-index: 1 @important;
-			padding-right: 20px @important;
+			padding-right: 21px @important;
 			white-space: pre @important;
 			overflow: hidden @important;
 
@@ -243,16 +275,17 @@
 				color: darken(@baseColor, 5%) @important;
 				color: #fff;
 				font-weight: bold @important;
-				background: -webkit-linear-gradient(top, lighten(@baseColor, 15%), lighten(@baseColor, 12%));
+				background: -webkit-linear-gradient(top, lighten(@baseColor, 15%), lighten(@baseColor, 4%));
 				height: 18px @important;
 				position: relative @important;
 				top: -2px @important;
 				border-top: 1px solid lighten(@baseColor, 5%) @important;
-				border-right: 1px solid lighten(@baseColor, 5%) @important;
-				border-bottom: 1px solid @baseColor @important;
+				border-right: 1px solid @baseColor @important;
+				border-bottom: 1px solid darken(@baseColor, 2%) @important;
 				border-top-right-radius: 4px @important;
 				border-bottom-right-radius: 4px @important;
 				-webkit-font-smoothing: antialiased @important;
+				text-shadow: 0 0 0 rgba(255, 255, 255, 0.7);
 
 				.jsb-large-font& {
 					height: 21px @important;
@@ -269,7 +302,7 @@
 
 				&:before {
 					content: '⌃' @important;
-					-webkit-transform: translate(-1px, 0px) scale(0.85) @important;
+					-webkit-transform: translate(-1px, 0) scale(0.85) @important;
 
 					.jsb-large-font& {
 						-webkit-transform: translate(-1px, 1px) scale(0.85) @important;
@@ -279,10 +312,28 @@
 				&:after {
 					content: '⌃' @important;
 					margin-left: -15px @important;
-					-webkit-transform: translate(2px, 4px) scale(0.85) rotate(180deg) @important;
+					-webkit-transform: translate(2px, 3px) scale(0.85) rotate(180deg) @important;
 
 					.jsb-large-font& {
 						-webkit-transform: translate(2px, 5px) scale(0.85) rotate(180deg) @important;
+					}
+				}
+			}
+
+			&.select-cycle {
+				+ label {
+					&:before {
+						content: '∞' @important;
+
+						-webkit-transform: translate(3px, 3px) scale(1) rotate(180deg) @important;
+
+						.jsb-large-font& {
+							-webkit-transform: translate(3px, 4px) scale(1) rotate(180deg) @important;
+						}
+					}
+
+					&:after {
+						content: '' @important;
 					}
 				}
 			}
@@ -297,18 +348,86 @@
 				+ label {
 					visibility: hidden @important;
 				}
-
-				&:focus {
-					box-shadow: none @important;
-					border-color: transparent @important;
-				}
 			}
 
-			&:focus + label {
+			&:not(.select-single):not(.select-custom-ready):focus + label {
 				border-top-right-radius: 5px @important;
 				border-bottom-right-radius: 5px @important;
 				border-color: darken(@focusShadow, 5%) @important;
 				box-shadow: inset -1px 0 @focusShadow, inset 0 1px @focusShadow, inset 0 -1px @focusShadow @important;
+			}
+		}
+
+		.select-custom-wrapper {
+			display: -webkit-flex;
+			-webkit-align-items: flex-start;
+
+			.select-custom-input {
+				-webkit-flex: 1 1 auto;
+				position: relative;
+
+				+ .select-wrapper {
+					-webkit-flex: 0 0 18px;
+					-webkit-align-self: flex-start;
+					display: inline-block;
+					margin-bottom: -2px;
+
+					select {
+						padding-left: 0 @important;
+						padding-right: 0 @important;
+						width: 15px @important;
+						opacity: 0 @important;
+
+						&:focus {
+							&,
+							& + label {
+								box-shadow: none @important;
+							}
+						}
+
+						&:not(.select-cycle) {
+							+ label {
+								&:before {
+									content: '' @important;
+								}
+
+								&:after {
+									-webkit-transform: translate(2px, 1px) scale(0.85) rotate(180deg) @important;
+
+									.jsb-large-font& {
+										-webkit-transform: translate(2px, 2px) scale(0.85) rotate(180deg) @important;
+									}
+								}
+							}
+						}
+					}
+				}
+
+				&:not(input) + .select-wrapper select {
+					position: relative;
+					top: 0;
+					padding-top: 5px;
+					padding-bottom: 5px;
+
+					.jsb-large-font& {
+						top: 1px;
+						padding-bottom: 4px;
+					}
+
+					+ label {
+						top: -4px;
+						height: 22px;
+
+						.jsb-large-font& {
+							top: -7px;
+							height: 24px;
+						}
+					}
+
+					.jsb-large-font&:not(.select-cycle) + label:after {
+						-webkit-transform: translate(2px, 3px) scale(0.85) rotate(180deg) @important;
+					}
+				}
 			}
 		}
 
@@ -319,7 +438,7 @@
 		}
 
 		.vertical-divider {
-			display: inline-block;
+			display: inline-block @important;
 			width: 1px @important;
 			height: 100% @important;
 			background: rgba(0, 0, 0, 0.08) @important;
@@ -327,36 +446,38 @@
 		}
 
 		.generic-container {
-			margin: 7px 0;
+			margin: 7px 0 @important;
 		}
 
 		.more-info {
-			display: inline-block;
-			height: 15px;
-			width: 15px;
-			border: 1px solid @baseColor;
-			color: @baseColor;
-			border-radius: 20px;
-			text-align: center;
-			line-height: 16px;
-			background: #fff;
-			cursor: default;
-			-webkit-user-select: none;
-			font-family: Georgia;
+			display: inline-block @important;
+			height: 19px @important;
+			width: 19px @important;
+			border: 1px solid rgb(201, 201, 201) @important;
+			border-bottom-color: rgb(173, 173, 173) @important;
+			color: @baseColor @important;
+			text-shadow: 0 0 0 lighten(@baseColor, 15%);
+			border-radius: 20px @important;
+			text-align: center @important;
+			line-height: 20px @important;
+			background: #fff @important;
+			cursor: default @important;
+			-webkit-user-select: none @important;
+			font-family: Helvetica @important;
+			font-weight: 500;
+			box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) @important;
+			font-size: 1.2em @important;
 
 			&:active {
-				border-color: lighten(@baseColor, 15%);
-				color: lighten(@baseColor, 15%);
+				background: #f0f0f0 @important;
 			}
 
 			&:before {
-				content: 'i';
+				content: '?' @important;
 			}
 
 			.jsb-large-font& {
-				height: 17px;
-				width: 17px;
-				line-height: 18px;
+
 			}
 		}
 	}

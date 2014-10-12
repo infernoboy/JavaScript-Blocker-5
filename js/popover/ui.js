@@ -26,6 +26,18 @@ var UI = {
 			throw new Error('safari version too old');
 		}
 
+		var observer = new MutationObserver(function (mutations) {
+			for (var i = 0; i < mutations.length; i++)
+				if (mutations[i].type === 'childList')
+					for (var j = 0; j < mutations[i].addedNodes.length; j++)
+						UI.event.trigger('elementWasAdded', mutations[i].addedNodes[j]);
+		});
+
+		observer.observe(document, {
+			childList: true,
+			subtree: true
+		});
+
 		var userAgent = window.navigator.userAgent;
 
 		Settings.map.useAnimations.props.onChange();
@@ -65,15 +77,60 @@ var UI = {
 				this[attribute] = localized;
 		});
 
+		$(document)
+			.on('change', '.select-custom-input + .select-wrapper select', function (event) {
+				$(this).parent().prev().val(this.value).focus();
+
+				if (!this.classList.contains('select-cycle'))
+					this.selectedIndex = -1;
+			})
+			.on('input', 'textarea.render-as-input', function (event) {
+				this.value = this.value.replace(/\n/g, '');
+			});
+
 		UI.event
 			.addCustomEventListener('viewWillSwitch', function (event) {
+				if (event.detail.from.id === '#resource-content-view') 
+					$(event.detail.from.id, UI.view.views).empty();
+
 				if (event.detail.to.id === '#rule-view')
 					event.detail.to.view.find('#rules').html('<pre>' + JSON.stringify(globalPage.Rules.list.active.rules.all(), null, 1) + '</pre>');
 				else if (event.detail.to.id === '#snapshot-view')
 					event.detail.to.view.html('<pre>' + JSON.stringify(globalPage.Rules.list.user.rules.snapshot.snapshots.all(), null, 1) + '</pre>');
 			})
+
 			.addCustomEventListener('disabled', function (event) {
 				$('#full-toggle', UI.view.viewToolbar).toggleClass('is-disabled', event.detail);
+			})
+
+			.addCustomEventListener('elementWasAdded', function (event) {
+				if (event.detail.querySelectorAll) {
+					var selects = event.detail.querySelectorAll('.select-custom-input + select:not(.select-custom-ready)');
+
+					for (var i = selects.length; i--;) {
+						if (selects[i].classList.contains('select-single')) {
+							$(selects[i]).prev().hide();
+
+							continue;
+						}
+
+						selects[i].classList.add('select-custom-ready');
+
+						selects[i].previousElementSibling.value = selects[i].value;
+
+						$(selects[i])
+							.next()
+							.addBack()
+							.wrapAll('<div class="select-wrapper"></div>')
+							.end()
+							.parent()
+							.parent()
+							.wrapInner('<div class="select-custom-wrapper"></div>');
+
+						if (!selects[i].classList.contains('select-cycle'))
+							selects[i].selectedIndex = -1;
+					}
+				}
 			});
 
 		UI.view.init();
@@ -120,7 +177,7 @@ var UI = {
 		},
 
 		keyboardShortcut: function (event) {
-			var metaKey = Utilities.OSXVersion() ? event.metaKey : event.ctrlKey,
+			var metaKey = Utilities.OSXVersion ? event.metaKey : event.ctrlKey,
 					metaShift = metaKey && event.shiftKey;
 
 			var key = String.fromCharCode(event.which).toLowerCase();
@@ -232,7 +289,12 @@ var UI = {
 		},
 
 		toTop: function (viewContainer) {
-			viewContainer.scrollTop(0).scrollLeft(0).trigger('scroll')
+			viewContainer
+				.animate({
+					scrollTop: 0,
+					scrollLeft: 0
+				}, 225 * window.globalSetting.speedMultiplier)
+				.trigger('scroll')
 		},
 
 		switchTo: function (viewSwitcher, viewID) {
@@ -320,7 +382,9 @@ var UI = {
 					var currentHeader =
 						unfloatedHeaders
 							.filter(function () {
-								return $(this).offset().top <= viewContainerOffsetTop + offset;
+								var self = $(this);
+
+								return self.is(':visible') && self.offset().top <= viewContainerOffsetTop + offset;
 							})
 							.filter(':last');
 
@@ -336,12 +400,22 @@ var UI = {
 					var currentHeaderClone =
 						currentHeader
 							.clone(true, true)
-							.insertBefore(currentHeader)
 							.attr('id', floatedHeaderID)
-							.addClass('floated-header');
+							.addClass('floated-header')
+							.insertBefore(currentHeader);
 
-					var relatedElement = typeof related === 'function' ? related(viewContainer, currentHeader) : null,
-							relatedShifted = false,
+					var relatedElementCache = currentHeader.data('relatedElement');
+
+					if (relatedElementCache)
+						var relatedElement = relatedElementCache;
+					else {
+						var relatedElement = typeof related === 'function' ? related(viewContainer, currentHeader) : null;
+
+						if (relatedElement && relatedElement.saveToCache)
+							currentHeader.data('relatedElement', relatedElement);
+					}
+					
+					var relatedShifted = false,
 							currentHeaderMarginHeight = currentHeader.outerHeight(true);
 
 					if (relatedElement) {
@@ -391,7 +465,7 @@ var UI = {
 				if (viewContainer.data('floatingHeaders'))
 					return;
 
-				viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 20, [viewContainerSelector]));
+				viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 40, [viewContainerSelector]));
 			}
 		}
 	}
