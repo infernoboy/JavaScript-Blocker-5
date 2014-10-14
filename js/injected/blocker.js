@@ -393,14 +393,6 @@ var Element = {
 			Element.collapse(element);
 	},
 
-	repaint: function (element) {
-		var display = element.style.display;
-
-		element.style.setProperty('display', 'none', 'important');
-		element.offsetHeight;
-		element.style.setProperty('display', display, 'important');
-	},
-
 	createPlaceholder: function (kind, element, source) {
 		var placeholderTemplate = GlobalCommand('template.create', {
 			template: 'injected',
@@ -461,7 +453,7 @@ var Element = {
 		Utilities.Element.fitFontWithin(placeholder, kindString);
 
 		// Avoids flickering when hovering on the placeholder.
-		Element.repaint(placeholder);
+		Utilities.Element.repaint(placeholder);
 	},
 
 	collapse: function (element) {

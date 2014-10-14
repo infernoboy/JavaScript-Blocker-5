@@ -191,7 +191,8 @@ UI.Page = {
 					if (!checked.is(':checked'))
 						return;
 
-					var itemSource = item.find('.select-custom-input, .page-host-item-edit-select').val(),
+					var itemSource = item.find('.select-custom-input, .page-host-item-edit-select'),
+							itemSourceVal = itemSource.val(),
 							kind = item.parents('.page-host-items').attr('data-kind'),
 							protocol = item.attr('data-protocol'),
 							resources = item.data('resources');
@@ -200,7 +201,7 @@ UI.Page = {
 						var hasAffect;
 
 						var rule = ruleList.addDomain(ruleKindPrefix + kind, ruleDomain, {
-							rule: protocol === 'none:' ? itemSource : protocol + '|' + itemSource,
+							rule: (protocol === 'none:' || itemSource.is('.select-custom-input')) ? itemSourceVal : protocol + '|' + itemSourceVal,
 							action: ruleAction
 						});
 
@@ -259,6 +260,14 @@ UI.Page = {
 
 		sectionSwitchOutOfEditMode: function (event) {
 			$('.page-host-item', event.detail).removeClass('page-host-item-disabled');
+		},
+
+		selectCustomOptionChanged: function (event) {
+			var input = $(event.detail),
+					editContainer = input.parents('.page-host-item-edit-container');
+
+			if (editContainer.length)
+				$('.page-host-item-edit-check', editContainer).prop('checked', true);
 		},
 
 		awaitPageFromTabTimeout: function (event) {
@@ -437,6 +446,13 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item .page-host-item-source', function (event) {
+					if (globalPage.Rules.list.active !== globalPage.Rules.list.user)
+						return (new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true))
+							.setContent(Template.create('main', 'jsb-readable', {
+								string: _('view.page.host.snapshot_in_use_no_rules')
+							}))
+							.show();
+
 					var self = $(this),
 							isItem = self.is('.page-host-item-source');
 
@@ -504,6 +520,7 @@ UI.event.addCustomEventListener('viewDidSwitch', UI.Page.events.viewDidSwitch);
 UI.event.addCustomEventListener('awaitPageFromTabTimeout', UI.Page.events.awaitPageFromTabTimeout);
 UI.event.addCustomEventListener('popoverDidResize', UI.Page.events.popoverDidResize);
 UI.event.addCustomEventListener('sectionSwitchOutOfEditMode', UI.Page.events.sectionSwitchOutOfEditMode);
+UI.event.addCustomEventListener('selectCustomOptionChanged', UI.Page.events.selectCustomOptionChanged);
 UI.event.addCustomEventListener('disabled', UI.Page.events.disabled);
 
 Events.addApplicationListener('popover', UI.Page.events.openedPopover);

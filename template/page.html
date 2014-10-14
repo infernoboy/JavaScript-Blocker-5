@@ -1,5 +1,7 @@
 <noscript id="host-section">
-	<div class="page-host-section" data-id="<%=self.id%>">
+	<% var snapshotInUse = globalPage.Rules.list.active !== globalPage.Rules.list.user; %>
+
+	<div class="page-host-section <%=snapshotInUse ? 'page-host-snapshot' : ''%>" data-id="<%=self.id%>">
 		<div class="page-host-header">
 			<span class="page-host-type"><%=self.isFrame ? 'Frame' : 'Top'%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">4 hidden items</span>
 			<input type="button" class="page-host-edit" value="<%=_('view.page.host.edit')%>" />
@@ -68,8 +70,8 @@
 				for (var i = 0; i < kinds.length; i++) {
 					if (!['*', 'disable', 'user_script']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
 						b++; %>
-						<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i]%>" data-kind="<%=kinds[i]%>" />
-						<label for="page-host-editor-kinds-<%=kinds[i]%>"><%=_('view.page.host.kind.' + kinds[i])%></label><%
+						<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i] + self.id%>" data-kind="<%=kinds[i]%>" />
+						<label for="page-host-editor-kinds-<%=kinds[i] + self.id%>"><%=_('view.page.host.kind.' + kinds[i])%></label><%
 
 						if (b > 4 && !didBreak) {
 							didBreak = true; %>
@@ -123,12 +125,18 @@
 			</div>
 		</div>
 
-		<% if (self.disabled) {
-				if (self.disabled.action > -1) { %>
-					<div class="page-host-disabled">
-						<p class="jsb-info jsb-centered jsb-embossed"><%=_('view.page.host.disabled')%></p>
-					</div><%
-				}
+		<% if (snapshotInUse) { %>
+			<div class="page-host-snapshot-in-use">
+				<p class="jsb-info jsb-embossed jsb-centered">Snapshot in use.</p>
+			</div><%
+		}
+
+		if (self.disabled) {
+			if (self.disabled.action > -1) { %>
+				<div class="page-host-disabled">
+					<p class="jsb-info jsb-embossed jsb-centered"><%=_('view.page.host.disabled')%></p>
+				</div><%
+			}
 		} else { %>
 			<div class="page-host-columns">
 				<%=Template.create('page', 'host-column', {
@@ -254,32 +262,30 @@
 									var resourceIDs = resources.map(function (value, i) {
 										return value.resourceID;
 									});
+
+									if (kind === 'user_script') {
+										var sourceName = globalPage.UserScript.scripts.getStore(source).getStore('attributes').get('meta', {}).name || 'UNKNOWN';
+									} else {
+										var sourceName = source;
+									}
+
+									var shouldBadge = globalPage.Rules.kindShouldBadge(kind),
+											hasOptions = shouldBadge && !Settings.getItem('showResourceURLs') && protocol !== 'none:';
 								%>
 
 									<li
-										class="page-host-item"
+										class="page-host-item page-host-item-select<%=(hasOptions || !shouldBadge) ? '' : '-custom'%>"
 										data-resourceIDs="<%=JSON.stringify(resourceIDs)._entityQuotes()%>"
 										data-host="<%=resource.sourceHost._entityQuotes()%>"
 										data-protocol="<%=protocol%>"
 										data-action="<%=action%>"
 									>
-										<%
-											if (kind === 'user_script') {
-												var sourceName = globalPage.UserScript.scripts.getStore(source).getStore('attributes').get('meta', {}).name || 'UNKNOWN';
-											} else {
-												var sourceName = source;
-											}
-										%>
-
 										<div class="page-host-item-edit-container">
 											<div class="page-host-item-edit-check-wrapper">
 												<input type="checkbox" class="page-host-item-edit-check" title="<%=_('view.page.editor.check_to_' + (self.stateType === 'blocked' ? 'allow' : 'block'))%>" />
 											</div>
 											<div class="page-host-item-edit-select-wrapper">
 											<%
-												var shouldBadge = globalPage.Rules.kindShouldBadge(kind),
-														hasOptions = shouldBadge && !Settings.getItem('showResourceURLs') && protocol !== 'none:';
-
 												if (hasOptions || !shouldBadge) { %>
 													<select class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
 
@@ -298,8 +304,10 @@
 
 													</select><label></label><%
 												} else { %>
-													<textarea class="render-as-input select-custom-input" spellcheck="off" wrap="off" rows="0"></textarea>
+													<textarea class="render-as-input select-custom-input" spellcheck="off" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
 													<select class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%>">
+														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
+														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
 														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
 													</select><label></label><%
 												} %>

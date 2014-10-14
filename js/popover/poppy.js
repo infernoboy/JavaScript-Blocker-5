@@ -3,7 +3,7 @@
 (function () {
 	var poppies = {};
 
-	window.Poppy = function Poppy (x, y, closeExisting, script) {
+	window.Poppy = function Poppy (x, y, closeExisting, scriptName) {
 		if (typeof x !== 'number' || typeof y !== 'number')
 			throw new TypeError('x or y is not a number');
 
@@ -24,6 +24,7 @@
 		this.willRemoveOnScroll = true;
 		this.isUpArrow = false;
 		this.noArrow = false;
+		this.scriptName = scriptName;
 
 		this.originalPosition = {
 			x: x,
@@ -46,9 +47,6 @@
 		this.viewDidScroll = this.viewDidScroll.bind(this);
 
 		$('.poppy-close', this.poppy).click(this.close.bind(this));
-
-		if (script && window.Poppy.scripts[script])
-			this.addCustomEventListener('poppyDidShow', window.Poppy.scripts[script], true);
 	};
 
 	Poppy = Poppy._extendClass(EventListener);
@@ -134,11 +132,13 @@
 	Poppy.createLoadingPoppy = function (x, y, closeExisting, onFullyShown) {
 		var loadingPoppy = new Poppy(x, y, closeExisting);
 
-		loadingPoppy.addCustomEventListener('poppyIsFullyShown', function () {
-			loadingPoppy.close();
+		UI.event.addCustomEventListener('poppyIsFullyShown', function (event) {
+			if (event.detail === loadingPoppy) {
+				loadingPoppy.close();
 
-			if (typeof onFullyShown === 'function')
-				onFullyShown(loadingPoppy);
+				if (typeof onFullyShown === 'function')
+					onFullyShown(loadingPoppy);
+			}
 		}, true);
 
 		return loadingPoppy;
@@ -338,8 +338,8 @@
 		return [this.linkedTo.id].concat(this.linkedTo.linkTree());
 	};
 
-	Poppy.prototype.show = function (quick) {
-		if (this.closed || this.trigger('poppyWillShow', this) || UI.event.trigger('poppyWillShow', this))
+	Poppy.prototype.show = function (quick, instant) {
+		if (this.closed || UI.event.trigger('poppyWillShow', this))
 			return this;
 
 		Poppy.__creating = true;
@@ -350,20 +350,22 @@
 
 		this.setPosition();
 
-		this.trigger('poppyDidShow', this);
 		UI.event.trigger('poppyDidShow', this);
 
 		this.poppy
 			.toggleClass('poppy-open-quick', !!quick)
+			.toggleClass('poppy-open-instant', !!instant)
 			.addClass('poppy-open')
 			.one('webkitAnimationEnd', function (event) {
-				this.trigger('poppyIsFullyShown', this);
 				UI.event.trigger('poppyIsFullyShown', this);
 			}.bind(this));
 
 		Utilities.Timer.timeout('PoppyCreating', function () {
 			Poppy.__creating = false;
 		}, 100);
+
+		if (this.scriptName && window.Poppy.scripts[this.scriptName])
+			window.Poppy.scripts[this.scriptName](this);
 
 		return this;
 	};
@@ -378,7 +380,7 @@
 
 	Poppy.prototype.close = function (immediate) {
 		return new Promise(function (resolve, reject) {
-			if (this.closed || this.trigger('poppyWillClose', this) || UI.event.trigger('poppyWillClose', this))
+			if (this.closed || UI.event.trigger('poppyWillClose', this))
 				return this;
 
 			Poppy.closeLinksTo(this);

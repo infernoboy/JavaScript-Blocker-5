@@ -1,9 +1,7 @@
 "use strict";
 
 Object._extend(Poppy.scripts, {
-	mainMenu: function (event) {
-		var poppy = event.detail;
-
+	mainMenu: function (poppy) {
 		$('#main-menu-show-unblocked-scripts', poppy.content).prop('checked', Settings.getItem('showUnblockedScripts'));
 		$('#main-menu-show-resource-url', poppy.content).prop('checked', Settings.getItem('showResourceURLs'));
 
@@ -19,6 +17,7 @@ Object._extend(Poppy.scripts, {
 
 				Poppy.closeAll();
 			})
+
 			.on('change', '#main-menu-show-resource-url', function () {
 				UI.view.toTop(UI.view.views);
 
@@ -30,21 +29,19 @@ Object._extend(Poppy.scripts, {
 
 				Poppy.closeAll();
 			})
-			.on('click', '#main-menu-help', function () {
-				poppy.close();
 
-				UI.view.switchTo(UI.view.viewSwitcher, '#help-view');
-			})
 			.on('click', '#main-menu-settings', function () {
 				poppy.close();
 
 				UI.view.switchTo(UI.view.viewSwitcher, '#setting-view');
 			})
+
 			.on('click', '#main-menu-about', function () {
 				poppy.close();
 
 				UI.view.switchTo(UI.view.viewSwitcher, '#about-view');
 			})
+
 			.on('click', '#main-menu-console', function (event) {
 				Poppy.closeLinksTo(poppy);
 
@@ -58,9 +55,7 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
-	console: function (event) {
-		var poppy = event.detail;
-
+	console: function (poppy) {
 		poppy.content
 			.on('click', '#console-clear', function () {
 				LogError.history = [];
@@ -70,10 +65,11 @@ Object._extend(Poppy.scripts, {
 				globalPage.LogDebug.history = [];
 
 				if (poppy.linkedTo)
-					$('#main-menu-console-message-count', poppy.linkedTo.content).html(_('main_menu.console.messages', [0]));
+					poppy.linkedTo.setContent(Template.create('poppy', 'main-menu'));
 
 				poppy.close();
 			})
+			
 			.on('click', '#console-report', function () {
 				var messageHistory = Utilities.messageHistory();
 				

@@ -466,6 +466,14 @@ var Utilities = {
 				element.style.setProperty(property, properties[property], isImportant ? 'important' : '');
 		},
 
+		repaint: function (element) {
+			var display = element.style.display;
+
+			element.style.setProperty('display', 'none', 'important');
+			element.offsetHeight;
+			element.style.setProperty('display', display, 'important');
+		},
+
 		/**
 		@function fitFontWithin Adjust the size of a font so that it fits perfectly within containerNode.
 		@param {Element} containerNode - Box element that the font should fit within.
@@ -502,14 +510,7 @@ var Utilities = {
 
 		getCurrentLocation: function () {
 			if (['http:', 'https:', 'file:']._contains(document.location.protocol)) {
-				var base = document.location.protocol + '//' + document.location.host;
-
-				if (Utilities.safariBuildVersion > 534)
-					base += document.location.pathname;
-				else
-					base += encodeURI(document.location.pathname);
-
-				base += document.location.search;
+				var base = document.location.protocol + '//' + document.location.host + document.location.pathname + document.location.search;
 
 				if (document.location.hash.length > 0)
 					return base + document.location.hash;
@@ -543,7 +544,7 @@ var Utilities = {
 		},
 
 		isURL: function (url) {
-			return typeof url === 'string' && (this.__structure.test(url) || this.protocol(url) === 'about:');
+			return typeof url === 'string' && (this.__structure.test(url) || this.protocol(url) === 'about:' || this.protocol(url) === 'data:');
 		},
 
 		strip: function (url) {
@@ -610,24 +611,28 @@ var Utilities = {
 					eTLDLength = EffectiveTLDs.length,
 					sTLDLength = SimpleTLDs.length;
 
-			var part,
-					j;
-							
-			hostLoop:
-			for (var i = 1; i < split.length; i++) {
-				part = split[i] + '.' + part;
+			if (!EffectiveTLDs._contains(host) && !SimpleTLDs._contains(host)) {
+				var part,
+						j;
+								
+				hostLoop:
+				for (var i = 1; i < split.length; i++) {
+					part = split[i] + '.' + part;
 
-				for (j = 0; j < sTLDLength; j++)
-					if (SimpleTLDs[j] === part)
-						continue hostLoop;
+					Log(part)
 
-				for (j = 0; j < eTLDLength; j++)
-					if (EffectiveTLDs[j].test(part))
-						continue hostLoop;
+					for (j = 0; j < sTLDLength; j++)
+						if (SimpleTLDs[j] === part)
+							continue hostLoop;
 
-				parts.push((((i < split.length - 1) && prefixed) ? '.' : '') + part);
+					for (j = 0; j < eTLDLength; j++)
+						if (EffectiveTLDs[j].test(part))
+							continue hostLoop;
+
+					parts.push((((i < split.length - 1) && prefixed) ? '.' : '') + part);
+				}
 			}
-
+			
 			if (!parts.length)
 				parts.push(host);
 

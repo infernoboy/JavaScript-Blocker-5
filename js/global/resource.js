@@ -195,13 +195,13 @@ Resource.prototype.canLoad = function (detailed) {
 			pageSources = store.getStore(this.pageLocation),
 			pageCached = pageSources.get(this.source);
 
-	if (pageCached && !detailed)
+	if (pageCached && !detailed && Rules.list.active === Rules.list.user)
 		return pageCached;
 
 	var hostSources = store.getStore(this.pageHost),
 			domainCached = hostSources.get(this.source);
 
-	if (domainCached && domainCached.action >= 0 && !detailed)
+	if (domainCached && domainCached.action >= 0 && !detailed && Rules.list.active === Rules.list.user)
 		return domainCached;
 
 	var pageRule,
@@ -304,7 +304,7 @@ Resource.prototype.canLoad = function (detailed) {
 
 	canLoad.isAllowed = !!(canLoad.action % 2);
 
-	if (!detailed && canLoad.list !== 'temporary')
+	if (!detailed && canLoad.list !== 'temporary' && Rules.list.active === Rules.list.user)
 		Utilities.setImmediateTimeout(function (canLoad, store, source) {
 			store.set(source, canLoad);
 		}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);

@@ -26,6 +26,7 @@
 	"view.page.host.editor.all_resources": "all resources",
 	"view.page.host.editor.checked_kinds": "checked kinds",
 
+	"view.page.host.snapshot_in_use_no_rules": "Rules cannot be created while a snapshot is in use.",
 	"view.page.host.disabled": "JavaScript Blocker is disabled on this page.",
 	"view.page.host.done": "Done",
 	"view.page.host.edit": "Edit",
@@ -58,6 +59,7 @@
 	"view.page.editor.from_within_domain": "from within {0}",
 	"view.page.editor.check_to_allow": "Check to allow",
 	"view.page.editor.check_to_block": "Check to block",
+	"view.page.editor.resource_url": "Resource URL: {0}",
 
 	"view_toolbar.disable": "Disable",
 	"view_toolbar.menu": "Menu",

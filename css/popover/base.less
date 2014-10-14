@@ -200,7 +200,9 @@
 							}
 
 							+ li,
-							~ li[data-view="#rule-view"] {	
+							+ li.view-switcher-hidden + li:not(.view-switcher-hidden),
+							+ li.view-switcher-hidden + li.view-switcher-hidden + li:not(.view-switcher-hidden),
+							+ li.view-switcher-hidden + li.view-switcher-hidden + li.view-switcher-hidden + li:not(.view-switcher-hidden) {
 								.view-switcher-item-container {
 									border-left-color: #fff;
 								}
@@ -241,36 +243,34 @@
 							color: #333;
 							text-align: center;
 							border-left: 1px solid rgb(225, 225, 225);
-							padding: 0 5px;
-							width: 63px;
+							padding: 0 11px;
+							width: auto;
 							white-space: nowrap;
 
 							.transition;
 
 							.jsb-large-font& {
 								line-height: 17px;
-								width: 77px;
 							}
-
-							.transition;
 
 							.view-switcher-item-notification {
 								display: none;
 								position: absolute;
 								bottom: 5px;
-								left: 71%;
+								left: 100%;
+								margin-left: -10px;
 								height: 8px;
 								min-width: 7px;
 								padding: 3px 4px;
 								border-radius: 10px;
-								background: red;
+								background: lighten(red, 5%);
 								text-align: center;
 								line-height: 6px;
 								color: #fff;
-								border: 1px solid rgba(0, 0, 0, 0.3);
+								border: 1px solid rgba(0, 0, 0, 0.2);
 								font-size: 85%;
 								text-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
-								box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+								box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 								z-index: 2;
 
 								.jsb-large-font& {

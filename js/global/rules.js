@@ -436,7 +436,7 @@ var Rules = {
 	// Check if the specified rule should be used on the source.
 	matches: function (rule, regexp, source) {
 		if (regexp) {
-			var regExp = this.__regExpCache[rule] || (this.__regExpCache[rule] = new RegExp(rule.toLowerCase()));
+			var regExp = this.__regExpCache[rule] || (this.__regExpCache[rule] = new RegExp(rule.toLowerCase(), 'i'));
 
 			return regExp.test(source);
 		} else {

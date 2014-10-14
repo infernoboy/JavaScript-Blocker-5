@@ -14,7 +14,7 @@ function Page (page, tab) {
 		kinds.forEach(function (kind, resources, store) {
 			resources.getStore('source').map(function (location, source) {
 				return source.map(function (sourceName, items) {
-					return items.map(function (itemID, attributes) {
+					return items.map(function (itemID, attributes) {						
 						return new Resource({
 							kind: kind,
 							pageLocation: location,
@@ -204,7 +204,9 @@ Page.prototype.addFrame = function (frame) {
 
 	var mergeInto;
 
-	if (frame.info.protocol === 'about:' || frame.info.protocol === 'data:' || this.info.host === frame.info.host)
+	var protoMerge = (frame.info.protocol === 'about:' || frame.info.protocol === 'data:');
+
+	if (protoMerge || this.info.host === frame.info.host)
 		mergeInto = this;
 	else {
 		this.frames.forEach(function (frameID, framePage, frameStore) {
@@ -216,7 +218,7 @@ Page.prototype.addFrame = function (frame) {
 		});
 	}
 
-	if (mergeInto) {
+	if (mergeInto && (!mergeInto.info.disabled || protoMerge)) {
 		frame.merged = true;
 
 		var myState,

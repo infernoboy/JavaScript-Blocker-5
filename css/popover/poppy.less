@@ -24,7 +24,7 @@
 	border-radius: 6px;
 	padding: 2px;
 	background: -webkit-linear-gradient(top, #ffffff, #fafafa);
-	box-shadow: 0 0px 10px rgba(0, 0, 0, 0.3);
+	box-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
 
 	&.poppy-up .poppy-arrow {
 		background: -webkit-canvas(poppy-arrow-up);
@@ -35,6 +35,10 @@
 
 		&-quick {
 			-webkit-animation-duration: 0.16s;
+		}
+
+		&-instant {
+			-webkit-animation-duration: 0.001s;
 		}
 	}
 

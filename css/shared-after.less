@@ -26,7 +26,6 @@
 				text-indent: 0 @important;
 				padding: 1px @important;
 				margin: 4px 0 5px @important;
-				padding-bottom: 1px @important;
 				overflow: auto @important;
 				font-weight: normal @important;
 			}
@@ -36,9 +35,9 @@
 			}
 
 			&embossed {
-				color: rgba(0, 0, 0, 0.23);
-				font-weight: bold;
-				text-shadow: 0 1px 1px #fff, 0 0 0 rgba(0, 0, 0, 0.2), 0 0 1px #fff;
+				color: rgba(0, 0, 0, 0.3);
+				font-weight: 500;
+				text-shadow: 0 1px 1px #fff, 0 0 0 rgba(0, 0, 0, 0.3), 0 0 1px #fff;
 			}
 
 			&hidden,
@@ -95,7 +94,8 @@
 			font-size: 110%;
 		}
 
-		a {
+		a,
+		.select-custom-options li {
 			color: @baseColor;
 
 			&:active {

@@ -69,8 +69,8 @@ PageNotification.__containerID = 'jsb-notification-container';
 PageNotification.__closeButtonsContainerClass = 'jsb-notification-close-container';
 PageNotification.__offset = -14;
 PageNotification.__stackOffset = 24;
-PageNotification.__baseZIndex = 900000000000;
-PageNotification.__forwardedZIndex = 900000000100;
+PageNotification.__baseZIndex = 2147483047;
+PageNotification.__forwardedZIndex = 2147483247;
 PageNotification.__allowStacking = true;
 
 PageNotification.notificationIDs = [];

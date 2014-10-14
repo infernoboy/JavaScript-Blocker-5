@@ -22,13 +22,6 @@
 				pointer-events: none;
 			}
 
-			.page-host-disabled {
-				padding: 3px 0;
-				.jsb-info {
-					font-size: 12pt;
-				}
-			}
-
 			.page-host-header {
 				position: relative;
 				padding: 5px 3px 6px;
@@ -71,8 +64,14 @@
 				}
 			}
 
+			&.page-host-snapshot .page-host-edit {
+				opacity: 0.3;
+				pointer-events: none;
+			}
+
 			.page-host-editor,
-			.page-host-first-visit {
+			.page-host-first-visit,
+			.page-host-snapshot-in-use {
 				position: relative;
 				display: none;
 				background: #fbfbfb;
@@ -87,16 +86,44 @@
 
 				.jsb-info {
 					padding-bottom: 0;
+
+					.jsb-large-font& {
+						margin-bottom: 3px;
+					}
 				}
 			}
 
+			.page-host-disabled,
+			.page-host-snapshot-in-use {
+				padding: 3px 0 1px;
+				background: #fbfbfb;
+
+				.jsb-info {
+					font-size: 12pt;
+					margin-top: 0;
+				}
+			}
+
+			.page-host-snapshot-in-use {
+				display: block;
+			}
+
 			.page-host-editor {
+				&.floated-header {
+					position: absolute;
+				}
+
 				.page-host-editor-when-framed + label {
 					margin-bottom: 4px;
 				}
 
 				.page-host-editor-kinds {
 					line-height: 1.8;
+
+					.jsb-large-font& {
+						margin-top: 0;
+						padding-top: 0;
+					}
 				}
 
 				.page-host-editor-bottom {
@@ -248,7 +275,7 @@
 						&[data-protocol="https:"] {
 							.page-host-item-edit-select,
 							.page-host-item-source-container > * {
-								color: darken(gold, 21%);
+								color: darken(gold, 23%);
 							}
 						}
 
@@ -324,7 +351,7 @@
 							}
 							
 							&::-webkit-scrollbar {
-								height: 4px;
+								height: 3px;
 
 								&-thumb {
 									background: rgba(0, 0, 0, 0.1);
@@ -366,13 +393,9 @@
 								input,
 								textarea {
 									width: 89%;
-									margin-bottom: 2px;
+									margin-bottom: 1px;
 									resize: none;
 									white-space: pre;
-
-									&::-webkit-scrollbar {
-										height: 4px;
-									}
 
 									.popover-expanded& {
 										width: 91%;
@@ -387,6 +410,10 @@
 									}
 								}
 							}
+						}
+
+						&.page-host-item-select-custom .page-host-item-edit-container {
+							padding-bottom: 1px;
 						}
 
 						.page-host-item-description {
@@ -409,6 +436,10 @@
 			&.page-host-editing {
 				.page-host-items-container .page-host-item {
 					padding-top: 4px;
+
+					&.page-host-item-select-custom {
+						padding-top: 3px;
+					}
 				}
 			}
 		}

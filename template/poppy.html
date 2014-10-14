@@ -24,17 +24,18 @@
 		}
 	%>
 		<div id="main-menu-menu">
-			<input type="button" id="main-menu-contribute" class="jsb-color-blocked" value="<%=_('main_menu.unlock')%>" />
-			<input type="button" id="main-menu-help" value="<%=_('main_menu.help')%>" />
-			<input type="button" id="main-menu-settings" value="<%=_('main_menu.settings')%>" />
+			<input type="button" id="main-menu-contribute" class="jsb-color-blocked" value="<%=_('main_menu.unlock')%>" /><%
+			if (Settings.getItem('largeFont')) { %>
+				<input type="button" id="main-menu-settings" value="<%=_('main_menu.settings')%>" /><%
+			} %>
 			<input type="button" id="main-menu-about" value="<%=_('main_menu.about')%>" />
-		</div>
-		<div class="horizontal-divider"></div>
-		<div id="console-container">
 			<%
 				var messageHistory = Utilities.messageHistory(),
 						messageCount = messageHistory.error.length + messageHistory.debug.length;
-			%>
+			
+				if (Settings.getItem('largeFont')) { %>
+					<div class="horizontal-divider"></div><%
+				} %>
 			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" />
 			<span id="main-menu-console-message-count"><%=_('main_menu.console.message' + (messageCount === 1 ? '' : 's'), [messageCount])%></span> 
 		</div>
@@ -78,4 +79,13 @@
 		%>
 		</ul>
 	</div>
+</noscript>
+
+<noscript id="select-custom-options">
+	<h3 class="jsb-centered">Options</h3>
+	<ul class="select-custom-options"><%
+		self.options.each(function () { %>
+			<li data-value="<%=this.value._entityQuotes()%>"><%=this.innerText._escapeHTML()%></li><%
+		}); %>
+	</ul>
 </noscript>

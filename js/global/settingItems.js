@@ -104,7 +104,16 @@ Settings.settings = {
 			label: 'Use a large font',
 			default: false,
 			onChange: function () {
-				Popover.window.document.documentElement.classList.toggle('jsb-large-font', Settings.getItem('largeFont'));
+				var useLargeFont = Settings.getItem('largeFont');
+
+				Popover.window.document.documentElement.classList.toggle('jsb-large-font', useLargeFont);
+
+				UI.event.addCustomEventListener('UIReady', function (event) {
+					UI.view.viewSwitcher
+						.find('li[data-view="#setting-view"]')
+						.toggleClass('view-switcher-collapses', useLargeFont)
+						.toggleClass('view-switcher-hidden', useLargeFont);
+				}, true);
 			}
 		}
 	}, {

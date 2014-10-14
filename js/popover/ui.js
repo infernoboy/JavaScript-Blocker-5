@@ -78,12 +78,34 @@ var UI = {
 		});
 
 		$(document)
-			.on('change', '.select-custom-input + .select-wrapper select', function (event) {
-				$(this).parent().prev().val(this.value).focus();
-
-				if (!this.classList.contains('select-cycle'))
-					this.selectedIndex = -1;
+			.on('mousedown', '.select-custom-input + .select-wrapper select:not(.select-cycle)', function (event) {
+				event.preventDefault();
 			})
+
+			.on('click', '.select-custom-input + .select-wrapper select:not(.select-cycle)', function (event) {
+				var input = $(this.parentNode).prev(),
+						poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
+						options = $('option', this);
+
+				var optionsTemplate = Template.create('poppy', 'select-custom-options', {
+					options: options
+				});
+
+				$('li', optionsTemplate).click(function (event) {
+					input.val(this.getAttribute('data-value')).focus();
+
+					poppy.close();
+
+					UI.event.trigger('selectCustomOptionChanged', input);
+				});
+
+				poppy.setContent(optionsTemplate).show();
+			})
+
+			.on('change', '.select-custom-input + .select-wrapper select.select-cycle', function (event) {
+				$(this.parentNode).prev().val(this.value).focus();
+			})
+
 			.on('input', 'textarea.render-as-input', function (event) {
 				this.value = this.value.replace(/\n/g, '');
 			});
@@ -254,7 +276,18 @@ var UI = {
 					globalPage.Command.toggleDisabled();
 				})
 				.on('click', '#open-menu', function (event) {
-					this.classList.remove('unread-error');
+					if (this.classList.contains('unread-error')) {
+						this.classList.remove('unread-error');
+
+						var consolePoppy = new Poppy(event.pageX, event.pageY, true, 'console');
+
+						consolePoppy
+							.setContent(Template.create('poppy', 'console'))
+							.stayOpenOnScroll()
+							.show();
+
+						return;
+					}
 
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'mainMenu');
 
@@ -324,10 +357,9 @@ var UI = {
 			if (defaultPrevented)
 				return;
 
-			$('li', viewSwitcher)
-				.removeClass('active-view')
-				.filter('[data-view="' + viewID + '"]')
-				.addClass('active-view')
+			var viewSwitcherItems =	$('li', viewSwitcher),
+					previousViewSwitcherItem = viewSwitcherItems.filter('.active-view').removeClass('active-view'),
+					activeViewSwitcherItem = viewSwitcherItems.filter('[data-view="' + viewID + '"]').addClass('active-view');
 
 			document.activeElement.blur();
 
@@ -344,6 +376,12 @@ var UI = {
 				id: viewID
 			});
 
+			if (previousViewSwitcherItem.hasClass('view-switcher-collapses') || activeViewSwitcherItem.hasClass('view-switcher-collapses'))
+				setTimeout(function (viewSwitcher) {
+					Utilities.Element.repaint(viewSwitcher);
+				}, 170 * window.globalSetting.speedMultiplier, viewSwitcher[0]);
+			else
+				Utilities.Element.repaint(viewSwitcher[0]);
 		},
 
 		isActive: function (viewSwitcher, viewID) {

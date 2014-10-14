@@ -19,27 +19,26 @@
 								hide: true,
 								value: _('view_toolbar.resource')
 							},
-							'#help-view': {
-								hide: true,
-								value: _('view_toolbar.help')
-							},
-							'#setting-view': {
-								hide: true,
-								value: _('view_toolbar.setting')
-							},
 							'#welcome-view': {
 								hide: true,
 								value: _('view_toolbar.welcome')
-							},
-							'#about-view': {
-								hide: true,
-								value: _('main_menu.about')
 							},
 							'#rule-view': {
 								value: _('view_toolbar.rules')
 							},
 							'#snapshot-view': {
 								value: _('view_toolbar.snapshots')
+							},
+							'#setting-view': {
+								hide: Settings.getItem('largeFont'),
+								value: _('view_toolbar.setting')
+							},
+							'#about-view': {
+								hide: true,
+								value: _('main_menu.about')
+							},
+							'#help-view': {
+								value: _('view_toolbar.help')
 							}
 						}
 					}, true);

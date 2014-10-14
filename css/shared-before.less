@@ -111,8 +111,8 @@
 			background: #fff @important;
 			border: none @important;
 			border-radius: 4px @important;
-			// color: #272727 @important;
-			color: desaturate(darken(@baseColor, 30%), 60%);
+			color: #333 @important;
+			// color: desaturate(darken(@baseColor, 35%), 60%);
 			text-shadow: 0 1px 0 rgba(255,255,255,0.5) @important;
 			border: 1px solid rgb(200, 200, 200) @important;
 			border-bottom-color: rgb(168, 168, 168) @important;
@@ -159,13 +159,17 @@
 			padding: 3px @important;
 
 			&.render-as-input {
-				height: 16px @important;
+				height: 15px @important;
 				overflow-x: scroll;
 				overflow-y: hidden;
 				vertical-align: bottom;
 
 				.jsb-large-font& {
-					height: 18px @important;
+					height: 17px @important;
+				}
+
+				&::-webkit-scrollbar {
+					height: 3px;
 				}
 			}
 		}
@@ -320,6 +324,14 @@
 				}
 			}
 
+			&:active {
+				background: #f0f0f0;
+				
+				+ label {
+					background: -webkit-linear-gradient(top, lighten(@baseColor, 7%), darken(@baseColor, 4%));
+				}
+			}
+
 			&.select-cycle {
 				+ label {
 					&:before {
@@ -334,6 +346,14 @@
 
 					&:after {
 						content: '' @important;
+					}
+				}
+
+				&.select-custom-ready + label:before {
+					-webkit-transform: translate(3px, 4px) scale(1) rotate(180deg) @important;
+
+					.jsb-large-font& {
+						-webkit-transform: translate(3px, 5px) scale(1) rotate(180deg) @important;
 					}
 				}
 			}
@@ -359,18 +379,18 @@
 		}
 
 		.select-custom-wrapper {
-			display: -webkit-flex;
-			-webkit-align-items: flex-start;
+			display: -webkit-flex @important;
+			-webkit-align-items: flex-start @important;
 
 			.select-custom-input {
-				-webkit-flex: 1 1 auto;
-				position: relative;
+				-webkit-flex: 1 1 auto @important;
+				position: relative @important;
 
 				+ .select-wrapper {
-					-webkit-flex: 0 0 18px;
-					-webkit-align-self: flex-start;
-					display: inline-block;
-					margin-bottom: -2px;
+					-webkit-flex: 0 0 18px @important;
+					-webkit-align-self: flex-start @important;
+					display: inline-block @important;
+					margin-bottom: -2px @important;
 
 					select {
 						padding-left: 0 @important;
@@ -404,29 +424,43 @@
 				}
 
 				&:not(input) + .select-wrapper select {
-					position: relative;
-					top: 0;
-					padding-top: 5px;
-					padding-bottom: 5px;
+					position: relative @important;
+					top: 0 @important;
+					padding-top: 5px @important;
+					padding-bottom: 5px @important;
 
 					.jsb-large-font& {
-						top: 1px;
-						padding-bottom: 4px;
+						top: 1px @important;
+						padding-bottom: 4px @important;
 					}
 
 					+ label {
-						top: -4px;
-						height: 22px;
+						top: -4px @important;
+						height: 21px @important;
 
 						.jsb-large-font& {
-							top: -7px;
-							height: 24px;
+							top: -7px @important;
+							height: 23px @important;
 						}
 					}
 
 					.jsb-large-font&:not(.select-cycle) + label:after {
 						-webkit-transform: translate(2px, 3px) scale(0.85) rotate(180deg) @important;
 					}
+				}
+			}
+		}
+
+		.select-custom-options {
+			li {
+				white-space: pre @important;
+				font-size: 0.9em @important;
+				border-bottom: 1px solid rgba(0, 0, 0, 0.08) @important;
+				cursor: pointer @important;
+				padding: 4px 0 @important;
+
+				&:last-child {
+					border-bottom: none @important;
 				}
 			}
 		}
