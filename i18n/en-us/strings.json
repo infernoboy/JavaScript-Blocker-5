@@ -9,10 +9,16 @@
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",
 
+	"select.options": "Options",
+	"select.custom_options": "Custom Options",
+	"select.add_option_option": "Add option...",
+	"select.add_custom_option": "Add Option",
+
 	"view.page.full_disable": "JavaScript Blocker is disabled.",
 	"view.page.no_info": "Did not receive a page from the active tab.",
 	"view.page.from_cache": "This page was loaded from the cache and may not contain all of the page's items.",
 
+	"view.page.host.click_to_expand": "Click to expand",
 	"view.page.host.editor.when_framed": "Create rules only for when loaded in a frame on another page",
 	"view.page.host.editor.always": "Always",
 	"view.page.host.editor.temporarily": "Temporarily",

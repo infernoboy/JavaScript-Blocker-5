@@ -82,10 +82,19 @@
 </noscript>
 
 <noscript id="select-custom-options">
-	<h3 class="jsb-centered">Options</h3>
+	<h3 class="jsb-centered"><%=_('select.options')%></h3>
 	<ul class="select-custom-options"><%
 		self.options.each(function () { %>
 			<li data-value="<%=this.value._entityQuotes()%>"><%=this.innerText._escapeHTML()%></li><%
 		}); %>
 	</ul>
+</noscript>
+
+<noscript id="select-custom-option">
+	<h3 class="jsb-centered"><%=_('select.add_custom_option')%></h3>
+	<input type="text" class="select-custom-option trigger-on-enter" value="<%=self.default ? self.default._entityQuotes() : ''%>" />
+	<div class="jsb-align-right">
+		<input type="button" class="select-custom-option-cancel" value="Cancel" />
+		<input type="button" class="select-custom-option-save on-enter" value="Use Option" />
+	</div>
 </noscript>

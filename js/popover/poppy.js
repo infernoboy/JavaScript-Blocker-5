@@ -134,12 +134,14 @@
 
 		UI.event.addCustomEventListener('poppyIsFullyShown', function (event) {
 			if (event.detail === loadingPoppy) {
+				event.unbind();
+				
 				loadingPoppy.close();
 
 				if (typeof onFullyShown === 'function')
 					onFullyShown(loadingPoppy);
 			}
-		}, true);
+		});
 
 		return loadingPoppy;
 	};

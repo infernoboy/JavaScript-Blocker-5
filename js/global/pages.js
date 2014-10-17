@@ -256,17 +256,30 @@ Page.prototype.badgeState = function (state) {
 		return;
 
 	Utilities.Timer.timeout('badgeToolbar', function (self) {
-		var tree = self.tree(),
+		var pageHost;
+
+		var showResourceURLs = Settings.getItem('showResourceURLs'),
+				tree = self.tree(),
 				count = 0;
 
 		for (var kind in tree.state[state])
-			if (Rules.kindShouldBadge(kind))
-				count += Object.keys(tree.state[state][kind].hosts || []).length
+			if (Rules.kindShouldBadge(kind)) {
+				if (showResourceURLs) {
+					for (pageHost in tree.state[state][kind].hosts)
+						count += tree.state[state][kind].hosts[pageHost];
+				} else
+					count += Object.keys(tree.state[state][kind].hosts || []).length
+			}
 
 		for (var frame in tree.frames) 
 			for (kind in tree.frames[frame].state[state])
-				if (Rules.kindShouldBadge(kind))
-					count += Object.keys(tree.frames[frame].state[state][kind].hosts || []).length
+				if (Rules.kindShouldBadge(kind)) {
+					if (showResourceURLs) {
+						for (pageHost in tree.frames[frame].state[state][kind].hosts)
+							count += tree.frames[frame].state[state][kind].hosts[pageHost];
+					} else
+						count += Object.keys(tree.frames[frame].state[state][kind].hosts || []).length
+				}
 
 		ToolbarItems.badge(count, self.tab);
 	}, 50, [this]);

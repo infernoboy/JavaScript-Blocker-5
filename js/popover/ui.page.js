@@ -133,12 +133,14 @@ UI.Page = {
 		},
 
 		createRules: function (section) {
-			var ruleAction;
+			var ruleAction,
+					ruleDomain;
 
 			var Rules = globalPage.Rules,
 					ruleKindPrefix = section.find('.page-host-editor-when-framed').is(':checked') ? 'framed:' : '',
 					ruleList = section.find('.page-host-editor-duration').val() === 'always' ? Rules.list.user : Rules.list.temporary,
 					ruleList = Rules.list.temporary,
+					addRule = ruleList.addDomain,
 					ruleType = section.find('.page-host-editor-kind').val(),
 					ruleWhere = section.find('.page-host-editor-where'),
 					ruleWhereValue = ruleWhere.val(),
@@ -149,16 +151,30 @@ UI.Page = {
 				ruleKindPrefix = 'hide:' + ruleKindPrefix;
 
 			if (ruleWhereValue === 'domain-all')
-				var ruleDomain = '*';
+				ruleDomain = '*';
 			else if (ruleWhereValue._startsWith('domain'))
-				var ruleDomain = $('option', ruleWhere).eq(ruleWhere[0].selectedIndex).attr('data-domain');
-			else
-				throw new Error('not supported');
+				ruleDomain = $('option', ruleWhere).eq(ruleWhere[0].selectedIndex).attr('data-domain');
+			else if (ruleWhereValue._startsWith('page')) {
+				addRule = ruleList.addPage;
+
+				var ruleOption = $('option', ruleWhere).eq(ruleWhere[0].selectedIndex),
+						rulePage = ruleOption.attr('data-page')._escapeRegExp();
+
+				if (ruleOption.is(':not(:last-child)'))
+					rulePage += '.*';
+
+				ruleDomain = '^' + rulePage + '$';
+			} else {
+				if (Rules.isRegExp(ruleWhereValue))
+					addRule = ruleList.addPage;
+
+				ruleDomain = ruleWhereValue;
+			}
 
 			if (ruleType === 'disable' || ruleType === 'enable') {
 				ruleAction = ruleType === 'disable' ? 0 : 1;
 
-				ruleList.addDomain(ruleKindPrefix + 'disable', ruleDomain, {
+				addRule(ruleKindPrefix + 'disable', ruleDomain, {
 					rule: '*',
 					action: ruleAction
 				});
@@ -167,7 +183,7 @@ UI.Page = {
 					globalPage.Page.requestPageFromActive();
 				}, 1000);
 			} else if (ruleWhichItems === 'items-all') {
-				ruleList.addDomain(ruleKindPrefix + '*', ruleDomain, {
+				addRule(ruleKindPrefix + '*', ruleDomain, {
 					rule: '*',
 					action: (ruleType === 'block' || ruleType === 'hide') ? 0 : 1
 				});
@@ -176,7 +192,7 @@ UI.Page = {
 						ruleAction = (ruleType === 'block' || ruleType === 'hide') ? 0 : 1;
 
 				checked.each(function () {
-					ruleList.addDomain(ruleKindPrefix + this.getAttribute('data-kind'), ruleDomain, {
+					addRule(ruleKindPrefix + this.getAttribute('data-kind'), ruleDomain, {
 						rule: '*',
 						action: ruleAction
 					});
@@ -200,7 +216,7 @@ UI.Page = {
 					if (ruleType === 'block/allow') {
 						var hasAffect;
 
-						var rule = ruleList.addDomain(ruleKindPrefix + kind, ruleDomain, {
+						var rule = addRule(ruleKindPrefix + kind, ruleDomain, {
 							rule: (protocol === 'none:' || itemSource.is('.select-custom-input')) ? itemSourceVal : protocol + '|' + itemSourceVal,
 							action: ruleAction
 						});
@@ -352,6 +368,23 @@ UI.Page = {
 					section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 1);
 				})
 
+				.on('click', '.page-host-column .page-host-items-container-header label', function (event) {
+					var column = $(this).parents('.page-host-column'),
+							columns = column.parent(),
+							isAllowed = column.is('.page-host-column-allowed'),
+							expandClass = 'page-host-columns-expand-',
+							blockedClass = expandClass + 'blocked',
+							allowedClass = expandClass + 'allowed';
+
+					columns.removeClass(isAllowed ? blockedClass : allowedClass);
+					columns.toggleClass(isAllowed ? allowedClass : blockedClass);
+
+					if (isAllowed)
+						Settings.setItem('pageHostColumnExpand', columns.hasClass(allowedClass) ? allowedClass : '');
+					else
+						Settings.setItem('pageHostColumnExpand', columns.hasClass(blockedClass) ? blockedClass : '');
+				})
+
 				.on('change', '.page-host-editor-create-on-close', function (event) {
 					Settings.setItem('createRulesOnClose', this.checked);
 				})
@@ -484,7 +517,7 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-item-edit-container .select-single', function (event) {
-					var check = $(this).parent().prev().find('input');
+					var check = $(this).parents('.page-host-item-edit-container').find('.page-host-item-edit-check');
 
 					check.prop('checked', !check.prop('checked'));
 				})
@@ -504,8 +537,8 @@ UI.Page = {
 					}
 				})
 
-				.on('change', '.page-host-item-edit-select', function (event) {
-					var check = $(this).parent().prev().find('input');
+				.on('change input', '.page-host-item-edit-select, .page-host-item-edit-container .select-custom-input', function (event) {
+					var check = $(this).parents('.page-host-item-edit-container').find('.page-host-item-edit-check');
 
 					check.prop('checked', true);
 				});

@@ -104,14 +104,6 @@
 
 								for (var b = (pageParts.parts[1] ? 1 : 0); b < pageParts.parts.length; b++) { %>
 									<option value="page-<%=b%>" data-page="<%=pageParts.parts[b]._entityQuotes()%>"><%=_('view.page.editor.on_domain',[pageParts.parts[b]._escapeHTML()])%></option><%
-								}
-
-								if (pageParts.search.length) { %>
-									<option value="page-search" data-page="<%=pageParts.pageSearch._entityQuotes()%>"><%=_('view.page.editor.on_domain', [pageParts.pageSearch._escapeHTML()])%></option><%
-								}
-
-								if (pageParts.hash.length) { %>
-									<option value="page-hash" data-page="<%=pageParts.pageHash._entityQuotes()%>"><%=_('view.page.editor.on_domain', [pageParts.pageHash._escapeHTML()])%></option><%
 								} %>
 								</optgroup><%
 							}
@@ -138,7 +130,7 @@
 				</div><%
 			}
 		} else { %>
-			<div class="page-host-columns">
+			<div class="page-host-columns <%=Settings.getItem('pageHostColumnExpand')%>">
 				<%=Template.create('page', 'host-column', {
 					stateType: 'allowed',
 					state: self.state.allowed || {}
@@ -174,7 +166,7 @@
 
 <noscript id="host-items-container-header">
 	<div class="page-host-items-container-header" data-expander="> label">
-		<label class="jsb-color-<%=self.stateType%>"><%=_('view.page.host.column.' + self.stateType)%></label>
+		<label class="jsb-color-<%=self.stateType%>" title="<%=self.stateType === 'unblocked' ? '' : _('view.page.host.click_to_expand')%>"><%=_('view.page.host.column.' + self.stateType)%></label>
 		<%
 			var pageLocation,
 					items;

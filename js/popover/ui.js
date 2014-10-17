@@ -106,6 +106,71 @@ var UI = {
 				$(this.parentNode).prev().val(this.value).focus();
 			})
 
+			.on('focus', 'select', function (event) {
+				this.setAttribute('data-currentIndex', this.selectedIndex);
+			})
+
+			.on('change', 'select', function (event) {
+				if (this.value === 'select-custom-option') {
+					var self = this,
+							previousIndex = this.getAttribute('data-currentIndex'),
+							originalIndex = this.selectedIndex,
+							previousOption = $('option', this).eq(previousIndex),
+							option = $('option', this).eq(originalIndex),
+							label = $(this).next(),
+							offset = label.offset(),
+							poppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true);
+
+					var template = Template.create('poppy', 'select-custom-option', {
+						default: previousOption.attr('data-page') || previousOption.attr('data-domain')
+					}, true);
+
+					UI.event.addCustomEventListener('poppyWillClose', function (event) {
+						if (event.detail === poppy) {
+							event.unbind();
+
+							if (!poppy.useThisOption)
+								self.selectedIndex = previousIndex;
+						}
+					});
+
+					UI.event.addCustomEventListener('poppyDidShow', function (event) {
+						if (event.detail === poppy) {
+							event.unbind();
+
+							$('.select-custom-option', event.detail.content).focus();
+						}
+					});
+
+					template
+						.on('click', '.select-custom-option-cancel', function () {
+							poppy.close();
+						})
+
+						.on('click', '.select-custom-option-save', function () {
+							var newOptionValue = $.trim($('.select-custom-option', poppy.content).val());
+
+							if (newOptionValue.length) {
+								poppy.useThisOption = newOptionValue;
+
+								$('<option />').text(poppy.useThisOption).insertBefore(option);
+
+								self.selectedIndex = originalIndex;
+							}
+
+							poppy.close();
+						});
+
+					poppy.setContent(template).show();
+				} else
+					this.setAttribute('data-currentIndex', this.selectedIndex);
+			})
+
+			.on('keypress', '.trigger-on-enter', function (event) {
+				if (event.which === 3 || event.which === 13)
+					$('.on-enter', this.parentNode).click();
+			})
+
 			.on('input', 'textarea.render-as-input', function (event) {
 				this.value = this.value.replace(/\n/g, '');
 			});
@@ -127,20 +192,20 @@ var UI = {
 
 			.addCustomEventListener('elementWasAdded', function (event) {
 				if (event.detail.querySelectorAll) {
-					var selects = event.detail.querySelectorAll('.select-custom-input + select:not(.select-custom-ready)');
+					var customSelects = event.detail.querySelectorAll('.select-custom-input + select:not(.select-custom-ready)');
 
-					for (var i = selects.length; i--;) {
-						if (selects[i].classList.contains('select-single')) {
-							$(selects[i]).prev().hide();
+					for (var i = customSelects.length; i--;) {
+						if (customSelects[i].classList.contains('select-single')) {
+							$(customSelects[i]).prev().hide();
 
 							continue;
 						}
 
-						selects[i].classList.add('select-custom-ready');
+						customSelects[i].classList.add('select-custom-ready');
 
-						selects[i].previousElementSibling.value = selects[i].value;
+						customSelects[i].previousElementSibling.value = customSelects[i].value;
 
-						$(selects[i])
+						$(customSelects[i])
 							.next()
 							.addBack()
 							.wrapAll('<div class="select-wrapper"></div>')
@@ -149,8 +214,8 @@ var UI = {
 							.parent()
 							.wrapInner('<div class="select-custom-wrapper"></div>');
 
-						if (!selects[i].classList.contains('select-cycle'))
-							selects[i].selectedIndex = -1;
+						if (!customSelects[i].classList.contains('select-cycle'))
+							customSelects[i].selectedIndex = -1;
 					}
 				}
 			});

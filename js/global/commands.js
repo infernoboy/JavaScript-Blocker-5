@@ -161,6 +161,7 @@ function Command (command, data, event) {
 			this.message = {
 				disabled: window.globalSetting.disabled,
 				debugMode: window.globalSetting.debugMode,
+				popoverReady: Popover.window.PopoverReady,
 
 				useAnimations: Settings.getItem('useAnimations'),
 				enabledKinds: Settings.getItem('enabledKinds'),

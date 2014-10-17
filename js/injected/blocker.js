@@ -132,7 +132,7 @@ var globalSetting;
 
 do
 	globalSetting = GlobalCommand('globalSetting');
-while (globalSetting.command);
+while (globalSetting.command || !globalSetting.popoverReady);
 
 var _ = (function () {
 	var strings = {};
@@ -194,6 +194,8 @@ var Handler = {
 		document.documentElement.appendChild(style);
 
 		setTimeout(function () {
+			Handler.visibilityChange();
+
 			Handler.event.trigger('stylesheetLoaded', null, true);
 		}, 50);
 	},
@@ -201,8 +203,6 @@ var Handler = {
 	DOMContentLoaded: function () {
 		var i,
 				b;
-
-		Handler.injectStyleSheet();
 
 		var scripts = document.getElementsByTagName('script'),
 				anchors = document.getElementsByTagName('a'),
@@ -233,8 +233,6 @@ var Handler = {
 					GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
 			}
 		}
-
-		Handler.visibilityChange();
 	},
 
 	resetLocation: function (event) {
@@ -394,6 +392,9 @@ var Element = {
 	},
 
 	createPlaceholder: function (kind, element, source) {
+		if (!element.parentNode)
+			return LogDebug('unable to create placeholder for element because it does not have a parent', element);
+
 		var placeholderTemplate = GlobalCommand('template.create', {
 			template: 'injected',
 			section: 'element-placeholder',
@@ -406,7 +407,8 @@ var Element = {
 
 		var cssValue;
 
-		var height = element.offsetHeight - 1,
+		var elementParent = element.parentNode,
+				height = element.offsetHeight - 1,
 				width = element.offsetWidth,
 				elementStyle = window.getComputedStyle(element, null),
 				placeholder = Element.createFromHTML(placeholderTemplate)[0];
@@ -443,17 +445,24 @@ var Element = {
 
 			element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
 
-			placeholder.parentNode.replaceChild(element, placeholder);
+			elementParent.replaceChild(element, placeholder);
 		}, true);
 
-		element.parentNode.replaceChild(placeholder, element);
+		var collapsedElement = Element.collapse(element);
 
-		kindString.style.setProperty('line-height', (placeholder.offsetHeight - 2) + 'px', 'important');
+		Handler.event.addCustomEventListener('stylesheetLoaded', function (collapsedElement, elementParent, placeholder, kindString) {
+			if (!elementParent)
+				return;
 
-		Utilities.Element.fitFontWithin(placeholder, kindString);
+			elementParent.replaceChild(placeholder, collapsedElement);
 
-		// Avoids flickering when hovering on the placeholder.
-		Utilities.Element.repaint(placeholder);
+			kindString.style.setProperty('line-height', (placeholder.offsetHeight - 2) + 'px', 'important');
+
+			Utilities.Element.fitFontWithin(placeholder, kindString);
+
+			// Avoids flickering when hovering on the placeholder.
+			Utilities.Element.repaint(placeholder);
+		}.bind(null, collapsedElement, elementParent, placeholder, kindString), true);
 	},
 
 	collapse: function (element) {
@@ -462,6 +471,8 @@ var Element = {
 		div.style.setProperty('display', 'none', 'important');
 
 		element.parentNode.replaceChild(div, element);
+
+		return div;
 	},
 
 	shouldIgnore: function (element) {
@@ -693,7 +704,7 @@ var Resource = {
 
 		var element = event.target || event;
 
-		if (!(element.nodeName in BLOCKABLE))
+		if (!(element.nodeName in BLOCKABLE) || (element.nodeName === 'EMBED' && element.parentNode.nodeName === 'OBJECT'))
 			return true;
 
 		var kind = BLOCKABLE[element.nodeName][0];
@@ -723,6 +734,9 @@ var Resource = {
 					} else
 						return true;
 				}
+
+				if (Utilities.Token.valid(element.getAttribute('data-jsbBeforeLoadProcessed'), source))
+					return true;
 
 				if (Element.shouldIgnore(element))
 					return Element.processUnblockable(kind, element);
@@ -756,14 +770,14 @@ var Resource = {
 				if (!canLoad.isAllowed && event.preventDefault)
 					event.preventDefault();
 
+				element.setAttribute('data-jsbBeforeLoadProcessed', Utilities.Token.create(source));
+
 				Utilities.setImmediateTimeout(Element.afterCanLoad, [meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind]);
 
 				return canLoad.isAllowed;
 			}
 		} else {
 			Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
-
-			Page.send();
 
 			return true;
 		}
@@ -856,6 +870,10 @@ if (!globalSetting.disabled) {
 
 		if (Page.info.isFrame)
 			window.addEventListener('beforeunload', Handler.unloadedFrame, true);
+
+		setTimeout(function () {
+			Handler.injectStyleSheet();
+		}, 400);
 	}
 } else {
 	Page.info.disabled = {

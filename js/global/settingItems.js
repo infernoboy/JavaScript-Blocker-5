@@ -80,6 +80,12 @@ Settings.settings = {
 			type: 'boolean',
 			default: true
 		}
+	}, {
+		setting: 'pageHostColumnExpand',
+		props: {
+			type: 'string',
+			default: ''
+		}
 	}],
 
 	// General Settings

@@ -25,7 +25,7 @@
 			.page-host-header {
 				position: relative;
 				padding: 5px 3px 6px;
-				background: #f2f2f2;
+				background: rgb(242, 241, 242);
 				border-top: 1px solid #fff;
 				border-bottom: 1px solid #ddd;
 
@@ -113,6 +113,10 @@
 					position: absolute;
 				}
 
+				select + label {
+					margin-right: 1px;
+				}
+
 				.page-host-editor-when-framed + label {
 					margin-bottom: 4px;
 				}
@@ -155,6 +159,7 @@
 					overflow: hidden;
 					box-sizing: border-box;
 					padding: 0 2px;
+					-webkit-transition: -webkit-flex 0.25s ease-out;
 
 					&,
 					& .page-host-items-container-header {
@@ -182,6 +187,50 @@
 						.page-host-item-edit-check:checked {
 							background: @blockColor;
 							border-color: darken(@blockColor, 4%);
+						}
+					}
+
+					.page-host-items-container-header label {
+						cursor: pointer;
+					}
+				}
+
+				&-expand-blocked {
+					.page-host-column {
+						&-blocked {
+							-webkit-flex: 1 0 78%;
+
+							.jsb-large-font& {
+								-webkit-flex: 1 0 73%;								
+							}
+						}
+
+						&-allowed {
+							-webkit-flex: 1 0 22%;
+
+							.jsb-large-font& {
+								-webkit-flex: 1 0 27%;
+							}
+						}
+					}
+				}
+
+				&-expand-allowed {
+					.page-host-column {
+						&-blocked {
+							-webkit-flex: 1 0 22%;
+
+							.jsb-large-font& {
+								-webkit-flex: 1 0 27%;
+							}
+						}
+
+						&-allowed {
+							-webkit-flex: 1 0 78%;
+
+							.jsb-large-font& {
+								-webkit-flex: 1 0 73%;								
+							}
 						}
 					}
 				}
@@ -227,6 +276,7 @@
 				.page-host-kind > * {
 					margin: 0 0 2px 1px;
 					font-weight: 500;
+					white-space: pre;
 				}
 
 				.page-host-items {
@@ -385,15 +435,16 @@
 
 							.page-host-item-edit-select-wrapper {
 								-webkit-flex: 1 1 auto;
+								padding-right: 1px;
 
 								select:not(.select-custom-ready) {
-									width: 98%;
+									width: 100%;
 								}
 
 								input,
 								textarea {
 									width: 89%;
-									margin-bottom: 1px;
+									margin-bottom: 2px;
 									resize: none;
 									white-space: pre;
 
@@ -406,7 +457,7 @@
 									width: auto;
 
 									.popover-expanded& {
-										width: 90%;
+										width: auto;
 									}
 								}
 							}

@@ -619,8 +619,6 @@ var Utilities = {
 				for (var i = 1; i < split.length; i++) {
 					part = split[i] + '.' + part;
 
-					Log(part)
-
 					for (j = 0; j < sTLDLength; j++)
 						if (SimpleTLDs[j] === part)
 							continue hostLoop;
@@ -632,7 +630,7 @@ var Utilities = {
 					parts.push((((i < split.length - 1) && prefixed) ? '.' : '') + part);
 				}
 			}
-			
+
 			if (!parts.length)
 				parts.push(host);
 

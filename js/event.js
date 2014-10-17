@@ -4,20 +4,25 @@ function EventListener () {
 	this.__listeners = {};
 
 	Object.defineProperty(this, 'fnWrapper', {
-		value: function (fn) {
+		value: function (event, info) {
+			this.event = event;
+			this.info = info;
 			this.defaultPrevented = false;
-			this.fn = fn;
 		}
 	});
 
 	this.fnWrapper.prototype.__run = function () {
-		this.fn(this);
+		this.info.fn(this);
 
 		return this;
 	};
 
 	this.fnWrapper.prototype.preventDefault = function () {
 		this.defaultPrevented = true;
+	};
+
+	this.fnWrapper.prototype.unbind = function () {
+		this.event.removeCustomEventListener(this.type, this.info.fn);
 	};
 };
 
@@ -60,6 +65,7 @@ EventListener.prototype.addCustomEventListener = function (name, fn, once, shoul
 	var listeners = this.listeners(name);
 
 	listeners.fns.push({
+		name: name,
 		once: once,
 		fn: fn,
 		shouldBeDelayed: shouldBeDelayed
@@ -112,7 +118,7 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 		if (info.shouldBeDelayed)
 			Utilities.setImmediateTimeout(info.fn, [detail]);
 		else {
-			fnInstance = new this.fnWrapper(info.fn);
+			fnInstance = new this.fnWrapper(this, info);
 
 			fnInstance.type = name;
 			fnInstance.detail = detail;
@@ -122,8 +128,8 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 			defaultPrevented = fnInstance.__run().defaultPrevented || defaultPrevented;
 		}
 
-		if (!listeners.fns[i].once)
-			newListeners.push(listeners.fns[i]);
+		if (!info.once)
+			newListeners.push(info);
 	}
 
 	this.__listeners[name].fns = newListeners;
