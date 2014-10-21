@@ -1,11 +1,12 @@
 "use strict";
 
 function EventListener () {
+	var self = this;
+
 	this.__listeners = {};
 
 	Object.defineProperty(this, 'fnWrapper', {
-		value: function (event, info) {
-			this.event = event;
+		value: function (info) {
 			this.info = info;
 			this.defaultPrevented = false;
 		}
@@ -22,7 +23,9 @@ function EventListener () {
 	};
 
 	this.fnWrapper.prototype.unbind = function () {
-		this.event.removeCustomEventListener(this.type, this.info.fn);
+		Utilities.setImmediateTimeout(function (event, self) {
+			event.removeCustomEventListener(self.type, self.info.fn);
+		}, [self, this]);
 	};
 };
 
@@ -95,11 +98,14 @@ EventListener.prototype.addMissingCustomEventListener = function (name, fn, once
 };
 
 EventListener.prototype.removeCustomEventListener = function (name, fn) {
-	var listeners = this.listeners(name);
+	var newListeners = [],
+			listeners = this.listeners(name);
 
-	listeners.fns = listeners.fns.filter(function (testFn) {
-		return testFn.fn !== fn;
-	});
+	for (var i = listeners.length; i--;)
+		if (listeners[i].fn !== fn)
+			newListeners.push(listeners[i]);
+
+	this.__listeners[name].fns = newListeners;
 };
 
 EventListener.prototype.trigger = function (name, detail, triggerSubsequentListeners) {
@@ -118,7 +124,7 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 		if (info.shouldBeDelayed)
 			Utilities.setImmediateTimeout(info.fn, [detail]);
 		else {
-			fnInstance = new this.fnWrapper(this, info);
+			fnInstance = new this.fnWrapper(info);
 
 			fnInstance.type = name;
 			fnInstance.detail = detail;

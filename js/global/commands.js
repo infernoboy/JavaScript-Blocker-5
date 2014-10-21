@@ -42,7 +42,7 @@ function Command (command, data, event) {
 
 			return this.__message;
 		},
-		set: function (message) {
+		set: function (message) {			
 			if (this.isEvent)
 				this.event.message = message;
 			else if (typeof this.event === 'function')

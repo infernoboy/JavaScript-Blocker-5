@@ -284,11 +284,12 @@
 			padding-right: 21px @important;
 			white-space: pre @important;
 			overflow: hidden @important;
+			margin-top: 1px @important;
 
 			&:after {
-				display: inline-block;
-				content: ' ';
-				margin-right: 20px; 
+				display: inline-block @important;
+				content: ' ' @important;
+				margin-right: 20px @important; 
 			}
 
 			+ label {
@@ -398,13 +399,20 @@
 					visibility: hidden @important;
 				}
 			}
+		}
 
-			&:not(.select-single):not(.select-custom-ready):focus + label {
-				border-top-right-radius: 5px @important;
-				border-bottom-right-radius: 5px @important;
-				border-color: darken(@focusShadow, 5%) @important;
-				box-shadow: inset -1px 0 @focusShadow, inset 0 1px @focusShadow, inset 0 -1px @focusShadow @important;
-			}
+		select:not(.select-single):not(.select-custom-ready):focus + label,
+		.select-custom-input:focus + .select-wrapper > select + label {
+			border-top-right-radius: 5px @important;
+			border-bottom-right-radius: 5px @important;
+			box-shadow: 0 1px 2px @focusShadow,
+				0 1px 2px @focusShadow,
+				0 1px 2px @focusShadow,
+				0 -1px 2px @focusShadow,
+				0 -1px 2px @focusShadow,
+				0 -1px 2px @focusShadow,
+				1px 0 0 darken(@focusShadow, 10%),
+				2px 0 1px @focusShadow;
 		}
 
 		.select-custom-wrapper {
@@ -464,11 +472,11 @@
 					}
 
 					+ label {
-						top: -3px @important;
+						top: -4px @important;
 						height: 19px @important;
 
 						.jsb-large-font& {
-							top: -6px @important;
+							top: -7px @important;
 							height: 21px @important;
 						}
 					}

@@ -41,6 +41,8 @@ UI.Page = {
 			.find('.page-host-editor-kind')
 			.trigger('change');
 
+		UI.Page.resizeColumns(Settings.getItem('pageHostColumnAllowedWidth'));
+
 		UI.view.toTop(UI.view.views);
 
 		UI.Page.__rendering = false;
@@ -66,7 +68,7 @@ UI.Page = {
 	},
 
 	canRender: function () {
-		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !Poppy.poppyExist() && $('.page-host-editing', UI.Page.view).length === 0);
+		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyExist() && $('.page-host-editing', UI.Page.view).length === 0);
 	},
 
 	showModalInfo: function (info) {
@@ -95,9 +97,26 @@ UI.Page = {
 
 			UI.view.views.unbind('scroll', UI.Page.throttledRequestFromActive).one('scroll', UI.Page.throttledRequestFromActive);
 
-			UI.event.addMissingCustomEventListener(['poppyDidClose', 'sectionSwitchOutOfEditMode'], UI.Page.throttledRequestFromActive, true);
+			UI.event.addMissingCustomEventListener(['poppyDidClose', 'sectionSwitchedOutOfEditMode', 'dragEnd'], UI.Page.throttledRequestFromActive, true);
 		}
 	}, 50, null, true),
+
+	resizeColumns: function (allowedColumnWidth) {
+		var resizers = $('.page-host-columns-resize'),
+				useLargeFont = Settings.getItem('largeFont'),
+				allowedColumnWidth = Math.min(useLargeFont ? 0.73 : 0.78, Math.max(useLargeFont ? 0.27 : 0.22, allowedColumnWidth)),
+				allowedColumnWidthPercent = (allowedColumnWidth * 100),
+				blockedColumnWidthPercent = 100 - allowedColumnWidthPercent;
+
+		resizers.css('left', (allowedColumnWidth * 100) + '%');
+
+		$('.page-host-column-allowed').css('-webkit-flex-basis', allowedColumnWidthPercent + '%');
+		$('.page-host-column-blocked').css('-webkit-flex-basis', blockedColumnWidthPercent + '%');
+
+		Utilities.Timer.timeout('setColumnWidth', function () {
+			Settings.setItem('pageHostColumnAllowedWidth', allowedColumnWidth);
+		}, 20);
+	},
 
 	render: {
 		section: function (page) {
@@ -129,7 +148,7 @@ UI.Page = {
 		
 			items.toggle();
 
-			UI.event.trigger(wasInEditMode ? 'sectionSwitchOutOfEditMode' : 'sectionSwitchedToEditMode', section);
+			UI.event.trigger(wasInEditMode ? 'sectionSwitchedOutOfEditMode' : 'sectionSwitchedToEditMode', section);
 		},
 
 		createRules: function (section) {
@@ -139,7 +158,6 @@ UI.Page = {
 			var Rules = globalPage.Rules,
 					ruleKindPrefix = section.find('.page-host-editor-when-framed').is(':checked') ? 'framed:' : '',
 					ruleList = section.find('.page-host-editor-duration').val() === 'always' ? Rules.list.user : Rules.list.temporary,
-					ruleList = Rules.list.temporary,
 					addRule = ruleList.addDomain,
 					ruleType = section.find('.page-host-editor-kind').val(),
 					ruleWhere = section.find('.page-host-editor-where'),
@@ -274,7 +292,7 @@ UI.Page = {
 			UI.view.views.trigger('scroll');
 		},
 
-		sectionSwitchOutOfEditMode: function (event) {
+		sectionSwitchedOutOfEditMode: function (event) {
 			$('.page-host-item', event.detail).removeClass('page-host-item-disabled');
 		},
 
@@ -327,6 +345,24 @@ UI.Page = {
 		bindSectionEvents: function (renderedSections, page, pageInfo) {
 			renderedSections
 				.children()
+				.on('mousedown', '.page-host-columns-resize', function (event) {
+					event.preventDefault();
+
+					UI.drag = this;
+
+					document.documentElement.classList.add('jsb-drag-cursor');
+					document.documentElement.setAttribute('data-cursor', 'col-resize');
+				})
+
+				.on('dblclick', '.page-host-columns-resize', function (event) {
+					UI.Page.resizeColumns(0.5);
+				})
+
+				.on('mousemove', '.page-host-columns', function (event) {
+					if (UI.drag && UI.drag.classList.contains('page-host-columns-resize'))
+						UI.Page.resizeColumns(event.originalEvent.pageX / $(this).outerWidth());
+				})
+
 				.on('click', '.page-host-first-visit-keep-blocked, .page-host-first-visit-unblock', function (event) {
 					var thisPageInfo = pageInfo,
 							section = $(this).parents('.page-host-section'),
@@ -366,23 +402,6 @@ UI.Page = {
 					var section = $(this).parents('.page-host-section');
 
 					section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 1);
-				})
-
-				.on('click', '.page-host-column .page-host-items-container-header label', function (event) {
-					var column = $(this).parents('.page-host-column'),
-							columns = column.parent(),
-							isAllowed = column.is('.page-host-column-allowed'),
-							expandClass = 'page-host-columns-expand-',
-							blockedClass = expandClass + 'blocked',
-							allowedClass = expandClass + 'allowed';
-
-					columns.removeClass(isAllowed ? blockedClass : allowedClass);
-					columns.toggleClass(isAllowed ? allowedClass : blockedClass);
-
-					if (isAllowed)
-						Settings.setItem('pageHostColumnExpand', columns.hasClass(allowedClass) ? allowedClass : '');
-					else
-						Settings.setItem('pageHostColumnExpand', columns.hasClass(blockedClass) ? blockedClass : '');
 				})
 
 				.on('change', '.page-host-editor-create-on-close', function (event) {
@@ -552,7 +571,7 @@ UI.event.addCustomEventListener('viewWillSwitch', UI.Page.events.viewWillSwitch)
 UI.event.addCustomEventListener('viewDidSwitch', UI.Page.events.viewDidSwitch);
 UI.event.addCustomEventListener('awaitPageFromTabTimeout', UI.Page.events.awaitPageFromTabTimeout);
 UI.event.addCustomEventListener('popoverDidResize', UI.Page.events.popoverDidResize);
-UI.event.addCustomEventListener('sectionSwitchOutOfEditMode', UI.Page.events.sectionSwitchOutOfEditMode);
+UI.event.addCustomEventListener('sectionSwitchedOutOfEditMode', UI.Page.events.sectionSwitchedOutOfEditMode);
 UI.event.addCustomEventListener('selectCustomOptionChanged', UI.Page.events.selectCustomOptionChanged);
 UI.event.addCustomEventListener('disabled', UI.Page.events.disabled);
 

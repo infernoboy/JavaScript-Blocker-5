@@ -11,14 +11,14 @@
 
 	"select.options": "Options",
 	"select.custom_options": "Custom Options",
-	"select.add_option_option": "Add option...",
+	"select.add_option_option": "Other...",
 	"select.add_custom_option": "Add Option",
 
 	"view.page.full_disable": "JavaScript Blocker is disabled.",
 	"view.page.no_info": "Did not receive a page from the active tab.",
 	"view.page.from_cache": "This page was loaded from the cache and may not contain all of the page's items.",
 
-	"view.page.host.click_to_expand": "Click to expand",
+	"view.page.host.double_click_resize": "Double-click for an even split",
 	"view.page.host.editor.when_framed": "Create rules only for when loaded in a frame on another page",
 	"view.page.host.editor.always": "Always",
 	"view.page.host.editor.temporarily": "Temporarily",
@@ -77,9 +77,6 @@
 	"view_toolbar.rules": "Rules",
 	"view_toolbar.snapshots": "Snapshots",
 
-	"main_menu.show_resource_url": "Show resource URLs",
-	"main_menu.show_hidden": "Show hidden items",
-	"main_menu.show_unblocked_scripts": "Show scripts that can't be blocked",
 	"main_menu.unlock": "Unlock",
 	"main_menu.help": "Help",
 	"main_menu.settings": "Settings",
@@ -87,6 +84,10 @@
 	"main_menu.console": "Console",
 	"main_menu.console.message": "{0} message",
 	"main_menu.console.messages": "{0} messages",
+
+	"page_menu.show_resource_url": "Show resource URLs",
+	"page_menu.show_hidden": "Show hidden items",
+	"page_menu.show_unblocked_scripts": "Show scripts that can't be blocked",
 
 	"console.error_messages": "Error Messages",
 	"console.debug_messages": "Debug Messages",
@@ -112,6 +113,14 @@
 	"settings.other": "Other",
 	"settings.userScripts": "User Scripts",
 	"settings.search": "Search",
+
+	"special.canvas_data_url": "Canvas data URL access",
+	"special.alert_dialogs": "Modal alert popups",
+	"special.autocomplete_disabler": "Disabling autocomplete",
+	"special.inline_script_execution": "Inline script execution",
+	"special.environmental_information": "Environmental information",
+	"special.zoom": "Default webpage zoom level",
+	"special.window_resize": "Automated window resizing",
 
 	"special.canvas_data_url.prompt": "This page may be attempting to use canvas fingerprinting to track you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there isn't, use your best judgement.",
 	"special.canvas_data_url.prompt_old": "This page may be attempting to use canvas fingerprinting to identify you. If this is unexpected and you are not on a site you trust, click Cancel.",

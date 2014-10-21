@@ -13,20 +13,22 @@
 						container: '#main-views',
 						views: {
 							'#page-view': {
-								value: _('view_toolbar.page')
+								value: _('view_toolbar.page'),
+								poppy: 'page-menu'
 							},
 							'#resource-content-view': {
 								hide: true,
 								value: _('view_toolbar.resource')
 							},
 							'#rule-view': {
-								value: _('view_toolbar.rules')
+								value: _('view_toolbar.rules'),
+								poppy:'rule-menu'
 							},
 							'#snapshot-view': {
+								hide: true,
 								value: _('view_toolbar.snapshots')
 							},
 							'#setting-view': {
-								hide: Settings.getItem('largeFont'),
 								value: _('view_toolbar.setting')
 							},
 							'#about-view': {
@@ -89,13 +91,17 @@
 			<p class="jsb-info jsb-centered">JavaScript Blocker 5 requires Safari 6.1 or greater.</p>
 			<p class="jsb-info jsb-centered">You can use <a href="http://javascript-blocker.toggleable.com/">JavaScript Blocker 4</a> instead.</p>
 		</div>
+
+		<div class="popover-resize popover-resize-right"></div>
+		<div class="popover-resize popover-resize-left"></div>
+		<div class="popover-resize popover-resize-bottom"></div>
 	</div>
 </noscript>
 
 <noscript id="view-switcher">
 	<div class="view-switcher-container">
 		<ul class="view-switcher" data-container="<%=self.container%>">
-		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container"><%=self.views[viewID].value%><span class="view-switcher-item-notification"></span></span></li><% } %>
+		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container"><%=self.views[viewID].value%><span class="view-switcher-item-notification"></span></span></li><% } %>
 		</ul>
 	</div>
 </noscript>

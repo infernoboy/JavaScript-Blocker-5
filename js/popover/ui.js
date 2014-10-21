@@ -3,6 +3,7 @@
 var UI = {
 	__popoverWidthSetting: 'popoverWidth',
 	__popoverHeightSetting: 'popoverHeight',
+	drag: false,
 
 	readyState: {
 		Page: false
@@ -77,7 +78,71 @@ var UI = {
 				this[attribute] = localized;
 		});
 
+		$(window)
+			.on('mousemove', function (event) {
+				if (UI.drag) {
+					event.preventDefault();
+
+					window.getSelection().removeAllRanges();
+
+					document.documentElement.classList.add('jsb-no-select');
+
+					Utilities.setImmediateTimeout(function () {
+						window.getSelection().removeAllRanges();
+					});
+				}
+			})
+
+			.on('mousemove', function (event) {
+				if (UI.drag && UI.drag.classList.contains('popover-resize')) {
+					if (UI.drag.classList.contains('popover-resize-bottom')) {
+						var resizeStartY = parseInt(UI.drag.getAttribute('data-resizeStartY'), 10),
+								resizeStartHeight = parseInt(UI.drag.getAttribute('data-resizeStartHeight'), 10),
+								height = (event.originalEvent.screenY > resizeStartY) ? resizeStartHeight + (event.originalEvent.screenY - resizeStartY) : resizeStartHeight - (resizeStartY - event.originalEvent.screenY);
+
+						UI.resizePopover(Popover.popover.width, height);
+					} else {
+						var resizeStartX = parseInt(UI.drag.getAttribute('data-resizeStartX'), 10),
+								resizeStartWidth = parseInt(UI.drag.getAttribute('data-resizeStartWidth'), 10);
+
+						if (UI.drag.classList.contains('popover-resize-left'))
+							var width = (event.originalEvent.screenX < resizeStartX) ? resizeStartWidth - (event.originalEvent.screenX - resizeStartX) : resizeStartWidth + (resizeStartX - event.originalEvent.screenX);
+						else
+							var width = (event.originalEvent.screenX < resizeStartX) ? resizeStartWidth + (event.originalEvent.screenX - resizeStartX) : resizeStartWidth - (resizeStartX - event.originalEvent.screenX);
+
+						var widthDifference = Popover.popover.width - width;
+
+						if (!(widthDifference % 2))
+							UI.resizePopover(width, Popover.popover.height);
+					}
+				}
+			})
+
+			.on('mouseup', function (event) {
+				if (UI.drag) {
+					UI.drag = false;
+
+					window.getSelection().removeAllRanges();
+
+					document.documentElement.classList.remove('jsb-no-select');
+					document.documentElement.classList.remove('jsb-drag-cursor');
+
+					UI.event.trigger('dragEnd');
+				}
+			});
+
 		$(document)
+			.on('mousedown', '.popover-resize', function (event) {
+				event.preventDefault();
+
+				UI.drag = this;
+
+				this.setAttribute('data-resizeStartX', event.originalEvent.screenX);
+				this.setAttribute('data-resizeStartY', event.originalEvent.screenY);
+				this.setAttribute('data-resizeStartWidth', Popover.popover.width);
+				this.setAttribute('data-resizeStartHeight', Popover.popover.height);
+			})
+
 			.on('mousedown', '.select-custom-input + .select-wrapper select:not(.select-cycle)', function (event) {
 				event.preventDefault();
 			})
@@ -332,9 +397,59 @@ var UI = {
 			this.viewToolbar = $('#view-toolbar', this.viewContainer);
 			this.viewSwitcher = $('.view-switcher', this.viewToolbar);
 
-			this.viewSwitcher.on('click', 'li', function () {
-				UI.view.switchTo(UI.view.viewSwitcher, this.getAttribute('data-view'));
-			});
+			this.viewSwitcher
+				.on('click', 'li', function () {
+					UI.view.switchTo(UI.view.viewSwitcher, this.getAttribute('data-view'));
+				})
+
+				.on('click', 'li[data-poppy] .view-switcher-item-container', function (event, originalEvent) {
+					var self = $(this),
+							width = self.outerWidth(),
+							offset = self.offset().left,
+							rightOffset = offset + width,
+							useEvent = originalEvent || event;
+
+					if (event.isTrigger)
+						event.stopPropagation();
+
+					if (useEvent.pageX > rightOffset - 5 || event.isTrigger) {
+						if (!self.parent().hasClass('active-view'))
+							UI.event.addCustomEventListener('viewWillSwitch', function (event) {
+								event.preventDefault();
+							}, true);
+
+						var poppyName = self.parent().attr('data-poppy');
+
+						if (Poppy.poppyWithScriptNameExist(poppyName) && !event.isTrigger)
+							return;
+
+						var poppy = new Poppy(useEvent.pageX, useEvent.pageY, true, poppyName);
+
+						poppy.setContent(Template.create('poppy', poppyName));
+
+						if (event.isTrigger)
+							UI.event.addCustomEventListener('poppyWillClose', function (event) {
+								if (event.detail === poppy) {
+									event.unbind();
+									event.preventDefault();
+								}
+							});
+
+						setTimeout(function (poppy) {
+							poppy.show();
+						}, 0, poppy);
+					}
+				})
+
+				.on('mousedown', 'li[data-poppy]', function (event) {
+					Utilities.Timer.timeout(this, function (event, element) {						
+						$('.view-switcher-item-container', element).trigger('click', event);
+					}, 200, [event, this]);
+				})
+
+				.on('mousemove mouseup click', 'li[data-poppy]', function (event) {
+					Utilities.Timer.remove('timeout', this);
+				});
 
 			this.viewToolbar
 				.on('click', '#full-toggle', function () {
@@ -386,13 +501,18 @@ var UI = {
 			this.switchTo(this.viewSwitcher, this.__default);
 		},
 
-		toTop: function (viewContainer) {
+		toTop: function (viewContainer, evenIfPoppy) {
+			if (!evenIfPoppy && viewContainer.scrollTop() === 0 && Poppy.poppyExist())
+				UI.event.addCustomEventListener('poppyWillCloseAll', function (event) {
+					event.preventDefault();
+				}, true);
+
 			viewContainer
 				.animate({
 					scrollTop: 0,
 					scrollLeft: 0
 				}, 225 * window.globalSetting.speedMultiplier)
-				.trigger('scroll')
+				.trigger('scroll');
 		},
 
 		switchTo: function (viewSwitcher, viewID) {
@@ -400,7 +520,7 @@ var UI = {
 					activeID = viewContainer.attr('data-activeView');
 
 			if (activeID === viewID)
-				return UI.view.toTop(viewContainer);
+				return Poppy.poppyExist() ? null : UI.view.toTop(viewContainer);
 
 			var previousView = viewContainer.find(activeID),
 					activeView = viewContainer.find(viewID);

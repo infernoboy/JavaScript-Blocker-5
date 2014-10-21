@@ -188,7 +188,8 @@ var Handler = {
 		var style = Element.createFromObject('link', {
 			rel: 'stylesheet',
 			type: 'text/css',
-			href: globalSetting.contentURLs.stylesheet.url
+			href: globalSetting.contentURLs.stylesheet.url,
+			'data-jsbAllowAndIgnore': Utilities.Token.create('AllowAndIgnore')
 		});
 
 		document.documentElement.appendChild(style);
@@ -233,6 +234,8 @@ var Handler = {
 					GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
 			}
 		}
+
+		Utilities.Timer.resetTimeout('injectStylesheet', 100);
 	},
 
 	resetLocation: function (event) {
@@ -427,7 +430,8 @@ var Element = {
 		var kindString = placeholder.querySelector('.jsb-element-placeholder-kind'),
 				properties = {
 					height: height + 'px',
-					width: width + 'px'
+					width: width + 'px',
+					visibility: 'hidden'
 				};
 
 		Element.setCSS(placeholder, true, properties);
@@ -450,19 +454,17 @@ var Element = {
 
 		var collapsedElement = Element.collapse(element);
 
-		Handler.event.addCustomEventListener('stylesheetLoaded', function (collapsedElement, elementParent, placeholder, kindString) {
-			if (!elementParent)
-				return;
+		elementParent.replaceChild(placeholder, collapsedElement);
 
-			elementParent.replaceChild(placeholder, collapsedElement);
+		kindString.style.setProperty('line-height', (placeholder.offsetHeight - 2) + 'px', 'important');
 
-			kindString.style.setProperty('line-height', (placeholder.offsetHeight - 2) + 'px', 'important');
+		Utilities.Element.fitFontWithin(placeholder, kindString);
 
-			Utilities.Element.fitFontWithin(placeholder, kindString);
+		Handler.event.addCustomEventListener('stylesheetLoaded', function (placeholder) {
+			placeholder.style.setProperty('visibility', 'visible', 'important');
 
-			// Avoids flickering when hovering on the placeholder.
 			Utilities.Element.repaint(placeholder);
-		}.bind(null, collapsedElement, elementParent, placeholder, kindString), true);
+		}.bind(null, placeholder), true);
 	},
 
 	collapse: function (element) {
@@ -704,6 +706,12 @@ var Resource = {
 
 		var element = event.target || event;
 
+		if (element.nodeName === 'LINK' && !Element.shouldIgnore(element)) {
+			Utilities.Timer.resetTimeout('injectStylesheet', 100);
+
+			return true;
+		}
+
 		if (!(element.nodeName in BLOCKABLE) || (element.nodeName === 'EMBED' && element.parentNode.nodeName === 'OBJECT'))
 			return true;
 
@@ -871,7 +879,7 @@ if (!globalSetting.disabled) {
 		if (Page.info.isFrame)
 			window.addEventListener('beforeunload', Handler.unloadedFrame, true);
 
-		setTimeout(function () {
+		Utilities.Timer.timeout('injectStylesheet', function () {
 			Handler.injectStyleSheet();
 		}, 400);
 	}

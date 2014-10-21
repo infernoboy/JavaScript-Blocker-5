@@ -10,36 +10,35 @@
 
 <noscript id="main-menu">
 	<h3 class="jsb-centered">JavaScript Blocker <%=Version.display%></h3>
-	<div id="main-menu">
-	<%
-		switch (UI.view.views.attr('data-activeView')) {
-			case '#page-view': %>
-				<ul id="main-menu-options">
-					<li><input type="checkbox" id="main-menu-show-hidden" /> <label for="main-menu-show-hidden"><%=_('main_menu.show_hidden')%></label></li>
-					<li><input type="checkbox" id="main-menu-show-unblocked-scripts" /> <label for="main-menu-show-unblocked-scripts"><%=_('main_menu.show_unblocked_scripts')%></label></li>
-					<li><input type="checkbox" id="main-menu-show-resource-url" /> <label for="main-menu-show-resource-url"><%=_('main_menu.show_resource_url')%></label></li>
-					<li><div class="horizontal-divider"></div></li>
-				</ul>
-			<% break;
-		}
-	%>
-		<div id="main-menu-menu">
-			<input type="button" id="main-menu-contribute" class="jsb-color-blocked" value="<%=_('main_menu.unlock')%>" /><%
-			if (Settings.getItem('largeFont')) { %>
-				<input type="button" id="main-menu-settings" value="<%=_('main_menu.settings')%>" /><%
-			} %>
+	<div id="main-menu" class="generic-menu">
+		<div class="generic-menu-menu">
+			<input type="button" id="main-menu-contribute" class="jsb-color-blocked" value="<%=_('main_menu.unlock')%>" />
 			<input type="button" id="main-menu-about" value="<%=_('main_menu.about')%>" />
 			<%
 				var messageHistory = Utilities.messageHistory(),
-						messageCount = messageHistory.error.length + messageHistory.debug.length;
-			
-				if (Settings.getItem('largeFont')) { %>
-					<div class="horizontal-divider"></div><%
-				} %>
+						messageCount = messageHistory.error.length + messageHistory.debug.length; %>
+		</div>
+		<div class="horizontal-divider"></div>
+		<div id="main-menu-console-info">
 			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" />
 			<span id="main-menu-console-message-count"><%=_('main_menu.console.message' + (messageCount === 1 ? '' : 's'), [messageCount])%></span> 
 		</div>
 	</div>
+</noscript>
+
+<noscript id="page-menu">
+	<h3 class="jsb-centered"><%=_('view_toolbar.page')%></h3>
+	<div id="page-menu" class="generic-menu">
+		<ul class="generic-menu-options">
+			<li><input type="checkbox" id="page-menu-show-hidden" /> <label for="page-menu-show-hidden"><%=_('page_menu.show_hidden')%></label></li>
+			<li><input type="checkbox" id="page-menu-show-unblocked-scripts" /> <label for="page-menu-show-unblocked-scripts"><%=_('page_menu.show_unblocked_scripts')%></label></li>
+			<li><input type="checkbox" id="page-menu-show-resource-url" /> <label for="page-menu-show-resource-url"><%=_('page_menu.show_resource_url')%></label></li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="rule-menu">
+	<h3 class="jsb-centered">Rules</h3>
 </noscript>
 
 <noscript id="console">

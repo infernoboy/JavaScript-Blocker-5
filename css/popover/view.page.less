@@ -25,7 +25,7 @@
 			.page-host-header {
 				position: relative;
 				padding: 5px 3px 6px;
-				background: rgb(242, 241, 242);
+				background: rgb(246, 245, 246);
 				border-top: 1px solid #fff;
 				border-bottom: 1px solid #ddd;
 
@@ -109,6 +109,8 @@
 			}
 
 			.page-host-editor {
+				padding-top: 1px;
+
 				&.floated-header {
 					position: absolute;
 				}
@@ -132,34 +134,50 @@
 
 				.page-host-editor-bottom {
 					display: -webkit-flex;
+					margin-top: -1px;
 
 					.page-host-editor-where-wrapper {
 						-webkit-flex: 0 1 auto;
+						margin-right: 3px;
 
 						select {
-							max-width: 98%;
+							max-width: 99.5%;
 						}
 					}
 
 					.page-host-editor-create-wrapper {
 						-webkit-flex: 1 0 auto;
+						margin-top: 1px;
 					}
 				}
 			}
 
 			.page-host-first-visit:not(.jsb-hidden) {
 				display: block;
+
+				.jsb-info:not(.jsb-align-right) {
+					padding-right: 28px;
+				}
 			}
 
 			.page-host-columns {
 				display: -webkit-flex;
+				position: relative;
+
+				&-resize {
+					position: absolute;
+					left: 50%;
+					margin-left: -3px;
+					width: 5px;
+					height: 100%;
+					cursor: col-resize;
+				}
 
 				.page-host-column {
 					-webkit-flex: 1 0 50%;
 					overflow: hidden;
 					box-sizing: border-box;
 					padding: 0 2px;
-					-webkit-transition: -webkit-flex 0.25s ease-out;
 
 					&,
 					& .page-host-items-container-header {
@@ -188,10 +206,6 @@
 							background: @blockColor;
 							border-color: darken(@blockColor, 4%);
 						}
-					}
-
-					.page-host-items-container-header label {
-						cursor: pointer;
 					}
 				}
 
@@ -486,11 +500,7 @@
 
 			&.page-host-editing {
 				.page-host-items-container .page-host-item {
-					padding-top: 4px;
-
-					&.page-host-item-select-custom {
-						padding-top: 3px;
-					}
+					padding-top: 3px;
 				}
 			}
 		}

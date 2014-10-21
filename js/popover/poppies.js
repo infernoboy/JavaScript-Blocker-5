@@ -2,40 +2,10 @@
 
 Object._extend(Poppy.scripts, {
 	mainMenu: function (poppy) {
-		$('#main-menu-show-unblocked-scripts', poppy.content).prop('checked', Settings.getItem('showUnblockedScripts'));
-		$('#main-menu-show-resource-url', poppy.content).prop('checked', Settings.getItem('showResourceURLs'));
+		$('#page-menu-show-unblocked-scripts', poppy.content).prop('checked', Settings.getItem('showUnblockedScripts'));
+		$('#page-menu-show-resource-url', poppy.content).prop('checked', Settings.getItem('showResourceURLs'));
 
 		poppy.content
-			.on('change', '#main-menu-show-unblocked-scripts', function () {
-				UI.view.toTop(UI.view.views);
-
-				Settings.setItem('showUnblockedScripts', this.checked);
-
-				UI.event.addCustomEventListener('poppyDidClose', function () {
-					globalPage.Page.requestPageFromActive();
-				}, true);
-
-				Poppy.closeAll();
-			})
-
-			.on('change', '#main-menu-show-resource-url', function () {
-				UI.view.toTop(UI.view.views);
-
-				var checked = this.checked;
-
-				UI.event.addCustomEventListener('poppyDidClose', function () {
-					Settings.setItem('showResourceURLs', checked);
-				}, true);
-
-				Poppy.closeAll();
-			})
-
-			.on('click', '#main-menu-settings', function () {
-				poppy.close();
-
-				UI.view.switchTo(UI.view.viewSwitcher, '#setting-view');
-			})
-
 			.on('click', '#main-menu-about', function () {
 				poppy.close();
 
@@ -52,6 +22,36 @@ Object._extend(Poppy.scripts, {
 					.linkTo(poppy)
 					.stayOpenOnScroll()
 					.show();
+			});
+	},
+
+	'page-menu': function (poppy) {
+		$('#page-menu-show-unblocked-scripts', poppy.content).prop('checked', Settings.getItem('showUnblockedScripts'));
+		$('#page-menu-show-resource-url', poppy.content).prop('checked', Settings.getItem('showResourceURLs'));
+
+		poppy.content
+			.on('change', '#page-menu-show-unblocked-scripts', function () {
+				UI.view.toTop(UI.view.views, true);
+
+				Settings.setItem('showUnblockedScripts', this.checked);
+
+				UI.event.addCustomEventListener('poppyDidClose', function () {
+					globalPage.Page.requestPageFromActive();
+				}, true);
+
+				Poppy.closeAll();
+			})
+
+			.on('change', '#page-menu-show-resource-url', function () {
+				UI.view.toTop(UI.view.views, true);
+
+				var checked = this.checked;
+
+				UI.event.addCustomEventListener('poppyDidClose', function () {
+					Settings.setItem('showResourceURLs', checked);
+				}, true);
+
+				Poppy.closeAll();
 			});
 	},
 

@@ -322,6 +322,10 @@ var Utilities = {
 			setTimeout(this.__run_interval.bind(this), interval.time, timerID);
 		},
 
+		exist: function (type, reference) {
+			return !!this.__findReference(type, reference);
+		},
+
 		interval: function () {
 			Utilities.setImmediateTimeout(function (timer, args) {
 				timer.create.apply(timer, ['interval'].concat(Utilities.makeArray(args)));
@@ -343,6 +347,18 @@ var Utilities = {
 				this.timers.timeout[timerID].script.apply(null, this.timers.timeout[timerID].args);
 
 				this.remove('timeout', reference);
+			}
+		},
+
+		resetTimeout: function (reference, time) {			
+			var timerID = this.__findReference('timeout', reference);
+
+			if (timerID) {
+				var info = this.timers.timeout[timerID];
+
+				this.remove('timeout', reference);
+
+				this.timeout(reference, info.script, time, info.args);
 			}
 		},
 		

@@ -3,7 +3,7 @@
 
 	<div class="page-host-section <%=snapshotInUse ? 'page-host-snapshot' : ''%>" data-id="<%=self.id%>">
 		<div class="page-host-header">
-			<span class="page-host-type"><%=self.isFrame ? 'Frame' : 'Top'%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">4 hidden items</span>
+			<span class="page-host-type"><%=self.isFrame ? 'Frame' : 'Top'%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
 			<input type="button" class="page-host-edit" value="<%=_('view.page.host.edit')%>" />
 		</div>
 
@@ -130,7 +130,8 @@
 				</div><%
 			}
 		} else { %>
-			<div class="page-host-columns <%=Settings.getItem('pageHostColumnExpand')%>">
+			<div class="page-host-columns">
+				<div class="page-host-columns-resize" title="<%=_('view.page.host.double_click_resize')%>"></div>
 				<%=Template.create('page', 'host-column', {
 					stateType: 'allowed',
 					state: self.state.allowed || {}
@@ -166,7 +167,7 @@
 
 <noscript id="host-items-container-header">
 	<div class="page-host-items-container-header" data-expander="> label">
-		<label class="jsb-color-<%=self.stateType%>" title="<%=self.stateType === 'unblocked' ? '' : _('view.page.host.click_to_expand')%>"><%=_('view.page.host.column.' + self.stateType)%></label>
+		<label class="jsb-color-<%=self.stateType%>"><%=_('view.page.host.column.' + self.stateType)%></label>
 		<%
 			var pageLocation,
 					items;
@@ -255,11 +256,12 @@
 										return value.resourceID;
 									});
 
-									if (kind === 'user_script') {
-										var sourceName = globalPage.UserScript.scripts.getStore(source).getStore('attributes').get('meta', {}).name || 'UNKNOWN';
-									} else {
-										var sourceName = source;
-									}
+									var sourceName = source;
+
+									if (kind === 'user_script')
+										sourceName = globalPage.UserScript.scripts.getStore(source).getStore('attributes').get('meta', {}).name || 'UNKNOWN';
+									else if (kind === 'special')
+										sourceName = _('special.' + source);
 
 									var shouldBadge = globalPage.Rules.kindShouldBadge(kind),
 											hasOptions = shouldBadge && !Settings.getItem('showResourceURLs') && protocol !== 'none:';

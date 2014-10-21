@@ -61,7 +61,18 @@
 		return !poppies._isEmpty();
 	};
 
+	Poppy.poppyWithScriptNameExist = function (scriptName) {
+		for (var poppyID in poppies)
+			if (poppies[poppyID].scriptName === scriptName)
+				return true;
+
+		return false;
+	};
+
 	Poppy.closeAll = function (eventOrImmediate) {
+		if (UI.event.trigger('poppyWillCloseAll'))
+			return Promise.all([]);
+
 		var promiseArray = [];
 
 		for (var poppyID in poppies) {
@@ -382,7 +393,7 @@
 
 	Poppy.prototype.close = function (immediate) {
 		return new Promise(function (resolve, reject) {
-			if (this.closed || UI.event.trigger('poppyWillClose', this))
+			if (this.closed || !this.displayed || UI.event.trigger('poppyWillClose', this))
 				return this;
 
 			Poppy.closeLinksTo(this);

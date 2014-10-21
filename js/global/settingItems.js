@@ -81,10 +81,10 @@ Settings.settings = {
 			default: true
 		}
 	}, {
-		setting: 'pageHostColumnExpand',
+		setting: 'pageHostColumnAllowedWidth',
 		props: {
-			type: 'string',
-			default: ''
+			type: 'number',
+			default: 0.5
 		}
 	}],
 
@@ -113,13 +113,6 @@ Settings.settings = {
 				var useLargeFont = Settings.getItem('largeFont');
 
 				Popover.window.document.documentElement.classList.toggle('jsb-large-font', useLargeFont);
-
-				UI.event.addCustomEventListener('UIReady', function (event) {
-					UI.view.viewSwitcher
-						.find('li[data-view="#setting-view"]')
-						.toggleClass('view-switcher-collapses', useLargeFont)
-						.toggleClass('view-switcher-hidden', useLargeFont);
-				}, true);
 			}
 		}
 	}, {

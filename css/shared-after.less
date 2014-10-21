@@ -1,6 +1,22 @@
 .shared-after(@important) {
 	.jsb-element,
 	.jsb-injected-element {
+		&.jsb-no-select {
+			&,
+			* {
+				-wbkit-user-select: none !important;
+			}
+		}
+
+		&.jsb-drag-cursor {
+			&[data-cursor="col-resize"] {
+				&,
+				* {
+					cursor: col-resize !important;
+				}
+			}
+		}
+
 		.jsb- {
 			&hidden {
 				display: none @important;
