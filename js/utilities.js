@@ -518,7 +518,7 @@ var Utilities = {
 	},
 
 	Page: {
-		isXML: document.xmlVersion !== null,
+		isXML: ((document.ownerDocument || document).documentElement.nodeName !== 'HTML' && document.xmlVersion !== null),
 		isGlobal: (window.GlobalPage && GlobalPage.window === window),
 		isPopover: Popover.window === window,
 		isTop: window === window.top,
@@ -599,6 +599,9 @@ var Utilities = {
 
 			if (/^data:/.test(url))
 				return 'data';
+
+			if (/^blob:/.test(url))
+				return 'blob';
 
 			this.__anchor.href = url;
 

@@ -442,7 +442,7 @@
 		Poppy.__container = $('#container');
 		Poppy.__viewOffsetTop = UI.view.views.offset().top;
 
-		Poppy.__container.click(function (event) {
+		Poppy.__container.mouseup(function (event) {
 			if (Poppy.__creating || !$.contains(document, event.target) || event.target === Poppy.__modal[0])
 				return;
 

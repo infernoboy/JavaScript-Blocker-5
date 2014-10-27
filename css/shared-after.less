@@ -56,6 +56,10 @@
 				text-shadow: 0 1px 1px #fff, 0 0 0 rgba(0, 0, 0, 0.3), 0 0 1px #fff;
 			}
 
+			&smaller {
+				font-size: smaller;
+			}
+
 			&hidden,
 			&hidden *,
 			&no-animations,
@@ -116,6 +120,36 @@
 
 			&:active {
 				color: darken(@baseColor, 10%);
+			}
+		}
+
+		header[data-expander] {
+			margin: 5px 0 3px 0;
+
+			+ * {
+				overflow: hidden;
+			}
+
+			> * {
+				display: inline;
+			}
+
+			&:hover > *:after {
+				position: absolute;
+				display: inline-block;
+				content: ' ' attr(data-i18n-hide);
+				margin-left: 7px;
+				opacity: 0.8;
+			}
+
+			&.group-collapsed {
+				+ * {
+					display: none;
+				}
+
+				&:hover > *:after {
+					content: ' ' attr(data-i18n-show);
+				}
 			}
 		}
 	}

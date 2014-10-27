@@ -246,9 +246,6 @@ var Store = (function () {
 	Store.prototype.__children = {};
 
 	Store.prototype.__save = function (bypassIgnore, now, notModified) {
-		// if (!notModified)
-			// this.triggerEvent('storeWasModified');
-
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
@@ -264,6 +261,8 @@ var Store = (function () {
 
 				store.triggerEvent('storeDidSave');
 			}, now ? 0 : this.saveDelay, [this]);
+		else
+			this.triggerEvent('storeWouldHaveSaved');
 
 		if (this.parent)
 			Utilities.setImmediateTimeout(function (store) {

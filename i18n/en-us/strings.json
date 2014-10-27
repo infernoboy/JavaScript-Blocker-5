@@ -9,6 +9,9 @@
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",
 
+	"expander.show": "Show",
+	"expander.hide": "Hide",
+
 	"select.options": "Options",
 	"select.custom_options": "Custom Options",
 	"select.add_option_option": "Other...",
@@ -89,6 +92,7 @@
 	"page_menu.show_hidden": "Show hidden items",
 	"page_menu.show_unblocked_scripts": "Show scripts that can't be blocked",
 
+	"console.no_messages": "No Messages",
 	"console.error_messages": "Error Messages",
 	"console.debug_messages": "Debug Messages",
 	"console.clear": "Clear",
@@ -114,6 +118,8 @@
 	"settings.userScripts": "User Scripts",
 	"settings.search": "Search",
 
+	"special.anchor_titles": "Titleless links",
+	"special.simple_referrer": "Links sending referrers",
 	"special.canvas_data_url": "Canvas data URL access",
 	"special.alert_dialogs": "Modal alert popups",
 	"special.autocomplete_disabler": "Disabling autocomplete",

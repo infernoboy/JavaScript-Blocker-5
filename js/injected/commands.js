@@ -405,9 +405,7 @@ var Command = function (type, event) {
 					command: 'rerequestFrameURL',
 					data: {
 						id: FRAME_ID_ON_PARENT,
-						reason: {
-							historyStateDidChange: true
-						}
+						reason: 'historyStateDidChange'
 					}
 				}, '*');
 

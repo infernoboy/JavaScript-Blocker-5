@@ -75,16 +75,16 @@ Settings.settings = {
 			default: 441
 		}
 	}, {
-		setting: 'createRulesOnClose',
-		props: {
-			type: 'boolean',
-			default: true
-		}
-	}, {
 		setting: 'pageHostColumnAllowedWidth',
 		props: {
 			type: 'number',
 			default: 0.5
+		}
+	}, {
+		setting: 'lastRuleWasTemporary',
+		props: {
+			type: 'boolean',
+			default: false
 		}
 	}],
 
@@ -484,6 +484,20 @@ Settings.settings = {
 			default: true
 		}
 	}, {
+		setting: 'enabledKinds',
+		props: {
+			readOnly: true,
+			storeKey: 'special',
+			default: true
+		}
+	}, {
+		setting: 'enabledKinds',
+		props: {
+			readOnly: true,
+			storeKey: 'user_script',
+			default: true
+		}
+	}, {
 		setting: 'alwaysBlock',
 		props: {
 			readOnly: true,
@@ -491,11 +505,11 @@ Settings.settings = {
 			default: 'nowhere'
 		}
 	}, {
-		setting: 'enabledKinds',
+		setting: 'alwaysBlock',
 		props: {
 			readOnly: true,
 			storeKey: 'special',
-			default: true
+			default: 'everywhere'
 		}
 	}, {
 		setting: 'enabledKinds',
@@ -1089,6 +1103,15 @@ Settings.settings = {
 				type: 'boolean',
 				storeKey: 'alert_dialogs',
 				label: 'Display alert() messages within the webpage instead of a popup dialog',
+				subLabel: 'Modal alert popups',
+				default: true
+			}
+		}, {
+			setting: 'enabledSpecials',
+			props: {
+				type: 'boolean',
+				storeKey: 'anchor_titles',
+				label: 'Show path when hovering over links',
 				subLabel: 'Modal alert popups',
 				default: true
 			}

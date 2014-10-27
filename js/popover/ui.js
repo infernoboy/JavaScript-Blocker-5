@@ -238,6 +238,69 @@ var UI = {
 
 			.on('input', 'textarea.render-as-input', function (event) {
 				this.value = this.value.replace(/\n/g, '');
+			})
+
+			.on('click', 'header[data-expander] > *', function (event) {
+				if (event.originalEvent.offsetX > this.offsetWidth) {
+					var COLLAPSE_HEIGHT = 0,
+							COLLAPSE_OFFSET = 3;
+
+					var header = $(this.parentNode),
+							groupWrapper = header.next(),
+							group = $('ul', groupWrapper);
+
+					if (group.is(':animated'))
+						return;
+
+					var groupWrapperHeight = groupWrapper.outerHeight(true),
+							isCollapsed = header.hasClass('group-collapsed');
+
+					SettingStore.setItem(header.attr('data-expander'), !isCollapsed);
+
+					groupWrapper.show();
+
+					if (isCollapsed) {
+						header.removeClass('group-collapsed');
+
+						var view = header.parents('.ui-view-container:first'),
+								offset = groupWrapper.offset(),
+								viewOffset = view.offset(),
+								bottom = offset.top + groupWrapperHeight;
+
+						if (bottom > view.height() + viewOffset.top)
+							view.animate({
+								scrollTop: '+=' + (bottom - view.height() - viewOffset.top)
+							}, 225 * window.globalSetting.speedMultiplier);
+					}
+
+					$('li', group).each(function () {
+						var self = $(this),
+								height = self.height();
+
+						self
+							.height(isCollapsed ? COLLAPSE_HEIGHT : height)
+							.animate({
+								height: isCollapsed ? height : COLLAPSE_HEIGHT
+							}, 225 * window.globalSetting.speedMultiplier, function () {
+								self.height('auto');
+							});
+					});
+
+					group
+						.css('margin-top', isCollapsed ? -(groupWrapperHeight / COLLAPSE_OFFSET) : 0)
+						.animate({
+							marginTop: isCollapsed ? 0 : -(groupWrapperHeight / COLLAPSE_OFFSET)
+						}, 225 * window.globalSetting.speedMultiplier, function () {
+							if (!isCollapsed)
+								header.addClass('group-collapsed');
+
+							groupWrapper.css('display', '');
+
+							group.css('margin-top', 0);
+
+							Utilities.Element.repaint(document.body);
+						});
+				}
 			});
 
 		UI.event
@@ -281,6 +344,29 @@ var UI = {
 
 						if (!customSelects[i].classList.contains('select-cycle'))
 							customSelects[i].selectedIndex = -1;
+					}
+				}
+			})
+
+			.addCustomEventListener('elementWasAdded', function (event) {
+				if (event.detail.querySelectorAll) {
+					var headers = event.detail.querySelectorAll('header[data-expander]');
+
+					for (var i = headers.length; i--;) {
+						if (headers[i].classList.contains('header-expander-ready'))
+							continue;
+
+						headers[i].classList.add('header-expander-ready');
+
+						$(headers[i])
+							.find('> *')
+							.attr({
+								'data-i18n-show': _('expander.show'),
+								'data-i18n-hide': _('expander.hide')
+							})
+							.end()
+							.next()
+							.wrapAll('<div class="header-group-wrapper"></div>')
 					}
 				}
 			});
@@ -407,37 +493,39 @@ var UI = {
 							width = self.outerWidth(),
 							offset = self.offset().left,
 							rightOffset = offset + width,
-							useEvent = originalEvent || event;
+							useEvent = originalEvent || event,
+							inRange = (useEvent.pageX > rightOffset - 6 && useEvent.pageX < rightOffset + 3);
 
-					if (event.isTrigger)
-						event.stopPropagation();
+					if (inRange || event.isTrigger) {
+						UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
+							event.preventDefault();
+						}, true);
 
-					if (useEvent.pageX > rightOffset - 5 || event.isTrigger) {
-						if (!self.parent().hasClass('active-view'))
-							UI.event.addCustomEventListener('viewWillSwitch', function (event) {
-								event.preventDefault();
-							}, true);
+						if (!(event.isTrigger && inRange)) {
+							event.stopPropagation();
 
-						var poppyName = self.parent().attr('data-poppy');
-
-						if (Poppy.poppyWithScriptNameExist(poppyName) && !event.isTrigger)
-							return;
-
-						var poppy = new Poppy(useEvent.pageX, useEvent.pageY, true, poppyName);
-
-						poppy.setContent(Template.create('poppy', poppyName));
-
-						if (event.isTrigger)
-							UI.event.addCustomEventListener('poppyWillClose', function (event) {
-								if (event.detail === poppy) {
-									event.unbind();
+							if (!self.parent().hasClass('active-view') && event.isTrigger)
+								UI.event.addCustomEventListener('viewWillSwitch', function (event) {
 									event.preventDefault();
-								}
-							});
+								}, true);
 
-						setTimeout(function (poppy) {
-							poppy.show();
-						}, 0, poppy);
+							var poppyName = self.parent().attr('data-poppy'),
+									poppy = new Poppy(useEvent.pageX, useEvent.pageY, true, poppyName);
+
+							poppy.setContent(Template.create('poppy', poppyName)).stayOpenOnScroll();
+
+							if (event.isTrigger)
+								UI.event.addCustomEventListener('poppyWillClose', function (event) {
+									if (event.detail === poppy) {
+										event.unbind();
+										event.preventDefault();
+									}
+								});
+
+							setTimeout(function (poppy) {
+								poppy.show();
+							}, 0, poppy);
+						}
 					}
 				})
 
@@ -502,6 +590,9 @@ var UI = {
 		},
 
 		toTop: function (viewContainer, evenIfPoppy) {
+			if (UI.event.trigger('viewWillScrollToTop', viewContainer))
+				return false;
+
 			if (!evenIfPoppy && viewContainer.scrollTop() === 0 && Poppy.poppyExist())
 				UI.event.addCustomEventListener('poppyWillCloseAll', function (event) {
 					event.preventDefault();
@@ -520,7 +611,7 @@ var UI = {
 					activeID = viewContainer.attr('data-activeView');
 
 			if (activeID === viewID)
-				return Poppy.poppyExist() ? null : UI.view.toTop(viewContainer);
+				return UI.view.toTop(viewContainer);
 
 			var previousView = viewContainer.find(activeID),
 					activeView = viewContainer.find(viewID);

@@ -196,7 +196,7 @@
 						text-align: center;
 						height: 19px;
 						cursor: default;
-						background: #fff;
+						background: -webkit-linear-gradient(top, #fff, #fff);
 						width: 74px;
 
 						.jsb-large-font& {
@@ -274,7 +274,7 @@
 								position: absolute;
 								bottom: 5px;
 								left: 100%;
-								margin-left: 2px;
+								margin-left: 3px;
 								height: 6px;
 								min-width: 7px;
 								padding: 3px 4px;
@@ -292,22 +292,32 @@
 
 								.jsb-large-font& {
 									bottom: 4px;
-									line-height: 7px;
 								}
 							}
 						}
 
 						&[data-poppy] {
 							.view-switcher-item-container:after {
-								content: ' ▼';
-								font-size: 6pt;
-								margin-right: -4px;
-								margin-left: 1px;
-								color: #bbb;
+								display: inline-block;
+								position: relative;
+								top: -2px;
+								content: ' ⌄';
+								margin-right: -3px;
+								margin-left: 6px;
+								color: #c5c5c5;
+								-webkit-transform: scale(2.4, 2);
+
+								.jsb-large-font& {
+									top: -3px;
+								}
 							}
 
 							.view-switcher-item-notification {
 								margin-left: 5px;
+							}
+
+							&.active-view .view-switcher-item-container:after {
+								color: #bbb;
 							}
 						}
 					}
@@ -332,6 +342,10 @@
 				display: none;
 			}
 
+			.ui-view-container::-webkit-scrollbar {
+				width: 9px;
+				height: 9px;
+			}
 
 			#main-views {
 				-webkit-flex: 1 1 auto;
@@ -342,12 +356,6 @@
 
 				.yosemite& {
 					margin-bottom: 2px;
-				}
-
-				&::-webkit-scrollbar,
-				#setting-views-container::-webkit-scrollbar {
-					width: 9px;
-					height: 9px;
 				}
 
 				.snapshot-info {

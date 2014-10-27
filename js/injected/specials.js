@@ -255,13 +255,10 @@ Special.specials = {
 		};
 
 		XMLHttpRequest.prototype.open = function () {
-			var openID = Math.random();
+			var openID = Math.random(),
+					path = arguments[1];
 
-			Object.defineProperty(this, openToken, {
-				value: openID
-			});
-
-			var path = arguments[1];
+			this[openToken] = openID;
 
 			if (path === null)
 				path = 'null';
@@ -550,7 +547,10 @@ Special.specials = {
 			HTMLCanvasElement.prototype.toDataURLHD = function () {
 				return protection(toDataURLHD.apply(this, arguments));
 			};
-	}
+	},
+
+	simple_referrer: new Function,
+	anchor_titles: new Function
 };
 
 (function () {

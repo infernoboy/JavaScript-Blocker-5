@@ -59,6 +59,15 @@ UI.Page = {
 
 		UI.view.floatingHeaders.add(UI.view.views.selector, '.page-host-header', null, -1);
 
+		$(window)
+			.on('blur', function () {
+				if (!Popover.visible() && Settings.getItem('createRulesOnClose')) {
+					$('.page-host-section.page-host-editing').each(function () {
+						UI.Page.section.createRules($(this));
+					});
+				}
+			});
+
 		UI.event.trigger('UIReady', null, true);
 		globalPage.Command.event.trigger('UIReady', null, true);
 	},
@@ -80,6 +89,8 @@ UI.Page = {
 				info: info
 			}))
 			.show();
+
+		UI.Page.notification.hide();
 	},
 
 	throttledRequestFromActive: Utilities.throttle(function (event) {
@@ -155,7 +166,8 @@ UI.Page = {
 			var ruleAction,
 					ruleDomain;
 
-			var Rules = globalPage.Rules,
+			var ruleWasCreated = false,
+					Rules = globalPage.Rules,
 					ruleKindPrefix = section.find('.page-host-editor-when-framed').is(':checked') ? 'framed:' : '',
 					ruleList = section.find('.page-host-editor-duration').val() === 'always' ? Rules.list.user : Rules.list.temporary,
 					addRule = ruleList.addDomain,
@@ -197,6 +209,8 @@ UI.Page = {
 					action: ruleAction
 				});
 
+				ruleWasCreated = true;
+
 				setTimeout(function () {
 					globalPage.Page.requestPageFromActive();
 				}, 1000);
@@ -205,6 +219,8 @@ UI.Page = {
 					rule: '*',
 					action: (ruleType === 'block' || ruleType === 'hide') ? 0 : 1
 				});
+
+				ruleWasCreated = true;
 			} else if (ruleWhichItems === 'items-of-kind') {
 				var checked = $('.page-host-editor-kinds input:checked', section),
 						ruleAction = (ruleType === 'block' || ruleType === 'hide') ? 0 : 1;
@@ -214,6 +230,8 @@ UI.Page = {
 						rule: '*',
 						action: ruleAction
 					});
+
+					ruleWasCreated = true;
 				});
 			} else {
 				items.each(function () {
@@ -248,6 +266,8 @@ UI.Page = {
 
 								hasAffect.detail.ruleList.__remove(hasAffect.detail.ruleType, hasAffect.detail.ruleKind, hasAffect.detail.domain, hasAffect.detail.rule);
 							} while (true);
+
+						ruleWasCreated = true;
 					} else
 						throw new Error('not yet supported');
 				});
@@ -257,11 +277,14 @@ UI.Page = {
 
 			UI.view.toTop(UI.view.views);
 
-			setTimeout(function () {
-				MessageTarget({
-					target: UI.Page.stateContainer.data('page').tab
-				}, 'reload');
-			}, 225);
+			var tab = UI.Page.stateContainer.data('page').tab;
+
+			if (ruleWasCreated)
+				Utilities.Timer.timeout(tab, function (tab) {
+					MessageTarget({
+						target: tab
+					}, 'reload');
+				}, 225, [tab]);
 		}
 	},
 

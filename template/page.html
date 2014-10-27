@@ -35,7 +35,7 @@
 			<div class="jsb-info">
 				<select class="page-host-editor-duration">
 					<option value="always"><%=_('view.page.host.editor.always')%></option>
-					<option value="temporarily"><%=_('view.page.host.editor.temporarily')%></option>
+					<option value="temporarily" <%=Settings.getItem('lastRuleWasTemporary') ? 'selected="selected"' : ''%>><%=_('view.page.host.editor.temporarily')%></option>
 				</select><label></label>
 
 				<select class="page-host-editor-kind">
@@ -166,7 +166,7 @@
 </noscript>
 
 <noscript id="host-items-container-header">
-	<div class="page-host-items-container-header" data-expander="> label">
+	<div class="page-host-items-container-header">
 		<label class="jsb-color-<%=self.stateType%>"><%=_('view.page.host.column.' + self.stateType)%></label>
 		<%
 			var pageLocation,
@@ -214,13 +214,14 @@
 
 			for (var i = 0; i < kindArray.length; i++) { 
 				var kind = kindArray[i],
-						actionGroup = {};
+						actionGroup = {},
+						expander = 'expander' + self.stateType + 'PageHostKind' + kind;
 
 				if (self.stateType === 'unblocked' && kind === 'script' && !Settings.getItem('showUnblockedScripts'))
 					continue;
 				%>
 
-				<header class="page-host-kind" data-expander="> a">
+				<header class="page-host-kind <%=SettingStore.getItem(expander) ? 'group-collapsed' : ''%>" data-expander="<%=expander%>">
 					<h4><%=_('view.page.host.kind.' + kind )%></h4>
 				</header>
 
@@ -237,7 +238,7 @@
 									actionGroup
 										._getWithDefault(resource.action, {})
 										._getWithDefault(resource.sourceIsURL && protocol ? protocol : 'none:', {})
-										._getWithDefault(resource.sourceIsURL && !Settings.getItem('showResourceURLs') ? resource.sourceHost : resource.fullSource, [])
+										._getWithDefault((resource.sourceIsURL && !Settings.getItem('showResourceURLs')) || protocol === 'blob:' ? resource.sourceHost : resource.fullSource, [])
 										.push({
 											resourceID: resourceID,
 											resource: resource
@@ -280,7 +281,7 @@
 											</div>
 											<div class="page-host-item-edit-select-wrapper">
 											<%
-												if (hasOptions || !shouldBadge) { %>
+												if (hasOptions || !shouldBadge || protocol === 'blob:') { %>
 													<select class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
 
 													var sourceDomains = Utilities.URL.hostParts(source, true);

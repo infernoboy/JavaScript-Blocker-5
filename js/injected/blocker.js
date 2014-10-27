@@ -235,7 +235,7 @@ var Handler = {
 			}
 		}
 
-		Utilities.Timer.resetTimeout('injectStylesheet', 100);
+		Utilities.Timer.resetTimeout('injectStylesheet', 200);
 	},
 
 	resetLocation: function (event) {
@@ -252,9 +252,7 @@ var Handler = {
 				command: 'rerequestFrameURL',
 				data: {
 					id: FRAME_ID_ON_PARENT,
-					reason: {
-						hashDidChange: true
-					}
+					reason: 'hashDidChange'
 				}
 			}, '*');
 
@@ -595,9 +593,9 @@ var Element = {
 		},
 
 		anchor: function (anchor) {
-			var hasTarget = !!anchor.target;
+			var hasTarget = typeof anchor.target !== 'string';
 
-			anchor = anchor.target || anchor;
+			anchor = (hasTarget && anchor.target) || anchor;
 
 			var isAnchor = anchor.nodeName && anchor.nodeName === 'A';
 
@@ -613,7 +611,11 @@ var Element = {
 			}
 
 			if (isAnchor && !Utilities.Token.valid(anchor.getAttribute('data-jsbAnchorPrepared'), 'AnchorPrepared')) {
-				var href = anchor.getAttribute('href');
+				var href = anchor.getAttribute('href'),
+						absoluteHref = Utilities.URL.getAbsolutePath(href);
+
+				if (!anchor.title && Special.isEnabled('anchor_titles'))
+					anchor.title = absoluteHref;
 
 				anchor.setAttribute('data-jsbAnchorPrepared', Utilities.Token.create('AnchorPrepared', true));
 
@@ -707,7 +709,7 @@ var Resource = {
 		var element = event.target || event;
 
 		if (element.nodeName === 'LINK' && !Element.shouldIgnore(element)) {
-			Utilities.Timer.resetTimeout('injectStylesheet', 100);
+			Utilities.Timer.resetTimeout('injectStylesheet', 200);
 
 			return true;
 		}
@@ -777,6 +779,8 @@ var Resource = {
 
 				if (!canLoad.isAllowed && event.preventDefault)
 					event.preventDefault();
+				else if (element.nodeName === 'SCRIPT')
+					Utilities.Timer.resetTimeout('injectStylesheet', 200);
 
 				element.setAttribute('data-jsbBeforeLoadProcessed', Utilities.Token.create(source));
 
@@ -881,7 +885,7 @@ if (!globalSetting.disabled) {
 
 		Utilities.Timer.timeout('injectStylesheet', function () {
 			Handler.injectStyleSheet();
-		}, 400);
+		}, 450);
 	}
 } else {
 	Page.info.disabled = {

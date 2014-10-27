@@ -31,7 +31,7 @@ Object._extend(Poppy.scripts, {
 
 		poppy.content
 			.on('change', '#page-menu-show-unblocked-scripts', function () {
-				UI.view.toTop(UI.view.views, true);
+				UI.view.switchTo(UI.view.viewSwitcher, '#page-view');
 
 				Settings.setItem('showUnblockedScripts', this.checked);
 
@@ -43,7 +43,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('change', '#page-menu-show-resource-url', function () {
-				UI.view.toTop(UI.view.views, true);
+				UI.view.switchTo(UI.view.viewSwitcher, '#page-view');
 
 				var checked = this.checked;
 

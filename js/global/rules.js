@@ -47,6 +47,8 @@ function Rule (store, storeProps, ruleProps) {
 	this.removeNotDomain = this.__remove.bind(this, 'notDomain');
 };
 
+Rule.event = new EventListener;
+
 Rule.withLocationRules = function (allRules, callback) {
 	var ruleList,
 			ruleKind,
@@ -93,7 +95,8 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	if (type.toLowerCase()._endsWith('page') && !Rules.isRegExp(domain))
 		throw new TypeError(Rules.ERROR.TYPE.PAGE_NOT_REGEXP);
 
-	var rules = types[type](domain);
+	var rules = types[type](domain),
+			action = typeof this.action === 'number' ? this.action : rule.action;
 
 	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
@@ -104,15 +107,22 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 
 	rules.set(rule.rule, {
 		regexp: Rules.isRegExp(rule.rule),
-		action: typeof this.action === 'number' ? this.action : rule.action
+		action: action
 	});
 
-	return {
+	var added = {
+		self: this,
+		type: type,
 		kind: kind,
 		domain: domain,
 		rule: rule.rule,
+		action: action,
 		rules: rules
 	};
+
+	Rule.event.trigger('ruleWasAdded', added);
+
+	return added;
 };
 
 Rule.prototype.__remove = function (type, kind, domain, rule) {
@@ -142,6 +152,22 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind + '-?'));
 		Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind + '-?'));
 	}
+
+	Rule.event.trigger('ruleWasRemoved', {
+		self: this,
+		type: type,
+		kind: kind,
+		domain: domain,
+		rule: rule
+	});
+};
+
+Rule.prototype.clear = function () {
+	this.rules.clear();
+
+	Resource.canLoadCache.clear().saveNow();
+
+	Rule.event.trigger('rulesWereCleared', this);
 };
 
 Rule.prototype.hasAffectOnResource = function (rule, resource) {
@@ -610,8 +636,15 @@ Rules.list.active = Rules.list.user;
 
 		Rules.list[list].rules.all();
 
-		Rules.list[list].rules.addCustomEventListener('storeDidSave', function () {
+		Rules.list[list].rules.addCustomEventListener(['storeDidSave', 'storeWouldHaveSaved'], function () {
 			Resource.canLoadCache.saveNow();
 		});
 	}
 })();
+
+Rule.event.addCustomEventListener('ruleWasAdded', function (event) {
+	if ([0, 1]._contains(event.detail.action))
+		Utilities.Timer.timeout('setLastRuleWasTemporary', function (list) {
+			Settings.setItem('lastRuleWasTemporary', list === Rules.list.temporary);
+		}, 100, [event.detail.self]);
+});
