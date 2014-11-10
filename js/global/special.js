@@ -25,8 +25,9 @@ var Special = {
 				enabled[script] = false;
 
 		Rule.withLocationRules(forLocation, function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
-			for (rule in rules.data)
-				for (special in specials)
+			for (special in specials) {
+				ruleLoop:
+				for (rule in rules.data) {
 					if (Rules.matches(rule.toLowerCase(), rules.data[rule].value.regexp, special.toLowerCase(), location)) {
 						if (!isUserScript)
 							enabled[special].action = rules.data[rule].value.action;
@@ -39,8 +40,10 @@ var Special = {
 						}
 
 						if ([ACTION.BLOCK, ACTION.ALLOW]._contains(rules.data[rule].value.action))
-							return true;
+							break ruleLoop;
 					}
+				}
+			}
 		});
 
 		return enabled;

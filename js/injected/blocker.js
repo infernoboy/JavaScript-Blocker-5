@@ -235,7 +235,7 @@ var Handler = {
 			}
 		}
 
-		Utilities.Timer.resetTimeout('injectStylesheet', 200);
+		Utilities.Timer.resetTimeout('injectStylesheet', 300);
 	},
 
 	resetLocation: function (event) {
@@ -709,7 +709,7 @@ var Resource = {
 		var element = event.target || event;
 
 		if (element.nodeName === 'LINK' && !Element.shouldIgnore(element)) {
-			Utilities.Timer.resetTimeout('injectStylesheet', 200);
+			Utilities.Timer.resetTimeout('injectStylesheet', 300);
 
 			return true;
 		}
@@ -780,7 +780,7 @@ var Resource = {
 				if (!canLoad.isAllowed && event.preventDefault)
 					event.preventDefault();
 				else if (element.nodeName === 'SCRIPT')
-					Utilities.Timer.resetTimeout('injectStylesheet', 200);
+					Utilities.Timer.resetTimeout('injectStylesheet', 300);
 
 				element.setAttribute('data-jsbBeforeLoadProcessed', Utilities.Token.create(source));
 

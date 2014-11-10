@@ -5,6 +5,8 @@ window.$$ = function (selector, context) {
 };
 
 var Maintenance = {
+	event: new EventListener,
+	
 	maintainPopover: function () {
 		var popover = Popover.window,
 				popoverURL = ExtensionURL('popover.html');
@@ -32,6 +34,8 @@ $(function () {
 	Object.defineProperty(window, 'GlobalPageReady', {
 		value: true
 	});
+
+	Maintenance.event.trigger('globalPageReady', true);
 });
 
 Events.addApplicationListener('popover', Maintenance.maintainPopover);

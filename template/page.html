@@ -262,7 +262,7 @@
 									if (kind === 'user_script')
 										sourceName = globalPage.UserScript.scripts.getStore(source).getStore('attributes').get('meta', {}).name || 'UNKNOWN';
 									else if (kind === 'special')
-										sourceName = _('special.' + source);
+										sourceName = _('special.' + source + '.' + self.stateType, [globalPage.Special.enabled[source] ? globalPage.Special.enabled[source].value : '']);
 
 									var shouldBadge = globalPage.Rules.kindShouldBadge(kind),
 											hasOptions = shouldBadge && !Settings.getItem('showResourceURLs') && protocol !== 'none:';
