@@ -534,7 +534,7 @@ Command.setupContentURLs = function () {
 Command.toggleDisabled = function (force) {
 	window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
 
-	ToolbarItems.image(window.globalSetting.disabled ? 'image/toolbar-disabled.png' : 'image/toolbar.png');
+	Command.setToolbarImage();
 
 	Settings.setItem('isDisabled', window.globalSetting.disabled);
 
@@ -551,7 +551,10 @@ Command.toggleDisabled = function (force) {
 		}, 150);
 };
 
-Command.setupContentURLs();
+Command.setToolbarImage = function (event) {
+	if (!event || event.target instanceof BrowserWindow)
+		ToolbarItems.image(window.globalSetting.disabled ? 'image/toolbar-disabled.png' : 'image/toolbar.png');
+};
 
 window.globalSetting = {
 	disabled: false,
@@ -564,6 +567,8 @@ Object._extend(window.globalSetting, Command('globalSetting', null, {}));
 if (Settings.getItem('persistDisabled'))
 	Command.toggleDisabled(Settings.getItem('isDisabled'));
 
+Command.setupContentURLs();
+
 window.addEventListener('error', function (event) {
 	event.preventDefault();
 
@@ -571,3 +576,4 @@ window.addEventListener('error', function (event) {
 });
 
 Events.addApplicationListener('message', Command.messageReceived);
+Events.addApplicationListener('open', Command.setToolbarImage);

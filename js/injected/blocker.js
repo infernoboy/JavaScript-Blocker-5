@@ -1,23 +1,21 @@
-if (document.hidden === undefined)
-	document.hidden = false;
+// Sometimes the global page isn't ready when a page is loaded. This can happen
+// when Safari is first launched or after reloading the extension. This loop
+// ensures that it is ready before allowing the page to continue loading.
+var globalSetting;
 
-if (!window.CustomEvent)
-	(function () {
-		function CustomEvent (event, params) {
-			params = params || { bubbles: false, cancelable: false, detail: undefined };
-			var evt = document.createEvent('CustomEvent');
-			evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
-			return evt;
-		};
+do {
+	globalSetting = GlobalCommand('globalSetting');
 
-		window.CustomEvent = CustomEvent;
-	})();
+	if (!globalSetting.popoverReady && window === window.top)
+		window.location.reload();
+} while (globalSetting.command || !globalSetting.popoverReady);
 
 if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
 
 var BLOCKED_ELEMENTS = [],
 		FRAMED_PAGES = {},
+		STYLESHEET_INJECTED = false,
 		FRAME_ID_ON_PARENT = null,
 		RECOMMEND_PAGE_RELOAD = false,
 		SHOWED_UPDATE_PROMPT = false,
@@ -125,15 +123,6 @@ var Page = {
 	}
 })();
 
-// Sometimes the global page isn't ready when a page is loaded. This can happen
-// when Safari is first launched or after reloading the extension. This loop
-// ensures that it is ready before allowing the page to continue loading.
-var globalSetting;
-
-do
-	globalSetting = GlobalCommand('globalSetting');
-while (globalSetting.command || !globalSetting.popoverReady);
-
 var _ = (function () {
 	var strings = {};
 
@@ -184,7 +173,12 @@ var Handler = {
 		globalSetting.contentURLs.BLOBIFIED = true;
 	},
 
-	injectStyleSheet: function () {
+	injectStylesheet: function () {
+		if (STYLESHEET_INJECTED)
+			return;
+
+		STYLESHEET_INJECTED = true;
+
 		var style = Element.createFromObject('link', {
 			rel: 'stylesheet',
 			type: 'text/css',
@@ -235,7 +229,9 @@ var Handler = {
 			}
 		}
 
-		Utilities.Timer.resetTimeout('injectStylesheet', 300);
+		Utilities.Timer.timeout('injectStylesheet', function () {
+			Handler.injectStylesheet();
+		}, 400);
 	},
 
 	resetLocation: function (event) {
@@ -333,9 +329,6 @@ var Handler = {
 		unblockButton.classList.add('jsb-color-allowed');
 	}
 };
-
-if (globalSetting.debugMode)
-	Handler.contentURLsToBlob();
 
 var Element = {
 	__placeholderProperties: ['display', 'position', 'top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
@@ -709,7 +702,7 @@ var Resource = {
 		var element = event.target || event;
 
 		if (element.nodeName === 'LINK' && !Element.shouldIgnore(element)) {
-			Utilities.Timer.resetTimeout('injectStylesheet', 300);
+			Utilities.Timer.resetTimeout('injectStylesheet', 400);
 
 			return true;
 		}
@@ -780,7 +773,7 @@ var Resource = {
 				if (!canLoad.isAllowed && event.preventDefault)
 					event.preventDefault();
 				else if (element.nodeName === 'SCRIPT')
-					Utilities.Timer.resetTimeout('injectStylesheet', 300);
+					Utilities.Timer.resetTimeout('injectStylesheet', 400);
 
 				element.setAttribute('data-jsbBeforeLoadProcessed', Utilities.Token.create(source));
 
@@ -795,6 +788,9 @@ var Resource = {
 		}
 	}
 };
+
+if (globalSetting.debugMode)
+	Handler.contentURLsToBlob();
 
 Handler.setPageLocation();
 
@@ -869,6 +865,7 @@ if (!globalSetting.disabled) {
 		document.addEventListener('keyup', Handler.keyUp, true);
 		document.addEventListener('beforeload', Resource.canLoad, true);
 
+		window.addEventListener('load', Handler.injectStylesheet, true)
 		window.addEventListener('hashchange', Handler.hashChange, true);
 		window.addEventListener('popstate', Handler.resetLocation, true);
 
@@ -882,10 +879,6 @@ if (!globalSetting.disabled) {
 
 		if (Page.info.isFrame)
 			window.addEventListener('beforeunload', Handler.unloadedFrame, true);
-
-		Utilities.Timer.timeout('injectStylesheet', function () {
-			Handler.injectStyleSheet();
-		}, 450);
 	}
 } else {
 	Page.info.disabled = {

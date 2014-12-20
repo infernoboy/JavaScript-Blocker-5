@@ -39,6 +39,13 @@
 
 <noscript id="rule-menu">
 	<h3 class="jsb-centered">Rules</h3>
+	<div id="rule-menu" class="generic-menu">
+		<div class="generic-menu-menu">
+			<% if (!globalPage.Rules.list.temporary.rules.isEmpty()) { %>
+				<input type="button" id="rule-menu-remove-temporary" value="<%=_('rule_menu.remove_temporary')%>" />
+			<% } %>
+		</div>
+	</div>
 </noscript>
 
 <noscript id="console">

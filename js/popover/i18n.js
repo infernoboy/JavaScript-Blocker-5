@@ -45,6 +45,12 @@ var Strings = {
 
 	localizedCSSPath: function (path) {
 		return ExtensionURL('i18n/' + this.getLanguage() + '/css/' + path);
+	},
+
+	isLocalized: function (string) {
+		var language = Strings.getLanguage();
+
+		return Strings.strings[language] && Strings.strings[language][string];
 	}
 };
 

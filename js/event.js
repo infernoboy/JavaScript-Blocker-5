@@ -109,11 +109,13 @@ EventListener.prototype.removeCustomEventListener = function (name, fn) {
 };
 
 EventListener.prototype.trigger = function (name, detail, triggerSubsequentListeners) {
-	var info,
-			fnInstance;
+	var info;
 
 	var newListeners = [],
+			previousFnInstance = {},
+			fnInstance = {},
 			defaultPrevented = false,
+			afterwards = [],
 			listeners = this.listeners(name);
 
 	listeners.triggerSubsequentListeners = !!triggerSubsequentListeners;
@@ -129,14 +131,25 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 			fnInstance.type = name;
 			fnInstance.detail = detail;
 
+			fnInstance.afterwards = function (event, fn) {
+				afterwards.push(fn.bind(null, event));
+			}.bind(null, fnInstance);
+
 			Object._extend(fnInstance, EventListener.eventInfo)
 
 			defaultPrevented = fnInstance.__run().defaultPrevented || defaultPrevented;
+
+			previousFnInstance.defaultPrevented = defaultPrevented;
+
+			previousFnInstance = fnInstance;
 		}
 
 		if (!info.once)
 			newListeners.push(info);
 	}
+
+	for (var i = 0; i < afterwards.length; i++)
+		afterwards[i]();
 
 	this.__listeners[name].fns = newListeners;
 

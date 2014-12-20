@@ -31,6 +31,10 @@ Template.load = function (file) {
 	return Template.__templates[file];
 };
 
+Template.unload = function (file) {
+	delete Template.__templates[file];
+};
+
 Template.create = function (template, section, data, shouldBeWrapped, returnString) {
 	if (!Template.__templates.hasOwnProperty(template))
 		throw new Error('template file not loaded - ' + template);

@@ -324,7 +324,7 @@ var Store = (function () {
 	};
 
 	Store.prototype.isEmpty = function () {
-		return !this.data || this.data._isEmpty();
+		return !this.data || this.data._isEmpty() || this.all()._isEmpty();
 	};
 
 	Store.prototype.keys = function () {

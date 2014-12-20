@@ -253,9 +253,12 @@ var UI = {
 						return;
 
 					var groupWrapperHeight = groupWrapper.outerHeight(true),
-							isCollapsed = header.hasClass('group-collapsed');
+							isCollapsed = header.hasClass('group-collapsed'),
+							expandingClass = isCollapsed ? 'group-expanding' : 'group-collapsing';
 
-					SettingStore.setItem(header.attr('data-expander'), !isCollapsed);
+					header.addClass(expandingClass);
+
+					Settings.setItem('expander', !isCollapsed, header.attr('data-expander'));
 
 					groupWrapper.show();
 
@@ -270,27 +273,33 @@ var UI = {
 						if (bottom > view.height() + viewOffset.top)
 							view.animate({
 								scrollTop: '+=' + (bottom - view.height() - viewOffset.top)
-							}, 225 * window.globalSetting.speedMultiplier);
+							}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
 					}
 
-					$('li', group).each(function () {
-						var self = $(this),
-								height = self.height();
+					// $('li', group).each(function () {
+					// 	var self = $(this),
+					// 			height = self.height();
 
-						self
-							.height(isCollapsed ? COLLAPSE_HEIGHT : height)
-							.animate({
-								height: isCollapsed ? height : COLLAPSE_HEIGHT
-							}, 225 * window.globalSetting.speedMultiplier, function () {
-								self.height('auto');
-							});
-					});
+					// 	self
+					// 		.height(isCollapsed ? COLLAPSE_HEIGHT : height)
+					// 		.animate({
+					// 			height: isCollapsed ? height : COLLAPSE_HEIGHT
+					// 		}, 225 * window.globalSetting.speedMultiplier, function () {
+					// 			self.height('auto');
+					// 		});
+					// });
 
 					group
-						.css('margin-top', isCollapsed ? -(groupWrapperHeight / COLLAPSE_OFFSET) : 0)
+						.css({
+							marginTop: isCollapsed ? -(groupWrapperHeight / 1) : 0,
+							opacity: isCollapsed ? 0.2 : 1
+						})
 						.animate({
-							marginTop: isCollapsed ? 0 : -(groupWrapperHeight / COLLAPSE_OFFSET)
-						}, 225 * window.globalSetting.speedMultiplier, function () {
+							marginTop: isCollapsed ? 0 : -(groupWrapperHeight / 1),
+							opacity: isCollapsed ? 1 : 0.2
+						}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
+							header.removeClass(expandingClass);
+
 							if (!isCollapsed)
 								header.addClass('group-collapsed');
 
@@ -305,13 +314,17 @@ var UI = {
 
 		UI.event
 			.addCustomEventListener('viewWillSwitch', function (event) {
-				if (event.detail.from.id === '#resource-content-view') 
+				if (event.detail.from.id === '#main-views-resource-content') 
 					$(event.detail.from.id, UI.view.views).empty();
 
-				if (event.detail.to.id === '#rule-view')
+				if (event.detail.to.id === '#main-views-rule')
 					event.detail.to.view.find('#rules').html('<pre>' + JSON.stringify(globalPage.Rules.list.active.rules.all(), null, 1) + '</pre>');
-				else if (event.detail.to.id === '#snapshot-view')
+				else if (event.detail.to.id === '#main-views-snapshot')
 					event.detail.to.view.html('<pre>' + JSON.stringify(globalPage.Rules.list.user.rules.snapshot.snapshots.all(), null, 1) + '</pre>');
+			})
+
+			.addCustomEventListener('viewDidSwitch', function (event) {
+				$('#full-toggle', UI.view.viewToolbar).toggleClass('poppy-menu-disabled', $('li[data-view=' + event.detail.id + ']', event.detail.switcher).hasClass('view-switcher-collapses'));
 			})
 
 			.addCustomEventListener('disabled', function (event) {
@@ -366,7 +379,7 @@ var UI = {
 							})
 							.end()
 							.next()
-							.wrapAll('<div class="header-group-wrapper"></div>')
+							.wrapAll('<div class="collapsible-group-wrapper"></div>')
 					}
 				}
 			});
@@ -470,12 +483,7 @@ var UI = {
 	},
 
 	view: {
-		__switching: false,
-		__default: '#page-view',
-		__scale: {
-			behind: 0.85,
-			above: 1.2
-		},
+		__default: '#main-views-page',
 
 		init: function () {
 			this.views = $('#main-views', UI.container);
@@ -483,66 +491,32 @@ var UI = {
 			this.viewToolbar = $('#view-toolbar', this.viewContainer);
 			this.viewSwitcher = $('.view-switcher', this.viewToolbar);
 
-			this.viewSwitcher
-				.on('click', 'li', function () {
-					UI.view.switchTo(UI.view.viewSwitcher, this.getAttribute('data-view'));
+			UI.container
+				.on('click', '*[data-poppy] .poppy-menu-target', function (event) {
+					UI.view.showPoppyMenu(this, event);
 				})
 
-				.on('click', 'li[data-poppy] .view-switcher-item-container', function (event, originalEvent) {
-					var self = $(this),
-							width = self.outerWidth(),
-							offset = self.offset().left,
-							rightOffset = offset + width,
-							useEvent = originalEvent || event,
-							inRange = (useEvent.pageX > rightOffset - 6 && useEvent.pageX < rightOffset + 3);
-
-					if (inRange || event.isTrigger) {
-						UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
-							event.preventDefault();
-						}, true);
-
-						if (!(event.isTrigger && inRange)) {
-							event.stopPropagation();
-
-							if (!self.parent().hasClass('active-view') && event.isTrigger)
-								UI.event.addCustomEventListener('viewWillSwitch', function (event) {
-									event.preventDefault();
-								}, true);
-
-							var poppyName = self.parent().attr('data-poppy'),
-									poppy = new Poppy(useEvent.pageX, useEvent.pageY, true, poppyName);
-
-							poppy.setContent(Template.create('poppy', poppyName)).stayOpenOnScroll();
-
-							if (event.isTrigger)
-								UI.event.addCustomEventListener('poppyWillClose', function (event) {
-									if (event.detail === poppy) {
-										event.unbind();
-										event.preventDefault();
-									}
-								});
-
-							setTimeout(function (poppy) {
-								poppy.show();
-							}, 0, poppy);
-						}
-					}
-				})
-
-				.on('mousedown', 'li[data-poppy]', function (event) {
-					Utilities.Timer.timeout(this, function (event, element) {						
-						$('.view-switcher-item-container', element).trigger('click', event);
+				.on('mousedown', '*[data-poppy]', function (event) {
+					Utilities.Timer.timeout(this, function (event, tab) {						
+						UI.view.showPoppyMenu(tab.querySelector('.poppy-menu-target'), event, true);
 					}, 200, [event, this]);
 				})
 
-				.on('mousemove mouseup click', 'li[data-poppy]', function (event) {
+				.on('mousemove mouseup click', '*[data-poppy]', function (event) {
 					Utilities.Timer.remove('timeout', this);
-				});
 
-			this.viewToolbar
+					setTimeout(function (element) {
+						element.removeAttribute('data-poppyMenuWillShow');
+					}, 100, this);
+				})
+
 				.on('click', '#full-toggle', function () {
+					if (this.getAttribute('data-poppyMenuWillShow'))
+						return;
+
 					globalPage.Command.toggleDisabled();
 				})
+
 				.on('click', '#open-menu', function (event) {
 					if (this.classList.contains('unread-error')) {
 						this.classList.remove('unread-error');
@@ -557,36 +531,33 @@ var UI = {
 						return;
 					}
 
-					var poppy = new Poppy(event.pageX, event.pageY, true, 'mainMenu');
+					var poppy = new Poppy(event.pageX, event.pageY, true, 'main-menu');
 
 					poppy.setContent(Template.create('poppy', 'main-menu')).stayOpenOnScroll().show();
-				});
+				})
 
-			$('#container').click(function (event) {
-				return;
-
-				Poppy.closeAll();
-				
-				var poppy = new Poppy(event.pageX, event.pageY);
-
-				poppy
-					.setContent('hello there at ' + Date.now() + 'hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>hi<br>')
-					.moveWithView(UI.view.views)
-					.show();
-			});
+				.on('click', '.view-switcher li', function () {
+					UI.view.switchTo(this.getAttribute('data-view'));
+				})
 
 			UI.event
 				.addCustomEventListener('poppyDidShow', function () {
 					UI.view.views.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
 				})
+
 				.addCustomEventListener('poppyModalOpened', function () {
 					UI.view.viewContainer.addClass('modal-blur');
 				})
+
 				.addCustomEventListener('poppyModalClosed', function () {
 					UI.view.viewContainer.removeClass('modal-blur');
+				})
+
+				.addCustomEventListener('poppyMenuWillShow', function (event) {
+					event.detail.menuHolder.attr('data-poppyMenuWillShow', 1);
 				});
 
-			this.switchTo(this.viewSwitcher, this.__default);
+			this.switchTo(this.__default);
 		},
 
 		toTop: function (viewContainer, evenIfPoppy) {
@@ -606,26 +577,35 @@ var UI = {
 				.trigger('scroll');
 		},
 
-		switchTo: function (viewSwitcher, viewID) {
-			var viewContainer = $(viewSwitcher.attr('data-container')),
-					activeID = viewContainer.attr('data-activeView');
+		switchTo: function (viewID) {
+			var switchToView = $(viewID, UI.view.views);
+
+			if (!switchToView.length)
+				throw new Error('view not found - ' + viewID);
+
+			var viewContainer = switchToView.parents('.ui-view-container:first');
+
+			if (!viewContainer.length)
+				throw new Error('not a view - ' + viewID);
+
+			var activeID = viewContainer.attr('data-activeView');
 
 			if (activeID === viewID)
 				return UI.view.toTop(viewContainer);
 
 			var previousView = viewContainer.find(activeID),
-					activeView = viewContainer.find(viewID);
-
-			if (!activeView.length)
-				throw new Error('view not found - ' + viewID);
+					viewSwitcher = $('.view-switcher[data-container="#' + viewContainer.attr('id') + '"]');
 
 			var defaultPrevented = UI.event.trigger('viewWillSwitch', {
+				switcher: viewSwitcher,
+
 				from: {
 					view: previousView,
-					id: activeID,
+					id: activeID
 				},
+
 				to: {
-					view: activeView,
+					view: switchToView,
 					id: viewID
 				}
 			});
@@ -643,12 +623,13 @@ var UI = {
 
 			previousView.removeClass('active-view');
 
-			activeView.addClass('active-view');
+			switchToView.addClass('active-view');
 
 			viewContainer.trigger('scroll');
 
 			UI.event.trigger('viewDidSwitch', {
-				view: activeView,
+				view: switchToView,
+				switcher: viewSwitcher,
 				id: viewID
 			});
 
@@ -667,6 +648,51 @@ var UI = {
 				throw new Error('view not found - ' + viewID);
 
 			return viewContainer.data('data-activeView') === viewID;
+		},
+
+		showPoppyMenu: function (tab, event, force) {
+			var self = $(tab),
+					menuHolder = self.parents('*[data-poppy]'),
+					width = self.outerWidth(),
+					offset = self.offset().left,
+					rightOffset = offset + width,
+					inRange = (event.pageX > rightOffset - 9 && event.pageX < rightOffset + 3);
+
+			if (inRange || force) {
+				UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
+					event.preventDefault();
+				}, true);
+
+				if (!(force && inRange)) {
+					event.stopPropagation();
+
+					if (!self.parent().hasClass('active-view') && force)
+						UI.event.addCustomEventListener('viewWillSwitch', function (event) {
+							event.preventDefault();
+						}, true);
+
+					var poppyName = self.parent().attr('data-poppy'),
+							poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
+
+					poppy.setContent(Template.create('poppy', poppyName)).stayOpenOnScroll();
+
+					if (force)
+						UI.event.addCustomEventListener('poppyWillClose', function (event) {
+							if (event.detail === poppy) {
+								event.unbind();
+								event.preventDefault();
+							}
+						});
+
+					if (!UI.event.trigger('poppyMenuWillShow', {
+						target: self,
+						menuHolder: menuHolder
+					}))
+						setTimeout(function (poppy) {
+							poppy.show();
+						}, 0, poppy);
+				}
+			}
 		},
 
 		floatingHeaders: {

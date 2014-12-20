@@ -720,7 +720,7 @@ var Command = function (type, event) {
 			toCheck.pageLocation = Page.info.location;
 			toCheck.pageProtocol = Page.info.protocol;
 			toCheck.isFrame = Page.info.isFrame;
-			toCheck.source = Utilities.URL.getAbsolutePath(toCheck.source);
+			toCheck.source = (toCheck.kind === 'special' || toCheck.kind === 'user_script' || toCheck.kind === 'disable') ? toCheck.source : Utilities.URL.getAbsolutePath(toCheck.source);
 
 			return {
 				callbackID: detail.callbackID,

@@ -12,6 +12,12 @@ var Settings = {
 	},
 
 	__validate: function (type, value, options, otherOption, extendOptions) {
+		if (type._startsWith('dynamic'))
+			return ((typeof value === 'object' && (value.hasOwnProperty('enabled') && value.hasOwnProperty('value'))) && this.__validate(type.substr(8), value.value));
+
+		if (type._startsWith('many'))
+			return this.__validate(type.substr(5), value);
+
 		switch (type) {
 			case 'boolean':
 				return typeof value === 'boolean';
@@ -45,10 +51,6 @@ var Settings = {
 
 			case 'array':
 				return Array.isArray(value);
-			break;
-
-			case 'dynamic-array':
-				return ((typeof value === 'object' && (value.hasOwnProperty('enabled') && value.hasOwnProperty('value'))) && this.__validate(type.substr(8), value.value));
 			break;
 
 			case 'mixed':
@@ -99,9 +101,14 @@ var Settings = {
 		var value,
 				defaultValue;
 
-		if (setting.storeKeySettings) {
+		if (setting.storeKeySettings || setting.store) {
 			var hasOwnDefaults = setting.props.default,
 					defaultStorage = hasOwnDefaults ? setting.props.default : setting.storeKeySettings;
+
+			if (storeKey && !defaultStorage[storeKey])
+				defaultStorage = ({})._setWithDefault(storeKey, {
+					props: {}
+				});
 
 			if (!storeKey) {
 				var storedValues = this.__stores.getStore(settingKey).all();
@@ -119,10 +126,10 @@ var Settings = {
 				return storedValues;
 			}
 
-			if (!setting.storeKeySettings[storeKey] && !setting.props.type._startsWith('dynamic'))
+			if (!setting.storeKeySettings[storeKey] && !setting.props.type._startsWith('dynamic') && !setting.props.type._startsWith('many'))
 				throw new Error(Settings.ERROR.STORE_KEY_NOT_FOUND._format([settingKey, storeKey]));
 
-			storeKey = setting.storeKeySettings[storeKey].props.remap ? setting.storeKeySettings[storeKey].props.remap : storeKey;
+			storeKey = (setting.storeKeySettings[storeKey] && setting.storeKeySettings[storeKey].props.remap) ? setting.storeKeySettings[storeKey].props.remap : storeKey;
 
 			value = this.__stores.getStore(settingKey).get(storeKey);
 
@@ -161,14 +168,14 @@ var Settings = {
 		if (setting.storeKeySettings) {
 			var storeSetting = setting.storeKeySettings[storeKey];
 
-			if (storeSetting.props.remap) {
+			if (storeSetting && storeSetting.props.remap) {
 				storeKey = storeSetting.props.remap;
 
 				storeSetting = setting.storeKeySettings[storeKey];
 			}
 
 			if (!storeSetting) {
-				if (setting.props.type._startsWith('dynamic'))
+				if (setting.props.type._startsWith('dynamic') || setting.props.type._startsWith('many'))
 					storeSetting = {
 						props: {}
 					};
@@ -208,13 +215,12 @@ var Settings = {
 		if (!setting)
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
 
-		if (setting.storeKeySettings) {
+		if (setting.storeKeySettings || setting.store) {
 			if (storeKey) {
-				if (setting.storeKeySettings[storeKey]) {
+				if (setting.storeKeySettings[storeKey])
 					storeKey = setting.storeKeySettings[storeKey].props.remap || storeKey;
 
-					this.__stores.getStore(settingKey).remove(storeKey);
-				}
+				this.__stores.getStore(settingKey).remove(storeKey);
 			} else
 				this.__stores.getStore(settingKey).clear();
 

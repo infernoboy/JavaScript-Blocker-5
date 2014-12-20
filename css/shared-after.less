@@ -124,7 +124,9 @@
 		}
 
 		header[data-expander] {
-			margin: 5px 0 3px 0;
+			position: relative;
+			margin-top: 5px;
+			padding-bottom: 3px;
 
 			+ * {
 				overflow: hidden;
@@ -134,20 +136,25 @@
 				display: inline;
 			}
 
-			&:hover > *:after {
+			> *:after {
 				position: absolute;
 				display: inline-block;
 				content: ' ' attr(data-i18n-hide);
 				margin-left: 7px;
+				opacity: 0;
+			}
+
+			&:hover > *:after {
 				opacity: 0.8;
 			}
 
-			&.group-collapsed {
-				+ * {
-					display: none;
-				}
+			&.group-collapsed + * {
+				display: none;
+			}
 
-				&:hover > *:after {
+			&.group-collapsed,
+			&.group-collapsing {
+				> *:after {
 					content: ' ' attr(data-i18n-show);
 				}
 			}

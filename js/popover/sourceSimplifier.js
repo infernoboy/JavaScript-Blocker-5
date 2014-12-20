@@ -1,4 +1,25 @@
-var HostMap = {
+"use strict";
+
+var SourceSimplifier = {
+	simplifySource: function (host, url) {
+		var ref;
+
+		for (var simplified in SourceSimplifier.__map) {
+			ref = SourceSimplifier.__map[simplified];
+
+			if (ref instanceof Array) {
+				for (var i = ref.length; i--;)
+					if (host._endsWith(ref[i]))
+						return simplified;
+			} else if ((ref instanceof RegExp) && ref.test(url.toLowerCase()))
+				return simplified;
+		}
+
+		return null;
+	}
+};
+
+SourceSimplifier.__map = {
 	'Advertisements': /(^.*\?file=ads&.*$)|(^https?:\/\/([^\/]+\.)?(adsafeprotected|bkrtx)\.com\/.*$)|(^.*\/recommendations\/ad\..*$)|(^.*\/smartbanner\/.*$)|(^https?:\/\/([^\/]+\.)?ads\.[^\.]+\..*\/.*$)|(^.*:\/\/ads\..*$)|(^.*_(160x600|728x90|320x250)_?\..*$)|(^.*(160x600|728x90)\.html?.*$)|(^.*=300x250&.*$)/,
 	'Tracking': /^(https?:\/\/([^\/]+\.)?a\.wikia-beacon\.com\/.*)|(.*\/analytics\/js\/.*)$/,
 
@@ -8,16 +29,16 @@ var HostMap = {
 	'Facebook': /^https?:\/\/([^\/]+\.)?facebook\.(com|net)\/.*$/,
 	'Chartbeat Tracking': ['static.chartbeat.com'],
 	'Google+': /(^https?:\/\/apis\.google\.com\/js\/plusone\.js$)|(^.*\/googleplus\..*$)/,
-	'Google Advertisements': ['partner.googleadservices.com', 'www.googleadservices.com', 'pagead2.googlesyndication.com', 'stats.g.doubleclick.net', 'survey.g.doubleclick.net', 'stats.doubleclick.net', 'doubleclick.net', 'ad.doubleclick.net'],
+	'Google Advertisements': ['.googleadservices.com', 'googleadservices.com', 'pagead2.googlesyndication.com', '.doubleclick.net', 'doubleclick.net'],
 	'IntelliTXT Advertisements': /^https?:\/\/([^\/]+\.)?intellitxt\.com\/intellitxt\/.*$/,
-	'Scorecard Research Tracking': ['a.scorecardresearch.com', 'b.scorecardresearch.com'],
-	'CPMStar Advertisements': ['server.cpmstar.com', 'cpmstar.com'],
+	'Scorecard Research Tracking': ['.scorecardresearch.com'],
+	'CPMStar Advertisements': ['.cpmstar.com', 'cpmstar.com'],
 	'Gorilla Nation Advertisements': ['cdn.triggertag.gorillanation.com'],
 	'Quantserve Tracking and Ads': /^(.*\/quant\.js.*$)|(https?:\/\/(edge|secure|pixel)\.quantserve\.com\/.*)$/,
 	'Krux Tracking': ['cdn.krxd.net'],
 	'PubGears Advertisements': ['tags.pubgears.com'],
 	'OpenX Advertisements': /^.*\.openx\..*$/,
-	'Lotame Advertisements': ['tags.crwdcntrl.net', 'ad.crwdcntrl.net'],
+	'Lotame Advertisements': ['.crwdcntrl.net'],
 	'Marketo Tracking': ['munchkin.marketo.net'],
 	'Qualaroo Tracking': /(^https?:\/\/([^\/]+\.)?amazonaws\.com\/ki\.js\/.*$)/,
 	'Liji Tracking and Ads': /^https?:\/\/([^\/]+\.)?lijit\.com\/delivery\/.*$/,
@@ -29,12 +50,12 @@ var HostMap = {
 	'Perfect Market Tracking': ['widget.perfectmarket.com'],
 	'Truste Tracking': /^https?:\/\/([^\/]+\.)?truste\.com\/notice\?.*consent-track.*$/,
 	'Newstogram Recommendations': ['static.newstogram.com'],
-	'Quintelligence Tracking': ['log2.quintelligence.com', 'log1.quintelligence.com', 'quintelligence.com'],
+	'Quintelligence Tracking': ['.quintelligence.com', 'quintelligence.com'],
 	'New Relic Website Monitoring': ['js-agent.newrelic.com'],
 	'Skimlinks Tracking': /^https?:\/\/([^\/]+\.)?(skimresources|skimlinks)\.com\/.*$/,
 	'Parsely Tracking': ['static.parsely.com'],
 	'Pinterest': ['assets.pinterest.com'],
-	'Optimizely Tracking': ['cdn.optimizely.com'],
+	'Optimizely Tracking': ['.optimizely.com'],
 	'ADTECH Advertisements': ['adserver.adtech.com'],
 	'MotherJones Tracking': /^https?:\/\/([^\/]+\.)?amazonaws\.com\/ansible\.js.*$/,
 	'Ensighten Tracking': ['nexus.ensighten.com'],
@@ -88,4 +109,5 @@ var HostMap = {
 	'24/7 RealMedia Advertisements': /^(https?:\/\/([^\/]+\.)?247realmedia\.com\/.*)|(.*\/adstream_.*)|(.*\/realmedia\/ads\/.*)$/,
 	'OwnerIQ Tracking': /^https?:\/\/([^\/]+\.)?owneriq\.net\/.*$/,
 	'MIG Advertisements': /^https?:\/\/([^\/]+\.)?mookie1\.com\/.*$/,
+	'Rubicon Advertisements': ['.rubiconproject.com']
 };

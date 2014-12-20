@@ -12,6 +12,13 @@ var Version = {
 	bundle: safari.extension.bundleVersion
 };
 
+try {
+	var BrowserTab = SafariBrowserTab,
+			BrowserWindow = SafariBrowserWindow;
+} catch (e) {
+	var BrowserTab = BrowserWindow = null;
+}
+
 var ToolbarItems = {
 	badge: function (number, tab) {
 		safari.extension.toolbarItems.forEach(function (toolbarItem) {		

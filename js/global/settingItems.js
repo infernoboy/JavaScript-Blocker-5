@@ -48,7 +48,7 @@ Settings.settings = {
 		setting: 'settingCurrentView',
 		props: {
 			type: 'string',
-			default: '#setting-view-general'
+			default: '#setting-views-general'
 		}
 	}, {
 		setting: 'popoverWidth',
@@ -85,6 +85,17 @@ Settings.settings = {
 		props: {
 			type: 'boolean',
 			default: false
+		}
+	}, {
+		setting: 'setupComplete',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		store: 'expander',
+		props: {
+			type: 'many-boolean'
 		}
 	}],
 

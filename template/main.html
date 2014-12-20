@@ -6,40 +6,40 @@
 
 		<div id="view-container">
 			<div id="view-toolbar">
-				<span id="full-toggle" data-disable="1"><%=_('view_toolbar.disable')%></span>
+				<span id="full-toggle" data-poppy="page-menu"><span class="poppy-menu-target"><%=_('view_toolbar.disable')%></span></span>
 
 				<%
 					var mainSwitcher = Template.create('main', 'view-switcher', {
 						container: '#main-views',
 						views: {
-							'#page-view': {
+							'#main-views-page': {
 								value: _('view_toolbar.page'),
 								poppy: 'page-menu'
 							},
-							'#resource-content-view': {
+							'#main-views-resource-content': {
 								hide: true,
 								value: _('view_toolbar.resource')
 							},
-							'#rule-view': {
+							'#main-views-rule': {
 								value: _('view_toolbar.rules'),
 								poppy:'rule-menu'
 							},
-							'#snapshot-view': {
+							'#main-views-snapshot': {
 								hide: true,
 								value: _('view_toolbar.snapshots')
 							},
-							'#setting-view': {
+							'#main-views-setting': {
 								value: _('view_toolbar.setting')
 							},
-							'#about-view': {
+							'#main-views-about': {
 								hide: true,
 								value: _('main_menu.about')
 							},
-							'#welcome-view': {
+							'#main-views-setup': {
 								hide: true,
-								value: _('view_toolbar.welcome')
+								value: _('view_toolbar.setup')
 							},
-							'#help-view': {
+							'#main-views-help': {
 								value: _('view_toolbar.help')
 							}
 						}
@@ -50,7 +50,7 @@
 			</div>
 
 			<div id="main-views" class="ui-view-container">
-				<div id="page-view" class="ui-view">
+				<div id="main-views-page" class="ui-view">
 					<div id="page-modal-info" class="jsb-hidden">
 						<p class="jsb-info jsb-centered jsb-embossed">JavaScript Blocker is disabled.</p>
 					</div>
@@ -58,30 +58,30 @@
 					<div id="page-state-container"></div>
 				</div>
 
-				<div id="rule-view" class="ui-view">
+				<div id="main-views-rule" class="ui-view">
 					<p class="snapshot-info jsb-info"></p>
 					<div id="rules">RULE VIEW</div>
 				</div>
 
-				<div id="snapshot-view" class="ui-view">
+				<div id="main-views-snapshot" class="ui-view">
 					<p class="jsb-info">SNAPSHOT VIEW</p>
 				</div>
 
-				<div id="resource-content-view" class="ui-view">
+				<div id="main-views-resource-content" class="ui-view">
 					<p class="jsb-info">RESOURCE CONTENT VIEW</p>
 				</div>
 
-				<div id="help-view" class="ui-view">
+				<div id="main-views-help" class="ui-view">
 					<p class="jsb-info">HELP VIEW</p>
 				</div>
 
-				<div id="setting-view" class="ui-view"></div>
+				<div id="main-views-setting" class="ui-view"></div>
 
-				<div id="welcome-view" class="ui-view">
-					<p class="jsb-info">WELCOME VIEW</p>
+				<div id="main-views-setup" class="ui-view">
+					<p class="jsb-info">SETUP VIEW</p>
 				</div>
 
-				<div id="about-view" class="ui-view">
+				<div id="main-views-about" class="ui-view">
 					<p class="jsb-info">ABOUT VIEW</p>
 				</div>
 			</div>
@@ -101,7 +101,7 @@
 <noscript id="view-switcher">
 	<div class="view-switcher-container">
 		<ul class="view-switcher" data-container="<%=self.container%>">
-		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container"><%=self.views[viewID].value%><span class="view-switcher-item-notification"></span></span></li><% } %>
+		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container poppy-menu-target"><%=self.views[viewID].value%><span class="view-switcher-item-notification"></span></span></li><% } %>
 		</ul>
 	</div>
 </noscript>

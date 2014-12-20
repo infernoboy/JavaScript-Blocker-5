@@ -113,7 +113,7 @@ Page.requestPage = function (event) {
 	if (event.type === 'activate' && Popover.visible())
 		UI.view.toTop(UI.view.views);
 
-	if (event.target instanceof SafariBrowserTab) {
+	if (event.target instanceof BrowserTab) {
 		MessageTarget(event, 'sendPage');
 
 		Page.awaitFromTab(event.target);

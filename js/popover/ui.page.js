@@ -51,8 +51,8 @@ UI.Page = {
 	},
 
 	init: function () {
-		UI.Page.view = $('#page-view', UI.view.views);
-		UI.Page.toolbarItem = $('*[data-view="#page-view"]', UI.view.viewSwitcher);
+		UI.Page.view = $('#main-views-page', UI.view.views);
+		UI.Page.toolbarItem = $('*[data-view="#main-views-page"]', UI.view.viewSwitcher);
 		UI.Page.notification = $('.view-switcher-item-notification', UI.Page.toolbarItem);
 		UI.Page.modalInfo = $('#page-modal-info', UI.Page.view);
 		UI.Page.stateContainer = $('#page-state-container', UI.Page.view);
@@ -249,8 +249,13 @@ UI.Page = {
 							protocol = item.attr('data-protocol'),
 							resources = item.data('resources');
 
-					if (ruleType === 'block/allow') {
+					if (ruleType === 'block/allow' || ruleType === 'block' || ruleType === 'allow') {
 						var hasAffect;
+
+						if (ruleType === 'block')
+							ruleAction = 0
+						else if (ruleType === 'allow')
+							ruleAction = 1;
 
 						var rule = addRule(ruleKindPrefix + kind, ruleDomain, {
 							rule: (protocol === 'none:' || itemSource.is('.select-custom-input')) ? itemSourceVal : protocol + '|' + itemSourceVal,
@@ -285,6 +290,8 @@ UI.Page = {
 						target: tab
 					}, 'reload');
 				}, 225, [tab]);
+			else
+				globalPage.Page.requestPageFromActive();
 		}
 	},
 
@@ -335,7 +342,7 @@ UI.Page = {
 
 				UI.event.addCustomEventListener('pageDidRender', function (event) {
 					if (event.detail === lastPage) {
-						var pageToolbar = $('li[data-view="#page-view"]', UI.view.viewSwitcher),
+						var pageToolbar = $('li[data-view="#main-views-page"]', UI.view.viewSwitcher),
 								pageToolbarOffset = pageToolbar.offset().left,
 								pageToolbarWidth = pageToolbar.outerWidth(),
 								pageToolbarHeight = pageToolbar.outerHeight(),
@@ -445,7 +452,7 @@ UI.Page = {
 					else if (this.value === 'block/allow')
 						enableOptions = options.filter('[value="items-checked"]');
 					else if (this.value === 'block' || this.value === 'allow')
-						enableOptions = options.filter('[value="items-all"], [value="items-of-kind"]');
+						enableOptions = options.filter('[value="items-checked"], [value="items-all"], [value="items-of-kind"]');
 					else if (this.value === 'hide')
 						enableOptions = options.not('[value="jsb"]');
 
@@ -543,9 +550,9 @@ UI.Page = {
 					
 					var loadingPoppy = Poppy.createLoadingPoppy(event.originalEvent.pageX, event.originalEvent.pageY, true, function (loadingPoppy) {
 						for (var resourceID in resources) {
-							$('#resource-content-view', UI.view.views).empty().append(Utilities.beautifyScript(resources[resourceID].fullSource));
+							$('#main-views-resource-content', UI.view.views).empty().append(Utilities.beautifyScript(resources[resourceID].fullSource));
 
-							UI.view.switchTo(UI.view.viewSwitcher, '#resource-content-view');
+							UI.view.switchTo('#main-views-resource-content');
 
 							break;
 						}

@@ -466,6 +466,14 @@ Special.specials = {
 	},
 
 	canvas_data_url: function () {
+		var canLoad = messageExtensionSync('canLoadResource', {
+			kind: 'special',
+			source: 'canvas_data_url'
+		});
+
+		if (canLoad.isAllowed)
+			return;
+
 		var ALWAYS_ASK = 1,
 				ASK_ONCE = 2,
 				ASK_ONCE_SESSION = 3,
@@ -492,7 +500,9 @@ Special.specials = {
 
 			var url = baseURL + dataURL;
 
-			if (JSB.value.value === ALWAYS_BLOCK)
+			console.debug(canLoad)
+
+			if (JSB.value.value === ALWAYS_BLOCK || (!canLoad.isAllowed && canLoad.action > -1))
 				shouldContinue = false;
 			else if (alwaysContinue !== false)
 				shouldContinue = alwaysContinue;

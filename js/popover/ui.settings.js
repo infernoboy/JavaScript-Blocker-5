@@ -2,7 +2,7 @@
 
 UI.Settings = {
 	init: function () {
-		UI.Settings.view = $('#setting-view', UI.view.views);
+		UI.Settings.view = $('#main-views-setting', UI.view.views);
 
 		UI.Settings.view.append(Template.create('settings', 'setting-container'));
 
@@ -20,7 +20,7 @@ UI.Settings = {
 		};
 
 		for (var i = 0; i < sections.length; i++)
-			viewSwitcherData.views['#setting-view-' + sections[i]] = {
+			viewSwitcherData.views['#setting-views-' + sections[i]] = {
 				value: _('settings.' + sections[i])
 			};
 
@@ -38,7 +38,7 @@ UI.Settings = {
 		});
 
 		try {
-			UI.view.switchTo(UI.Settings.viewSwitcher, Settings.getItem('settingCurrentView'));
+			UI.view.switchTo(Settings.getItem('settingCurrentView'));
 		} catch (error) {
 			LogError('failed to switch to setting view');
 		}
@@ -57,7 +57,7 @@ UI.Settings = {
 	events: {
 		viewSwitcher: function () {
 			UI.Settings.viewSwitcher.on('click', 'li', function (event) {
-				UI.view.switchTo(UI.Settings.viewSwitcher, this.getAttribute('data-view'));
+				UI.view.switchTo(this.getAttribute('data-view'));
 
 				Settings.setItem('settingCurrentView', this.getAttribute('data-view'));
 			});

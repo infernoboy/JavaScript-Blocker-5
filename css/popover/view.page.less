@@ -1,4 +1,4 @@
-#page-view {
+#main-views-page {
 	width: 100%;
 
 	#page-modal-info {
@@ -75,13 +75,13 @@
 				position: relative;
 				display: none;
 				background: #fbfbfb;
-				padding: 2px 4px 0 2px;
+				padding: 4px 4px 2px 2px;
 				border-bottom: 1px solid #e5e5e5;
 
 				.more-info {
 					position: absolute;
 					right: 8px;
-					top: 3px;
+					top: 5px;
 				}
 
 				.jsb-info {
@@ -109,14 +109,14 @@
 			}
 
 			.page-host-editor {
-				padding-top: 1px;
+				padding-top: 3px;
 
 				&.floated-header {
 					position: absolute;
 				}
 
 				select + label {
-					margin-right: 1px;
+					margin-right: 4px;
 				}
 
 				.page-host-editor-when-framed + label {
@@ -141,7 +141,7 @@
 						margin-right: 3px;
 
 						select {
-							max-width: 99.5%;
+							max-width: 98.9%;
 						}
 					}
 
@@ -157,6 +157,10 @@
 
 				.jsb-info:not(.jsb-align-right) {
 					padding-right: 28px;
+				}
+
+				.page-host-first-visit-buttons {
+					margin-top: 10px;
 				}
 			}
 
@@ -483,9 +487,10 @@
 
 						.page-host-item-description {
 							.jsb-info {
-								color: #888;
-								margin-top: 1px;
+								color: #999;
+								margin-top: -1px;
 								margin-left: 19px;
+								text-shadow: 0 1px 0 #eee;
 							}
 						}
 
@@ -499,8 +504,12 @@
 			}
 
 			&.page-host-editing {
-				.page-host-items-container .page-host-item {
+				.page-host-columns .page-host-items-container .page-host-item {
 					padding-top: 3px;
+
+					&:not(:last-child) {
+						border-bottom-color: #f1f1f1;
+					}
 				}
 			}
 		}

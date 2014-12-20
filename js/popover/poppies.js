@@ -1,15 +1,12 @@
 "use strict";
 
 Object._extend(Poppy.scripts, {
-	mainMenu: function (poppy) {
-		$('#page-menu-show-unblocked-scripts', poppy.content).prop('checked', Settings.getItem('showUnblockedScripts'));
-		$('#page-menu-show-resource-url', poppy.content).prop('checked', Settings.getItem('showResourceURLs'));
-
+	'main-menu': function (poppy) {
 		poppy.content
 			.on('click', '#main-menu-about', function () {
 				poppy.close();
 
-				UI.view.switchTo(UI.view.viewSwitcher, '#about-view');
+				UI.view.switchTo('#main-views-about');
 			})
 
 			.on('click', '#main-menu-console', function (event) {
@@ -31,7 +28,7 @@ Object._extend(Poppy.scripts, {
 
 		poppy.content
 			.on('change', '#page-menu-show-unblocked-scripts', function () {
-				UI.view.switchTo(UI.view.viewSwitcher, '#page-view');
+				UI.view.switchTo('#main-views-page');
 
 				Settings.setItem('showUnblockedScripts', this.checked);
 
@@ -43,7 +40,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('change', '#page-menu-show-resource-url', function () {
-				UI.view.switchTo(UI.view.viewSwitcher, '#page-view');
+				UI.view.switchTo('#main-views-page');
 
 				var checked = this.checked;
 
@@ -52,6 +49,17 @@ Object._extend(Poppy.scripts, {
 				}, true);
 
 				Poppy.closeAll();
+			});
+	},
+
+	'rule-menu': function (poppy) {
+		poppy.content
+			.on('click', '#rule-menu-remove-temporary', function () {
+				globalPage.Rules.list.temporary.clear();
+
+				Poppy.closeAll();
+
+				Tabs.messageAll('reload');
 			});
 	},
 
