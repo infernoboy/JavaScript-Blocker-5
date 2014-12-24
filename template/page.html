@@ -1,5 +1,5 @@
 <noscript id="host-section">
-	<% var snapshotInUse = globalPage.Rules.list.active !== globalPage.Rules.list.user; %>
+	<% var snapshotInUse = globalPage.Rules.snapshotInUse(); %>
 
 	<div class="page-host-section <%=snapshotInUse ? 'page-host-snapshot' : ''%>" data-id="<%=self.id%>">
 		<div class="page-host-header">
@@ -21,6 +21,45 @@
 				</div><%
 			} %>
 
+		<% if (snapshotInUse) { %>
+			<div class="page-host-snapshot-in-use">
+				<p class="jsb-info jsb-embossed jsb-centered">Snapshot in use.</p>
+			</div><%
+		}
+
+		if (self.disabled) {
+			if (self.disabled.action > -1) { %>
+				<div class="page-host-disabled">
+					<p class="jsb-info jsb-embossed jsb-centered"><%=_('view.page.host.disabled')%></p>
+				</div><%
+			}
+		} else { %>
+			<div class="page-host-columns">
+				<div class="page-host-columns-resize" title="<%=_('view.page.host.double_click_resize')%>"></div>
+				<%=Template.create('page', 'host-column', {
+					stateType: 'allowed',
+					state: self.state.allowed || {}
+				}, null, true)%>
+				<%=Template.create('page', 'host-column', {
+					stateType: 'blocked',
+					state: self.state.blocked || {}
+				}, null, true)%>
+			</div>
+
+			<% if (self.state.unblocked) {
+				var unblockedKeys = Object.keys(self.state.unblocked);
+
+				unblockedKeys._remove(unblockedKeys.indexOf('script'));
+
+				if (Settings.getItem('showUnblockedScripts') || unblockedKeys.length) { %>
+					<%=Template.create('page', 'host-unblocked', {
+						stateType: 'unblocked',
+						state: self.state.unblocked
+					}, null, true)%><%
+				}
+			}
+		} %>
+		
 		<div class="page-host-editor">
 			<span class="more-info"></span>
 
@@ -61,7 +100,7 @@
 				</select><label></label>
 			</div>
 
-			<div class="page-host-editor-kinds jsb-info">
+			<div class="page-host-editor-kinds jsb-info jsb-hidden">
 			<%
 				var didBreak = false,
 						kinds = globalPage.Rules.__kinds,
@@ -116,45 +155,6 @@
 				</div>
 			</div>
 		</div>
-
-		<% if (snapshotInUse) { %>
-			<div class="page-host-snapshot-in-use">
-				<p class="jsb-info jsb-embossed jsb-centered">Snapshot in use.</p>
-			</div><%
-		}
-
-		if (self.disabled) {
-			if (self.disabled.action > -1) { %>
-				<div class="page-host-disabled">
-					<p class="jsb-info jsb-embossed jsb-centered"><%=_('view.page.host.disabled')%></p>
-				</div><%
-			}
-		} else { %>
-			<div class="page-host-columns">
-				<div class="page-host-columns-resize" title="<%=_('view.page.host.double_click_resize')%>"></div>
-				<%=Template.create('page', 'host-column', {
-					stateType: 'allowed',
-					state: self.state.allowed || {}
-				}, null, true)%>
-				<%=Template.create('page', 'host-column', {
-					stateType: 'blocked',
-					state: self.state.blocked || {}
-				}, null, true)%>
-			</div>
-
-			<% if (self.state.unblocked) {
-				var unblockedKeys = Object.keys(self.state.unblocked);
-
-				unblockedKeys._remove(unblockedKeys.indexOf('script'));
-
-				if (Settings.getItem('showUnblockedScripts') || unblockedKeys.length) { %>
-					<%=Template.create('page', 'host-unblocked', {
-						stateType: 'unblocked',
-						state: self.state.unblocked
-					}, null, true)%><%
-				}
-			}
-		} %>
 	</div>
 </noscript>
 

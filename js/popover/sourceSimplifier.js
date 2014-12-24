@@ -28,7 +28,7 @@ SourceSimplifier.__map = {
 	'Reddit': ['www.reddit.com'],
 	'Facebook': /^https?:\/\/([^\/]+\.)?facebook\.(com|net)\/.*$/,
 	'Chartbeat Tracking': ['static.chartbeat.com'],
-	'Google+': /(^https?:\/\/apis\.google\.com\/js\/plusone\.js$)|(^.*\/googleplus\..*$)/,
+	'Google Plus': /(^https?:\/\/apis\.google\.com\/js\/plusone\.js$)|(^.*\/googleplus\..*$)/,
 	'Google Advertisements': ['.googleadservices.com', 'googleadservices.com', 'pagead2.googlesyndication.com', '.doubleclick.net', 'doubleclick.net'],
 	'IntelliTXT Advertisements': /^https?:\/\/([^\/]+\.)?intellitxt\.com\/intellitxt\/.*$/,
 	'Scorecard Research Tracking': ['.scorecardresearch.com'],
@@ -76,7 +76,7 @@ SourceSimplifier.__map = {
 	'Peer39 Advertisements': ['stags.peer39.net'],
 	'AdSpeed Advertisements': /^https?:\/\/([^\/]+\.)?adspeed\.net\/.*$/,
 	'Effective Measure Advertisements': ['me-cdn.effectivemeasure.net'],
-	'PubMatic Advertisements': ['Adspubmatic.com'],
+	'PubMatic Advertisements': ['adspubmatic.com'],
 	'Moat Ad Advertisements': /^https?:\/\/([^\/]+\.)?moatads\.com\/.*$/,
 	'InsightExpress Tracking': /^https?:\/\/([^\/]+\.)?insightexpressai\.com\/.*$/,
 	'LimeLightNetworks Ads': /^https?:\/\/([^\/]+\.)?llnwd\.net\/.*$/,
@@ -109,5 +109,6 @@ SourceSimplifier.__map = {
 	'24/7 RealMedia Advertisements': /^(https?:\/\/([^\/]+\.)?247realmedia\.com\/.*)|(.*\/adstream_.*)|(.*\/realmedia\/ads\/.*)$/,
 	'OwnerIQ Tracking': /^https?:\/\/([^\/]+\.)?owneriq\.net\/.*$/,
 	'MIG Advertisements': /^https?:\/\/([^\/]+\.)?mookie1\.com\/.*$/,
-	'Rubicon Advertisements': ['.rubiconproject.com']
+	'Rubicon Advertisements': ['.rubiconproject.com'],
+	'TripleLift Advertisements': ['.3lift.com']
 };

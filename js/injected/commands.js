@@ -167,7 +167,7 @@ var Command = function (type, event) {
 			});
 
 			if (data.callback) {
-				if (result && typeof result.then == 'function')
+				if (result && typeof result.then === 'function')
 					var promise = result;
 				else
 					var promise = Promise.resolve(result);
@@ -637,7 +637,7 @@ var Command = function (type, event) {
 						PageNotification.totalShift();
 					})
 					.addEventListener('keypress', '.jsb-xhr-query-modify input', function (notification, event) {
-						if (event.keyCode == 3 || event.keyCode === 13) {
+						if (event.keyCode === 3 || event.keyCode === 13) {
 							this.blur();
 
 							response.meta.result.send = true;

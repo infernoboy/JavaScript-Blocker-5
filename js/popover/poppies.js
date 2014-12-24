@@ -1,6 +1,23 @@
 "use strict";
 
 Object._extend(Poppy.scripts, {
+	'disable-menu': function (poppy) {
+		poppy.content
+			.on('change', '#disable-menu-for', function () {
+				Settings.setItem('disableTime', parseInt(this.value, 10));
+			})
+
+			.on('click', '#disable-menu-for-disable', function () {
+				globalPage.Command.toggleDisabled(true);
+
+				globalPage.Utilities.Timer.timeout('autoEnableJSB', function () {
+					globalPage.Command.toggleDisabled(false, true);
+				}, Settings.getItem('disableTime'));
+
+				poppy.close();
+			});
+	},
+
 	'main-menu': function (poppy) {
 		poppy.content
 			.on('click', '#main-menu-about', function () {
@@ -23,14 +40,9 @@ Object._extend(Poppy.scripts, {
 	},
 
 	'page-menu': function (poppy) {
-		$('#page-menu-show-unblocked-scripts', poppy.content).prop('checked', Settings.getItem('showUnblockedScripts'));
-		$('#page-menu-show-resource-url', poppy.content).prop('checked', Settings.getItem('showResourceURLs'));
-
 		poppy.content
-			.on('change', '#page-menu-show-unblocked-scripts', function () {
+			.on('change', '#page-menu-show-page-editor, #page-menu-show-unblocked-scripts', function () {
 				UI.view.switchTo('#main-views-page');
-
-				Settings.setItem('showUnblockedScripts', this.checked);
 
 				UI.event.addCustomEventListener('poppyDidClose', function () {
 					globalPage.Page.requestPageFromActive();

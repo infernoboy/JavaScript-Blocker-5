@@ -525,6 +525,10 @@ var Rules = {
 		}
 
 		return '^' + url + endCapture.join('') + '$';
+	},
+
+	snapshotInUse: function () {
+		return Rules.list.active !== Rules.list.user;
 	}
 };
 

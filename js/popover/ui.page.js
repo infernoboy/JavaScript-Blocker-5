@@ -136,7 +136,10 @@ UI.Page = {
 	},
 
 	section: {
-		toggleEditMode: function (section, force, scrollToTop) {
+		toggleEditMode: function (section, force, quick) {
+			if (globalPage.Rules.snapshotInUse())
+				return;
+
 			var pageHostEditor = section.find('.page-host-editor').stop(true, true),
 					wasInEditMode = pageHostEditor.is(':visible');
 
@@ -150,12 +153,12 @@ UI.Page = {
 
 			editButtons.val(wasInEditMode ? _('view.page.host.edit') : _('view.page.host.done'));
 
-			pageHostEditor
-				.stop(true, true)
-				.slideToggle(225 * window.globalSetting.speedMultiplier, function () {
-					if (!wasInEditMode && scrollToTop)
-						section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 1);
-				});
+			pageHostEditor.stop(true, true);
+
+			if (quick)
+				pageHostEditor.toggle();
+			else
+				pageHostEditor.slideToggle(225 * window.globalSetting.speedMultiplier);
 		
 			items.toggle();
 
@@ -280,8 +283,6 @@ UI.Page = {
 
 			UI.Page.section.toggleEditMode(section, false);
 
-			UI.view.toTop(UI.view.views);
-
 			var tab = UI.Page.stateContainer.data('page').tab;
 
 			if (ruleWasCreated)
@@ -296,12 +297,27 @@ UI.Page = {
 	},
 
 	events: {
+		pageDidRender: function (event) {
+			if (Settings.getItem('showPageEditorImmediately'))
+				$('.page-host-section', UI.Page.stateContainer).each(function () {
+					UI.Page.section.toggleEditMode($(this), true, true);
+				});
+		},
+
 		openedPopover: function () {
 			UI.Page.clear();
 
 			globalPage.Page.requestPageFromActive();
 
 			UI.event.trigger('popoverOpened');
+		},
+
+		viewAlreadyActive: function (event) {
+			if (event.detail === '#main-views-page') {
+				UI.Page.clear();
+
+				globalPage.Page.requestPageFromActive();
+			}
 		},
 
 		viewWillSwitch: function (event) {
@@ -324,6 +340,10 @@ UI.Page = {
 
 		sectionSwitchedOutOfEditMode: function (event) {
 			$('.page-host-item', event.detail).removeClass('page-host-item-disabled');
+
+			setTimeout(function () {
+				UI.view.views.trigger('scroll');
+			}, 225 * window.globalSetting.speedMultiplier);
 		},
 
 		selectCustomOptionChanged: function (event) {
@@ -528,7 +548,7 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item .page-host-item-source', function (event) {
-					if (globalPage.Rules.list.active !== globalPage.Rules.list.user)
+					if (globalPage.Rules.snapshotInUse())
 						return (new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true))
 							.setContent(Template.create('main', 'jsb-readable', {
 								string: _('view.page.host.snapshot_in_use_no_rules')
@@ -541,7 +561,7 @@ UI.Page = {
 					if (isItem)
 						self.parents('.page-host-item').find('.page-host-item-edit-check').prop('checked', true);
 
-					UI.Page.section.toggleEditMode(self.parents('.page-host-section'), null, !isItem);
+					UI.Page.section.toggleEditMode(self.parents('.page-host-section'));
 				})
 
 				.on('click', '.page-host-unblocked .page-host-items[data-kind="script"] .page-host-item-source', function (event) {
@@ -597,6 +617,8 @@ UI.Page = {
 
 Template.load('page');
 
+UI.event.addCustomEventListener('pageDidRender', UI.Page.events.pageDidRender);
+UI.event.addCustomEventListener('viewAlreadyActive', UI.Page.events.viewAlreadyActive);
 UI.event.addCustomEventListener('viewWillSwitch', UI.Page.events.viewWillSwitch);
 UI.event.addCustomEventListener('viewDidSwitch', UI.Page.events.viewDidSwitch);
 UI.event.addCustomEventListener('awaitPageFromTabTimeout', UI.Page.events.awaitPageFromTabTimeout);

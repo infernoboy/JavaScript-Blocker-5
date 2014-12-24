@@ -16,6 +16,12 @@
 
 		.page-host-section {
 			border-bottom: 1px solid #ddd;
+			margin-bottom: 10px;
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+			&:not(:first-child) {
+				border-top: 1px solid #ddd;
+			}
 
 			&-disabled {
 				opacity: 0.3;
@@ -110,6 +116,8 @@
 
 			.page-host-editor {
 				padding-top: 3px;
+				border-top: 1px solid #e5e5e5;
+				border-bottom: none;
 
 				&.floated-header {
 					position: absolute;
@@ -333,7 +341,7 @@
 						}
 
 						&[data-action="6"] {
-							background: #f0f0f0;
+							background: #f2f2f2;
 						}
 
 						&[data-action="8"] {
@@ -413,7 +421,8 @@
 						}
 
 						.page-host-item-source-container,
-						.page-host-item-edit-container textarea {
+						.page-host-item-edit-container textarea,
+						.page-host-item-description .jsb-info, {
 							&:hover::-webkit-scrollbar-thumb {
 								background: rgba(0, 0, 0, 0.3);
 							}
@@ -487,10 +496,11 @@
 
 						.page-host-item-description {
 							.jsb-info {
-								color: #999;
+								color: rgba(0, 0, 0, 0.35);
 								margin-top: -1px;
 								margin-left: 19px;
-								text-shadow: 0 1px 0 #eee;
+								text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+								white-space: pre;
 							}
 						}
 

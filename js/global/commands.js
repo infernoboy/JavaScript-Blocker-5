@@ -531,8 +531,15 @@ Command.setupContentURLs = function () {
 	};
 };
 
-Command.toggleDisabled = function (force) {
+Command.toggleDisabled = function (force, doNotReload) {
 	window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
+
+	Utilities.Timer.remove('timeout', 'autoEnableJSB');
+
+	if (window.globalSetting.disabled && Settings.getItem('alwaysUseTimedDisable'))
+		Utilities.Timer.timeout('autoEnableJSB', function () {
+			Command.toggleDisabled(false, true);
+		}, Settings.getItem('disableTime'));
 
 	Command.setToolbarImage();
 
@@ -545,10 +552,13 @@ Command.toggleDisabled = function (force) {
 			Page.requestPageFromActive();
 	}, true);
 
-	if (window.UI)
-		setTimeout(function () {
-			Tabs.messageAll('reload');
-		}, 150);
+	if (window.UI && !doNotReload)
+		if (Settings.getItem('disablingReloadsAll'))
+			setTimeout(function () {
+				Tabs.messageAll('reload');
+			}, 150);
+		else
+			Tabs.messageActive('reload');
 };
 
 Command.setToolbarImage = function (event) {

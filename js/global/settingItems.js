@@ -97,6 +97,43 @@ Settings.settings = {
 		props: {
 			type: 'many-boolean'
 		}
+	}, {
+		setting: 'persistDisabled',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		setting: 'disablingReloadsAll',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		setting: 'showPageEditorImmediately',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		setting: 'alwaysUseTimedDisable',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		setting: 'disableTime',
+		props: {
+			type: 'number',
+			options: [
+				[5000, '5 seconds'],
+				[60000, '1 minute'],
+				[300000, '5 minutes'],
+				[600000, '10 minutes'],
+				[1800000, '30 minutes']
+			],
+			default: 5000
+		}
 	}],
 
 	// General Settings
@@ -125,13 +162,6 @@ Settings.settings = {
 
 				Popover.window.document.documentElement.classList.toggle('jsb-large-font', useLargeFont);
 			}
-		}
-	}, {
-		setting: 'persistDisabled',
-		props: {
-			type: 'boolean',
-			label: 'Disabled mode persist across Safari restarts',
-			default: false
 		}
 	}, {
 		setting: 'showUnblockedScripts',

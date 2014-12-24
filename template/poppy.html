@@ -8,6 +8,31 @@
 	</div>
 </noscript>
 
+<noscript id="disable-menu">
+	<h3 class="jsb-centered"><%=_('view_toolbar.disable')%></h3>
+	<div id="disable-menu" class="generic-menu">
+		<div class="generic-menu-menu">
+			<label for="disable-menu-for">Disable for:&nbsp;</label>
+			<select id="disable-menu-for" data-inlineSetting="disableTime">
+			<%
+				var disableTimes = Settings.map.disableTime.props.options,
+						disableTime = Settings.getItem('disableTime');
+
+				for (var i = 0; i < disableTimes.length; i++) { %>
+					<option value="<%=disableTimes[i][0]%>"><%=disableTimes[i][1]%></option><%
+				} %>
+			</select><label></label>&nbsp;
+			<input type="button" id="disable-menu-for-disable" value="<%=_('view_toolbar.disable')%>" />
+		</div>
+		<div class="horizontal-divider"></div>
+		<ul class="generic-menu-options">
+			<li><input type="checkbox" id="disable-menu-always-timed" data-inlineSetting="alwaysUseTimedDisable" /> <label for="disable-menu-always-timed"><%=_('disable_menu.always_use_timed_disable')%></label></li>
+			<li><input type="checkbox" id="disable-menu-persist" data-inlineSetting="persistDisabled" /> <label for="disable-menu-persist"><%=_('disable_menu.stay_disabled')%></label></li>
+			<li><input type="checkbox" id="disable-menu-reload-all" data-inlineSetting="disablingReloadsAll" /> <label for="disable-menu-reload-all"><%=_('disable_menu.reload_all_pages')%></label></li>
+		</ul>
+	</div>
+</noscript>
+
 <noscript id="main-menu">
 	<h3 class="jsb-centered">JavaScript Blocker <%=Version.display%></h3>
 	<div id="main-menu" class="generic-menu">
@@ -30,9 +55,10 @@
 	<h3 class="jsb-centered"><%=_('view_toolbar.page')%></h3>
 	<div id="page-menu" class="generic-menu">
 		<ul class="generic-menu-options">
+			<li><input type="checkbox" id="page-menu-show-page-editor" data-inlineSetting="showPageEditorImmediately" /> <label for="page-menu-show-page-editor"><%=_('page_menu.show_page_editor')%></label></li>
 			<li><input type="checkbox" id="page-menu-show-hidden" /> <label for="page-menu-show-hidden"><%=_('page_menu.show_hidden')%></label></li>
-			<li><input type="checkbox" id="page-menu-show-unblocked-scripts" /> <label for="page-menu-show-unblocked-scripts"><%=_('page_menu.show_unblocked_scripts')%></label></li>
-			<li><input type="checkbox" id="page-menu-show-resource-url" /> <label for="page-menu-show-resource-url"><%=_('page_menu.show_resource_url')%></label></li>
+			<li><input type="checkbox" id="page-menu-show-unblocked-scripts" data-inlineSetting="showUnblockedScripts" /> <label for="page-menu-show-unblocked-scripts"><%=_('page_menu.show_unblocked_scripts')%></label></li>
+			<li><input type="checkbox" id="page-menu-show-resource-url" data-inlineSetting="showResourceURLs" /> <label for="page-menu-show-resource-url"><%=_('page_menu.show_resource_url')%></label></li>
 		</ul>
 	</div>
 </noscript>

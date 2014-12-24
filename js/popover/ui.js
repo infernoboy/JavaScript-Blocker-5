@@ -129,6 +129,15 @@ var UI = {
 
 					UI.event.trigger('dragEnd');
 				}
+			})
+
+			.on('mousemove mouseup click', function (event) {
+				var timerExisted = Utilities.Timer.remove('timeout', 'showPoppyMenu');
+
+				if (timerExisted)
+					setTimeout(function () {
+						$('*[data-poppyMenuWillShow]', UI.container).removeAttr('data-poppyMenuWillShow');
+					}, 100);
 			});
 
 		$(document)
@@ -497,17 +506,9 @@ var UI = {
 				})
 
 				.on('mousedown', '*[data-poppy]', function (event) {
-					Utilities.Timer.timeout(this, function (event, tab) {						
+					Utilities.Timer.timeout('showPoppyMenu', function (event, tab) {						
 						UI.view.showPoppyMenu(tab.querySelector('.poppy-menu-target'), event, true);
 					}, 200, [event, this]);
-				})
-
-				.on('mousemove mouseup click', '*[data-poppy]', function (event) {
-					Utilities.Timer.remove('timeout', this);
-
-					setTimeout(function (element) {
-						element.removeAttribute('data-poppyMenuWillShow');
-					}, 100, this);
 				})
 
 				.on('click', '#full-toggle', function () {
@@ -560,21 +561,28 @@ var UI = {
 			this.switchTo(this.__default);
 		},
 
-		toTop: function (viewContainer, evenIfPoppy) {
+		toTop: function (viewContainer, evenIfPoppy, onComplete) {
 			if (UI.event.trigger('viewWillScrollToTop', viewContainer))
 				return false;
+
+			onComplete = onComplete || $.noop;
 
 			if (!evenIfPoppy && viewContainer.scrollTop() === 0 && Poppy.poppyExist())
 				UI.event.addCustomEventListener('poppyWillCloseAll', function (event) {
 					event.preventDefault();
 				}, true);
 
-			viewContainer
-				.animate({
-					scrollTop: 0,
-					scrollLeft: 0
-				}, 225 * window.globalSetting.speedMultiplier)
-				.trigger('scroll');
+			if (viewContainer.scrollTop() === 0 && viewContainer.scrollLeft() === 0) {
+				// viewContainer.trigger('scroll');
+
+				onComplete();
+			} else
+				viewContainer
+					.animate({
+						scrollTop: 0,
+						scrollLeft: 0
+					}, 225 * window.globalSetting.speedMultiplier, onComplete)
+					.trigger('scroll');
 		},
 
 		switchTo: function (viewID) {
@@ -591,7 +599,9 @@ var UI = {
 			var activeID = viewContainer.attr('data-activeView');
 
 			if (activeID === viewID)
-				return UI.view.toTop(viewContainer);
+				return UI.view.toTop(viewContainer, false, function () {
+					UI.event.trigger('viewAlreadyActive', activeID)
+				});
 
 			var previousView = viewContainer.find(activeID),
 					viewSwitcher = $('.view-switcher[data-container="#' + viewContainer.attr('id') + '"]');

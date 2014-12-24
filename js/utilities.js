@@ -98,23 +98,24 @@ var Utilities = {
 	},
 
 	throttle: function (fn, delay, extraArgs, debounce) {
-		var timeout = null, last = 0;
+		var timeout = null,
+				last = 0;
+
+		var execute = function (args) {
+			last = Date.now();
+
+			fn.apply(this, Utilities.makeArray(args).concat(extraArgs || []));
+		};
 
 		return function () {
-			var elapsed = Date.now() - last, args = Utilities.makeArray(arguments).concat(extraArgs || []);
-
-			var execute = function () {
-				last = Date.now();
-
-				fn.apply(this, args);
-			}
+			var elapsed = Date.now() - last;
 
 			clearTimeout(timeout);
 
 			if (elapsed > delay && !debounce)
-				execute.call(this)
+				execute.call(this, arguments)
 			else
-				timeout = setTimeout(execute.bind(this), debounce ? delay : delay - elapsed);
+				timeout = setTimeout(execute.bind(this, arguments), debounce ? delay : delay - elapsed);
 		};
 	},
 
@@ -402,7 +403,8 @@ var Utilities = {
 		remove: function () {
 			var timerID;
 
-			var args = Utilities.makeArray(arguments),
+			var existed = false,
+					args = Utilities.makeArray(arguments),
 					type = args.shift();
 
 			if (!args.length) {
@@ -416,12 +418,16 @@ var Utilities = {
 				timerID = this.__findReference(type, args[i]);
 
 				if (timerID) {
-					if (type == 'timeout')
+					if (type === 'timeout')
 						clearTimeout(this.timers[type][timerID].timer);
+
+					existed = true;
 
 					delete this.timers[type][timerID];
 				}
 			}
+
+			return existed;
 		}
 	},
 

@@ -33,9 +33,15 @@ UI.Settings = {
 
 		UI.Settings.events.viewSwitcher();
 
-		UI.event.addCustomEventListener('poppyDidShow', function () {
-			UI.Settings.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
-		});
+		UI.event
+			.addCustomEventListener('poppyDidShow', function () {
+				UI.Settings.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
+			})
+
+			.addCustomEventListener('elementWasAdded', function (event) {
+				if (event.detail.querySelectorAll)
+					UI.Settings.bindInlineSettings(event.detail.querySelectorAll('*[data-inlineSetting]'));
+			})
 
 		try {
 			UI.view.switchTo(Settings.getItem('settingCurrentView'));
@@ -54,13 +60,58 @@ UI.Settings = {
 		UI.Settings.views.append(view);
 	},
 
+	bindInlineSettings: function (inlineSettings) {
+		for (var i = inlineSettings.length; i--;) {
+			var element = $(inlineSettings[i]);
+
+			if (element.attr('data-inlineSettingBound'))
+				return;
+
+			element.attr('data-inlineSettingBound', 1);
+
+			var settingName = element.attr('data-inlineSetting'),
+					settingRef = Settings.map[settingName],
+					currentValue = Settings.getItem(settingName);
+
+			if (settingRef.props.options) {
+				switch (settingRef.props.type) {
+					case 'number':
+						var options = $('option', element);
+
+						for (var b = options.length; b--;) 
+							if (parseInt(options[b].value, 10) === currentValue) {
+								element[0].selectedIndex = b;
+
+								break;
+							}
+
+						element.change(function () {
+							Settings.setItem(this.getAttribute('data-inlineSetting'), parseInt(this.value, 10));
+						});
+					break;
+				}
+			} else {
+				switch (settingRef.props.type) {
+					case 'boolean':
+						element
+							.prop('checked', currentValue)
+							.change(function () {
+								Settings.setItem(this.getAttribute('data-inlineSetting'), this.checked);
+							});
+					break;
+				}
+			}
+		}
+	},
+
 	events: {
 		viewSwitcher: function () {
-			UI.Settings.viewSwitcher.on('click', 'li', function (event) {
-				UI.view.switchTo(this.getAttribute('data-view'));
+			UI.Settings.viewSwitcher
+				.on('click', 'li', function (event) {
+					UI.view.switchTo(this.getAttribute('data-view'));
 
-				Settings.setItem('settingCurrentView', this.getAttribute('data-view'));
-			});
+					Settings.setItem('settingCurrentView', this.getAttribute('data-view'));
+				});
 		}
 	}
 };
