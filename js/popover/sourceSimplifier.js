@@ -8,9 +8,13 @@ var SourceSimplifier = {
 			ref = SourceSimplifier.__map[simplified];
 
 			if (ref instanceof Array) {
-				for (var i = ref.length; i--;)
-					if (host._endsWith(ref[i]))
+				for (var i = ref.length; i--;) {
+					if (ref[i] instanceof RegExp) {
+						if (ref[i].test(url.toLowerCase()))
+							return simplified
+					} else if ((host[0] === '.' && host._endsWith(ref[i])) || host === ref[i])
 						return simplified;
+				}
 			} else if ((ref instanceof RegExp) && ref.test(url.toLowerCase()))
 				return simplified;
 		}
@@ -23,6 +27,7 @@ SourceSimplifier.__map = {
 	'Advertisements': /(^.*\?file=ads&.*$)|(^https?:\/\/([^\/]+\.)?(adsafeprotected|bkrtx)\.com\/.*$)|(^.*\/recommendations\/ad\..*$)|(^.*\/smartbanner\/.*$)|(^https?:\/\/([^\/]+\.)?ads\.[^\.]+\..*\/.*$)|(^.*:\/\/ads\..*$)|(^.*_(160x600|728x90|320x250)_?\..*$)|(^.*(160x600|728x90)\.html?.*$)|(^.*=300x250&.*$)/,
 	'Tracking': /^(https?:\/\/([^\/]+\.)?a\.wikia-beacon\.com\/.*)|(.*\/analytics\/js\/.*)$/,
 
+	'JavaScript Frameworks': ['ajax.googleapis.com'],
 	'Google Tracking': /^(.*\/google-analytics-.*)|(https?:\/\/([^\/]+\.)?(google-analytics|googletagservices)\.com\/.*)$/,
 	'Twitter': ['platform.twitter.com', 'www.twitter.com'],
 	'Reddit': ['www.reddit.com'],
@@ -65,24 +70,24 @@ SourceSimplifier.__map = {
 	'Bounce Exchange Tracking': ['bounceexchange.com'],
 	'IndustryBrains Advertisements': /^https?:\/\/([^\/]+\.)?industrybrains\.com([^a-zA-Z0-9_\.%-]+|$).*$/,
 	'Dynamic Logic Advertisements': ['content.dl-rms.com'],
-	'AddThis Social': /^https?:\/\/([^\/]+\.)?addthis\.com\/.*$/,
-	'ShareThis Social': /^https?:\/\/([^\/]+\.)?sharethis\.com\/.*$/,
+	'AddThis Social': ['addthis.com', '.addthis.com'],
+	'ShareThis Social': ['sharethis.com', '.sharethis.com'],
 	'Tumblr': ['platform.tumblr.com'],
 	'Sharethrough Advertisements': ['apis.sharethrough.com', 'native.sharethrough.com'],
-	'Bizographics Advertisements': /^https?:\/\/([^\/]+\.)?bizographics\.com\/.*$/,
-	'AdRoll Advertisements': /^https?:\/\/([^\/]+\.)?adroll\.com\/.*$/,
-	'Compete Tracking': /^https?:\/\/([^\/]+\.)?compete\.com\/.*$/,
-	'MaxMind Tracking': /^https?:\/\/([^\/]+\.)?maxmind\.com\/.*$/,
+	'Bizographics Advertisements': ['bizographics.com', '.bizographics.com'],
+	'AdRoll Advertisements': ['adroll.com', '.adroll.com'],
+	'Compete Tracking': ['compete.com', '.compete.com'],
+	'MaxMind Tracking': ['maxmind.com', '.maxmind.com'],
 	'Peer39 Advertisements': ['stags.peer39.net'],
-	'AdSpeed Advertisements': /^https?:\/\/([^\/]+\.)?adspeed\.net\/.*$/,
+	'AdSpeed Advertisements': ['adspeed.com', '.adspeed.com'],
 	'Effective Measure Advertisements': ['me-cdn.effectivemeasure.net'],
 	'PubMatic Advertisements': ['adspubmatic.com'],
-	'Moat Ad Advertisements': /^https?:\/\/([^\/]+\.)?moatads\.com\/.*$/,
-	'InsightExpress Tracking': /^https?:\/\/([^\/]+\.)?insightexpressai\.com\/.*$/,
-	'LimeLightNetworks Ads': /^https?:\/\/([^\/]+\.)?llnwd\.net\/.*$/,
+	'Moat Ad Advertisements': ['moatads.com', '.moatads.com'],
+	'InsightExpress Tracking': ['insightexpressai.com', '.insightexpressai.com'],
+	'LimeLightNetworks Ads': ['llnwd.net', '.llnwd.net'],
 	'LinkedIn': ['platform.linkedin.com'],
 	'nRelate Recommendations': ['api.nrelate.com'],
-	'Wordpress Tracking': /^https?:\/\/([^\/]+\.)?stats\.wordpress\.com\/.*$/,
+	'Wordpress Tracking': ['stats.wordpress.com', 'stats.wp.com'],
 	'Criteo Advertisements': /^https?:\/\/([^\/]+\.)?criteo\.com\/.*$/,
 	'Visual Revenue Tracking': /^https?:\/\/([^\/]+\.)?visualrevenue\.com\/.*$/,
 	'Newsinc Tracking': /^https?:\/\/([^\/]+\.)?newsinc\.com\/.*$/,

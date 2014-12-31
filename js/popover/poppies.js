@@ -41,7 +41,7 @@ Object._extend(Poppy.scripts, {
 
 	'page-menu': function (poppy) {
 		poppy.content
-			.on('change', '#page-menu-show-page-editor, #page-menu-show-unblocked-scripts', function () {
+			.on('change', '#page-menu-show-page-editor, #page-menu-show-hidden, #page-menu-show-unblocked-scripts, #page-menu-show-item-description', function () {
 				UI.view.switchTo('#main-views-page');
 
 				UI.event.addCustomEventListener('poppyDidClose', function () {

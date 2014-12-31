@@ -28,6 +28,7 @@ var ToolbarItems = {
 
 		return this;
 	},
+
 	image: function (path) {
 		safari.extension.toolbarItems.forEach(function (toolbarItem) {
 			toolbarItem.image = ExtensionURL(path);
@@ -35,9 +36,11 @@ var ToolbarItems = {
 
 		return this;
 	},
+
 	visible: function () {
 		return safari.extension.toolbarItems && safari.extension.toolbarItems.length > 0;
 	},
+
 	disabled: function (state, tab) {
 		safari.extension.toolbarItems.forEach(function (toolbarItem) {
 			if (!tab || tab === toolbarItem.browserWindow.activeTab)
@@ -45,6 +48,16 @@ var ToolbarItems = {
 		});
 
 		return this;
+	},
+
+	getPopover: function () {
+		var popover = null;
+
+		safari.extension.toolbarItems.forEach(function (toolbarItem) {
+			popover = toolbarItem.popover;
+		});
+
+		return popover;
 	},
 
 	setPopover: function () {
@@ -65,9 +78,24 @@ var Popover = {
 	popover: null,
 
 	create: function (id, file, width, height) {
+		this.remove({
+			identifier: id
+		});
+
 		this.popover = safari.extension.createPopover(id, file, width, height);
 
 		return this.popover;
+	},
+
+	remove: function (popover) {
+		this.hide();
+
+		popover = popover || this.popover;
+
+		if (popover && popover.identifier)
+			safari.extension.removePopover(popover.identifier);
+
+		this.popover = null;
 	},
 
 	get window () {
@@ -198,6 +226,7 @@ var SettingStore = {
 
 		return value;
 	},
+
 	getJSON: function (key, defaultValue) {
 		var value = this.getItem(key, undefined, true);
 
@@ -213,6 +242,7 @@ var SettingStore = {
 			return defaultValue;
 		}
 	},
+
 	setItem: function (key, value, noCache) {
 		if (['setItem', 'getItem', 'removeItem']._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
@@ -224,17 +254,35 @@ var SettingStore = {
 
 		safari.extension.settings.setItem(key, value);
 	},
+
 	setJSON: function (key, value) {		
 		safari.extension.settings.setItem(key, JSON.stringify(value));
 	},
+
 	removeItem: function (key) {
 		delete this.__cache[key];
 
 		safari.extension.settings.removeItem(key);
 	},
+
 	all: function () {
 		return safari.extension.settings;	
 	},
+
+	export: function () {
+		return JSON.stringify(this.all());
+	},
+
+	import: function (settings) {
+		try {
+			var settings = Object._isPlainObject(settings) ? settings : JSON.parse(settings);
+		} catch (e) {
+			return false;
+		}
+
+		return settings;
+	},
+
 	clear: function () {
 		this.__cache = {};
 

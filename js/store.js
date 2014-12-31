@@ -240,6 +240,7 @@ var Store = (function () {
 	});
 
 	Store.BREAK = Utilities.Token.generate();
+	Store.ALLOW_SAVE = true;
 
 	Store.prototype.__parent = undefined;
 	Store.prototype.__data = {};
@@ -249,10 +250,8 @@ var Store = (function () {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
-		if (this.save)
+		if (this.save && Store.ALLOW_SAVE)
 			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
-				// store.triggerEvent('storeWillSave');
-
 				console.time('SAVED ' + store.id);
 
 				Settings.__method('setItem', store.id, store.readyJSON());
@@ -309,10 +308,6 @@ var Store = (function () {
 	Store.prototype.reload = function (defaultValue) {
 		if (!this.save)
 			throw new Error('cannot reload a store that is not saved.');
-
-		this.destroy(true, true);
-
-		delete this.destroyed;
 
 		this.load(defaultValue);
 	};

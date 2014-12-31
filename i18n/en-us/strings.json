@@ -21,6 +21,10 @@
 	"view.page.no_info": "Did not receive a page from the active tab.",
 	"view.page.from_cache": "This page was loaded from the cache and may not contain all of the page's items.",
 
+	"view.page.header.top": "Top",
+	"view.page.header.frame": "Frame",
+	"view.page.header.hidden_item": "1 hidden item",
+	"view.page.header.hidden_items": "{0} hidden items",
 	"view.page.host.double_click_resize": "Click and drag to resize; double-click for an even split",
 	"view.page.host.editor.when_framed": "Apply rules only when page is loaded within a frame",
 	"view.page.host.editor.always": "Always",
@@ -29,6 +33,7 @@
 	"view.page.host.editor.block": "block",
 	"view.page.host.editor.allow": "allow",
 	"view.page.host.editor.hide": "hide",
+	"view.page.host.editor.show": "show",
 	"view.page.host.editor.enable": "enable",
 	"view.page.host.editor.disable": "disable",
 	"view.page.host.editor.checked_items": "checked items",
@@ -41,7 +46,7 @@
 	"view.page.host.edit": "Edit",
 	"view.page.host.column.allowed": "Allowed",
 	"view.page.host.column.blocked": "Blocked",
-	"view.page.host.column.unblocked": "Not Blockable:",
+	"view.page.host.column.unblocked": "Not Blockable",
 	"view.page.host.count_type.item": "item",
 	"view.page.host.count_type.items": "items",
 	"view.page.host.count_type.host": "host",
@@ -60,6 +65,7 @@
 	"view.page.host.kind.special": "Other Features",
 	"view.page.host.kind.user_script": "User Scripts",
 
+	"view.page.editor.not": "not",
 	"view.page.editor.duration.title": "Select how long the rules should last",
 	"view.page.editor.kind.title": "Select the action the rules will take",
 	"view.page.editor.which.title": "Select which items to create rules with",
@@ -103,6 +109,7 @@
 	"page_menu.show_resource_url": "Show resource URLs",
 	"page_menu.show_hidden": "Show hidden items",
 	"page_menu.show_unblocked_scripts": "Show scripts that can't be blocked",
+	"page_menu.show_item_description": "Show item description",
 
 	"rule_menu.remove_temporary": "Remove Temporary Rules",
 
@@ -125,6 +132,7 @@
 	"first_visit.unblock": "Unblock",
 	"first_visit.unblock_more_info": "Unblocking resources will let your settings determine which items should be blocked; it doesn't necessarily mean everything will be allowed.",
 
+	"settings.safari_restart": "You have to restart Safari in order for the imported settings to take effect.",
 	"settings.general": "General",
 	"settings.rules": "Rules",
 	"settings.snapshots": "Snapshots",
@@ -136,7 +144,7 @@
 	"special.anchor_titles.blocked": "Show link href on hover",
 	"special.anchor_titles.allowed": "Don't show link href on hover",
 	"special.simple_referrer": "Links sending referrers",
-	"special.simple_referrer.blocked": "Block links from sending referers",
+	"special.simple_referrer.blocked": "Prevent links from sending referers",
 	"special.simple_referrer.allowed": "Allow links to send referers",
 	"special.canvas_data_url": "Canvas data URL access",
 	"special.canvas_data_url.blocked": "Help prevent canvas fingerprinting",

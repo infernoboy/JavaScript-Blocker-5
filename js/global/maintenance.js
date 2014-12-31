@@ -31,9 +31,7 @@ var Maintenance = {
 };
 
 $(function () {
-	Object.defineProperty(window, 'GlobalPageReady', {
-		value: true
-	});
+	window.GlobalPageReady = true;
 
 	Maintenance.event.trigger('globalPageReady', true);
 });

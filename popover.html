@@ -14,18 +14,29 @@
 	
 	<title></title>
 		
-	<link rel="stylesheet" href="css/popover/base.css" type="text/css" />
-	<link rel="stylesheet" href="css/popover/poppy.css" type="text/css" />
-	<link rel="stylesheet" href="" type="text/css" id="large-style"/>
-	<link rel="stylesheet" href="" type="text/css" id="theme-style"/>
-	<link rel="stylesheet" href="i18n/en-us/style.css" type="text/css" id="language-style"/>
+	<link rel="stylesheet/less" href="css/popover/base.less" type="text/css" />
+	<link rel="stylesheet/less" href="css/popover/poppy.less" type="text/css" />
+	<link rel="stylesheet/less" href="i18n/en-us/style.less" type="text/css" id="language-style"/>
 	<link rel="stylesheet" href="css/popover/highlight.css" />
 
-	<script src="js/safari.js"></script>	
+	<script src="js/safari.js"></script>
 	<script src="js/event.js"></script>	
 	<script src="js/template.js"></script>
 	<script src="js/utilities.js"></script>
 	<script src="js/popover/popover.js"></script>
+
+	<script>
+		var less = {
+			env: 'production',
+			isFileProtocol: true,
+			useFileCache: false,
+			modifyVars: {
+				baseColor: Settings.getItem('baseColor')
+			}
+		};
+	</script>
+
+	<script src="js/popover/less.js"></script>
 	<script src="js/popover/ui.js"></script>
 	<script src="js/popover/ui.setup.js"></script>
 	<script src="js/popover/ui.settings.js"></script>

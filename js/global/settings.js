@@ -262,6 +262,39 @@ var Settings = {
 		}
 
 		return Settings.map;
+	},
+
+	export: function () {
+		return SettingStore.export();
+	},
+
+	import: function (settings) {
+		var settings = SettingStore.import(settings);
+
+		if (!settings)
+			return false;
+
+		Store.ALLOW_SAVE = false;
+
+		SettingStore.clear();
+
+		for (var setting in settings)
+			try {
+				if (settings[setting] && settings[setting].STORE)
+					SettingStore.setItem(setting, settings[setting]);
+				else
+					Settings.setItem(setting, settings[setting]);
+			} catch (e) {
+				LogError('failed to import setting - ' + setting, e);
+			}
+
+		UI.view.switchTo('#main-views-page');
+
+		UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch'], function (event) {
+			event.preventDefault();
+
+			UI.Page.showModalInfo(_('settings.safari_restart'));
+		});
 	}
 };
 

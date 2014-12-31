@@ -14,6 +14,8 @@ UI.Page = {
 		UI.Page.notification.hide();
 
 		var pageInfo = page.tree(),
+				showHiddenItems = Settings.getItem('showHiddenItems'),
+				showResourceURLs = Settings.getItem('showResourceURLs'),
 				renderedSections = $('<div />');
 
 		renderedSections.append(Template.create('page', 'host-section', pageInfo));
@@ -21,23 +23,57 @@ UI.Page = {
 		for (var frameID in pageInfo.frames)
 			renderedSections.append(Template.create('page', 'host-section', pageInfo.frames[frameID]));
 
+		var sections = renderedSections.children();
+
 		$('.page-host-item-edit-container', renderedSections).hide();
 
-		$('.page-host-item', renderedSections).each(function (i) {
-			var self = $(this),
-					resourceIDs = JSON.parse(this.getAttribute('data-resourceIDs')),
-					resources = self.data('resources', {}).data('resources');
+		sections.each(function () {
+			var	hiddenCount = 0,
+					hiddenCountText = $('.page-host-hidden-count', this);
 
-			for (var i = resourceIDs.length; i--;)
-				resources[resourceIDs[i]] = pageInfo._findKey(resourceIDs[i]);
+			$('.page-host-item', this).each(function (i) {
+				var item = $(this),
+						itemIsHidden = false,
+						allResourcesHidden = true,
+						resourceIDs = JSON.parse(this.getAttribute('data-resourceIDs')),
+						resources = item.data('resources', {}).data('resources');
+
+				for (var i = resourceIDs.length; i--;) {
+					resources[resourceIDs[i]] = pageInfo._findKey(resourceIDs[i]);
+
+					if (resources[resourceIDs[i]].shouldHide()) {
+						if (i === 0 || showResourceURLs)
+							hiddenCount++;
+
+						itemIsHidden = true;
+
+						if (showHiddenItems)
+							item.addClass('page-host-item-rule-hidden');
+					} else
+						allResourcesHidden = false;
+				}
+
+				if (itemIsHidden && allResourcesHidden && !showHiddenItems) {
+					var parent = item.parent();
+
+					item.remove();
+
+					if (!parent.children().length)
+						parent.prev().addBack().remove();
+				}
+
+			});
+
+			if (hiddenCount)
+				hiddenCountText.text(_('view.page.header.' + (hiddenCount === 1 ? 'hidden_item' : 'hidden_items'), [hiddenCount]));
 		});
 
-		UI.Page.events.bindSectionEvents(renderedSections, page, pageInfo);
+		UI.Page.events.bindSectionEvents(sections, page, pageInfo);
 
 		UI.Page.stateContainer
 			.empty()
 			.data('page', page)
-			.append(renderedSections.children())
+			.append(sections)
 			.find('.page-host-editor-kind')
 			.trigger('change');
 
@@ -153,12 +189,14 @@ UI.Page = {
 
 			editButtons.val(wasInEditMode ? _('view.page.host.edit') : _('view.page.host.done'));
 
-			pageHostEditor.stop(true, true);
-
 			if (quick)
-				pageHostEditor.toggle();
-			else
-				pageHostEditor.slideToggle(225 * window.globalSetting.speedMultiplier);
+				pageHostEditor.toggle().css('margin-top', 0);
+			else {
+				if (wasInEditMode)
+					pageHostEditor.marginSlideUp(310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+				else
+					pageHostEditor.marginSlideDown(310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+			}
 		
 			items.toggle();
 
@@ -172,15 +210,16 @@ UI.Page = {
 			var ruleWasCreated = false,
 					Rules = globalPage.Rules,
 					ruleKindPrefix = section.find('.page-host-editor-when-framed').is(':checked') ? 'framed:' : '',
+					notWhere = section.find('.page-host-editor-where-not').is(':checked'),
 					ruleList = section.find('.page-host-editor-duration').val() === 'always' ? Rules.list.user : Rules.list.temporary,
-					addRule = ruleList.addDomain,
+					addRule = notWhere ? ruleList.addNotDomain : ruleList.addDomain,
 					ruleType = section.find('.page-host-editor-kind').val(),
 					ruleWhere = section.find('.page-host-editor-where'),
 					ruleWhereValue = ruleWhere.val(),
 					ruleWhichItems = section.find('.page-host-editor-which-items').val(),
 					items = section.find('.page-host-columns .page-host-item:not(.page-host-item-disabled)');
 
-			if (ruleType === 'hide')
+			if (ruleType === 'hide' || ruleType === 'show')
 				ruleKindPrefix = 'hide:' + ruleKindPrefix;
 
 			if (ruleWhereValue === 'domain-all')
@@ -188,7 +227,7 @@ UI.Page = {
 			else if (ruleWhereValue._startsWith('domain'))
 				ruleDomain = $('option', ruleWhere).eq(ruleWhere[0].selectedIndex).attr('data-domain');
 			else if (ruleWhereValue._startsWith('page')) {
-				addRule = ruleList.addPage;
+				addRule = notWhere ? ruleList.addNotPage : ruleList.addPage;
 
 				var ruleOption = $('option', ruleWhere).eq(ruleWhere[0].selectedIndex),
 						rulePage = ruleOption.attr('data-page')._escapeRegExp();
@@ -199,7 +238,7 @@ UI.Page = {
 				ruleDomain = '^' + rulePage + '$';
 			} else {
 				if (Rules.isRegExp(ruleWhereValue))
-					addRule = ruleList.addPage;
+					addRule = notWhere ? ruleList.addNotPage : ruleList.addPage;
 
 				ruleDomain = ruleWhereValue;
 			}
@@ -252,12 +291,12 @@ UI.Page = {
 							protocol = item.attr('data-protocol'),
 							resources = item.data('resources');
 
-					if (ruleType === 'block/allow' || ruleType === 'block' || ruleType === 'allow') {
+					if (['block/allow', 'block', 'allow', 'hide', 'show']._contains(ruleType)) {
 						var hasAffect;
 
-						if (ruleType === 'block')
+						if (ruleType === 'block' || ruleType === 'hide')
 							ruleAction = 0
-						else if (ruleType === 'allow')
+						else if (ruleType === 'allow' || ruleType === 'show')
 							ruleAction = 1;
 
 						var rule = addRule(ruleKindPrefix + kind, ruleDomain, {
@@ -392,9 +431,8 @@ UI.Page = {
 			}, true);
 		},
 
-		bindSectionEvents: function (renderedSections, page, pageInfo) {
-			renderedSections
-				.children()
+		bindSectionEvents: function (sections, page, pageInfo) {
+			sections
 				.on('mousedown', '.page-host-columns-resize', function (event) {
 					event.preventDefault();
 
@@ -454,10 +492,6 @@ UI.Page = {
 					section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 1);
 				})
 
-				.on('change', '.page-host-editor-create-on-close', function (event) {
-					Settings.setItem('createRulesOnClose', this.checked);
-				})
-
 				.on('change', '.page-host-editor-kind', function (event) {
 					var enableOptions;
 
@@ -473,7 +507,7 @@ UI.Page = {
 						enableOptions = options.filter('[value="items-checked"]');
 					else if (this.value === 'block' || this.value === 'allow')
 						enableOptions = options.filter('[value="items-checked"], [value="items-all"], [value="items-of-kind"]');
-					else if (this.value === 'hide')
+					else if (this.value === 'hide' || this.value === 'show')
 						enableOptions = options.not('[value="jsb"]');
 
 					enableOptions.prop('disabled', false).eq(0).prop('selected', true);
@@ -491,12 +525,6 @@ UI.Page = {
 						kinds.slideUp(225 * window.globalSetting.speedMultiplier);
 
 					$('.page-host-columns .page-host-item', section).toggleClass('page-host-item-disabled', this.value !== 'items-checked');
-				})
-
-				.on('click', '.page-host-editor-create', function (event) {
-					this.disabled = true;
-
-					UI.Page.section.createRules($(this).parents('.page-host-section'));
 				})
 
 				.on('change', '.page-host-editor-where', function (event) {
@@ -530,6 +558,12 @@ UI.Page = {
 						});
 					} else
 						items.removeClass('page-host-item-disabled');
+				})
+
+				.on('click', '.page-host-editor-create', function (event) {
+					this.disabled = true;
+
+					UI.Page.section.createRules($(this).parents('.page-host-section'));
 				})
 
 				.on('click', '.page-host-host-count', function (event) {

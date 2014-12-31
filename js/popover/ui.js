@@ -249,14 +249,14 @@ var UI = {
 				this.value = this.value.replace(/\n/g, '');
 			})
 
-			.on('click', 'header[data-expander] > *', function (event) {
+			.on('click', '*[data-expander] > *', function (event) {
 				if (event.originalEvent.offsetX > this.offsetWidth) {
 					var COLLAPSE_HEIGHT = 0,
 							COLLAPSE_OFFSET = 3;
 
 					var header = $(this.parentNode),
 							groupWrapper = header.next(),
-							group = $('ul', groupWrapper);
+							group = $('> *:first-child', groupWrapper);
 
 					if (group.is(':animated'))
 						return;
@@ -285,27 +285,14 @@ var UI = {
 							}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
 					}
 
-					// $('li', group).each(function () {
-					// 	var self = $(this),
-					// 			height = self.height();
-
-					// 	self
-					// 		.height(isCollapsed ? COLLAPSE_HEIGHT : height)
-					// 		.animate({
-					// 			height: isCollapsed ? height : COLLAPSE_HEIGHT
-					// 		}, 225 * window.globalSetting.speedMultiplier, function () {
-					// 			self.height('auto');
-					// 		});
-					// });
-
 					group
 						.css({
-							marginTop: isCollapsed ? -(groupWrapperHeight / 1) : 0,
-							opacity: isCollapsed ? 0.2 : 1
+							marginTop: isCollapsed ? -groupWrapperHeight : 0,
+							opacity: isCollapsed ? 0.3 : 1
 						})
 						.animate({
-							marginTop: isCollapsed ? 0 : -(groupWrapperHeight / 1),
-							opacity: isCollapsed ? 1 : 0.2
+							marginTop: isCollapsed ? 0 : -groupWrapperHeight,
+							opacity: isCollapsed ? 1 : 0.3
 						}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
 							header.removeClass(expandingClass);
 
@@ -372,7 +359,7 @@ var UI = {
 
 			.addCustomEventListener('elementWasAdded', function (event) {
 				if (event.detail.querySelectorAll) {
-					var headers = event.detail.querySelectorAll('header[data-expander]');
+					var headers = event.detail.querySelectorAll('*[data-expander]');
 
 					for (var i = headers.length; i--;) {
 						if (headers[i].classList.contains('header-expander-ready'))
@@ -381,6 +368,7 @@ var UI = {
 						headers[i].classList.add('header-expander-ready');
 
 						$(headers[i])
+							.toggleClass('group-collapsed', !!Settings.getItem('expander', headers[i].getAttribute('data-expander')))
 							.find('> *')
 							.attr({
 								'data-i18n-show': _('expander.show'),
@@ -573,7 +561,8 @@ var UI = {
 				}, true);
 
 			if (viewContainer.scrollTop() === 0 && viewContainer.scrollLeft() === 0) {
-				// viewContainer.trigger('scroll');
+				if (!Settings.getItem('showPageEditorImmediately'))
+					viewContainer.trigger('scroll');
 
 				onComplete();
 			} else
@@ -798,24 +787,26 @@ var UI = {
 			},
 
 			add: function (viewContainerSelector, headerSelector, related, offset) {
-				var headersInView = UI.view.floatingHeaders.__floating._getWithDefault(viewContainerSelector, {});
+				UI.event.addCustomEventListener('popoverOpened', function (viewContainerSelector, headerSelector, related, offset) {
+					var headersInView = UI.view.floatingHeaders.__floating._getWithDefault(viewContainerSelector, {});
 
-				if (headerSelector in headersInView)
-					return;
+					if (headerSelector in headersInView)
+						return;
 
-				var viewContainer = $(viewContainerSelector, UI.container);
+					var viewContainer = $(viewContainerSelector, UI.container);
 
-				headersInView[headerSelector] = {
-					viewContainer: viewContainer,
-					viewContainerOffsetTop: viewContainer.offset().top,
-					related: related,
-					offset: offset
-				};
+					headersInView[headerSelector] = {
+						viewContainer: viewContainer,
+						viewContainerOffsetTop: viewContainer.offset().top,
+						related: related,
+						offset: offset
+					};
 
-				if (viewContainer.data('floatingHeaders'))
-					return;
-
-				viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 40, [viewContainerSelector]));
+					if (viewContainer.data('floatingHeaders'))
+						return;
+			
+					viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 40, [viewContainerSelector]));
+				}.bind(null, viewContainerSelector, headerSelector, related, offset), true);
 			}
 		}
 	}

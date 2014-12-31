@@ -14,12 +14,12 @@ function Page (page, tab) {
 		kinds.forEach(function (kind, resources, store) {
 			resources.getStore('source').map(function (location, source) {
 				return source.map(function (sourceName, items) {
-					return items.map(function (itemID, attributes) {						
+					return items.map(function (itemID, attributes) {
 						return new Resource({
 							kind: kind,
 							pageLocation: location,
 							source: sourceName,
-							isFrame: attributes.isFrame,
+							isFrame: page.isFrame,
 							action: attributes.action,
 							unblockable: attributes.unblockable,
 							meta: attributes.meta

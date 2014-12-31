@@ -6,8 +6,11 @@ var globalSetting;
 do {
 	globalSetting = GlobalCommand('globalSetting');
 
-	if (!globalSetting.popoverReady && window === window.top)
+	if (!globalSetting.popoverReady && window === window.top) {
 		window.location.reload();
+
+		throw new Error('...');
+	}
 } while (globalSetting.command || !globalSetting.popoverReady);
 
 if (!window.MutationObserver)

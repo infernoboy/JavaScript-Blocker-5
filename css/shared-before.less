@@ -4,6 +4,7 @@
 @blockColor: #920101;
 @focusShadow: rgb(171, 221, 254);
 @background: rgb(239, 239, 244);
+@easeOutQuad: cubic-bezier(0.250, 0.460, 0.450, 0.940);
 
 .shared-before(@important) {
 	@-webkit-keyframes shake {
@@ -266,7 +267,7 @@
 			+ label {
 				display: inline-block @important;
 				margin-bottom: 3px @important;
-				margin-right: 7px @important;
+				margin-right: 2px @important;
 			}
 		}
 

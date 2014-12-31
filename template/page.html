@@ -3,7 +3,7 @@
 
 	<div class="page-host-section <%=snapshotInUse ? 'page-host-snapshot' : ''%>" data-id="<%=self.id%>">
 		<div class="page-host-header">
-			<span class="page-host-type"><%=self.isFrame ? 'Frame' : 'Top'%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
+			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
 			<input type="button" class="page-host-edit" value="<%=_('view.page.host.edit')%>" />
 		</div>
 
@@ -83,7 +83,8 @@
 							<option value="block/allow"><%=_('view.page.host.editor.block_allow')%></option>
 							<option value="block"><%=_('view.page.host.editor.block')%></option>
 							<option value="allow"><%=_('view.page.host.editor.allow')%></option>
-							<option value="hide"><%=_('view.page.host.editor.hide')%></option><%
+							<option value="hide"><%=_('view.page.host.editor.hide')%></option>
+							<option value="show"><%=_('view.page.host.editor.show')%></option><%
 						} %>
 					<option value="enable"><%=_('view.page.host.editor.enable')%></option>
 					<option value="disable"><%=_('view.page.host.editor.disable')%></option>
@@ -122,6 +123,7 @@
 
 			<div class="jsb-info page-host-editor-bottom">
 				<div class="page-host-editor-where-wrapper">
+					<input type="checkbox" id="page-host-editor-where-not-<%=self.id%>" class="page-host-editor-where-not" /> <label for="page-host-editor-where-not-<%=self.id%>"><%=_('view.page.editor.not')%></label>
 					<select class="page-host-editor-where" title="<%=_('view.page.editor.where.title')%>">
 						<option value="domain-all"><%=_('view.page.editor.on_all_domains')%></option>
 						<option value="domain-0" data-domain="<%=self.host%>" selected="selected"><%=_('view.page.editor.on_domain', [self.host])%></option>
@@ -166,42 +168,44 @@
 </noscript>
 
 <noscript id="host-items-container-header">
-	<div class="page-host-items-container-header">
-		<label class="jsb-color-<%=self.stateType%>"><%=_('view.page.host.column.' + self.stateType)%></label>
-		<%
-			var pageLocation,
-					items;
+	<div class="page-host-items-container-header" data-expander="<%=self.stateType%>ItemsContainer">
+		<span>
+			<label class="jsb-color-<%=self.stateType%>"><%=_('view.page.host.column.' + self.stateType)%></label>
+			<%
+				var pageLocation,
+						items;
 
-			var	itemCount = 0;
+				var	itemCount = 0;
 
-			for (var kind in self.state) {
-				if (self.stateType === 'unblocked' && kind === 'script' && !Settings.getItem('showUnblockedScripts'))
-					continue;
+				for (var kind in self.state) {
+					if (self.stateType === 'unblocked' && kind === 'script' && !Settings.getItem('showUnblockedScripts'))
+						continue;
 
-				if (globalPage.Rules.kindShouldBadge(kind)) {
-					if ((self.stateType === 'unblocked' && kind === 'script') || Settings.getItem('showResourceURLs')) {
-						if (self.state[kind].source) {
-							items = [];
+					if (globalPage.Rules.kindShouldBadge(kind)) {
+						if ((self.stateType === 'unblocked' && kind === 'script') || Settings.getItem('showResourceURLs')) {
+							if (self.state[kind].source) {
+								items = [];
 
-							for (pageLocation in self.state[kind].source) {
-								items._pushAll(Object.keys(self.state[kind].source[pageLocation])._unique());
+								for (pageLocation in self.state[kind].source) {
+									items._pushAll(Object.keys(self.state[kind].source[pageLocation])._unique());
+								}
+
+								itemCount += items._unique().length;
 							}
-
-							itemCount += items._unique().length;
+						} else if (self.state[kind].hosts) {
+							itemCount += Object.keys(self.state[kind].hosts).length;
 						}
-					} else if (self.state[kind].hosts) {
-						itemCount += Object.keys(self.state[kind].hosts).length;
 					}
 				}
-			}
-		%>
-		<span class="page-host-state-count"><%=itemCount%></span>
-		<span class="page-host-state-count-type">
-			<% if (self.stateType === 'unblocked' || Settings.getItem('showResourceURLs')) { %>
-				<%=_('view.page.host.count_type.item' + (itemCount === 1 ? '' : 's'))%>
-			<% } else { %>
-				<%=_('view.page.host.count_type.host' + (itemCount === 1 ? '' : 's'))%>
-			<% } %>
+			%>
+			<span class="page-host-state-count"><%=itemCount%></span>
+			<span class="page-host-state-count-type">
+				<% if (self.stateType === 'unblocked' || Settings.getItem('showResourceURLs')) { %>
+					<%=_('view.page.host.count_type.item' + (itemCount === 1 ? '' : 's'))%>
+				<% } else { %>
+					<%=_('view.page.host.count_type.host' + (itemCount === 1 ? '' : 's'))%>
+				<% } %>
+			</span>
 		</span>
 	</div>
 </noscript>
@@ -210,6 +214,9 @@
 	<div class="page-host-items-container" data-stateType="<%=self.stateType%>">
 		<%
 			var kindArray = Object.keys(self.state)._sortUsingArray(globalPage.Rules.__kinds),
+					showItemDescription = Settings.getItem('showItemDescription'),
+					showResourceURLs = Settings.getItem('showResourceURLs'),
+					quickCyclePageItems = Settings.getItem('quickCyclePageItems'),
 					actionGroup = {};
 
 			for (var i = 0; i < kindArray.length; i++) { 
@@ -221,7 +228,7 @@
 					continue;
 				%>
 
-				<header class="page-host-kind <%=Settings.getItem('expander', expander) ? 'group-collapsed' : ''%>" data-expander="<%=expander%>">
+				<header class="page-host-kind" data-expander="<%=expander%>">
 					<h4><%=_('view.page.host.kind.' + kind )%></h4>
 				</header>
 
@@ -238,7 +245,7 @@
 									actionGroup
 										._getWithDefault(resource.action, {})
 										._getWithDefault(resource.sourceIsURL && protocol ? protocol : 'none:', {})
-										._getWithDefault((resource.sourceIsURL && !Settings.getItem('showResourceURLs')) || protocol === 'blob:' ? resource.sourceHost : resource.fullSource, [])
+										._getWithDefault((resource.sourceIsURL && !showResourceURLs) || protocol === 'blob:' ? resource.sourceHost : resource.fullSource, [])
 										.push({
 											resourceID: resourceID,
 											resource: resource
@@ -255,7 +262,7 @@
 											resourcesSimplified = [];
 
 									var resourceIDs = resources.map(function (value, i) {
-										if (value.resource.sourceIsURL)
+										if (value.resource.sourceIsURL && showItemDescription)
 											resourcesSimplified.push(SourceSimplifier.simplifySource(value.resource.sourceHost, value.resource.fullSource));
 
 										return value.resourceID;
@@ -273,7 +280,7 @@
 										sourceName = _('special.' + source + '.' + self.stateType, [globalPage.Special.enabled[source] ? globalPage.Special.enabled[source].value : '']);
 
 									var shouldBadge = globalPage.Rules.kindShouldBadge(kind),
-											hasOptions = shouldBadge && !Settings.getItem('showResourceURLs') && protocol !== 'none:',
+											hasOptions = shouldBadge && !showResourceURLs && protocol !== 'none:',
 											useSelect = hasOptions || !shouldBadge || protocol === 'blob:';
 								%>
 
@@ -291,7 +298,7 @@
 											<div class="page-host-item-edit-select-wrapper">
 											<%
 												if (useSelect) { %>
-													<select class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
+													<select class="page-host-item-edit-select <%=quickCyclePageItems ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
 
 													var sourceDomains = Utilities.URL.hostParts(source, true);
 
@@ -332,6 +339,7 @@
 													</span>
 											<% } %>
 										</div>
+
 										<div class="page-host-item-description">
 											<% if (resourcesSimplified.length) { %>
 												<p class="jsb-info"><%=resourcesSimplified.join(', ')%></p><%

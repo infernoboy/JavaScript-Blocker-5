@@ -8,6 +8,8 @@ if (!globalPage.GlobalPageReady) {
 	Log('Waiting for global page to be ready...');
 
 	window.location.reload();
+
+	throw new Error('...');
 }
 
 globalPage.Template = Template;
@@ -70,6 +72,33 @@ globalPage.Template = Template;
 		}
 
 		return this;
+	};
+
+	$.fn.marginSlideUp = function (speed, easing, onComplete) {
+		var self = $(this).eq(0);
+
+		self.animate({
+			marginTop: -self.outerHeight()
+		}, speed, typeof easing === 'string' ? easing : 'swing', function () {
+			self.hide();
+
+			if (typeof onComplete === 'function')
+				onComplete.call(self);
+		});
+	};
+
+	$.fn.marginSlideDown = function (speed, easing, onComplete) {
+		var self = $(this).eq(0);
+
+		self.show();
+
+		var height = self.outerHeight();
+
+		self.css('margin-top', -height);
+
+		self.animate({
+			marginTop: 0
+		}, speed, typeof easing === 'string' ? easing : 'swing', onComplete);
 	};
 })();
 

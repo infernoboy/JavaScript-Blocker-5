@@ -27,6 +27,10 @@ function Resource (resource) {
 	else
 		this.searchKinds = this.isFrame ? [this.framedKind, 'framed:*', this.kind, '*'] : [this.kind, '*'];
 
+	this.hideKinds = this.searchKinds.map(function (kind, i) {
+		return 'hide:' + kind;
+	});
+
 	if (this.sourceIsURL) {
 		var protos = ['http:', 'https:', 'ftp:', 'sftp:', 'safari-extension:'],
 				sourceProto = Utilities.URL.protocol(this.source),
@@ -129,7 +133,7 @@ Resource.prototype.allow = function () {
 	return this.__addRule.apply(this, [1].concat(Utilities.makeArray(arguments)));
 };
 
-Resource.prototype.allowedBySettings = function () {
+Resource.prototype.allowedBySettings = function (enforceNowhere) {
 	var canLoad = {
 		action: ACTION.ALLOW_WITHOUT_RULE
 	};
@@ -137,7 +141,7 @@ Resource.prototype.allowedBySettings = function () {
 	if (!Settings.getItem('enabledKinds', this.kind))
 		return canLoad;
 
-	var blockFrom = Settings.getItem('alwaysBlock', this.kind),
+	var blockFrom = enforceNowhere ? 'nowhere' : Settings.getItem('alwaysBlock', this.kind),
 			sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
 
 	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
@@ -161,16 +165,21 @@ Resource.prototype.allowedBySettings = function () {
 	return canLoad;
 };
 
-Resource.prototype.matchingRules = function (isAllowed, pageRulesOnly) {
+Resource.prototype.matchingRules = function (isAllowed, pageRulesOnly, useHideKinds, excludeLists) {
 	return Rules.forLocation({
-		searchKind: this.searchKinds,
+		searchKind: useHideKinds ? this.hideKinds : this.searchKinds,
 		location: this.pageLocation,
 		isAllowed: isAllowed,
-		pageRulesOnly: pageRulesOnly
+		pageRulesOnly: pageRulesOnly,
+		excludeLists: excludeLists
 	});
 };
 
-Resource.prototype.canLoad = function (detailed) {
+Resource.prototype.shouldHide = function () {
+	return !this.canLoad(false, true, Special.__excludeLists).isAllowed;
+};
+
+Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	if (!Rules.kindSupported(this.kind))
 		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
 
@@ -178,6 +187,8 @@ Resource.prototype.canLoad = function (detailed) {
 		action: ACTION.ALLOW_WITHOUT_RULE,
 		isAllowed: true
 	};
+
+	excludeLists = excludeLists || [];
 
 	if (this.unblockable) {
 		canLoad.action = ACTION.UNBLOCKBABLE;
@@ -191,7 +202,8 @@ Resource.prototype.canLoad = function (detailed) {
 		return canLoad;
 	}
 
-	var store = Resource.canLoadCache.getStore(this.searchKinds.join('-')),
+	var searchKinds = useHideKinds ? this.hideKinds : this.searchKinds,
+			store = Resource.canLoadCache.getStore(searchKinds.concat(excludeLists).join('-')),
 			pageSources = store.getStore(this.pageLocation),
 			pageCached = pageSources.get(this.source);
 
@@ -216,7 +228,7 @@ Resource.prototype.canLoad = function (detailed) {
 
 	var self = this;
 
-	Rule.withLocationRules(this.matchingRules(null, !!domainCached), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
+	Rule.withLocationRules(this.matchingRules(null, !!domainCached, useHideKinds, excludeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
 		pageRule = (ruleType === 'page' || ruleType === 'notPage');
 		longAllowed = (!pageRule && Rules.list[ruleListName].longRuleAllowed);
 
@@ -300,7 +312,7 @@ Resource.prototype.canLoad = function (detailed) {
 	self = undefined;
 
 	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE || canLoad.action === ACTION.ALLOW_AFTER_FIRST_VISIT)
-		canLoad = domainCached ? domainCached : this.allowedBySettings.apply(this, arguments);
+		canLoad = domainCached ? domainCached : this.allowedBySettings(useHideKinds);
 
 	canLoad.isAllowed = !!(canLoad.action % 2);
 

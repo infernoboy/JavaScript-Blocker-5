@@ -8,6 +8,30 @@ Settings.settings = {
 			default: false
 		}
 	}, {
+		setting: 'baseColor',
+		props: {
+			type: 'option',
+			options: [
+				['#177efb', 'blue'],
+				['#787778', 'gray'],
+				['#99999f', 'graphite']
+			],
+			default: '#177efb',
+			otherOption: {
+				prompt: 'Enter a valid 6 digit hex CSS color preceeded by #.',
+				validate: function (value) {
+					return value.match(/^#[a-f0-9]+$/i) && value.length === 7;
+				}
+			},
+			onChange: function () {
+				var less = window.less || Popover.window.less;
+
+				less.modifyVars({
+					baseColor: Settings.getItem('baseColor')
+				});
+			}
+		}
+	}, {
 		setting: 'installID',
 		props: {
 			default: false
@@ -134,6 +158,19 @@ Settings.settings = {
 			],
 			default: 5000
 		}
+	}, {
+		setting: 'showHiddenItems',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		setting: 'showItemDescription',
+		props: {
+			type: 'boolean',
+			label: 'Show domain descriptions when possible',
+			default: true
+		}
 	}],
 
 	// General Settings
@@ -191,24 +228,6 @@ Settings.settings = {
 					}
 				}]
 			}]
-		}
-	}, {
-		setting: 'simplifyDomainNames',
-		props: {
-			type: 'boolean',
-			label: 'Show domain descriptions when possible',
-			default: true,
-			when: {
-				hide: true,
-				settings: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.IS,
-						key: 'simpleMode',
-						needle: true
-					}]
-				}
-			}
 		}
 	}, {
 		setting: 'quickCyclePageItems',
@@ -510,7 +529,7 @@ Settings.settings = {
 				['host', 'Different hosts &amp; subdomains'],
 				['domain', 'Different hostnames'],
 			],
-			default: 'nowhere',
+			default: 'host',
 			onChange: function () {
 				Rules.list.firstVisit.rules.clear();
 			}
@@ -550,6 +569,13 @@ Settings.settings = {
 		props: {
 			readOnly: true,
 			storeKey: 'special',
+			default: 'everywhere'
+		}
+	}, {
+		setting: 'alwaysBlock',
+		props: {
+			readOnly: true,
+			storeKey: 'user_script',
 			default: 'everywhere'
 		}
 	}, {
@@ -633,7 +659,7 @@ Settings.settings = {
 				props: {
 					storeKey: 'frame',
 					label: 'Show a placeholder for blocked frames',
-					default: true
+					default: false
 				}
 			}, {
 				setting: 'alwaysBlock',
@@ -818,7 +844,7 @@ Settings.settings = {
 					storeKey: 'embed',
 					label: 'Automatically block embeds and objects from:',
 					help: 'alwaysBlock help',
-					default: 'everywhere'
+					default: 'blacklist'
 				}
 			}]
 		}, {
@@ -1223,7 +1249,7 @@ Settings.settings = {
 				label: 'Canvas data URL access',
 				subLabel: 'Canvas data URL access',
 				options: [[false, 'Always allow'], [1, 'Always ask'], [2, 'Ask once per domain'], [3, 'Ask once per domain for session'], [4, 'Always block']],
-				default: false
+				default: 3
 			}
 		}, {
 			setting: 'enabledSpecials',

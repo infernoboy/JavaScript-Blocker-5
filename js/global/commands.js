@@ -130,13 +130,15 @@ function Command (command, data, event) {
 		closeTabAtIndex: function (index) {
 			var tabs = Tabs.array();
 
-			tabs[index].close();
+			if (tabs[index])
+				tabs[index].close();
 		},
 
 		activateTabAtIndex: function (index) {
 			var tabs = Tabs.array();
 
-			tabs[index].activate();
+			if (tabs[index]) 
+				tabs[index].activate();
 		},
 
 		canLoadResource: function (info) {

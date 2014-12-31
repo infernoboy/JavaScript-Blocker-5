@@ -15,7 +15,6 @@
 		margin-top: -3px;
 
 		.page-host-section {
-			border-bottom: 1px solid #ddd;
 			margin-bottom: 10px;
 			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
@@ -80,7 +79,7 @@
 			.page-host-snapshot-in-use {
 				position: relative;
 				display: none;
-				background: #fbfbfb;
+				background: #fafafa;
 				padding: 4px 4px 2px 2px;
 				border-bottom: 1px solid #e5e5e5;
 
@@ -115,9 +114,9 @@
 			}
 
 			.page-host-editor {
-				padding-top: 3px;
-				border-top: 1px solid #e5e5e5;
-				border-bottom: none;
+				padding: 4px 4px 4px 2px;
+				z-index: 0;
+				border-bottom-color: #e0e0e0;
 
 				&.floated-header {
 					position: absolute;
@@ -138,6 +137,10 @@
 						margin-top: 0;
 						padding-top: 0;
 					}
+
+					label {
+						margin-right: 5px;
+					}
 				}
 
 				.page-host-editor-bottom {
@@ -149,7 +152,7 @@
 						margin-right: 3px;
 
 						select {
-							max-width: 98.9%;
+							max-width: 88%;
 						}
 					}
 
@@ -175,6 +178,8 @@
 			.page-host-columns {
 				display: -webkit-flex;
 				position: relative;
+				z-index: 1;
+				border-bottom: 1px solid #e5e5e5;
 
 				&-resize {
 					position: absolute;
@@ -263,9 +268,11 @@
 			}
 
 			.page-host-unblocked {
-				border-top: 1px solid #ddd;
+				position: relative;
+				border-bottom: 1px solid #e5e5e5;
 				background: #fff;
 				padding: 0 3px 1px;
+				z-index: 1;
 
 				.page-host-items-container-header {
 					background: #fff;
@@ -285,8 +292,7 @@
 			}
 
 			.page-host-items-container-header {
-				padding: 6px 0 5px 1px;
-				margin-bottom: 5px;
+				padding: 5px 0 5px 1px;
 				z-index: 4;
 
 				&.floated-header-related-push {
@@ -327,9 +333,13 @@
 							pointer-events: none;						
 						}
 
+						&-rule-hidden * {
+							font-weight: bold;
+						}
+
 						&[data-action="0"],
 						&[data-action="1"], {
-							background: lighten(@baseColor, 43%);
+							background: lighten(rgb(23, 126, 251), 43%);
 						}
 
 						&[data-action="4"] {
@@ -496,7 +506,7 @@
 
 						.page-host-item-description {
 							.jsb-info {
-								color: rgba(0, 0, 0, 0.35);
+								color: rgba(0, 0, 0, 0.4);
 								margin-top: -1px;
 								margin-left: 19px;
 								text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
