@@ -224,15 +224,15 @@
 		}
 
 		input[type="checkbox"] {
-			display: inline-block;
-			position: relative;
+			display: inline-block @important;
+			position: relative @important;
 			-webkit-appearance: none @important;
 			height: 14px @important;
 			width: 14px @important;
 			background: #fff @important;
 			padding: 1px 4px 3px 1px @important;
 			border-radius: 3px @important;
-			font-size: 12pt @important;
+			// font-size: 12pt @important;
 			margin-bottom: -2px @important;
 			border-bottom-color: rgb(190, 190, 190) @important;
 			box-shadow: inset 0 0 2px rgba(0, 0, 0, 0) @important;
@@ -248,19 +248,22 @@
 				font-weight: bold @important;
 				content: '✔︎' @important;
 				font-family: "Menlo-Regular" @important;
-				-webkit-transform: translate(0px, -4px) scaleY(0.9) scaleX(0.8) @important;
-				opacity: 0 @important;
-				-webkit-transition: opacity 0.15s ease-out @important;
+				-webkit-transform: translate(2px, -2px) scaleY(0) scaleX(0) @important;
+				-webkit-transition: -webkit-transform 0.15s ease-out @important;
 				-webkit-font-smoothing: antialiased @important;
 				text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15) @important;
 			}
 
 			&:checked {
-				background: lighten(@baseColor, 7%) @important;
+				background-color: lighten(@baseColor, 7%) @important;
 				border-color: lighten(@baseColor, 1%) @important;
 
 				&:after {
-					opacity: 1 @important;
+					-webkit-transform: translate(2px, -2px) scaleY(1.5) scaleX(1.15) @important;
+				}
+
+				&:active:after {
+					opacity: 0.8 @important;
 				}
 			}
 

@@ -30,7 +30,7 @@ function PageNotification (detail) {
 		data: detail
 	});
 
-	this.element = Element.createFromHTML(notificationTemplate)[0];
+	this.element = Utilities.Element.createFromHTML(notificationTemplate)[0];
 
 	this.removeNotificationsWithElementID();
 
@@ -82,7 +82,7 @@ PageNotification.createContainer = function () {
 	PageNotification.__container = document.getElementById(PageNotification.__containerID);
 
 	if (!PageNotification.__container) {
-		PageNotification.__container = Element.createFromHTML('<div id="' + PageNotification.__containerID + '" class="jsb-injected-element" />')[0];
+		PageNotification.__container = Utilities.Element.createFromHTML('<div id="' + PageNotification.__containerID + '" class="jsb-injected-element" />')[0];
 
 		Element.inject(PageNotification.__container, true);
 	}
@@ -477,7 +477,7 @@ PageNotification.prototype.addCloseButton = function (text, onClick, primary) {
 		}
 	});
 
-	var closeButtonWrapper = Element.createFromHTML(closeButtonWrapperTemplate)[0],
+	var closeButtonWrapper = Utilities.Element.createFromHTML(closeButtonWrapperTemplate)[0],
 			input = closeButtonWrapper.querySelector('input');
 
 	this.closeContainer.appendChild(closeButtonWrapper);

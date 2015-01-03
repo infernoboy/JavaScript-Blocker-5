@@ -135,9 +135,7 @@ var UI = {
 				var timerExisted = Utilities.Timer.remove('timeout', 'showPoppyMenu');
 
 				if (timerExisted)
-					setTimeout(function () {
-						$('*[data-poppyMenuWillShow]', UI.container).removeAttr('data-poppyMenuWillShow');
-					}, 100);
+					$('*[data-poppyMenuWillShow]', UI.container).removeAttr('data-poppyMenuWillShow')
 			});
 
 		$(document)
@@ -309,7 +307,7 @@ var UI = {
 			});
 
 		UI.event
-			.addCustomEventListener('viewWillSwitch', function (event) {
+			.addCustomEventListener('viewWillSwitch', function (event) {		
 				if (event.detail.from.id === '#main-views-resource-content') 
 					$(event.detail.from.id, UI.view.views).empty();
 
@@ -320,7 +318,8 @@ var UI = {
 			})
 
 			.addCustomEventListener('viewDidSwitch', function (event) {
-				$('#full-toggle', UI.view.viewToolbar).toggleClass('poppy-menu-disabled', $('li[data-view=' + event.detail.id + ']', event.detail.switcher).hasClass('view-switcher-collapses'));
+				if (event.detail.id._startsWith('#main-views'))
+					$('#full-toggle', UI.view.viewToolbar).toggleClass('poppy-menu-disabled', $('li[data-view=' + event.detail.id + ']', event.detail.switcher).hasClass('view-switcher-collapses'));
 			})
 
 			.addCustomEventListener('disabled', function (event) {
@@ -500,10 +499,8 @@ var UI = {
 				})
 
 				.on('click', '#full-toggle', function () {
-					if (this.getAttribute('data-poppyMenuWillShow'))
-						return;
-
-					globalPage.Command.toggleDisabled();
+					if (!UI.event.trigger('willDisable', window.globalSetting.disabled))
+						globalPage.Command.toggleDisabled();
 				})
 
 				.on('click', '#open-menu', function (event) {
@@ -540,10 +537,6 @@ var UI = {
 
 				.addCustomEventListener('poppyModalClosed', function () {
 					UI.view.viewContainer.removeClass('modal-blur');
-				})
-
-				.addCustomEventListener('poppyMenuWillShow', function (event) {
-					event.detail.menuHolder.attr('data-poppyMenuWillShow', 1);
 				});
 
 			this.switchTo(this.__default);
@@ -683,13 +676,27 @@ var UI = {
 							}
 						});
 
-					if (!UI.event.trigger('poppyMenuWillShow', {
+					var preventDefault = UI.event.trigger('poppyMenuWillShow', {
 						target: self,
 						menuHolder: menuHolder
-					}))
-						setTimeout(function (poppy) {
+					});
+
+					if (!preventDefault) {
+						menuHolder.attr('data-poppyMenuWillShow', 1);
+
+						if (!inRange)
+							UI.event.addCustomEventListener('willDisable', function (event) {
+								event.preventDefault();
+							}, true);
+
+						setTimeout(function (poppy, menuHolder) {
+							UI.event.addCustomEventListener('poppyDidShow', function () {
+								menuHolder.removeAttr('data-poppyMenuWillShow', 1);
+							}, true);
+
 							poppy.show();
-						}, 0, poppy);
+						}, 0, poppy, menuHolder);
+					}
 				}
 			}
 		},
@@ -788,12 +795,8 @@ var UI = {
 
 			add: function (viewContainerSelector, headerSelector, related, offset) {
 				UI.event.addCustomEventListener('popoverOpened', function (viewContainerSelector, headerSelector, related, offset) {
-					var headersInView = UI.view.floatingHeaders.__floating._getWithDefault(viewContainerSelector, {});
-
-					if (headerSelector in headersInView)
-						return;
-
-					var viewContainer = $(viewContainerSelector, UI.container);
+					var headersInView = UI.view.floatingHeaders.__floating._getWithDefault(viewContainerSelector, {}),
+							viewContainer = $(viewContainerSelector, UI.container);
 
 					headersInView[headerSelector] = {
 						viewContainer: viewContainer,
@@ -806,7 +809,7 @@ var UI = {
 						return;
 			
 					viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 40, [viewContainerSelector]));
-				}.bind(null, viewContainerSelector, headerSelector, related, offset), true);
+				}.bind(null, viewContainerSelector, headerSelector, related, offset));
 			}
 		}
 	}

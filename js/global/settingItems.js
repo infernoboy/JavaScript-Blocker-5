@@ -5,6 +5,7 @@ Settings.settings = {
 	__misc: [{
 		setting: 'donationVerified',
 		props: {
+			type: 'boolean',
 			default: false
 		}
 	}, {
@@ -13,6 +14,7 @@ Settings.settings = {
 			type: 'option',
 			options: [
 				['#177efb', 'blue'],
+				['#336699', 'slate blue'],
 				['#787778', 'gray'],
 				['#99999f', 'graphite']
 			],
@@ -34,16 +36,19 @@ Settings.settings = {
 	}, {
 		setting: 'installID',
 		props: {
+			type: 'string',
 			default: false
 		}
 	}, {
 		setting: 'installedBundle',
 		props: {
+			type: 'number',
 			default: 0
 		}
 	}, {
 		setting: 'trialStart',
 		props: {
+			type: 'number',
 			default: 0
 		}
 	}, {
@@ -55,12 +60,8 @@ Settings.settings = {
 	}, {
 		setting: 'settingsPageTab',
 		props: {
+			type: 'string',
 			default: 'for-welcome'
-		}
-	}, {
-		setting: 'userScripts',
-		props: {
-			default: {}
 		}
 	}, {
 		setting: 'EasyListLastUpdate',

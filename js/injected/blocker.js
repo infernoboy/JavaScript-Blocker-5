@@ -350,19 +350,7 @@ var Element = {
 
 		return element;
 	},
-
-	createFromHTML: function (html) {
-		var div = document.createElement('div');
-
-		try {
-			div.innerHTML = html;
-
-			return div.childNodes;
-		} catch (error) {
-			return div.childNodes;
-		}
-	},
-
+	
 	prependTo: function (container, element, append) {
 		if (!append && container.firstChild)
 			container.insertBefore(element, container.firstChild);
@@ -408,7 +396,7 @@ var Element = {
 				height = element.offsetHeight - 1,
 				width = element.offsetWidth,
 				elementStyle = window.getComputedStyle(element, null),
-				placeholder = Element.createFromHTML(placeholderTemplate)[0];
+				placeholder = Utilities.Element.createFromHTML(placeholderTemplate)[0];
 
 		for (var i = 0; i < Element.__placeholderProperties.length; i++) {
 			cssValue = elementStyle.getPropertyValue(Element.__placeholderProperties[i]);

@@ -42,30 +42,32 @@ Object._extend(Poppy.scripts, {
 	'page-menu': function (poppy) {
 		poppy.content
 			.on('change', '#page-menu-show-page-editor, #page-menu-show-hidden, #page-menu-show-unblocked-scripts, #page-menu-show-item-description', function () {
-				UI.view.switchTo('#main-views-page');
-
 				UI.event.addCustomEventListener('poppyDidClose', function () {
+					UI.view.switchTo('#main-views-page');
+
 					globalPage.Page.requestPageFromActive();
 				}, true);
-
-				Poppy.closeAll();
 			})
 
 			.on('change', '#page-menu-show-resource-url', function () {
-				UI.view.switchTo('#main-views-page');
-
 				var checked = this.checked;
 
 				UI.event.addCustomEventListener('poppyDidClose', function () {
+					UI.view.switchTo('#main-views-page');
+
 					Settings.setItem('showResourceURLs', checked);
 				}, true);
-
-				Poppy.closeAll();
 			});
 	},
 
 	'rule-menu': function (poppy) {
 		poppy.content
+			.on('click', '#rule-menu-import-rules-from-four', function () {
+				var rules = prompt('Paste the exported rule backup below. This is obtained by clicking Rules > Backup > Export from JSB 4. You must have made a donation or unlocked features without contributing.');
+
+				globalPage.Upgrade.importRulesFromJSB4(rules);
+			})
+
 			.on('click', '#rule-menu-remove-temporary', function () {
 				globalPage.Rules.list.temporary.clear();
 

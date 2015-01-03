@@ -126,6 +126,7 @@
 
 	"first_visit.title": "First Visit",
 	"first_visit.body": "All resources are blocked because this is the first time you've visited this {0}.",
+	"first_visit.blocked.body": "All resources were kept blocked when this {0} was first visited.",
 	"first_visit.body.host": "host",
 	"first_visit.body.domain": "domain",
 	"first_visit.keep_blocked": "Keep Blocked",

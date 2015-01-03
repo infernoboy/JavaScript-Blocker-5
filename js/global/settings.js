@@ -12,6 +12,9 @@ var Settings = {
 	},
 
 	__validate: function (type, value, options, otherOption, extendOptions) {
+		if (typeof type !== 'string')
+			throw new Error('missing setting type');
+
 		if (type._startsWith('dynamic'))
 			return ((typeof value === 'object' && (value.hasOwnProperty('enabled') && value.hasOwnProperty('value'))) && this.__validate(type.substr(8), value.value));
 

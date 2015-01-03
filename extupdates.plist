@@ -28,6 +28,18 @@
        <key>URL</key>
        <string>http://dl.dropbox.com/u/11967/JS%20BlockerBeta.safariextz</string>
      </dict>
+     <dict>
+       <key>CFBundleIdentifier</key>
+       <string>com.toggleable.JavaScriptBlocker5</string>
+       <key>Developer Identifier</key>
+       <string>6S8J5HV3H4</string>
+       <key>CFBundleVersion</key>
+       <string>150101</string>
+       <key>CFBundleShortVersionString</key>
+       <string>5</string>
+       <key>URL</key>
+       <string>http://dl.dropbox.com/u/11967/JSB5.safariextz</string>
+     </dict>
    </array>
 </dict>
 </plist>

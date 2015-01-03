@@ -190,24 +190,24 @@
 				containerHeight = Poppy.__container.height(),
 				poppyWidth = this.poppy.outerWidth(),
 				poppyHeight = this.poppy.outerHeight(),
-				halfArrowWidth = this.arrow.outerWidth() / 2,
+				halfArrowWidth = Math.floor(this.arrow.outerWidth() / 2),
 				arrowHeight = this.arrow.outerHeight();
 				
-		if (this.position.x - poppyWidth / 2 <= 1) { // If overflow on left side
-			position.poppy.left = 1;
-			position.arrow.left = this.position.x - halfArrowWidth;
+		if (this.position.x - poppyWidth / 2 <= 7) { // If overflow on left side
+			position.poppy.left = 7;
+			position.arrow.left = this.position.x - halfArrowWidth - 7;
 			
 			if (position.arrow.left < halfArrowWidth / 2)
 				position.arrow.left = 5;
-		} else if (this.position.x + poppyWidth / 2 > containerWidth - 1) { // If overflow on right side
-			position.poppy.left = containerWidth - poppyWidth - 1;
+		} else if (this.position.x + poppyWidth / 2 > containerWidth - 7) { // If overflow on right side
+			position.poppy.left = containerWidth - poppyWidth - 7;
 			position.arrow.left = this.position.x - position.poppy.left - halfArrowWidth;
 				
 			if (position.arrow.left > poppyWidth - (halfArrowWidth * 2) - 5)
 				position.arrow.left = poppyWidth - (halfArrowWidth * 2) - 5;
 		} else { // If fits
-			position.poppy.left = this.position.x - (poppyWidth / 2);
-			position.arrow.left = (poppyWidth / 2) - halfArrowWidth;
+			position.poppy.left = this.position.x - Math.floor(poppyWidth / 2);
+			position.arrow.left = Math.floor(poppyWidth / 2) - halfArrowWidth;
 		}
 		
 		if (this.position.y - poppyHeight - arrowHeight <= 0) {

@@ -5,6 +5,9 @@ UI.Setup = {
 		if (Settings.getItem('setupComplete'))
 			return;
 
+		if (!Settings.getItem('installID'))
+			Settings.setItem('installID', Utilities.Token.generate() + '-' + Version.display + '-' + Version.bundle);
+
 		UI.Setup.view = $('#main-views-setup', UI.view.views);
 
 		Template.load('setup');

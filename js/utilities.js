@@ -520,6 +520,18 @@ var Utilities = {
 			} while ((textNodeHeight > maxWrapperHeight || textNodeWidth > maxWrapperWidth) && currentFontSize > 10);
 
 			return textNodeHeight;		
+		},
+
+		createFromHTML: function (html) {
+			var div = document.createElement('div');
+
+			try {
+				div.innerHTML = html;
+
+				return div.childNodes;
+			} catch (error) {
+				return div.childNodes;
+			}
 		}
 	},
 

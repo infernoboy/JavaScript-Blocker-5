@@ -54,10 +54,6 @@ Page.frames = new Store('Frames', {
 	maxLife: TIME.ONE.SECOND * 5
 });
 
-Page.FIRST_VISIT = {
-	NO_RULE: 1,
-	BLOCKED: 2
-};
 
 Page.protocolSupported = function (protocol) {
 	return Page.__protocols._contains(protocol);
@@ -176,13 +172,13 @@ Page.shouldBlockFirstVisit = function (host) {
 
 	if (!rule)
 		return {
-			action: Page.FIRST_VISIT.NO_RULE,
+			action: -ACTION.BLOCK_FIRST_VISIT,
 			host: host
 		};
 
-	if (rule.action === ACTION.BLOCK_FIRST_VISIT)
+	if (rule.action === ACTION.BLOCK_FIRST_VISIT || rule.action === ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION)
 		return {
-			action: Page.FIRST_VISIT.BLOCKED,
+			action: rule.action,
 			host: host
 		};
 

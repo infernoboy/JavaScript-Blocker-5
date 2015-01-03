@@ -255,7 +255,7 @@ function Command (command, data, event) {
 			var	shouldBlockFirstVisit = Page.shouldBlockFirstVisit(host);
 
 			if (shouldBlockFirstVisit) {
-				if (shouldBlockFirstVisit.action !== Page.FIRST_VISIT.BLOCKED)
+				if (shouldBlockFirstVisit.action !== ACTION.BLOCKED_FIRST_VISIT && shouldBlockFirstVisit.action !== ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION)
 					Page.blockFirstVisit(shouldBlockFirstVisit.host);
 
 				this.message = shouldBlockFirstVisit;

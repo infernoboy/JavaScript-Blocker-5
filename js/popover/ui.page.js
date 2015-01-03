@@ -36,54 +36,64 @@ UI.Page = {
 						itemIsHidden = false,
 						allResourcesHidden = true,
 						resourceIDs = JSON.parse(this.getAttribute('data-resourceIDs')),
-						resources = item.data('resources', {}).data('resources');
+						resources = item.data('resources', {}).data('resources'),
+						chunks = resourceIDs._chunk(100);
 
-				for (var i = resourceIDs.length; i--;) {
-					resources[resourceIDs[i]] = pageInfo._findKey(resourceIDs[i]);
+				for (var chunkIndex = 0, chunkLength = chunks.length; chunkIndex < chunkLength; chunkIndex++) {
+					Utilities.setImmediateTimeout(function (resourceIDs) {
+						for (var i = resourceIDs.length; i--;) {
+							resources[resourceIDs[i]] = pageInfo._findKey(resourceIDs[i]);
 
-					if (resources[resourceIDs[i]].shouldHide()) {
-						if (i === 0 || showResourceURLs)
-							hiddenCount++;
+							if (resources[resourceIDs[i]].shouldHide()) {
+								if (i === 0 || showResourceURLs)
+									hiddenCount++;
 
-						itemIsHidden = true;
+								itemIsHidden = true;
 
-						if (showHiddenItems)
-							item.addClass('page-host-item-rule-hidden');
-					} else
-						allResourcesHidden = false;
+								if (showHiddenItems)
+									item.addClass('page-host-item-rule-hidden');
+							} else
+								allResourcesHidden = false;
+						}
+					}, [chunks[chunkIndex]]);
+
+					Utilities.setImmediateTimeout(function () {
+						if (itemIsHidden && allResourcesHidden && !showHiddenItems) {
+							var parent = item.parent();
+
+							item.remove();
+
+							if (!parent.children().length)
+								parent.prev().addBack().remove();
+						}
+					});
 				}
-
-				if (itemIsHidden && allResourcesHidden && !showHiddenItems) {
-					var parent = item.parent();
-
-					item.remove();
-
-					if (!parent.children().length)
-						parent.prev().addBack().remove();
-				}
-
 			});
 
-			if (hiddenCount)
-				hiddenCountText.text(_('view.page.header.' + (hiddenCount === 1 ? 'hidden_item' : 'hidden_items'), [hiddenCount]));
+			Utilities.setImmediateTimeout(function () {
+				if (hiddenCount)
+					hiddenCountText.text(_('view.page.header.' + (hiddenCount === 1 ? 'hidden_item' : 'hidden_items'), [hiddenCount]));
+			});
 		});
 
-		UI.Page.events.bindSectionEvents(sections, page, pageInfo);
+		Utilities.setImmediateTimeout(function () {
+			UI.Page.events.bindSectionEvents(sections, page, pageInfo);
 
-		UI.Page.stateContainer
-			.empty()
-			.data('page', page)
-			.append(sections)
-			.find('.page-host-editor-kind')
-			.trigger('change');
+			UI.Page.stateContainer
+				.empty()
+				.data('page', page)
+				.append(sections)
+				.find('.page-host-editor-kind')
+				.trigger('change');
 
-		UI.Page.resizeColumns(Settings.getItem('pageHostColumnAllowedWidth'));
+			UI.Page.resizeColumns(Settings.getItem('pageHostColumnAllowedWidth'));
 
-		UI.view.toTop(UI.view.views);
+			UI.view.toTop(UI.view.views);
 
-		UI.Page.__rendering = false;
+			UI.Page.__rendering = false;
 
-		UI.event.trigger('pageDidRender', page);
+			UI.event.trigger('pageDidRender', page);
+		});
 	},
 
 	init: function () {
@@ -489,7 +499,7 @@ UI.Page = {
 
 					var section = $(this).parents('.page-host-section');
 
-					section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 1);
+					section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 2);
 				})
 
 				.on('change', '.page-host-editor-kind', function (event) {

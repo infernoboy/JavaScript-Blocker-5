@@ -8,14 +8,16 @@
 		</div>
 
 		<%
-			if (self.blockedByFirstVisit && self.blockedByFirstVisit.action !== 8) { %>
+			if (self.blockedByFirstVisit) { %>
 				<div class="page-host-first-visit">
 					<span class="more-info"></span>
 					<p class="jsb-info">
-						<%=_('first_visit.body', [_(Settings.getItem('blockFirstVisit') === 'domain' ? 'first_visit.body.domain' : 'first_visit.body.host')])%>
+						<%=_(self.blockedByFirstVisit.action !== 8 ? 'first_visit.body' : 'first_visit.blocked.body', [_(Settings.getItem('blockFirstVisit') === 'domain' ? 'first_visit.body.domain' : 'first_visit.body.host')])%>
 					</p>
 					<p class="jsb-info jsb-align-right page-host-first-visit-buttons">
-						<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" />&nbsp;
+						<% if (self.blockedByFirstVisit.action !== 8) { %>
+							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" />&nbsp;<%
+						} %>
 						<input type="button" class="page-host-first-visit-unblock jsb-color-allowed" value="<%=_('first_visit.unblock')%>" />&nbsp;
 					</p>
 				</div><%
@@ -233,7 +235,7 @@
 				</header>
 
 				<ul class="page-host-items" data-kind="<%=kind%>">
-					<% 
+					<%
 						for (var pageLocation in self.state[kind].source) {
 							for (var source in self.state[kind].source[pageLocation]) {
 								var sourceInfo = self.state[kind].source[pageLocation][source],
@@ -300,10 +302,12 @@
 												if (useSelect) { %>
 													<select class="page-host-item-edit-select <%=quickCyclePageItems ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
 
+													var sourceDomain;
+
 													var sourceDomains = Utilities.URL.hostParts(source, true);
 
 													for (var b = 0; b < sourceDomains.length; b++) {
-														var sourceDomain = b === 0 ? sourceDomains[b] : sourceDomains[b].substr(1);
+														sourceDomain = b === 0 ? sourceDomains[b] : sourceDomains[b].substr(1);
 
 														if (b === 0)
 															var displaySource = kind._startsWith('xhr') ? 'view.page.editor.to_domain' : 'view.page.editor.from_domain';
@@ -332,12 +336,9 @@
 											<span class="page-host-item-source-container">
 												<span class="page-host-item-source" title="<%=_('view.page.host.click_to_edit')%>"><%=$.trim(sourceName._escapeHTML().replace(/([\n\t]|  +)/g, ' '))%></span>
 											</span>
-											<%
-												if (self.state[kind].hosts && self.state[kind].hosts[source]) { %>
 													<span class="page-host-host-count-container">
 														<a href="javascript:void(0);" class="page-host-host-count" title="<%=_('view.page.items.view_resource_urls')%>"><%=resourceIDs.length%></a>
 													</span>
-											<% } %>
 										</div>
 
 										<div class="page-host-item-description">
