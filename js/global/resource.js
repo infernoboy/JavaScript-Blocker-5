@@ -176,7 +176,9 @@ Resource.prototype.matchingRules = function (isAllowed, pageRulesOnly, useHideKi
 };
 
 Resource.prototype.shouldHide = function () {
-	return !this.canLoad(false, true, Special.__excludeLists).isAllowed;
+	var easyHide = (this.action === ACTION.BLACKLIST || this.action === ACTION.WHITELIST) && Settings.getItem('autoHideEasyList');
+
+	return easyHide || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
 };
 
 Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {

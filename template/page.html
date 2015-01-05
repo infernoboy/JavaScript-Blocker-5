@@ -257,6 +257,8 @@
 						}
 
 						for (var action in actionGroup) {
+							var disableEdit = action === '-11' ? ' disabled="disabled" ' : '';
+
 							for (var protocol in actionGroup[action]) {
 								for (var source in actionGroup[action][protocol]) {
 									var resources = actionGroup[action][protocol][source],
@@ -295,12 +297,12 @@
 									>
 										<div class="page-host-item-edit-container">
 											<div class="page-host-item-edit-check-wrapper">
-												<input type="checkbox" class="page-host-item-edit-check" title="<%=_('view.page.editor.check_to_' + (self.stateType === 'blocked' ? 'allow' : 'block'))%>" />
+												<input <%=disableEdit%> type="checkbox" class="page-host-item-edit-check" title="<%=_('view.page.editor.check_to_' + (self.stateType === 'blocked' ? 'allow' : 'block'))%>" />
 											</div>
 											<div class="page-host-item-edit-select-wrapper">
 											<%
 												if (useSelect) { %>
-													<select class="page-host-item-edit-select <%=quickCyclePageItems ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
+													<select <%=disableEdit%> class="page-host-item-edit-select <%=quickCyclePageItems ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
 
 													var sourceDomain;
 
@@ -319,8 +321,8 @@
 
 													</select><label></label><%
 												} else { %>
-													<textarea class="render-as-input select-custom-input" spellcheck="off" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
-													<select class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%>">
+													<textarea <%=disableEdit%> class="render-as-input select-custom-input" spellcheck="off" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
+													<select <%=disableEdit%> class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%>">
 														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
 														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
 														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>

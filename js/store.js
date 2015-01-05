@@ -398,10 +398,10 @@ var Store = (function () {
 
 		var value;
 
-		var keys = this.keys().reverse(),
+		var keys = this.keys(),
 				found = false;
 
-		for (var i = 0; i < keys.length; i++) {
+		for (var i = keys.length; i--;) {
 			value = this.get(keys[i]);
 
 			if (fn(keys[i], value, this)) {
@@ -412,6 +412,32 @@ var Store = (function () {
 		}
 
 		return found ? value : null;
+	};
+
+	Store.prototype.deepFindKey = function (findKey) {
+		var info = {
+			key: findKey,
+			store: null,
+			value: undefined
+		};
+
+		var value;
+
+		for (var key in this.data) {
+			value = this.get(key);
+
+			if (value instanceof Store)
+				info = value.deepFindKey(findKey);
+			else if (findKey === key) {
+				info.store = this;
+				info.value = value;
+			}
+
+			if (info.value !== undefined)
+				break;
+		}
+
+		return info;
 	};
 
 	Store.prototype.forEach = function (fn) {
@@ -702,23 +728,6 @@ var Store = (function () {
 			}, [this, key, now]);
 	};
 
-	Store.prototype.swap = function (oldKey, newKey, newValue) {
-		if (typeof oldKey !== 'string' || typeof newKey !== 'string')
-			throw new TypeError('oldKey or newKey is not a string.');
-
-		var oldValue = newValue !== undefined ? this.get(oldKey) : undefined;
-
-		if (oldValue !== undefined)
-			this.remove(oldKey);
-
-		var useValue = newValue !== undefined ? newValue : oldKey;
-
-		if (useValue !== undefined)
-			this.set(newKey, useValue);
-
-		return this;
-	};
-
 	Store.prototype.replaceWith = function (store) {
 		if (!(store instanceof Store))
 			throw new TypeError(store + ' is not an instance of Store.');
@@ -885,19 +894,6 @@ var Store = (function () {
 
 		return data;
 	};
-
-	Store.prototype.expireNow = function () {
-		var orig = parseInt(this.maxLife, 10);
-
-		this.maxLife = 1;
-
-		this.removeExpired();
-	};
-
-	Store.EMPTY_STORE = new Store('EmptyStore', {
-		private: true,
-		lock: true
-	});
 
 	return Store;
 })();

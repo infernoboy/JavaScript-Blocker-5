@@ -33,20 +33,10 @@ UI.Settings = {
 
 		UI.Settings.events.viewSwitcher();
 
-		UI.event
-			.addCustomEventListener('poppyDidShow', function () {
-				UI.Settings.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
-			})
-
-			.addCustomEventListener('elementWasAdded', function (event) {
-				if (event.detail.querySelectorAll)
-					UI.Settings.bindInlineSettings(event.detail.querySelectorAll('*[data-inlineSetting]'));
-			})
-
 		try {
 			UI.view.switchTo(Settings.getItem('settingCurrentView'));
 		} catch (error) {
-			LogError('failed to switch to setting view');
+			LogError('failed to switch to setting view', error);
 		}
 	},
 
@@ -70,38 +60,127 @@ UI.Settings = {
 			element.attr('data-inlineSettingBound', 1);
 
 			var settingName = element.attr('data-inlineSetting'),
+					storeKey = element.attr('data-storeKey'),
 					settingRef = Settings.map[settingName],
-					currentValue = Settings.getItem(settingName);
+					storeSetting = settingRef.storeKeySettings ? settingRef.storeKeySettings[storeKey] : null,
+					settingType = storeSetting && storeSetting.props.type || settingRef.props.type,
+					currentValue = Settings.getItem(settingName, storeKey);
 
-			if (settingRef.props.options) {
-				switch (settingRef.props.type) {
-					case 'number':
+			switch (settingType) {
+				case 'option':
+				case 'option-radio':
+					currentValue = currentValue.toString();
+
+					if (settingType === 'option') {
 						var options = $('option', element);
 
 						for (var b = options.length; b--;) 
-							if (parseInt(options[b].value, 10) === currentValue) {
+							if (options[b].value.toString() === currentValue) {
 								element[0].selectedIndex = b;
 
 								break;
 							}
+					} else if (currentValue === element.val())
+						element.prop('checked', true);
 
-						element.change(function () {
-							Settings.setItem(this.getAttribute('data-inlineSetting'), parseInt(this.value, 10));
+					element.change(function () {
+						if (this.checked !== false) {
+							var value = this.value === 'false' ? false : this.value;
+
+							Settings.setItem(this.getAttribute('data-inlineSetting'), value, this.getAttribute('data-storeKey'));
+						}
+					});
+				break;
+
+				case 'boolean':
+					element
+						.prop('checked', currentValue)
+						.change(function () {
+							Settings.setItem(this.getAttribute('data-inlineSetting'), this.checked, this.getAttribute('data-storeKey'));
 						});
-					break;
-				}
-			} else {
-				switch (settingRef.props.type) {
-					case 'boolean':
-						element
-							.prop('checked', currentValue)
-							.change(function () {
-								Settings.setItem(this.getAttribute('data-inlineSetting'), this.checked);
-							});
-					break;
+				break;
+			}
+		}
+	},
+
+	createList: function (container, settings) {
+		var setting,
+				settingItem,
+				settingElement,
+				listSetting,
+				subContainer;
+
+		var allSettings = Settings.all();
+
+		for (var i = 0; i < settings.length; i++) {
+			setting = settings[i];
+
+			if (setting.divider)
+				container.append(Template.create('settings', 'setting-section-divider'));
+
+			else if (setting.header)
+				container.append(Template.create('settings', 'setting-section-header', {
+					header: setting.header
+				}));
+
+			else if (setting.description)
+				container.append(Template.create('settings', 'setting-section-description', {
+					id: setting.id || ('description-' + Utilities.Token.generate()),
+					description: setting.description
+				}));
+
+			else if (setting.button) {
+
+			} else if (setting.when) {
+				if (Utilities.Group.eval(setting.when.settings, allSettings))
+					this.createList(container, setting.settings);
+
+			} else if (setting.setting) {
+				if (setting.props) {
+					if (setting.props.remap || setting.props.readOnly)
+						continue;
+
+					settingElement = this.createElementForSetting(setting);
+
+					listSetting = Template.create('settings', 'setting-section-setting', {
+						setting: setting.setting
+					});
+
+					listSetting.append(settingElement);
+
+					container.append(listSetting);
+					
+					if (setting.props.subSettings) {
+						subContainer = Template.create('settings', 'setting-section-sub-container');
+
+						container.append(subContainer);
+
+						this.createList($('ul', subContainer), setting.props.subSettings);
+					}
 				}
 			}
 		}
+	},
+
+	createElementForSetting: function (setting, id) {
+		var mappedSetting = Settings.map[setting.setting],
+				baseProps = (setting.props.storeKey && mappedSetting.storeKeySettings) ? mappedSetting.props : setting.props;
+
+		var element = Template.create('settings', 'setting-element', {
+			id: id || ('setting-element-' + Utilities.Token.generate()),
+			setting: setting,
+			props: baseProps
+		}, true);
+
+		return element;
+	},
+
+	populateSection: function (view, settingSection)  {
+		var container = Template.create('settings', 'setting-section-container');
+
+		this.createList(container, Settings.settings[settingSection])
+
+		view.empty().append(container);
 	},
 
 	events: {
@@ -112,9 +191,29 @@ UI.Settings = {
 
 					Settings.setItem('settingCurrentView', this.getAttribute('data-view'));
 				});
+		},
+
+		poppyDidShow: function (event) {
+			UI.Settings.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
+		},
+
+		elementWasAdded: function (event) {
+			if (event.detail.querySelectorAll)
+				UI.Settings.bindInlineSettings(event.detail.querySelectorAll('*[data-inlineSetting]'));
+		},
+
+		viewWillSwitch: function (event) {
+			if (!event.detail.to.id._startsWith('#setting-views'))
+				return;
+
+			UI.Settings.populateSection(event.detail.to.view, event.detail.to.view.attr('data-section'));
 		}
 	}
 };
+
+UI.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
+UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
+UI.event.addCustomEventListener('viewWillSwitch', UI.Settings.events.viewWillSwitch);
 
 document.addEventListener('DOMContentLoaded', UI.Settings.init, true);
 

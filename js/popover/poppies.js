@@ -41,23 +41,13 @@ Object._extend(Poppy.scripts, {
 
 	'page-menu': function (poppy) {
 		poppy.content
-			.on('change', '#page-menu-show-page-editor, #page-menu-show-hidden, #page-menu-show-unblocked-scripts, #page-menu-show-item-description', function () {
+			.on('change', 'input[type="checkbox"]', function () {
 				UI.event.addCustomEventListener('poppyDidClose', function () {
 					UI.view.switchTo('#main-views-page');
 
 					globalPage.Page.requestPageFromActive();
 				}, true);
 			})
-
-			.on('change', '#page-menu-show-resource-url', function () {
-				var checked = this.checked;
-
-				UI.event.addCustomEventListener('poppyDidClose', function () {
-					UI.view.switchTo('#main-views-page');
-
-					Settings.setItem('showResourceURLs', checked);
-				}, true);
-			});
 	},
 
 	'rule-menu': function (poppy) {

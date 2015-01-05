@@ -133,8 +133,11 @@
 			.color-block;
 
 			&[disabled] {
-				opacity: 0.5 @important;
-				pointer-events: none @important;
+				&,
+				+ label {
+					opacity: 0.5 @important;
+					pointer-events: none @important;
+				}
 			}
 
 			&:not([type="radio"]):focus {
@@ -260,6 +263,10 @@
 
 				&:after {
 					-webkit-transform: translate(2px, -2px) scaleY(1.5) scaleX(1.15) @important;
+
+					.jsb-large-font& {
+						-webkit-transform: translate(1px, -4px) scaleY(1.2) scaleX(0.85) @important;
+					}
 				}
 
 				&:active:after {
@@ -268,10 +275,15 @@
 			}
 
 			+ label {
-				display: inline-block @important;
 				margin-bottom: 3px @important;
 				margin-right: 2px @important;
 			}
+		}
+
+		input[type="radio"] {
+			position: relative;
+			top: -1px;
+			right: 1px;
 		}
 
 		select {

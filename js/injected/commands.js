@@ -152,7 +152,7 @@ var Command = function (type, event) {
 				}
 
 			if (!foundSourceID)
-				return LogDebug('cannot execute command on top since the calling script is not injected here. - ' + data.originSourceName + ' - ' + document.location.href);
+				return LogDebug('cannot execute command on top since the calling script is not injected here - ' + data.originSourceName + ' - ' + document.location.href);
 
 			var result = Special.JSBCommanderHandler({
 				type: 'JSBCommander:' + foundSourceID + ':' + TOKEN.EVENT,
@@ -277,7 +277,13 @@ var Command = function (type, event) {
 				id: 'update-attention-required',
 				highPriority: true,
 				title: 'JSB Update',
-				body: 'Attention required.'
+				body: GlobalCommand('template.create', {
+					template: 'injected',
+					section: 'javascript-alert',
+					data: {
+						body: 'Attention required.'
+					}
+				})
 			});
 
 			notification.primaryCloseButtonText(_('open_popover')).onPrimaryClose(function () {
@@ -433,13 +439,32 @@ var Command = function (type, event) {
 			info.source = Utilities.URL.getAbsolutePath(info.source);
 			info.host = Utilities.URL.extractHost(info.source);
 
-			actionStore.pushSource(info.kind, info.source, {
+			var resourceID = actionStore.pushSource(info.kind, info.source, {
 				action: info.canLoad.action,
 				unblockable: false,
 				meta: info.meta
 			});
 
 			actionStore.incrementHost(info.kind, info.host);
+
+			Page.send();
+
+			return {
+				callbackID: detail.callbackID,
+				result: resourceID
+			};
+		},
+
+		__modifyPageItem: function (isAllowed, detail) {
+			var info = detail.meta,
+					actionStore = isAllowed ? Page.allowed : Page.blocked,
+					found = actionStore.deepFindKey(info.resourceID);
+
+			found.store.set(found.key, {
+				action: info.canLoad.action,
+				unblockable: info.unblockable,
+				meta: info.meta
+			});
 
 			Page.send();
 		},
@@ -601,6 +626,7 @@ var Command = function (type, event) {
 
 						notification.primaryCloseButtonText(event.detail ? _('xhr.block_once_all') : _('xhr.block_once'));
 					})
+
 					.addCustomEventListener(['allowXHR', 'blockXHR'], function () {
 						notification.hide();
 
@@ -614,6 +640,7 @@ var Command = function (type, event) {
 							response.meta.result.send = send.join('&');
 						}
 					}, true)
+
 					.addCustomEventListener('allowXHR', function () {
 						response.meta.result.isAllowed = true;
 
@@ -636,6 +663,7 @@ var Command = function (type, event) {
 
 						PageNotification.totalShift();
 					})
+
 					.addEventListener('keypress', '.jsb-xhr-query-modify input', function (notification, event) {
 						if (event.keyCode === 3 || event.keyCode === 13) {
 							this.blur();
@@ -822,8 +850,17 @@ var Command = function (type, event) {
 			addBlockedItem: function (detail) {
 				return this.__addPageItem(false, detail);
 			},
+
 			addAllowedItem: function (detail) {
 				return this.__addPageItem(true, detail);
+			},
+
+			modifyBlockedItem: function (detail) {
+				return this.__modifyPageItem(false, detail);
+			},
+
+			modifyAllowedItem: function (detail) {
+				return this.__modifyPageItem(true, detail);
 			}
 		}
 	};

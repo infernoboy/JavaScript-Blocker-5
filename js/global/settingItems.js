@@ -9,31 +9,6 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		setting: 'baseColor',
-		props: {
-			type: 'option',
-			options: [
-				['#177efb', 'blue'],
-				['#336699', 'slate blue'],
-				['#787778', 'gray'],
-				['#99999f', 'graphite']
-			],
-			default: '#177efb',
-			otherOption: {
-				prompt: 'Enter a valid 6 digit hex CSS color preceeded by #.',
-				validate: function (value) {
-					return value.match(/^#[a-f0-9]+$/i) && value.length === 7;
-				}
-			},
-			onChange: function () {
-				var less = window.less || Popover.window.less;
-
-				less.modifyVars({
-					baseColor: Settings.getItem('baseColor')
-				});
-			}
-		}
-	}, {
 		setting: 'installID',
 		props: {
 			type: 'string',
@@ -149,7 +124,7 @@ Settings.settings = {
 	}, {
 		setting: 'disableTime',
 		props: {
-			type: 'number',
+			type: 'option',
 			options: [
 				[5000, '5 seconds'],
 				[60000, '1 minute'],
@@ -261,6 +236,32 @@ Settings.settings = {
 	}, {
 		divider: true //===================================================================================
 	}, {
+		setting: 'baseColor',
+		props: {
+			type: 'option',
+			label: 'Color',
+			options: [
+				['#177efb', 'Blue'],
+				['#336699', 'Slate blue'],
+				['#787778', 'Gray'],
+				['#99999f', 'Graphite']
+			],
+			default: '#177efb',
+			otherOption: {
+				prompt: 'Enter a valid 6 digit hex CSS color preceeded by #.',
+				validate: function (value) {
+					return value.match(/^#[a-f0-9]+$/i) && value.length === 7;
+				}
+			},
+			onChange: function () {
+				var less = window.less || Popover.window.less;
+
+				less.modifyVars({
+					baseColor: Settings.getItem('baseColor')
+				});
+			}
+		}
+	}, {
 		setting: 'language',
 		props: {
 			type: 'option',
@@ -273,21 +274,6 @@ Settings.settings = {
 			default: 'auto'
 		}
 	}, {
-		setting: 'sourceCount',
-		props: {
-			type: 'option',
-			label: 'Sources displayed by default:',
-			default: Infinity,
-			options: [
-				[1, 1],
-				[2, 2],
-				[3, 3],
-				[4, 4],
-				[5, 5],
-				[Infinity, 'All of them']
-			]
-		}
-	}, {
 		setting: 'toolbarDisplay',
 		props: {
 			type: 'option-radio',
@@ -296,7 +282,7 @@ Settings.settings = {
 			options: [
 				['blocked', 'Blocked items'],
 				['allowed', 'Allowed items'],
-				[null, 'Neither']
+				[false, 'Neither']
 			]
 		}
 	}, {
@@ -454,70 +440,6 @@ Settings.settings = {
 			label: 'Automatically allow resources from other extensions',
 			default: true
 		}
-	}, {
-		divider: true //===================================================================================
-	}, {
-		setting: 'quickAdd',
-		props: {
-			type: 'boolean',
-			label: 'Enable Quick Add',
-			default: true,
-			subSettings: [{
-				when: {
-					hide: true,
-					settings: {
-						group: 'all',
-						items: [{
-							method: Utilities.Group.IS,
-							key: 'quickAdd',
-							needle: true
-						}]
-					}
-				},
-				settings: [{
-					setting: 'quickAddSimpleOnly',
-					props: {
-						type: 'boolean',
-						label: 'only in simple view',
-						default: true
-					}
-				}]
-			}]
-		}
-	}, {
-		when: {
-			settings: {
-				group: 'all',
-				items: [{
-					method: Utilities.Group.IS,
-					key: 'quickAdd',
-					needle: true
-				}]
-			}
-		},
-		settings: [{
-			setting: 'quickAddQuicker',
-			props: {
-				type: 'boolean',
-				label: 'Use quicker Quick Add',
-				default: false
-			}
-		}, {
-			setting: 'quickAddTemporary',
-			props: {
-				type: 'boolean',
-				label: 'Quick-add rules are temporary',
-				default: false
-			}
-		}, {
-			setting: 'quickAddType',
-			props: {
-				type: 'option',
-				label: 'Create Quick Add rules for:',
-				options: [[0, 'Same hostname as page host'], [1, 'Least domain of page host'], [2, 'All Domains']],
-				default: 0
-			}
-		}]
 	}, {
 		divider: true //===================================================================================
 	}, {
@@ -781,9 +703,9 @@ Settings.settings = {
 										settings: {
 											group: 'all',
 											items: [{
-												method: Utilities.Group.IS_NOT,
+												method: Utilities.Group.NOT.IS,
 												key: 'synchronousXHRMethod',
-												needle: 2
+												needle: '2'
 											}]
 										}
 									},
@@ -942,7 +864,7 @@ Settings.settings = {
 		divider: true //===================================================================================
 	}, {
 		id: 'easy-list-update',
-		description: 'Last EasyList update was never.'
+		description: 'Last EasyList update was unknown.'
 	}, {
 		button: 'updateEasyLists',
 		props: {
@@ -1249,7 +1171,7 @@ Settings.settings = {
 				storeKey: 'canvas_data_url',
 				label: 'Canvas data URL access',
 				subLabel: 'Canvas data URL access',
-				options: [[false, 'Always allow'], [1, 'Always ask'], [2, 'Ask once per domain'], [3, 'Ask once per domain for session'], [4, 'Always block']],
+				options: [[false, 'Off'], [1, 'Always ask'], [2, 'Ask once per domain'], [3, 'Ask once per domain for session'], [4, 'Always protect']],
 				default: 3
 			}
 		}, {
@@ -1259,7 +1181,7 @@ Settings.settings = {
 				storeKey: 'font',
 				label: 'Custom font for webpages:',
 				subLabel: 'Default webpage font',
-				options: [[false, 'Webpage default'], ['Helvetica', 'Helvetica'], ['Arial', 'Arial'], ['Times', 'Times'], ['Comic Sans MS', 'Comic Sans MS']],
+				options: [[false, 'Default'], ['Helvetica', 'Helvetica'], ['Arial', 'Arial'], ['Times', 'Times'], ['Comic Sans MS', 'Comic Sans MS']],
 				default: false,
 				otherOption: {
 					prompt: 'Enter a custom font name to use.',
@@ -1275,7 +1197,7 @@ Settings.settings = {
 				storeKey: 'zoom',
 				label: 'Custom zoom level for webpages:',
 				subLabel: 'Default webpage zoom level',
-				options: [[false, 'Webpage default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%']],
+				options: [[false, 'Default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%']],
 				default: false,
 				otherOption: {
 					prompt: 'Enter a custom zoom level to use.',

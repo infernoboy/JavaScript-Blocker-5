@@ -1,14 +1,17 @@
 &[data-activeview="#main-views-setting"] {
 	overflow: hidden;
 	margin-top: 0;
+	position: relative;
 }
 
 #main-views-setting {
-	height: 100%;
 	width: 100%;
 	-webkit-flex-direction: column;
+	-webkit-flex-align-items: stretch;
 
 	&.active-view {
+		position: absolute;
+		height: 100%;
 		display: -webkit-flex;
 	}
 
@@ -38,9 +41,56 @@
 
 	#setting-views-container {
 		position: relative;
-		-webkit-flex: 1 1 auto;
+		-webkit-flex: 1 1 100%;
 		overflow-y: scroll;
 		overflow-x: auto;
 		margin-top: 1px;
+
+		.setting-section {
+			padding: 7px 3px;
+
+			.setting-sub-container {
+				margin-left: 17px;
+
+				.setting-section-setting {
+					&:first-child {
+						margin-top: -3px;
+					}
+
+					&:last-child {
+						margin-bottom: 11px;
+					}
+				}
+			}
+
+			&-header * {
+				font-weight: 500;
+			}
+
+			&-description {
+				margin-bottom: 13px;
+			}
+
+			&-divider {
+				height: 1px;
+				background: rgba(0, 0, 0, 0.1);
+				margin: 10px 0 11px;
+			}
+
+			&-setting {
+				margin: 9px 0 8px;
+
+				div {
+					margin-left: 18px;
+					text-indent: -18px;
+				}
+			}
+		}
+	}
+}
+
+.setting-radio-list {
+	li {
+		margin-bottom: 5px;
 	}
 }

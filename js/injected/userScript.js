@@ -148,13 +148,13 @@ var UserScript = {
 			return result;
 		},
 		GM_setValue: function (key, value) {
-			messageExtension('userScript.storage.setItem', {
+			messageExtensionSync('userScript.storage.setItem', {
 				key: key,
 				value: value
 			});
 		},
 		GM_deleteValue: function (key) {
-			messageExtension('userScript.storage.removeItem', {
+			messageExtensionSync('userScript.storage.removeItem', {
 				key: key
 			});
 		},
@@ -205,7 +205,7 @@ var UserScript = {
 		},
 
 		GM_log: function () {
-			console.debug.apply(console, arguments);
+			JSB.console.debug.apply(JSB.console, arguments);
 		},
 
 		GM_openInTab: function (url) {

@@ -1215,9 +1215,9 @@ var Extension = {
 				var object = {};
 
 				for (var key in this)
-					if (deep && Object._isPlainObject(this[key]))
-						object[key] = this[key]._clone(true);
-					else
+					if (deep && Object._isPlainObject(this[key])) {
+						object[key] = Object.prototype._clone.call(this[key], true);
+					} else
 						object[key] = Object._copy(this[key]);
 
 				return object;
@@ -1398,6 +1398,7 @@ Utilities.Page.isUserScript = window.location.href._endsWith('.user.js');
 Utilities.Group.NOT._createReverseMap();
 Utilities.Group.TYPES = {
 	string: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.STARTS_WITH, Utilities.Group.NOT.STARTS_WITH, Utilities.Group.ENDS_WITH, Utilities.Group.NOT.ENDS_WITH, Utilities.Group.MATCHES, Utilities.Group.NOT.MATCHES, Utilities.Group.CONTAINS, Utilities.Group.NOT.CONTAINS],
+	number: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.MATCHES, Utilities.Group.NOT.MATCHES],
 	array: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.CONTAINS, Utilities.Group.NOT.CONTAINS],
 	boolean: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS]
 };

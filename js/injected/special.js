@@ -314,6 +314,8 @@ var Special = {
 							value: deepFreezeObject(JSB[key])
 						});
 
+				JSB.console = window[JSB.eventToken].console;
+
 				window[JSB.eventToken].document$addEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackHandler, true);
 			});
 		},

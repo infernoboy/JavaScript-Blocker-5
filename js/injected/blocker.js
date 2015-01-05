@@ -107,7 +107,11 @@ var Page = {
 		Object.defineProperties(Page[result[i]], {
 			pushSource: {
 				value: function (kind, source, data) {
-					this.getStore(kind).getStore('source').getStore(Page.info.location).getStore(source).set(Utilities.Token.generate(), data);
+					var resourceID = Utilities.Token.generate();
+
+					this.getStore(kind).getStore('source').getStore(Page.info.location).getStore(source).set(resourceID, data);
+
+					return resourceID;
 				}.bind(Page[result[i]])
 			},
 

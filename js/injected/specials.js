@@ -5,6 +5,7 @@ Special.specials = {
 		
 		Object.defineProperty(window, JSB.eventToken, {
 			value: Object.freeze({
+				console: window.console,
 				window$JSON$stringify: window.JSON.stringify.bind(window.JSON),
 				window$JSON$parse: window.JSON.parse.bind(window.JSON),
 				window$addEventListener: window.addEventListener.bind(window),
@@ -122,6 +123,15 @@ Special.specials = {
 		}, true);
 	},
 
+	font: function () {
+		var style = document.createElement('style');
+
+		style.type = 'text/css';
+		style.innerText = '*:not(pre):not(code) { font-family: "' + JSB.value.value + '" !important; }';
+
+		document.documentElement.appendChild(style);
+	},
+
 	window_resize: function () {
 		var windowOpen = window.open;
 
@@ -213,7 +223,7 @@ Special.specials = {
 				openToken = Math.random(),
 				openArguments = {};
 
-		function performAction (request, info, args, sendData) {
+		function performAction (request, info, args, sendData, awaitPromptResourceID) {
 			var xhrError;
 
 			var detail = openArguments[request[openToken]],
@@ -245,7 +255,16 @@ Special.specials = {
 				}
 			}
 
-			messageExtension('page.' + pageAction, info);
+			if (info.canLoad.isAllowed)
+				messageExtension('page.' + pageAction, info);
+
+			if (awaitPromptResourceID)
+				messageExtension('page.modifyBlockedItem', {
+					resourceID: awaitPromptResourceID,
+					canLoad: {
+						action: info.canLoad.isAllowed ? -11 : -6
+					}
+				});
 
 			if (xhrError) {
 				xhrError.JSB_RETHROW = true;
@@ -300,6 +319,7 @@ Special.specials = {
 			detail.previousJSONsendArguments = JSONsendArguments;
 
 			var kind = 'xhr_' + detail.method,
+					awaitPromptResourceID = null,
 					info = {
 						meta: undefined,
 						kind: kind,
@@ -369,12 +389,17 @@ Special.specials = {
 					isAllowed: result.isAllowed
 				};
 
-				return performAction(self, info, args, result.send);
+				return performAction(self, info, args, result.send, awaitPromptResourceID);
 			});
 
 			var shouldPerformAction = (function () {
 				if (canLoad.action !== -8 && canLoad.action < 0 && shouldShowPrompt) {
 					if (!detail.sync) {
+						info.canLoad.isAllowed = false;
+						info.canLoad.action = -10;
+
+						awaitPromptResourceID = messageExtensionSync('page.addBlockedItem', info);
+
 						messageTopExtension('showXHRPrompt', {
 							onXHRPromptInput: onXHRPromptInput,
 							meta: info
@@ -413,7 +438,7 @@ Special.specials = {
 			})();
 
 			if (shouldPerformAction)
-				performAction(this, info, arguments);
+				performAction(this, info, arguments, null, awaitPromptResourceID);
 		};
 	},
 

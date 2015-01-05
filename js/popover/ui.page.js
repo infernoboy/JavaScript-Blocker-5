@@ -32,6 +32,8 @@ UI.Page = {
 					hiddenCountText = $('.page-host-hidden-count', this);
 
 			$('.page-host-item', this).each(function (i) {
+				var shouldHide;
+
 				var item = $(this),
 						itemIsHidden = false,
 						allResourcesHidden = true,
@@ -173,12 +175,6 @@ UI.Page = {
 		Utilities.Timer.timeout('setColumnWidth', function () {
 			Settings.setItem('pageHostColumnAllowedWidth', allowedColumnWidth);
 		}, 20);
-	},
-
-	render: {
-		section: function (page) {
-			var section = Template.create('page', 'host-section');
-		}
 	},
 
 	section: {
@@ -591,7 +587,7 @@ UI.Page = {
 					poppy.setContent('<pre>' + JSON.stringify(items, null, 1)._escapeHTML() + '</pre>').show();
 				})
 
-				.on('click', '.page-host-edit, .page-host-columns .page-host-item .page-host-item-source', function (event) {
+				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {
 					if (globalPage.Rules.snapshotInUse())
 						return (new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true))
 							.setContent(Template.create('main', 'jsb-readable', {
