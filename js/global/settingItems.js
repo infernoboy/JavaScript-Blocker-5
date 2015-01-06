@@ -6,7 +6,7 @@ Settings.settings = {
 		setting: 'donationVerified',
 		props: {
 			type: 'boolean',
-			default: false
+			default: true // Make sure I change this to false before general release..
 		}
 	}, {
 		setting: 'installID',

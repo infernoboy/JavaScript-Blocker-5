@@ -534,6 +534,9 @@ Command.setupContentURLs = function () {
 };
 
 Command.toggleDisabled = function (force, doNotReload) {
+	if (Command.event.trigger('willDisable', window.globalSetting.disabled))
+		return;
+
 	window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
 
 	Utilities.Timer.remove('timeout', 'autoEnableJSB');

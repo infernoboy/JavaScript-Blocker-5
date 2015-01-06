@@ -802,7 +802,7 @@ var UI = {
 			},
 
 			add: function (viewContainerSelector, headerSelector, related, offset) {
-				UI.event.addCustomEventListener('popoverOpened', function (viewContainerSelector, headerSelector, related, offset) {
+				UI.event.addCustomEventListener(['popoverOpened', 'pageDidRender'], function (viewContainerSelector, headerSelector, related, offset) {
 					var headersInView = UI.view.floatingHeaders.__floating._getWithDefault(viewContainerSelector, {}),
 							viewContainer = $(viewContainerSelector, UI.container);
 

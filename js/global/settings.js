@@ -84,11 +84,11 @@ var Settings = {
 			setTimeout(function () {
 				window.globalSetting[event.key] = Settings.getItem(event.key);
 			});
-		
-		if (Popover.window.UI.Settings.view.is('.active-view')) {
+
+		if (window.UI && UI.Settings.view.is('.active-view')) {
 			var activeSettingView = $('.active-view', UI.Settings.views);
 
-			Popover.window.UI.Settings.populateSection(activeSettingView, activeSettingView.attr('data-section'));
+			UI.Settings.populateSection(activeSettingView, activeSettingView.attr('data-section'));
 		}
 	},
 

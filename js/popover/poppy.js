@@ -76,22 +76,23 @@
 		var promiseArray = [];
 
 		for (var poppyID in poppies) {
-			if (eventOrImmediate && eventOrImmediate.type === 'scroll' && !poppies[poppyID].willRemoveOnScroll)
+			if ((eventOrImmediate && eventOrImmediate.type === 'scroll' && !poppies[poppyID].willRemoveOnScroll) || poppies[poppyID].isModal)
 				continue;
 
 			promiseArray.push(poppies[poppyID].close(eventOrImmediate));
 		}
 
-		Poppy.closeModal();
-
 		return Promise.all(promiseArray);
 	};
 
 	Poppy.closeModal = function () {
-		if (Poppy.__modal.is(':visible'))
+		if (Poppy.modalOpen) {
+			Poppy.modalOpen = false;
+
 			Poppy.__modal.stop(true).fadeOut(130 * window.globalSetting.speedMultiplier, function () {
 				UI.event.trigger('poppyModalClosed');
 			});
+		}
 	};
 
 	Poppy.closeLinksTo = function (poppy) {
@@ -326,6 +327,8 @@
 	};
 
 	Poppy.prototype.modal = function () {
+		Poppy.modalOpen = true;
+
 		this.isModal = true;
 
 		Poppy.__modal.stop().fadeIn(200 * window.globalSetting.speedMultiplier);
