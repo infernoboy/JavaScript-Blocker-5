@@ -144,7 +144,6 @@ Settings.settings = {
 		setting: 'showItemDescription',
 		props: {
 			type: 'boolean',
-			label: 'Show domain descriptions when possible',
 			default: true
 		}
 	}],
@@ -154,7 +153,6 @@ Settings.settings = {
 		setting: 'useAnimations',
 		props: {
 			type: 'boolean',
-			label: 'Use animations',
 			default: true,
 			onChange: function () {
 				var useAnimations = Settings.getItem('useAnimations');
@@ -168,7 +166,6 @@ Settings.settings = {
 		setting: 'largeFont',
 		props: {
 			type: 'boolean',
-			label: 'Use a large font',
 			default: false,
 			onChange: function () {
 				var useLargeFont = Settings.getItem('largeFont');
@@ -180,7 +177,6 @@ Settings.settings = {
 		setting: 'showUnblockedScripts',
 		props: {
 			type: 'boolean',
-			label: 'Show scripts that can\'t be blocked',
 			helpText: 'showUnblocked help',
 			default: false,
 			subSettings: [{
@@ -199,7 +195,6 @@ Settings.settings = {
 					setting: 'hideInjected',
 					props: {
 						type: 'boolean',
-						label: 'Hide injected helper scripts',
 						default: true
 					}
 				}]
@@ -209,28 +204,24 @@ Settings.settings = {
 		setting: 'quickCyclePageItems',
 		props: {
 			type: 'boolean',
-			label: 'Quick cycle page items',
 			default: false
 		}
 	}, {
 		setting: 'createRulesOnClose',
 		props: {
 			type: 'boolean',
-			label: 'Create rules when closing the popover',
 			default: false
 		}
 	}, {
 		setting: 'autoHideEasyList',
 		props: {
 			type: 'boolean',
-			label: 'Automatically hide whitelisted and blacklisted items',
 			default: false
 		}
 	}, {
 		setting: 'recommendReloadAlways',
 		props: {
 			type: 'boolean',
-			label: 'recommend_reload.always',
 			default: false
 		}
 	}, {
@@ -239,12 +230,17 @@ Settings.settings = {
 		setting: 'baseColor',
 		props: {
 			type: 'option',
-			label: 'Color',
 			options: [
 				['#177efb', 'Blue'],
 				['#336699', 'Slate blue'],
 				['#787778', 'Gray'],
-				['#99999f', 'Graphite']
+				['#99999f', 'Graphite'],
+				['#ff1fed', 'Pink	'],
+				['#ff7c0c', 'Orange'],
+				['#009e00', 'Green'],
+				['#00afba', 'Turquoise'],
+				['#876846', 'Brown'],
+				['#7512b2', 'Purple'],
 			],
 			default: '#177efb',
 			otherOption: {
@@ -265,7 +261,6 @@ Settings.settings = {
 		setting: 'language',
 		props: {
 			type: 'option',
-			label: 'Language:',
 			options: [
 				['auto', 'Automatic'],
 				['en-us', 'US English'],
@@ -277,13 +272,15 @@ Settings.settings = {
 		setting: 'toolbarDisplay',
 		props: {
 			type: 'option-radio',
-			label: 'Toolbar badge shows number of:',			
 			default: 'blocked',
 			options: [
 				['blocked', 'Blocked items'],
 				['allowed', 'Allowed items'],
 				[false, 'Neither']
-			]
+			],
+			onChange: function () {
+				Page.requestPageFromActive();
+			}
 		}
 	}, {
 		divider: true //===================================================================================
@@ -304,14 +301,12 @@ Settings.settings = {
 			setting: 'updateNotify',
 			props: {
 				type: 'boolean',
-				label: 'Notify me about new updates',
 				default: true
 			}
 		}, {
 			setting: 'showResourceURLs',
 			props: {
 				type: 'boolean',
-				label: 'Show resource URLs',
 				helpText: 'simpleMode help',
 				default: false,
 				confirm: [{
@@ -415,21 +410,24 @@ Settings.settings = {
 		setting: 'ignoreWhitelist',
 		props: {
 			type: 'boolean',
-			label: 'Ignore whitelist rules',
-			default: false
+			default: false,
+			onChange: function () {
+				Resource.canLoadCache.clear();
+			}
 		}
 	}, {
 		setting: 'ignoreBlacklist',
 		props: {
 			type: 'boolean',
-			label: 'Ignore blacklist rules',
-			default: false
+			default: false,
+			onChange: function () {
+				Resource.canLoadCache.clear();
+			}
 		}
 	}, {
 		setting: 'secureOnly',
 		props: {
 			type: 'boolean',
-			label: 'Resources on secure sites must also be secure',
 			subLabel: 'This will only affect items that have a blocker enabled.',
 			default: true
 		}
@@ -437,7 +435,6 @@ Settings.settings = {
 		setting: 'allowExtensions',
 		props: {
 			type: 'boolean',
-			label: 'Automatically allow resources from other extensions',
 			default: true
 		}
 	}, {
@@ -446,7 +443,6 @@ Settings.settings = {
 		setting: 'blockFirstVisit',
 		props: {
 			type: 'option',
-			label: 'Block all resources on first visit to:',
 			options: [
 				['nowhere', 'Nowhere'],
 				['host', 'Different hosts &amp; subdomains'],
@@ -505,7 +501,6 @@ Settings.settings = {
 		setting: 'enabledKinds',
 		props: {
 			storeKey: 'script',
-			label: 'Enable script blocker',
 			default: true
 		}
 	}, {
@@ -531,7 +526,6 @@ Settings.settings = {
 			setting: 'alwaysBlock',
 			props: {
 				storeKey: 'script',
-				label: 'Automatically block scripts from:',
 				help: 'alwaysBlock help',
 				default: 'blacklist'
 			}
@@ -555,7 +549,6 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'frame',
-				label: 'Enable frame blocker',
 				default: true
 			}
 		}, {
@@ -581,14 +574,12 @@ Settings.settings = {
 				setting: 'showPlaceholder',
 				props: {
 					storeKey: 'frame',
-					label: 'Show a placeholder for blocked frames',
 					default: false
 				}
 			}, {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'frame',
-					label: 'Automatically block frames from:',
 					help: 'alwaysBlock help',
 					default: 'blacklist'
 				}
@@ -617,7 +608,6 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'xhr',
-				label: 'Enable XHR blocker',
 				default: true
 			}
 		}, {
@@ -661,70 +651,66 @@ Settings.settings = {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'xhr',
-					label: 'Automatically block XHRs to:',
 					extendOptions: [['ask', 'Ask when neccessary']],
 					help: 'alwaysBlock help',
 					default: 'blacklist',
 					onChange: function () {
 						Special.__enabled = null;
 					},
-					subSettings: [{
-						when: {
-							hide: true,
-							settings: {
+				}
+			}, {
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.NONE,
+							key: 'alwaysBlock',
+							needle: {
 								group: 'all',
 								items: [{
-									method: Utilities.Group.NONE,
-									key: 'alwaysBlock',
-									needle: {
-										group: 'all',
-										items: [{
-											method: Utilities.Group.IS,
-											key: 'xhr',
-											needle: 'ask'
-										}]
-									}
-								}]
-							}
-						},
-						settings: [{
-							setting: 'synchronousXHRMethod',
-							props: {
-								type: 'option',
-								label: 'Synchronous XHR requests:',
-								options: [[0, 'Automatically allow'], [1, 'Automatically block'], [2, 'Invasively ask']],
-								default: 0,
-								onChange: function () {
-									Special.__enabled = null;
-								},
-								subSettings: [{
-									when: {
-										hide: true,
-										settings: {
-											group: 'all',
-											items: [{
-												method: Utilities.Group.NOT.IS,
-												key: 'synchronousXHRMethod',
-												needle: '2'
-											}]
-										}
-									},
-									settings: [{
-										setting: 'showSynchronousXHRNotification',
-										props: {
-											type: 'boolean',
-											label: 'Show synchronous XHR notifications',
-											default: true,
-											onChange: function () {
-												Special.__enabled = null;
-											}
-										}
-									}]
+									method: Utilities.Group.IS,
+									key: 'xhr',
+									needle: 'ask'
 								}]
 							}
 						}]
-					}]
-				}
+					}
+				},
+				settings: [{
+					setting: 'synchronousXHRMethod',
+					props: {
+						type: 'option',
+						options: [[0, 'Automatically allow'], [1, 'Automatically block'], [2, 'Invasively ask']],
+						default: 0,
+						onChange: function () {
+							Special.__enabled = null;
+						},
+						subSettings: [{
+							when: {
+								hide: true,
+								settings: {
+									group: 'all',
+									items: [{
+										method: Utilities.Group.NOT.IS,
+										key: 'synchronousXHRMethod',
+										needle: '2'
+									}]
+								}
+							},
+							settings: [{
+								setting: 'showSynchronousXHRNotification',
+								props: {
+									type: 'boolean',
+									default: true,
+									onChange: function () {
+										Special.__enabled = null;
+									}
+								}
+							}]
+						}]
+					}
+				}]
 			}]
 		}, {
 			divider: true //===================================================================================
@@ -732,7 +718,6 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'embed',
-				label: 'Enable embed and object blocker',
 				default: true
 			}
 		}, {
@@ -758,14 +743,12 @@ Settings.settings = {
 				setting: 'showPlaceholder',
 				props: {
 					storeKey: 'embed',
-					label: 'Show a placeholder for blocked embeds and objects',
 					default: true
 				}
 			}, {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'embed',
-					label: 'Automatically block embeds and objects from:',
 					help: 'alwaysBlock help',
 					default: 'blacklist'
 				}
@@ -776,7 +759,6 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'video',
-				label: 'Enable video blocker',
 				default: false
 			}
 		}, {
@@ -802,14 +784,12 @@ Settings.settings = {
 				setting: 'showPlaceholder',
 				props: {
 					storeKey: 'video',
-					label: 'Show a placeholder for blocked videos',
 					default: true
 				}
 			}, {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'video',
-					label: 'Automatically block videos from:',
 					help: 'alwaysBlock help',
 					default: 'everywhere'
 				}
@@ -820,7 +800,6 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'image',
-				label: 'Enable image hider',
 				default: false
 			}
 		}, {
@@ -847,14 +826,12 @@ Settings.settings = {
 				setting: 'showPlaceholder',
 				props: {
 					storeKey: 'image',
-					label: 'Show a placeholder for blocked images',
 					default: true
 				}
 			}, {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'image',
-					label: 'Automatically hide images from:',
 					help: 'alwaysBlock help',
 					default: 'blacklist'
 				}
@@ -893,7 +870,6 @@ Settings.settings = {
 			setting: 'enableSnapshots',
 			props: {
 				type: 'boolean',
-				label: 'Enable rule snapshots',
 				default: true,
 				confirm: {
 					when: false,
@@ -919,7 +895,6 @@ Settings.settings = {
 				setting: 'autoSnapshots',
 				props: {
 					type: 'boolean',
-					label: 'Create a snapshot when rules are modified',
 					default: true
 				}
 			}, {
@@ -980,7 +955,6 @@ Settings.settings = {
 		setting: 'confirmShortURL',
 		props: {
 			type: 'boolean',
-			label: 'Confirm short URL redirects before they occur',
 			default: false
 		}
 	}, {
@@ -1010,7 +984,6 @@ Settings.settings = {
 			setting: 'blockReferrer',
 			props: {
 				type: 'boolean',
-				label: 'EXPERIMENTAL: Enable full referer blocking',
 				help: 'blockReferrer help',
 				default: false,
 				confirm: [{
@@ -1033,7 +1006,6 @@ Settings.settings = {
 						setting: 'focusNewTab',
 						props: {
 							type: 'boolean',
-							label: 'When a new tab opens, make it active',
 							default: true
 						}
 					}]
@@ -1062,7 +1034,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'simple_referrer',
-				label: 'Prevent links on webpages from sending referers',
 				subLabel: 'Links sending referrers',
 				help: 'simpleReferrer help',
 				default: true,
@@ -1092,7 +1063,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'alert_dialogs',
-				label: 'Display alert() messages within the webpage instead of a popup dialog',
 				subLabel: 'Modal alert popups',
 				default: true
 			}
@@ -1101,7 +1071,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'anchor_titles',
-				label: 'Show path when hovering over links',
 				subLabel: 'Modal alert popups',
 				default: true
 			}
@@ -1110,7 +1079,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'contextmenu_overrides',
-				label: 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items',
 				subLabel: 'Context menu overrides',
 				help: 'contextmenu_overrides help',
 				default: false
@@ -1120,7 +1088,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'window_resize',
-				label: 'Prevent webpages from resizing the window and creating new windows with a custom size',
 				subLabel: 'Window resize functions',
 				default: false
 			}
@@ -1129,7 +1096,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'autocomplete_disabler',
-				label: 'Prevent webpages from disabling autocomplete',
 				subLabel: 'Autocomplete disablers',
 				default: true
 			}
@@ -1150,7 +1116,6 @@ Settings.settings = {
 				props: {
 					type: 'boolean',
 					storeKey: 'inline_script_execution',
-					label: 'Prevent inline scripts from being executed',
 					subLabel: 'Inline script execution',
 					default: false
 				}
@@ -1160,7 +1125,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'environmental_information',
-				label: 'Randomize browser information',
 				subLabel: 'Environmental information',
 				default: false
 			}
@@ -1169,7 +1133,6 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'canvas_data_url',
-				label: 'Canvas data URL access',
 				subLabel: 'Canvas data URL access',
 				options: [[false, 'Off'], [1, 'Always ask'], [2, 'Ask once per domain'], [3, 'Ask once per domain for session'], [4, 'Always protect']],
 				default: 3
@@ -1179,7 +1142,6 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'font',
-				label: 'Custom font for webpages:',
 				subLabel: 'Default webpage font',
 				options: [[false, 'Default'], ['Helvetica', 'Helvetica'], ['Arial', 'Arial'], ['Times', 'Times'], ['Comic Sans MS', 'Comic Sans MS']],
 				default: false,
@@ -1195,7 +1157,6 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'zoom',
-				label: 'Custom zoom level for webpages:',
 				subLabel: 'Default webpage zoom level',
 				options: [[false, 'Default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%']],
 				default: false,

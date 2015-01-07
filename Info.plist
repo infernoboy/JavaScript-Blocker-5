@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>10600.1.25.1</string>
+	<string>10600.3.10.2</string>
 	<key>CFBundleDisplayName</key>
 	<string>JavaScript Blocker 5</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5-alpha2</string>
+	<string>5-alpha4</string>
 	<key>CFBundleVersion</key>
-	<string>150106</string>
+	<string>150107</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
@@ -51,7 +51,7 @@
 	<key>Description</key>
 	<string>Helps to minimize tracking, protect your privacy, and speed up browsing.</string>
 	<key>DeveloperIdentifier</key>
-	<string></string>
+	<string>6S8J5HV3H4</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>

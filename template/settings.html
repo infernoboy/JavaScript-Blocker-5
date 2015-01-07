@@ -14,7 +14,7 @@
 </noscript>
 
 <noscript id="setting-section-sub-container">
-	<li><ul class="setting-sub-container"></ul></li>
+	<li class="setting-sub-container-wrapper"><ul class="setting-sub-container"></ul></li>
 </noscript>
 
 <noscript id="setting-section-setting">
@@ -27,13 +27,17 @@
 
 <noscript id="setting-section-header">
 	<li class="setting-section-header">
-		<h2><%=self.header%></h2>
+		<div class="setting-section-setting-full">
+			<h<%=self.level || 1%>><%=self.header%></h<%=self.level || 1%>>
+		</div>
 	</li>
 </noscript>
 
 <noscript id="setting-section-description">
 	<li id="<%=self.id%>" class="setting-section-description">
-		<p class="jsb-info"><%=self.description%></p>
+		<div class="setting-section-setting-full">
+			<p class="jsb-info"><%=self.description%></p>
+		</div>
 	</li>
 </noscript>
 
@@ -46,7 +50,9 @@
 
 		switch (settingType) {
 			case 'boolean': %>
-				<input id="<%=self.id%>" type="checkbox" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id%>"><%=mainLabel%></label><%
+				<%=self.wrap ? '<div class="setting-section-setting-full">' : ''%>
+					<input id="<%=self.id%>" type="checkbox" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id%>"><%=mainLabel%></label>
+				<%=self.wrap ? '</div>' : ''%><%
 			break;
 
 			case 'option':
@@ -55,29 +61,38 @@
 				if (self.setting.props.extendOptions)
 					options = options.concat(self.setting.props.extendOptions); %>
 
-				<label for="<%=self.id%>"><%=mainLabel%>:&nbsp</label>
-				<select id="<%=self.id%>" <%=inlineSetting%> <%=storeKeySetting%>>
-					<% for (var i = 0; i < options.length; i++) { %>
-						<option value="<%=options[i][0]%>"><%=options[i][1]%></option><% 
-					} %>
-				</select><label></label><%
+				<%=self.wrap ? '<div class="setting-section-setting-left">' : ''%>
+					<label for="<%=self.id%>"><%=mainLabel%>:&nbsp</label>
+				<%=self.wrap ? '</div>' : ''%>
+				<%=self.wrap ? '<div class="setting-section-setting-right">' : ''%>
+					<select id="<%=self.id%>" <%=inlineSetting%> <%=storeKeySetting%>>
+						<% for (var i = 0; i < options.length; i++) { %>
+							<option value="<%=options[i][0]%>"><%=options[i][1]%></option><% 
+						} %>
+					</select><label></label>
+				<%=self.wrap ? '</div>' : ''%><%
 			break;
 
 			case 'option-radio': %>
-				<label><%=mainLabel%>:</label>
-				<ul class="setting-radio-list"><%
+				<%=self.wrap ? '<div class="setting-section-setting-left">' : ''%>
+					<label><%=mainLabel%>:&nbsp;</label>
+				<%=self.wrap ? '</div>' : ''%>
 
-				var options = self.props.options || self.setting.props.options,
-						name = 'radio-settings-' + Utilities.Token.generate();
+				<%=self.wrap ? '<div class="setting-section-setting-right">' : ''%>
+					<ul class="setting-radio-list"><%
 
-				if (self.setting.props.extendOptions)
-					options = options.concat(self.setting.props.extendOptions);
+					var options = self.props.options || self.setting.props.options,
+							name = 'radio-settings-' + Utilities.Token.generate();
 
-				for (var i = 0; i < options.length; i++) { %>
-					<li><input id="<%=self.id + i%>" type="radio" name="<%=name%>" value="<%=options[i][0]%>" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id + i%>"><%=options[i][1]%></label></li><%
-				}
+					if (self.setting.props.extendOptions)
+						options = options.concat(self.setting.props.extendOptions);
 
-				%> </ul> <%
+					for (var i = 0; i < options.length; i++) { %>
+						<li><input id="<%=self.id + i%>" type="radio" name="<%=name%>" value="<%=options[i][0]%>" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id + i%>"><%=options[i][1]%></label></li><%
+					}
+
+					%> </ul>
+				<%=self.wrap ? '</div>' : ''%><%
 			break;
 		}
 	%>

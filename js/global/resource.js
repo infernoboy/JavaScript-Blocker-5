@@ -228,7 +228,9 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 			b,
 			action;
 
-	var self = this;
+	var self = this,
+			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
+			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
 
 	Rule.withLocationRules(this.matchingRules(null, !!domainCached, useHideKinds, excludeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
 		pageRule = (ruleType === 'page' || ruleType === 'notPage');
@@ -242,6 +244,9 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 		if (longAllowed && longRegExps) {
 			actionLoop:
 			for (action in longRegExps.data) {
+				if ((ignoreBlacklist && action == ACTION.BLACKLIST) || (ignoreWhitelist && action == ACTION.WHITELIST))
+					continue;
+
 				for (i = 0, b = longRegExps.data[action].value.regExps.length; i < b; i++) {
 					if (longRegExps.data[action].value.regExps[i].test(self.source)) {
 						canLoad = longRegExps.data[action].value.canLoad;
@@ -289,6 +294,9 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 							list: ruleListName
 						}
 					});
+
+					if ((ignoreBlacklist && action == ACTION.BLACKLIST) || (ignoreWhitelist && action == ACTION.WHITELIST))
+						continue;
 
 					for (i = 0, b = longRegExps.length; i < b; i++) {
 						if (longRegExps[i].test(self.source)) {

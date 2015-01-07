@@ -120,7 +120,8 @@ UI.Settings = {
 
 			else if (setting.header)
 				container.append(Template.create('settings', 'setting-section-header', {
-					header: setting.header
+					header: setting.header,
+					level: setting.level
 				}));
 
 			else if (setting.description)
@@ -140,13 +141,13 @@ UI.Settings = {
 					if (setting.props.remap || setting.props.readOnly)
 						continue;
 
-					settingElement = this.createElementForSetting(setting);
+					settingElement = this.createElementForSetting(setting, null, true);
 
 					listSetting = Template.create('settings', 'setting-section-setting', {
 						setting: setting.setting
 					});
 
-					listSetting.append(settingElement);
+					listSetting.append(settingElement.children());
 
 					container.append(listSetting);
 					
@@ -162,14 +163,15 @@ UI.Settings = {
 		}
 	},
 
-	createElementForSetting: function (setting, id) {
+	createElementForSetting: function (setting, id, wrap) {
 		var mappedSetting = Settings.map[setting.setting],
 				baseProps = (setting.props.storeKey && mappedSetting.storeKeySettings) ? mappedSetting.props : setting.props;
 
 		var element = Template.create('settings', 'setting-element', {
 			id: id || ('setting-element-' + Utilities.Token.generate()),
 			setting: setting,
-			props: baseProps
+			props: baseProps,
+			wrap: wrap
 		}, true);
 
 		return element;

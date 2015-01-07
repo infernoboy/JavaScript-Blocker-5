@@ -158,7 +158,7 @@
 	"setting.focusNewTab.label": "When a new tab opens, make it active",
 
 	"setting.enabledSpecials.simple_referrer.label": "Prevent links on webpages from sending referers",
-	"setting.enabledSpecials.alert_dialogs.label": "Display alert() messages within the webpage instead of a popup dialog",
+	"setting.enabledSpecials.alert_dialogs.label": "Display alert messages within the webpage instead of a popup dialog",
 	"setting.enabledSpecials.anchor_titles.label": "Show URL path when hovering over links",
 	"setting.enabledSpecials.contextmenu_overrides.label": "Prevents webpages from disabling or using a custom context menu and prevent other extensions from creating menu items",
 	"setting.enabledSpecials.window_resize.label": "Prevents webpages from resizing the window and creating new windows with a custom size",

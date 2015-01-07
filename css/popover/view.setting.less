@@ -47,18 +47,21 @@
 		margin-top: 1px;
 
 		.setting-section {
-			padding: 7px 3px;
+			padding: 5px 3px;
+			overflow-x: hidden;
 
-			.setting-sub-container {
-				margin-left: 17px;
+			.setting-sub-container-wrapper {
+				margin-left: 34px;
 
-				.setting-section-setting {
-					&:first-child {
-						margin-top: -3px;
-					}
+				.setting-sub-container {
+					.setting-section-setting {
+						&:first-child {
+							margin-top: -1px;
+						}
 
-					&:last-child {
-						margin-bottom: 11px;
+						&:last-child {
+							margin-bottom: 11px;
+						}
 					}
 				}
 			}
@@ -67,27 +70,58 @@
 				font-weight: 500;
 			}
 
+			&-description,
+			&-header,
+			&-setting {
+				display: -webkit-flex;
+				width: 100%;
+				-webkit-align-items: baseline;
+				-webkit-justify-content: center;
+
+				&-right,
+				&-full {
+					margin-left: 18px;
+					text-indent: -18px;
+				}
+
+				&-left {
+					text-align: right;
+					-webkit-flex: 0 0 193px;
+					padding-right: 3px;
+				}
+
+				&-right {
+					-webkit-flex: 0 0 270px;
+
+					select {
+						width: 210px;
+					}
+				}
+
+				&-full {
+					-webkit-flex: 0 0 450px;
+					padding-left: 40px;
+				}
+			}
+
 			&-description {
 				margin-bottom: 13px;
+
+				.setting-section-setting-full {
+					margin-left: -58px;
+					text-indent: 0;
+				}
 			}
 
 			&-divider {
 				height: 1px;
-				background: rgba(0, 0, 0, 0.1);
+				background: #e9e9e9;
 				margin: 10px 0 11px;
 			}
 
 			&-setting {
 				margin: 9px 0 8px;
 
-				div {
-					margin-left: 18px;
-					text-indent: -18px;
-
-					select {
-						width: 210px;
-					}
-				}
 			}
 		}
 	}

@@ -56,16 +56,14 @@ var Update = {
 					Popover.window.Poppy.scripts[availableUpdates[i]] = update.poppy;
 
 					UI.event.addCustomEventListener('popoverOpened', function (updateVersion) {
-						setTimeout(function () {
-							var poppy = new Popover.window.Poppy(0.5, 0, null, updateVersion);
+						var poppy = new Popover.window.Poppy(0.5, 0, null, updateVersion);
 
-							poppy.updateVersion = updateVersion;
+						poppy.updateVersion = updateVersion;
 
-							poppy.modal().setContent(Template.create('poppy', 'update-' + updateVersion));
+						poppy.modal().setContent(Template.create('poppy', 'update-' + updateVersion));
 
-							poppy.show();
-						});
-					}.bind(null, availableUpdates[i]), true);
+						poppy.show();
+					}.bind(null, availableUpdates[i]), true, true);
 
 					if (Settings.getItem('updateNotify') || Popover.visible() || update.blocking) {
 						if (!BrowserWindows.all().length)
@@ -128,33 +126,31 @@ var Update = {
 	}
 };
 
-
-// Alpha 2
-Update.versions[150105] = {
-	blocking: false,
-
-	poppy: function (poppy) {
-		setTimeout(function () {
+var OKPoppyUpdate = function (poppy) {
+	poppy.content
+		.on('click', 'input', function () {
 			poppy.close();
 
 			Update.updatedToVersion(poppy.updateVersion);
-		}, 2000);
-	}
+		});
 };
+
+
 
 // Alpha 3
 Update.versions[150106] = {
 	blocking: false,
 
-	poppy: function (poppy) {
-		poppy.content
-			.on('click', 'input', function () {
-				poppy.close();
-
-				Update.updatedToVersion(poppy.updateVersion);
-			});
-	}
+	poppy: OKPoppyUpdate
 };
+
+// Alpha 4
+Update.versions[150107] = {
+	blocking: false,
+
+	poppy: OKPoppyUpdate
+};
+
 
 
 Update.init();

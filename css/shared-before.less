@@ -226,7 +226,8 @@
 			padding: 2px 2px 1px @important;
 		}
 
-		input[type="checkbox"] {
+		input[type="checkbox"],
+		input[type="radio"] {
 			display: inline-block @important;
 			position: relative @important;
 			-webkit-appearance: none @important;
@@ -281,9 +282,7 @@
 		}
 
 		input[type="radio"] {
-			position: relative;
-			top: -1px;
-			right: 1px;
+			border-radius: 20px @important;
 		}
 
 		select {
