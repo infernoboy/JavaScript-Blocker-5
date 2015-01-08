@@ -67,6 +67,40 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'setting-menu': function (poppy) {
+		poppy.content
+			.on('click', '#setting-menu-backup-export', function (event) {
+				var exported = new Poppy(event.pageX, event.pageY, false),
+						settings = Utilities.encode(Settings.export());
+
+				Tabs.create('data:application/zip;base64,' + settings);
+			})
+			.on('drop', '#setting-menu-backup-import', function (event) {
+				setTimeout(function (event) {
+					var file = event.target.files[0];
+
+					if (file) {
+						var reader = new FileReader;
+
+						reader.addEventListener('load', function (fileEvent) {
+							if (fileEvent.target.result) {
+								Settings.import(fileEvent.target.result);
+
+								poppy.close();
+							}
+						});
+
+						reader.readAsText(file);
+					}
+				}, 0, event);
+			})
+			.on('click', '#setting-menu-restore-defaults', function (event) {
+				Settings.import({});
+
+				poppy.close();
+			});
+	},
+
 	console: function (poppy) {
 		poppy.content
 			.on('click', '#console-clear', function () {

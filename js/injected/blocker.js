@@ -389,7 +389,7 @@ var Element = {
 			section: 'element-placeholder',
 			data: {
 				kind: kind,
-				nodeName: element.nodeName,
+				nodeName: element.nodeName.toUpperCase(),
 				source: source
 			}
 		});
@@ -468,12 +468,12 @@ var Element = {
 	},
 
 	triggersBeforeLoad: function (element) {
-		var elementBased = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG']._contains(element.nodeName);
+		var elementBased = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG']._contains(element.nodeName.toUpperCase());
 
 		if (!elementBased)
 			return false;
 
-		return !!(element.src || element.srcset) || ['FRAME', 'IFRAME']._contains(element.nodeName);
+		return !!(element.src || element.srcset) || ['FRAME', 'IFRAME']._contains(element.nodeName.toUpperCase());
 	},
 
 	processUnblockable: function (kind, element, doesNotTrigger) {
@@ -510,13 +510,15 @@ var Element = {
 	},
 
 	afterCanLoad: function (meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind) {
+		var nodeName = element.nodeName.toUpperCase();
+
 		if (!canLoad.isAllowed)
 			BLOCKED_ELEMENTS.push(element);
 
 		if (!(meta instanceof Object))
 			meta = {};
 
-		if (element.nodeName._endsWith('FRAME')) {
+		if (nodeName._endsWith('FRAME')) {
 			meta.id = element.id;
 
 			element.setAttribute('data-jsbFrameURL', source);
@@ -527,7 +529,7 @@ var Element = {
 
 		sourceHost = sourceHost || ((source && source.length) ? Utilities.URL.extractHost(source) : null);
 
-		if (['EMBED', 'OBJECT']._contains(element.nodeName))
+		if (['EMBED', 'OBJECT']._contains(nodeName))
 			meta.type = element.getAttribute('type');
 
 		if (excludeFromPage !== true || canLoad.action >= 0) {
@@ -540,7 +542,7 @@ var Element = {
 			actionStore.incrementHost(kind, sourceHost);
 		}
 
-		if (BLOCKABLE[element.nodeName][1] && !canLoad.isAllowed)
+		if (BLOCKABLE[nodeName][1] && !canLoad.isAllowed)
 			Element.hide(kind, element, source);
 
 		Page.send();
@@ -565,15 +567,16 @@ var Element = {
 
 	handle: {
 		node: function (node) {
-			var node = node.target || node;
+			var node = node.target || node,
+					nodeName = node.nodeName.toUpperCase();
 
-			if (node.nodeName === 'A')
+			if (nodeName === 'A')
 				Element.handle.anchor(node);
-			else if (BLOCKABLE[node.nodeName]) {
-				if (node.nodeName._endsWith('FRAME'))
+			else if (BLOCKABLE[nodeName]) {
+				if (nodeName._endsWith('FRAME'))
 					Element.handle.frame(node);
 
-				var kind = BLOCKABLE[node.nodeName][0];
+				var kind = BLOCKABLE[nodeName][0];
 
 				if (globalSetting.enabledKinds[kind] && !Element.triggersBeforeLoad(node))
 					Element.processUnblockable(kind, node, true);
@@ -585,7 +588,7 @@ var Element = {
 
 			anchor = (hasTarget && anchor.target) || anchor;
 
-			var isAnchor = anchor.nodeName && anchor.nodeName === 'A';
+			var isAnchor = anchor.nodeName.toUpperCase() && anchor.nodeName.toUpperCase() === 'A';
 
 			if (hasTarget && !isAnchor) {
 				if (anchor.querySelectorAll) {
@@ -694,18 +697,19 @@ var Resource = {
 		if (event.type === 'DOMNodeInserted' && Element.triggersBeforeLoad(event.target))
 			return;
 
-		var element = event.target || event;
+		var element = event.target || event,
+				nodeName = element.nodeName.toUpperCase();
 
-		if (element.nodeName === 'LINK' && !Element.shouldIgnore(element)) {
+		if (nodeName === 'LINK' && !Element.shouldIgnore(element)) {
 			Utilities.Timer.resetTimeout('injectStylesheet', 400);
 
 			return true;
 		}
 
-		if (!(element.nodeName in BLOCKABLE) || (element.nodeName === 'EMBED' && element.parentNode.nodeName === 'OBJECT'))
+		if (!(nodeName in BLOCKABLE) || (nodeName === 'EMBED' && element.parentNode.nodeName.toUpperCase() === 'OBJECT'))
 			return true;
 
-		var kind = BLOCKABLE[element.nodeName][0];
+		var kind = BLOCKABLE[nodeName][0];
 
 		if (!globalSetting.enabledKinds[kind])
 			return true;
@@ -726,7 +730,7 @@ var Resource = {
 				return Resource.staticActions[kind];
 			} else {
 				if (!source || !source.length) {
-					if (element.nodeName !== 'OBJECT') {
+					if (nodeName !== 'OBJECT') {
 						source = 'about:blank';
 						sourceHost = 'blank';
 					} else
@@ -767,7 +771,7 @@ var Resource = {
 
 				if (!canLoad.isAllowed && event.preventDefault)
 					event.preventDefault();
-				else if (element.nodeName === 'SCRIPT')
+				else if (nodeName === 'SCRIPT')
 					Utilities.Timer.resetTimeout('injectStylesheet', 400);
 
 				element.setAttribute('data-jsbBeforeLoadProcessed', Utilities.Token.create(source));

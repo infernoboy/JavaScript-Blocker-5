@@ -60,14 +60,56 @@
 </noscript>
 
 <noscript id="rule-menu">
-	<h3 class="jsb-centered">Rules</h3>
+	<h3 class="jsb-centered"><%=_('view_toolbar.rules')%></h3>
 	<div id="rule-menu" class="generic-menu">
-		<div class="generic-menu-menu">
+		<ul class="generic-menu-options">
 			<% if (!globalPage.Rules.list.temporary.rules.isEmpty()) { %>
-				<input type="button" id="rule-menu-remove-temporary" value="<%=_('rule_menu.remove_temporary')%>" />
+				<li class="jsb-align-right">
+					<input type="button" id="rule-menu-remove-temporary" value="<%=_('rule_menu.remove_temporary')%>" />
+					<div class="horizontal-divider"></div>
+				</li>
 			<% } %>
-			<input type="button" id="rule-menu-import-rules-from-four" value="Import Rules From JSB 4" />
-		</div>
+			<li class="jsb-align-right">
+				<input type="button" id="rule-menu-import-rules-from-four" value="Import Rules From JSB 4" />
+				<div class="horizontal-divider"></div>
+			</li>
+			<li class="jsb-align-right">
+				<input type="button" id="rule-menu-import-rules-delete" value="Delete All Rules" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="setting-menu">
+	<h3 class="jsb-centered"><%=_('view_toolbar.setting')%></h3>
+	<div class="generic-menu">
+		<ul class="generic-menu-options">
+			<li>
+				<h3>Backup</h3>
+			</li>
+			<li>
+				<ul class="generic-menu-options">
+					<li>
+						<label>Export file:</label>&nbsp;
+						<input id="setting-menu-backup-export" type="button" value="Export" />
+					</li>
+					<li>
+						<span class="jsb-readable">A file called <b>Unknown</b> will be saved to your downloads folder. You can rename it to whatever you wish.</span>
+						<div class="horizontal-divider"></div>
+					<li>
+						<label>Import file:</label>&nbsp;
+						<input id="setting-menu-backup-import" type="file" value="Import" />
+					</li>
+					<li>
+						<span class="jsb-readable">You'll have to drag and drop the backup file into the space above. Safari doesn't allow popovers to open a choose file dialog.</span>
+					</li>
+				</ul>
+				<div class="horizontal-divider"></div>
+			</li>
+			<li class="jsb-align-right">
+				<input id="setting-menu-restore-defaults" type="button" value="Restore Defaults" />
+			</li>
+		</ul>
 	</div>
 </noscript>
 
@@ -136,6 +178,10 @@
 	</div>
 </noscript>
 
+<noscript id="change-log">
+	<h3 class="jsb-centered"><%=_('change_log', [self.version])%></h3>
+	<div class="jsb-info"><%=self.changeLog.html()%></div>
+</div>
 
 
 <noscript id="update-150106">

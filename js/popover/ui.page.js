@@ -125,7 +125,7 @@ UI.Page = {
 	},
 
 	canRender: function () {
-		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyExist() && $('.page-host-editing', UI.Page.view).length === 0);
+		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyDisplayed() && $('.page-host-editing', UI.Page.view).length === 0);
 	},
 
 	showModalInfo: function (info) {

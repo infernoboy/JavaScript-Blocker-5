@@ -51,6 +51,18 @@ var Strings = {
 		var language = Strings.getLanguage();
 
 		return Strings.strings[language] && Strings.strings[language][string];
+	},
+
+	localizationExist: function (string) {
+		var language = Strings.getLanguage();
+		
+		if (Strings.strings[language] && typeof Strings.strings[language][string] === 'string')
+			return true;
+
+		if (Strings.strings[Strings.defaultLanguage] && typeof Strings.strings[Strings.defaultLanguage][string] === 'string')
+			return true;
+
+		return false;
 	}
 };
 

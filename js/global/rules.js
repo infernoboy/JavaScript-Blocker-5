@@ -379,6 +379,10 @@ Rule.prototype.forLocation = function (params) {
 var Rules = {
 	__regExpCache: {},
 	__partsCache: new Store('RuleParts'),
+	__EasyRules: new Store('EasyRules', {
+		save: true,
+		private: true
+	}),
 
 	ERROR: {
 		RULES: {
@@ -565,7 +569,7 @@ Object.defineProperty(Rules, 'list', {
 					throw new TypeError(rules + ' is not an instance of Rule.');
 
 				var exclude = Special.__excludeLists.map(function (name) {
-					return 'EasyRules-' + name;
+					return 'EasyRules,' + name;
 				});
 
 				exclude.push('Predefined', 'TemporaryRules');
@@ -578,11 +582,6 @@ Object.defineProperty(Rules, 'list', {
 
 				if (this.__active instanceof Rule)
 					Resource.canLoadCache.clear();
-
-				if (rules === this.user)
-					$$('.snapshot-info').empty();
-				else
-					$$('.snapshot-info').html('Snapshot in use?????????????????????');
 
 				this.__active = rules;
 			}
@@ -620,6 +619,10 @@ Object.defineProperty(Rules, 'list', {
 
 Rules.list.active = Rules.list.user;
 
+Rules.__EasyRules.addCustomEventListener('storeDidSave', function (event) {
+	Resource.canLoadCache.clear();
+});
+
 (function () {
 	var easyLists = Settings.getItem('easyLists');
 
@@ -628,10 +631,7 @@ Rules.list.active = Rules.list.user;
 			Object.defineProperty(Rules.list, easyList, {
 				enumerable: true,
 
-				value: new Rule('EasyRules-' + easyList, {
-					save: true,
-					private: true
-				}, {
+				value: new Rule(Rules.__EasyRules.getStore(easyList), null, {
 					longRuleAllowed: true
 				})
 			});

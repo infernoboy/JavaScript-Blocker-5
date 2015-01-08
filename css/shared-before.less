@@ -93,6 +93,7 @@
 			visibility: visible @important;
 			opacity: 1;
 			float: none @important;
+			text-indent: 0 @important;
 
 			&:after {
 				content: none @important;
@@ -209,8 +210,9 @@
 
 		input[type="text"],
 		input[type="search"],
+		input[type="number"],
 		textarea {
-			border-radius: 0 @important;
+			border-radius: 2px @important;
 			color: #111 @important;
 			cursor: text @important;
 
@@ -226,6 +228,13 @@
 			padding: 2px 2px 1px @important;
 		}
 
+		input[type="file"] {
+			background: transparent @important;
+			border-color: rgb(230, 230, 230) @important;
+			box-shadow: none @important;
+			padding-left: 3px;
+		}
+
 		input[type="checkbox"],
 		input[type="radio"] {
 			display: inline-block @important;
@@ -236,7 +245,6 @@
 			background: #fff @important;
 			padding: 1px 4px 3px 1px @important;
 			border-radius: 3px @important;
-			// font-size: 12pt @important;
 			margin-bottom: -2px @important;
 			border-bottom-color: rgb(190, 190, 190) @important;
 			box-shadow: inset 0 0 2px rgba(0, 0, 0, 0) @important;

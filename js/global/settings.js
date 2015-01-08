@@ -85,7 +85,7 @@ var Settings = {
 				window.globalSetting[event.key] = Settings.getItem(event.key);
 			});
 
-		if (window.UI && UI.Settings.view.is('.active-view')) {
+		if (window.UI && UI.Settings && UI.Settings.view.is('.active-view')) {
 			var activeSettingView = $('.active-view', UI.Settings.views);
 
 			UI.Settings.populateSection(activeSettingView, activeSettingView.attr('data-section'));
@@ -274,14 +274,21 @@ var Settings = {
 	},
 
 	export: function () {
-		return SettingStore.export();
+		var exported = SettingStore.all();
+
+		delete exported['EasyListLastUpdate'];
+		delete exported['Storage-EasyRules'];
+		delete exported['Storage-Predefined'];
+		delete exported['Storage-ResourceCanLoad'];
+
+		return JSON.stringify(exported);
 	},
 
 	import: function (settings) {
 		var settings = SettingStore.import(settings);
 
 		if (!settings)
-			return false;
+			return LogError('failed to import settings');
 
 		Store.ALLOW_SAVE = false;
 

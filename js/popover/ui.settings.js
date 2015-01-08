@@ -38,6 +38,17 @@ UI.Settings = {
 		} catch (error) {
 			LogError('failed to switch to setting view', error);
 		}
+
+		UI.Settings.views
+			.on('click', '.more-info', function (event) {
+				var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY);
+
+				poppy
+					.setContent(Template.create('main', 'jsb-readable', {
+						string: this.getAttribute('data-moreInfo')
+					}))
+					.show();
+			});
 	},
 
 	createView: function (viewID) {
@@ -92,6 +103,14 @@ UI.Settings = {
 					});
 				break;
 
+				case 'range':
+					element
+						.val(currentValue)
+						.change(function () {
+							Settings.setItem(this.getAttribute('data-inlineSetting'), this.value, this.getAttribute('data-storeKey'));
+						});
+				break;
+
 				case 'boolean':
 					element
 						.prop('checked', currentValue)
@@ -103,11 +122,12 @@ UI.Settings = {
 		}
 	},
 
-	createList: function (container, settings) {
+	createList: function (container, settings, disabled) {
 		var setting,
 				settingItem,
 				settingElement,
 				listSetting,
+				shouldRender,
 				subContainer;
 
 		var allSettings = Settings.all();
@@ -133,8 +153,10 @@ UI.Settings = {
 			else if (setting.button) {
 
 			} else if (setting.when) {
-				if (Utilities.Group.eval(setting.when.settings, allSettings))
-					this.createList(container, setting.settings);
+				shouldRender = Utilities.Group.eval(setting.when.settings, allSettings);
+
+				if (shouldRender || !setting.when.hide)
+					this.createList(container, setting.settings, !shouldRender || disabled);
 
 			} else if (setting.setting) {
 				if (setting.props) {
@@ -150,8 +172,14 @@ UI.Settings = {
 					listSetting.append(settingElement.children());
 
 					container.append(listSetting);
+
+					if (disabled)
+						listSetting
+							.addClass('jsb-disabled')
+							.find('input, textarea, select')
+							.attr('disabled', true);
 					
-					if (setting.props.subSettings) {
+					if (setting.props.subSettings && !disabled) {
 						subContainer = Template.create('settings', 'setting-section-sub-container');
 
 						container.append(subContainer);

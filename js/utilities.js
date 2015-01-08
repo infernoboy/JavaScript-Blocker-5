@@ -530,13 +530,23 @@ var Utilities = {
 
 				return div.childNodes;
 			} catch (error) {
-				return div.childNodes;
+				html = html.replace(/<(input|br|img|link|meta) ([^>]+)>/g, '<$1 $2/>');
+
+				try {
+					div.innerHTML = html;
+
+					return div.childNodes;
+				} catch (error) {
+					LogError(error);
+
+					throw new Error('failed to create html element from string');
+				}
 			}
 		}
 	},
 
 	Page: {
-		isXML: ((document.ownerDocument || document).documentElement.nodeName !== 'HTML' && document.xmlVersion !== null),
+		isXML: ((document.ownerDocument || document).documentElement.nodeName.toUpperCase() !== 'HTML' && document.xmlVersion !== null),
 		isGlobal: (window.GlobalPage && GlobalPage.window === window),
 		isPopover: Popover.window === window,
 		isTop: window === window.top,
@@ -1215,10 +1225,12 @@ var Extension = {
 				var object = {};
 
 				for (var key in this)
-					if (deep && Object._isPlainObject(this[key])) {
-						object[key] = Object.prototype._clone.call(this[key], true);
-					} else
-						object[key] = Object._copy(this[key]);
+					if (this.hasOwnProperty(key)) {
+						if (deep && Object._isPlainObject(this[key])) {
+							object[key] = Object.prototype._clone.call(this[key], true);
+						} else
+							object[key] = Object._copy(this[key]);
+					}
 
 				return object;
 			}

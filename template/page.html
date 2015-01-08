@@ -184,7 +184,7 @@
 						continue;
 
 					if (globalPage.Rules.kindShouldBadge(kind)) {
-						if ((self.stateType === 'unblocked' && kind === 'script') || Settings.getItem('showResourceURLs')) {
+						if (self.stateType === 'unblocked' || Settings.getItem('showResourceURLs')) {
 							if (self.state[kind].source) {
 								items = [];
 

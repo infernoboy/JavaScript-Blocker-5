@@ -25,6 +25,35 @@ var Update = {
 			this.performUpdate();
 	},
 
+	showRequiredPopover: function () {
+		if (!BrowserWindows.all().length)
+			Tabs.create('about:blank');
+
+		ToolbarItems.showPopover();
+	},
+
+	allUpdatesCompleted: function () {
+		if (!BrowserWindows.all().length)
+			Tabs.create('about:blank');
+
+		UI.event.addCustomEventListener('popoverOpened', function () {
+			var poppy = new Popover.window.Poppy(0.5, 0);
+
+			Update
+				.fetchChangeLog(Version.display)
+				.then(function (changeLog) {
+					poppy
+						.setContent(Template.create('poppy', 'change-log', {
+							changeLog: changeLog,
+							version: Version.display
+						}))
+						.show();
+				});
+		}, true, true);
+
+		this.showRequiredPopover();
+	},
+
 	performUpdate: function () {
 		Command.event.addCustomEventListener('UIReady', function () {
 			var update;
@@ -36,7 +65,7 @@ var Update = {
 			if (!availableUpdates.length && Update.wasJustUpdated) {
 				Update.wasJustUpdated = false;
 
-				LogDebug('All updates completed.');
+				Update.allUpdatesCompleted();
 
 				return;
 			}
@@ -65,12 +94,8 @@ var Update = {
 						poppy.show();
 					}.bind(null, availableUpdates[i]), true, true);
 
-					if (Settings.getItem('updateNotify') || Popover.visible() || update.blocking) {
-						if (!BrowserWindows.all().length)
-							Tabs.create('about:blank');
-
-						ToolbarItems.showPopover();
-					}
+					if (Settings.getItem('updateNotify') || Popover.visible() || update.blocking)
+						Update.showRequiredPopover();
 
 					break;
 				}
@@ -123,6 +148,21 @@ var Update = {
 		this.installedBundle = version;
 
 		this.performUpdate();
+	},
+
+	fetchChangeLog: function (displayVersion) {
+		return new Promise(function (resolve, reject) {
+			$.get('http://javascript-blocker.toggleable.com/change-log/' + displayVersion.replace(/\./g, ''))
+				.done(function (responseText, textStatus, request) {
+					if (textStatus === 'success')
+						resolve($('#sites-canvas-main-content', responseText))
+					else
+						reject(request.status);
+				})
+				.fail(function (request) {
+					reject(request.status);
+				});
+		});
 	}
 };
 
@@ -149,6 +189,19 @@ Update.versions[150107] = {
 	blocking: false,
 
 	poppy: OKPoppyUpdate
+};
+
+// Alpha 5
+Update.versions[150108] = {
+	blocking: false,
+
+	update: function () {
+		SettingStore.removeItem('Storage-EasyRules-$list');
+		SettingStore.removeItem('Storage-EasyRules-$malware');
+		SettingStore.removeItem('Storage-EasyRules-$privacy');
+
+		return true;
+	}
 };
 
 

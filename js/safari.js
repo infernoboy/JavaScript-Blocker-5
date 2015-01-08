@@ -266,11 +266,11 @@ var SettingStore = {
 	},
 
 	all: function () {
-		return safari.extension.settings;	
+		return Object._copy(safari.extension.settings);
 	},
 
 	export: function () {
-		return JSON.stringify(this.all());
+		return JSON.stringify(safari.extension.settings);
 	},
 
 	import: function (settings) {

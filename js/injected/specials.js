@@ -179,7 +179,7 @@ Special.specials = {
 		var build = JSB.data;
 
 		function withNode(node) {
-			if (node.nodeName === 'INPUT')
+			if (node.nodeName.toUpperCase() === 'INPUT')
 				node.setAttribute('autocomplete', 'on');
 		}
 
@@ -524,8 +524,6 @@ Special.specials = {
 			var shouldContinue;
 
 			var url = baseURL + dataURL;
-
-			console.debug(canLoad)
 
 			if (JSB.value.value === ALWAYS_BLOCK || (!canLoad.isAllowed && canLoad.action > -1))
 				shouldContinue = false;

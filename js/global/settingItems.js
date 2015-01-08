@@ -412,7 +412,7 @@ Settings.settings = {
 			type: 'boolean',
 			default: false,
 			onChange: function () {
-				Resource.canLoadCache.clear();
+				Resource.canLoadCache.clear().saveNow();
 			}
 		}
 	}, {
@@ -421,14 +421,13 @@ Settings.settings = {
 			type: 'boolean',
 			default: false,
 			onChange: function () {
-				Resource.canLoadCache.clear();
+				Resource.canLoadCache.clear().saveNow();
 			}
 		}
 	}, {
 		setting: 'secureOnly',
 		props: {
 			type: 'boolean',
-			subLabel: 'This will only affect items that have a blocker enabled.',
 			default: true
 		}
 	}, {
@@ -1034,7 +1033,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'simple_referrer',
-				subLabel: 'Links sending referrers',
 				help: 'simpleReferrer help',
 				default: true,
 				confirm: [{
@@ -1063,7 +1061,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'alert_dialogs',
-				subLabel: 'Modal alert popups',
 				default: true
 			}
 		}, {
@@ -1071,7 +1068,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'anchor_titles',
-				subLabel: 'Modal alert popups',
 				default: true
 			}
 		}, {
@@ -1079,7 +1075,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'contextmenu_overrides',
-				subLabel: 'Context menu overrides',
 				help: 'contextmenu_overrides help',
 				default: false
 			}
@@ -1088,7 +1083,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'window_resize',
-				subLabel: 'Window resize functions',
 				default: false
 			}
 		}, {
@@ -1096,7 +1090,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'autocomplete_disabler',
-				subLabel: 'Autocomplete disablers',
 				default: true
 			}
 		}, {
@@ -1116,7 +1109,6 @@ Settings.settings = {
 				props: {
 					type: 'boolean',
 					storeKey: 'inline_script_execution',
-					subLabel: 'Inline script execution',
 					default: false
 				}
 			}]
@@ -1125,7 +1117,6 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'environmental_information',
-				subLabel: 'Environmental information',
 				default: false
 			}
 		}, {
@@ -1133,7 +1124,6 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'canvas_data_url',
-				subLabel: 'Canvas data URL access',
 				options: [[false, 'Off'], [1, 'Always ask'], [2, 'Ask once per domain'], [3, 'Ask once per domain for session'], [4, 'Always protect']],
 				default: 3
 			}
@@ -1142,7 +1132,6 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'font',
-				subLabel: 'Default webpage font',
 				options: [[false, 'Default'], ['Helvetica', 'Helvetica'], ['Arial', 'Arial'], ['Times', 'Times'], ['Comic Sans MS', 'Comic Sans MS']],
 				default: false,
 				otherOption: {
@@ -1157,7 +1146,6 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'zoom',
-				subLabel: 'Default webpage zoom level',
 				options: [[false, 'Default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%']],
 				default: false,
 				otherOption: {

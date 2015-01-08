@@ -46,13 +46,26 @@
 		var inlineSetting = 'data-inlineSetting="' + self.setting.setting + '"',
 				storeKeySetting = self.setting.props.storeKey ? ('data-storeKey="' + self.setting.props.storeKey + '"') : '',
 				settingType = self.setting.props.type || self.props.type,
-				mainLabel = _('setting.' + self.setting.setting + (self.setting.props.storeKey ? '.' + self.setting.props.storeKey : '') + '.label');
+				localizationKey = 'setting.' + self.setting.setting + (self.setting.props.storeKey ? '.' + self.setting.props.storeKey : ''),
+				mainLabel = _(localizationKey + '.label'),
+				subLabel = Strings.localizationExist(localizationKey + '.subLabel') ? _(localizationKey + '.subLabel') : null,
+				help = Strings.localizationExist(localizationKey + '.help') ? _(localizationKey + '.help') : null;
+
+		var wrapper = {
+			left: self.wrap ? '<div class="setting-section-setting-left">' : '',
+			right: self.wrap ? '<div class="setting-section-setting-right">' : '',
+			full: self.wrap ? '<div class="setting-section-setting-full">' : '',
+			close: self.wrap ? '</div>' : ''
+		};
+
+		var helpHTML = help ? '<span class="more-info" data-moreInfo="' + help._escapeHTML()._entityQuotes() + '"></span>' : '';
 
 		switch (settingType) {
 			case 'boolean': %>
-				<%=self.wrap ? '<div class="setting-section-setting-full">' : ''%>
+				<%=wrapper.full%>
 					<input id="<%=self.id%>" type="checkbox" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id%>"><%=mainLabel%></label>
-				<%=self.wrap ? '</div>' : ''%><%
+					<%=helpHTML%>
+				<%=wrapper.close%><%
 			break;
 
 			case 'option':
@@ -61,24 +74,29 @@
 				if (self.setting.props.extendOptions)
 					options = options.concat(self.setting.props.extendOptions); %>
 
-				<%=self.wrap ? '<div class="setting-section-setting-left">' : ''%>
-					<label for="<%=self.id%>"><%=mainLabel%>:&nbsp</label>
-				<%=self.wrap ? '</div>' : ''%>
-				<%=self.wrap ? '<div class="setting-section-setting-right">' : ''%>
+				<%=wrapper.left%>
+					<label class="setting-main-label" for="<%=self.id%>"><%=mainLabel%>:&nbsp</label>
+				<%=wrapper.close%>
+				<%=wrapper.right%>
 					<select id="<%=self.id%>" <%=inlineSetting%> <%=storeKeySetting%>>
 						<% for (var i = 0; i < options.length; i++) { %>
 							<option value="<%=options[i][0]%>"><%=options[i][1]%></option><% 
 						} %>
 					</select><label></label>
-				<%=self.wrap ? '</div>' : ''%><%
+					<% if (subLabel) { %>
+						<br />
+						<label class="setting-sub-label"><%=subLabel%></label><%
+					} %>
+					<%=helpHTML%>
+				<%=wrapper.close%><%
 			break;
 
 			case 'option-radio': %>
-				<%=self.wrap ? '<div class="setting-section-setting-left">' : ''%>
-					<label><%=mainLabel%>:&nbsp;</label>
-				<%=self.wrap ? '</div>' : ''%>
+				<%=wrapper.left%>
+					<label class="setting-main-label"><%=mainLabel%>:&nbsp;</label>
+				<%=wrapper.close%>
 
-				<%=self.wrap ? '<div class="setting-section-setting-right">' : ''%>
+				<%=wrapper.right%>
 					<ul class="setting-radio-list"><%
 
 					var options = self.props.options || self.setting.props.options,
@@ -92,7 +110,24 @@
 					}
 
 					%> </ul>
-				<%=self.wrap ? '</div>' : ''%><%
+					<%=helpHTML%>
+				<%=wrapper.close%><%
+			break;
+
+			case 'range': %>
+				<%=wrapper.left%>
+					<label class="setting-main-label"><%=mainLabel%>:&nbsp;</label>
+				<%=wrapper.close%>
+
+				<%=wrapper.right%><%
+					var options = self.props.options || self.setting.props.options; %>
+
+					<input id="<%=self.id%>" type="number" min="<%=options[0]%>" max="<%=options[1]%>" <%=inlineSetting%> <%=storeKeySetting%> />
+					<% if (subLabel) { %>
+						<label class="setting-sub-label"> <%=subLabel%></label><%
+					} %>
+					<%=helpHTML%>
+				<%=wrapper.close%><%
 			break;
 		}
 	%>

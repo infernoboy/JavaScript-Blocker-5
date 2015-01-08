@@ -61,6 +61,10 @@
 		return !poppies._isEmpty();
 	};
 
+	Poppy.poppyDisplayed = function () {
+		return $('.poppy-open', Poppy.__container).length > 0;
+	};
+
 	Poppy.poppyWithScriptNameExist = function (scriptName) {
 		for (var poppyID in poppies)
 			if (poppies[poppyID].scriptName === scriptName)
