@@ -15,7 +15,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>5-alpha5</string>
 	<key>CFBundleVersion</key>
-	<string>150108</string>
+	<string>150108.1</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>

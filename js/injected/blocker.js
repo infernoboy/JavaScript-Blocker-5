@@ -567,8 +567,7 @@ var Element = {
 
 	handle: {
 		node: function (node) {
-			var node = node.target || node,
-					nodeName = node.nodeName.toUpperCase();
+			var nodeName = node.nodeName.toUpperCase();
 
 			if (nodeName === 'A')
 				Element.handle.anchor(node);
