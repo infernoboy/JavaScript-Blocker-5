@@ -29,7 +29,7 @@ UI.Settings = {
 		UI.Settings.viewSwitcher = $('.view-switcher', UI.Settings.view);
 
 		for (var i = 0; i < sections.length; i++)
-			UI.Settings.createView(sections[i], _('settings.' + sections[i]));
+			UI.view.create('setting-views', sections[i], UI.Settings.views);
 
 		UI.Settings.events.viewSwitcher();
 
@@ -49,16 +49,6 @@ UI.Settings = {
 					}))
 					.show();
 			});
-	},
-
-	createView: function (viewID) {
-		var view = Template.create('settings', 'view', {
-			viewID: viewID
-		});
-
-		view.html(viewID);
-
-		UI.Settings.views.append(view);
 	},
 
 	bindInlineSettings: function (inlineSettings) {

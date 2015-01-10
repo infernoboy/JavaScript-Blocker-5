@@ -55,17 +55,65 @@
 	"view.page.host.count_type.hosts": "hosts",
 	"view.page.host.click_to_edit": "Click to switch to edit mode",
 
-	"view.page.host.kind.disable": "Disable",
+	"view.page.host.kind.*": "All Kinds",
+	"view.page.host.kind.hide:*": "Hide All Kinds",
+	"view.page.host.kind.framed:*": "Framed All Kinds",
+	"view.page.host.kind.hide:framed:*": "Hide Framed All Kinds",
+
+	"view.page.host.kind.disable": "Disabling",
+	"view.page.host.kind.hide:disable": "Hide Disabling",
+	"view.page.host.kind.framed:disable": "Framed Disabling",
+	"view.page.host.kind.hide:framed:disable": "Hide Framed Disabling",
+
 	"view.page.host.kind.script": "Scripts",
+	"view.page.host.kind.hide:script": "Hide Scripts",
+	"view.page.host.kind.framed:script": "Framed Scripts",
+	"view.page.host.kind.hide:framed:script": "Hide Framed Scripts",
+
 	"view.page.host.kind.frame": "Frames",
+	"view.page.host.kind.hide:frame": "Hide Frames",
+	"view.page.host.kind.framed:frame": "Framed Frames",
+	"view.page.host.kind.hide:framed:frame": "Hide Framed Frames",
+
 	"view.page.host.kind.embed": "Embeds/Objects",
+	"view.page.host.kind.hide:embed": "Hide Embeds/Objects",
+	"view.page.host.kind.framed:embed": "Framed Embeds/Objects",
+	"view.page.host.kind.hide:framed:embed": "Hide Framed Embeds/Objects",
+
 	"view.page.host.kind.video": "Videos",
+	"view.page.host.kind.hide:video": "Hide Videos",
+	"view.page.host.kind.framed:video": "Framed Videos",
+	"view.page.host.kind.hide:framed:video": "Hide Framed Videos",
+
 	"view.page.host.kind.image": "Images",
+	"view.page.host.kind.hide:image": "Hide Images",
+	"view.page.host.kind.framed:image": "Framed Images",
+	"view.page.host.kind.hide:framed:image": "Hide Framed Images",
+
 	"view.page.host.kind.xhr_get": "XHR GETs",
+	"view.page.host.kind.hide:xhr_get": "Hide XHR GETs",
+	"view.page.host.kind.framed:xhr_get": "Framed XHR GETs",
+	"view.page.host.kind.hide:framed:xhr_get": "Hide Framed XHR GETs",
+
 	"view.page.host.kind.xhr_post": "XHR POSTs",
+	"view.page.host.kind.hide:xhr_post": "Hide XHR POSTs",
+	"view.page.host.kind.framed:xhr_post": "Framed XHR POSTs",
+	"view.page.host.kind.hide:framed:xhr_post": "Hide Framed XHR POSTs",
+
 	"view.page.host.kind.xhr_put": "XHR PUTs",
+	"view.page.host.kind.hide:xhr_put": "Hide XHR PUTs",
+	"view.page.host.kind.framed:xhr_put": "Framed XHR PUTs",
+	"view.page.host.kind.hide:framed:xhr_put": "Hide Framed XHR PUTs",
+
 	"view.page.host.kind.special": "Other Features",
+	"view.page.host.kind.hide:special": "Hide Other Features",
+	"view.page.host.kind.framed:special": "Framed Other Features",
+	"view.page.host.kind.hide:framed:special": "Hide Framed Other Features",
+
 	"view.page.host.kind.user_script": "User Scripts",
+	"view.page.host.kind.hide:user_script": "Hide User Scripts",
+	"view.page.host.kind.framed:user_script": "Framed User Scripts",
+	"view.page.host.kind.hide:framed:user_script": "Hide User Scripts",
 
 	"view.page.editor.not": "not",
 	"view.page.editor.duration.title": "Select how long the rules should last",
@@ -203,6 +251,15 @@
 	"settings.other": "Other",
 	"settings.userScripts": "User Scripts",
 	"settings.search": "Search",
+
+	"rules.all_domains": "All Domains",
+	"rules.temporary": "Temporary",
+	"rules.active": "Always",
+	"rules.easy": "Easy Rules",
+	"rules.type.domain": "On Domain",
+	"rules.type.notDomain": "Not On Domain",
+	"rules.type.page": "Matching Page",
+	"rules.type.notPage": "Not Matching Page",
 
 	"special.anchor_titles": "Titleless links",
 	"special.anchor_titles.blocked": "Show link href on hover",

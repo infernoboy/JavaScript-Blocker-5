@@ -311,17 +311,7 @@ var UI = {
 				if (event.detail.from.id === '#main-views-resource-content') 
 					$(event.detail.from.id, UI.view.views).empty();
 
-				if (event.detail.to.id === '#main-views-rule') {
-					var a = [
-						'<p class="jsb-info">Rule management is not yet available.</p>',
-						'<p class="jsb-info"><b>Always</b></p>',
-						'<pre>' + JSON.stringify(globalPage.Rules.list.active.rules.all(), null, 1) + '</pre>',
-						'<p class="jsb-info"><b>Temporary</b></p>',
-						'<pre>' + JSON.stringify(globalPage.Rules.list.temporary.rules.all(), null, 1) + '</pre>'
-					].join('');
-
-					event.detail.to.view.find('#rules').html(a);
-				} else if (event.detail.to.id === '#main-views-snapshot')
+				if (event.detail.to.id === '#main-views-snapshot')
 					event.detail.to.view.html('<pre>' + JSON.stringify(globalPage.Rules.list.user.rules.snapshot.snapshots.all(), null, 1) + '</pre>');
 			})
 
@@ -550,6 +540,15 @@ var UI = {
 			this.switchTo(this.__default);
 		},
 
+		create: function (prefix, viewID, container) {
+			var view = Template.create('main', 'view', {
+				prefix: prefix,
+				viewID: viewID
+			});
+
+			container.append(view);
+		},
+
 		toTop: function (viewContainer, evenIfPoppy, onComplete) {
 			if (UI.event.trigger('viewWillScrollToTop', viewContainer))
 				return false;
@@ -590,7 +589,10 @@ var UI = {
 
 			if (activeID === viewID)
 				return UI.view.toTop(viewContainer, false, function () {
-					UI.event.trigger('viewAlreadyActive', activeID)
+					UI.event.trigger('viewAlreadyActive', {
+						view: switchToView,
+						id: activeID
+					})
 				});
 
 			var previousView = viewContainer.find(activeID),

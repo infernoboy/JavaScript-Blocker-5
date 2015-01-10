@@ -24,7 +24,7 @@ var Special = {
 			for (var script in specials)
 				enabled[script] = false;
 
-		Rule.withLocationRules(forLocation, function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
+		Rule.withLocationRules(forLocation, function (list, lsitName, kind, type, domain, rules) {
 			for (special in specials) {
 				ruleLoop:
 				for (rule in rules.data) {

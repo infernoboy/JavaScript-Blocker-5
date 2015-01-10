@@ -165,7 +165,7 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 	return canLoad;
 };
 
-Resource.prototype.matchingRules = function (isAllowed, pageRulesOnly, useHideKinds, excludeLists) {
+Resource.prototype.rulesForLocation = function (isAllowed, pageRulesOnly, useHideKinds, excludeLists) {
 	return Rules.forLocation({
 		searchKind: useHideKinds ? this.hideKinds : this.searchKinds,
 		location: this.pageLocation,
@@ -173,6 +173,44 @@ Resource.prototype.matchingRules = function (isAllowed, pageRulesOnly, useHideKi
 		pageRulesOnly: pageRulesOnly,
 		excludeLists: excludeLists
 	});
+};
+
+Resource.prototype.rulesForResource = function (isAllowed) {
+	var matchedList,
+			domainRules,
+			rule;
+
+	var self = this,
+			matchedRules = {},
+			checkAction = typeof isAllowed === 'boolean',
+			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
+			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
+
+	Rule.withLocationRules(this.rulesForLocation(null, false, false, ['firstVisit']), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
+		matchedList = matchedRules._getWithDefault(ruleListName, {});
+
+		for (rule in rules.data) {
+			if (checkAction && !!(rules.data[rule].value.action % 2) !== isAllowed)
+				continue;
+
+			if (Rules.matches(rule, rules.data[rule].value.regexp, self.source, self.pageLocation)) {
+				domainRules = matchedList
+					._getWithDefault(ruleKind, {})
+					._getWithDefault(ruleType, {})
+					._getWithDefault(domain, {});
+				
+				domainRules[rule] = {
+					action: rules.data[rule].value.action,
+					// ruleList: ruleList
+				};
+			}
+		}
+
+		if (matchedList._isEmpty())
+			delete matchedRules[ruleListName];
+	});
+
+	return matchedRules;
 };
 
 Resource.prototype.shouldHide = function () {
@@ -232,7 +270,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
 			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
 
-	Rule.withLocationRules(this.matchingRules(null, !!domainCached, useHideKinds, excludeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
+	Rule.withLocationRules(this.rulesForLocation(null, !!domainCached, useHideKinds, excludeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
 		pageRule = (ruleType === 'page' || ruleType === 'notPage');
 		longAllowed = (!pageRule && Rules.list[ruleListName].longRuleAllowed);
 

@@ -444,8 +444,11 @@
 						.page-host-item-source-container,
 						.page-host-item-edit-container textarea,
 						.page-host-item-description .jsb-info, {
-							&:hover::-webkit-scrollbar-thumb {
-								background: rgba(0, 0, 0, 0.3);
+							&:hover,
+							&:focus {
+								&::-webkit-scrollbar-thumb {
+									background: rgba(0, 0, 0, 0.3);
+								}
 							}
 							
 							&::-webkit-scrollbar {

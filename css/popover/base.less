@@ -242,7 +242,7 @@
 							border-top-color: darken(@baseColor, 13%);
 
 							&,
-							.view-switcher-item-container {
+							.view-switcher-item-container .view-switcher-item-name {
 								color: #fff;
 							}
 						}
@@ -276,10 +276,14 @@
 							display: inline-block;
 							position: relative;
 							line-height: 18px;
-							color: #616161;
 							text-align: center;
 							padding: 0;
 							white-space: nowrap;
+
+							.view-switcher-item-name {
+								color: #616161;								
+								white-space: nowrap;
+							}
 
 							.transition;
 

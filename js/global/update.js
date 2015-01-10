@@ -9,11 +9,11 @@ var Update = {
 	},
 
 	get installedBundle() {
-		return parseInt(Settings.getItem('installedBundle'), 10);
+		return parseFloat(Settings.getItem('installedBundle'));
 	},
 
 	set installedBundle(version) {
-		Settings.setItem('installedBundle', parseInt(version, 10));
+		Settings.setItem('installedBundle', parseFloat(version));
 	},
 
 	versions: {},
@@ -127,7 +127,7 @@ var Update = {
 		var versions =
 			Object.keys(Update.versions)
 				.map(function (version) {
-					return parseInt(version, 10);
+					return parseFloat(version);
 				})
 				.filter(function (version) {
 					return Update.installedBundle < version && version <= Version.bundle;
@@ -138,10 +138,10 @@ var Update = {
 	},
 
 	updatedToVersion: function (version) {
- 		version = parseInt(version, 10);
+ 		version = parseFloat(version);
 
  		if (version <= this.installedBundle)
- 			throw new Error('cannot update to less or same version');
+ 			throw new Error('cannot update to less or same version - ' + (version + '<=' + this.installedBundle));
 
  		this.wasJustUpdated = true;
 
@@ -165,6 +165,9 @@ var Update = {
 		});
 	}
 };
+
+
+
 
 var OKPoppyUpdate = function (poppy) {
 	poppy.content
@@ -199,6 +202,17 @@ Update.versions[150108] = {
 		SettingStore.removeItem('Storage-EasyRules-$list');
 		SettingStore.removeItem('Storage-EasyRules-$malware');
 		SettingStore.removeItem('Storage-EasyRules-$privacy');
+
+		return true;
+	}
+};
+
+// Alpha 6
+Update.versions['150108.1'] = {
+	blocking: false,
+
+	update: function () {
+		EasyList.fetch();
 
 		return true;
 	}

@@ -623,13 +623,13 @@ var Utilities = {
 				return url.substr(6);
 
 			if (/^javascript:/.test(url))
-				return 'javascript';
+				return 'Inline JavaScript';
 
 			if (/^data:/.test(url))
-				return 'data';
+				return 'Data URI';
 
 			if (/^blob:/.test(url))
-				return 'blob';
+				return 'Blob URI';
 
 			this.__anchor.href = url;
 

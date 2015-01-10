@@ -61,7 +61,7 @@
 
 				<div id="main-views-rule" class="ui-view">
 					<p class="snapshot-info jsb-info"></p>
-					<div id="rules">RULE VIEW</div>
+					<div id="rules"></div>
 				</div>
 
 				<div id="main-views-snapshot" class="ui-view">
@@ -99,10 +99,14 @@
 	</div>
 </noscript>
 
+<noscript id="view">
+	<div class="ui-view" id="<%=self.prefix%>-<%=self.viewID%>" data-section="<%=self.viewID%>"></div>
+</noscript>
+
 <noscript id="view-switcher">
 	<div class="view-switcher-container">
 		<ul class="view-switcher" data-container="<%=self.container%>">
-		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container poppy-menu-target"><%=self.views[viewID].value%><span class="view-switcher-item-notification"></span></span></li><% } %>
+		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container poppy-menu-target"><span class="view-switcher-item-name"><%=self.views[viewID].value%></span><span class="view-switcher-item-notification"></span></span></li><% } %>
 		</ul>
 	</div>
 </noscript>

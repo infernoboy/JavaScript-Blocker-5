@@ -468,12 +468,16 @@ var Element = {
 	},
 
 	triggersBeforeLoad: function (element) {
-		var elementBased = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG']._contains(element.nodeName.toUpperCase());
+		var nodeName = element.nodeName.toUpperCase(),
+				elementBased = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG']._contains(nodeName);
 
 		if (!elementBased)
 			return false;
 
-		return !!(element.src || element.srcset) || ['FRAME', 'IFRAME']._contains(element.nodeName.toUpperCase());
+		if (element.data && nodeName === 'OBJECT')
+			return true;
+
+		return !!(element.src || element.srcset) || ['FRAME', 'IFRAME']._contains(nodeName);
 	},
 
 	processUnblockable: function (kind, element, doesNotTrigger) {
@@ -497,9 +501,13 @@ var Element = {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
 				if (!globalSetting.hideInjected)
-					Page.unblocked.pushSource(kind, element.innerHTML || element.src || element.outerHTML || element.textContent, {});
+					Page.unblocked.pushSource(kind, element.innerHTML || element.src || element.outerHTML || element.textContent, {
+						action: -1
+					});
 			} else
-				Page.unblocked.pushSource(kind, element.innerHTML || element.src  || element.outerHTML || element.textContent, {});
+				Page.unblocked.pushSource(kind, element.innerHTML || element.src  || element.outerHTML || element.textContent, {
+					action: -1
+				});
 
 			Page.send();
 
@@ -520,6 +528,9 @@ var Element = {
 
 		if (nodeName._endsWith('FRAME')) {
 			meta.id = element.id;
+
+			if (element.srcdoc)
+				meta.srcdoc = element.srcdoc;
 
 			element.setAttribute('data-jsbFrameURL', source);
 			element.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(source + 'FrameURL', true));

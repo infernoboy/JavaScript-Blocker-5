@@ -499,10 +499,10 @@ Special.specials = {
 		if (canLoad.isAllowed)
 			return;
 
-		var ALWAYS_ASK = 1,
-				ASK_ONCE = 2,
-				ASK_ONCE_SESSION = 3,
-				ALWAYS_BLOCK = 4;
+		var ALWAYS_ASK = '1',
+				ASK_ONCE = '2',
+				ASK_ONCE_SESSION = '3',
+				ALWAYS_BLOCK = '4';
 
 		var useSimplifiedMethod = document.hidden,
 				toDataURL = HTMLCanvasElement.prototype.toDataURL,

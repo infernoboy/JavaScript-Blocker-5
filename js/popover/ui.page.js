@@ -358,7 +358,7 @@ UI.Page = {
 		},
 
 		viewAlreadyActive: function (event) {
-			if (event.detail === '#main-views-page') {
+			if (event.detail.id === '#main-views-page') {
 				UI.Page.clear();
 
 				globalPage.Page.requestPageFromActive();
@@ -585,6 +585,25 @@ UI.Page = {
 						});
 
 					poppy.setContent('<pre>' + JSON.stringify(items, null, 1)._escapeHTML() + '</pre>').show();
+				})
+
+				.on('click', '.page-host-item-info', function (event) {
+					var item = $(this).parents('.page-host-item'),
+							isAllowed = item.parents('.page-host-column').is('.page-host-column-allowed'),
+							action = parseInt(item.attr('data-action'), 10);
+
+					if (action < 0)
+						return;
+
+					var resources = item.data('resources'),
+							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
+							list = $('<ul>');
+
+					for (var resourceID in resources) {
+						list.append('<li><pre>' + JSON.stringify(resources[resourceID].rulesForResource(isAllowed), null, 1) + '</pre><div class="horizontal-divider"></div></li>');
+					}
+
+					poppy.setContent(list).show()
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {

@@ -113,6 +113,26 @@
 	</div>
 </noscript>
 
+<noscript id="easy-menu">
+	<h3 class="jsb-centered">Easy Lists</h3>
+	<div class="generic-menu">
+		<ul class="generic-menu-options">
+			<%
+				var easyLists = UI.Rules.getEasyLists();
+
+				for (var i = 0; i < easyLists.length; i++) { %>
+					<li data-easyList="<%=easyLists[i]%>">
+						<a href="javascript:void(0);" class="no-underline"><%=UI.Rules.getEasyListName(easyLists[i])%></a><%
+
+						if (i < easyLists.length - 1) { %>
+							<div class="horizontal-divider"></div><%
+						} %>
+					</li><%
+				} %>
+		</ul>
+	</div>
+</noscript>
+
 <noscript id="console">
 	<div id="console-container">
 		<h3 class="jsb-centered"><%=_('main_menu.console')%></h3>

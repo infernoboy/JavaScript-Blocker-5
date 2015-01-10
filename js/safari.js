@@ -212,6 +212,10 @@ var SettingStore = {
 		});
 	},
 
+	isSet: function (key) {
+		return safari.extension.settings.hasOwnProperty(key);
+	},
+
 	getItem: function (key, defaultValue, noCache) {
 		if (key in this.__cache)
 			return this.__cache[key];
@@ -244,7 +248,7 @@ var SettingStore = {
 	},
 
 	setItem: function (key, value, noCache) {
-		if (['setItem', 'getItem', 'removeItem']._contains(key))
+		if (['setItem', 'getItem', 'removeItem', 'clear', 'addEventListener', 'removeEventListener']._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
 
 		delete this.__cache[key];

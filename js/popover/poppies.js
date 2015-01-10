@@ -70,11 +70,9 @@ Object._extend(Poppy.scripts, {
 	'setting-menu': function (poppy) {
 		poppy.content
 			.on('click', '#setting-menu-backup-export', function (event) {
-				var exported = new Poppy(event.pageX, event.pageY, false),
-						settings = Utilities.encode(Settings.export());
-
-				Tabs.create('data:application/zip;base64,' + settings);
+				Tabs.create(Utilities.URL.createFromContent(Settings.export(), 'application/zip', true));
 			})
+
 			.on('drop', '#setting-menu-backup-import', function (event) {
 				setTimeout(function (event) {
 					var file = event.target.files[0];
@@ -94,10 +92,24 @@ Object._extend(Poppy.scripts, {
 					}
 				}, 0, event);
 			})
+			
 			.on('click', '#setting-menu-restore-defaults', function (event) {
 				Settings.import({});
 
 				poppy.close();
+			});
+	},
+
+	'easy-menu': function (poppy) {
+		poppy.content
+			.on('click', 'a', function (event) {
+				var easyList = this.parentNode.getAttribute('data-easyList');
+
+				UI.Rules.setEasyRulesList(easyList);
+
+				poppy.close();
+
+				UI.view.switchTo('#rule-views-easy');
 			});
 	},
 
