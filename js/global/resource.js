@@ -201,13 +201,17 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 				
 				domainRules[rule] = {
 					action: rules.data[rule].value.action,
-					// ruleList: ruleList
+					ruleList: ruleList
 				};
 			}
 		}
 
 		if (matchedList._isEmpty())
 			delete matchedRules[ruleListName];
+		else
+			Object.defineProperty(matchedList, 'rule', {
+				value: ruleList
+			});
 	});
 
 	return matchedRules;

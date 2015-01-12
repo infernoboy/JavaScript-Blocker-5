@@ -571,6 +571,18 @@ Command.setToolbarImage = function (event) {
 		ToolbarItems.image(window.globalSetting.disabled ? 'image/toolbar-disabled.png' : 'image/toolbar.png');
 };
 
+Command.beforeNavigate = function (event) {
+	// var resource = new Resource({
+	// 	kind: '*',
+	// 	pageLocation: location,
+	// 	source: sourceName,
+	// 	isFrame: page.isFrame,
+	// 	action: attributes.action,
+	// 	unblockable: attributes.unblockable,
+	// 	meta: attributes.meta
+	// });	
+};
+
 window.globalSetting = {
 	disabled: false,
 	debugMode: true,
@@ -590,5 +602,6 @@ window.addEventListener('error', function (event) {
 	LogError(event.filename.replace(ExtensionURL(), '/') + ' - ' + event.lineno, new Error(event.message));
 });
 
+Events.addApplicationListener('beforeNavigate', Command.beforeNavigate);
 Events.addApplicationListener('message', Command.messageReceived);
 Events.addApplicationListener('open', Command.setToolbarImage);

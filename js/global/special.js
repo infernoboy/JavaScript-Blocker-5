@@ -22,16 +22,14 @@ var Special = {
 
 		if (isUserScript)
 			for (var script in specials)
-				enabled[script] = false;
+				enabled[script] = {
+					action: -2
+				};
 
-		Rule.withLocationRules(forLocation, function (list, lsitName, kind, type, domain, rules) {
-			for (special in specials) {
-				ruleLoop:
+		for (special in specials)
+			Rule.withLocationRules(forLocation, function (list, listName, kind, type, domain, rules) {
 				for (rule in rules.data) {
 					if (Rules.matches(rule.toLowerCase(), rules.data[rule].value.regexp, special.toLowerCase(), location)) {
-						if (!isUserScript)
-							enabled[special].action = rules.data[rule].value.action;
-
 						if (rules.data[rule].value.action % 2) {
 							if (isUserScript)
 								enabled[special] = specials[special];
@@ -39,12 +37,12 @@ var Special = {
 								enabled[special].enabled = false;
 						}
 
-						if ([ACTION.BLOCK, ACTION.ALLOW]._contains(rules.data[rule].value.action))
-							break ruleLoop;
+						enabled[special].action = rules.data[rule].value.action;
+
+						return true;
 					}
 				}
-			}
-		});
+			});
 
 		return enabled;
 	},

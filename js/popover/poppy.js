@@ -57,6 +57,12 @@
 
 	Poppy.scripts = {};
 
+
+	Poppy.setAllPositions = function () {
+		for (var poppyID in poppies)
+			poppies[poppyID].setPosition();
+	};
+
 	Poppy.poppyExist = function () {
 		return !poppies._isEmpty();
 	};

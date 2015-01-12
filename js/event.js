@@ -32,16 +32,12 @@ function EventListener () {
 EventListener.eventInfo = {};
 
 EventListener.onMouseMove =  function (event) {
-	Object._extend(EventListener.eventInfo, {
-		pageX: event.pageX,
-		pageY: event.pageY
-	});
+	EventListener.eventInfo.pageX = event.pageX;
+	EventListener.eventInfo.pageY = event.pageY;
 };
 
 EventListener.onClick =  function (event) {
-	Object._extend(EventListener.eventInfo, {
-		target: event.target
-	});
+	EventListener.eventInfo.target = event.target;
 };
 
 EventListener.prototype.listeners = function (name) {

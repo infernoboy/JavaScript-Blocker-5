@@ -247,7 +247,7 @@ var UI = {
 				this.value = this.value.replace(/\n/g, '');
 			})
 
-			.on('click', '*[data-expander] > *', function (event) {
+			.on('click', '*[data-expander]:not(.keep-expanded) > *', function (event) {
 				if (event.originalEvent.offsetX > this.offsetWidth) {
 					var COLLAPSE_HEIGHT = 0,
 							COLLAPSE_OFFSET = 3;
@@ -272,15 +272,18 @@ var UI = {
 					if (isCollapsed) {
 						header.removeClass('group-collapsed');
 
-						var view = header.parents('.ui-view-container:first'),
-								offset = groupWrapper.offset(),
-								viewOffset = view.offset(),
-								bottom = offset.top + groupWrapperHeight;
+						var view = header.parents('.ui-view-container:first');
 
-						if (bottom > view.height() + viewOffset.top)
-							view.animate({
-								scrollTop: '+=' + (bottom - view.height() - viewOffset.top)
-							}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+						if (view.length) {
+							var offset = groupWrapper.offset(),
+									viewOffset = view.offset(),
+									bottom = offset.top + groupWrapperHeight;
+
+							if (bottom > view.height() + viewOffset.top)
+								view.animate({
+									scrollTop: '+=' + (bottom - view.height() - viewOffset.top)
+								}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+						}
 					}
 
 					group
@@ -356,16 +359,23 @@ var UI = {
 
 			.addCustomEventListener('elementWasAdded', function (event) {
 				if (event.detail.querySelectorAll) {
+					var expander,
+							keepExpanded;
+
 					var headers = event.detail.querySelectorAll('*[data-expander]');
 
 					for (var i = headers.length; i--;) {
 						if (headers[i].classList.contains('header-expander-ready'))
 							continue;
 
+						expander = headers[i].getAttribute('data-expander');
+						keepExpanded = expander === '0';
+
 						headers[i].classList.add('header-expander-ready');
 
 						$(headers[i])
-							.toggleClass('group-collapsed', !!Settings.getItem('expander', headers[i].getAttribute('data-expander')))
+							.toggleClass('keep-expanded', keepExpanded)
+							.toggleClass('group-collapsed', !keepExpanded && !!Settings.getItem('expander', expander))
 							.find('> *')
 							.attr({
 								'data-i18n-show': _('expander.show'),
@@ -574,7 +584,7 @@ var UI = {
 					.trigger('scroll');
 		},
 
-		switchTo: function (viewID) {
+		switchTo: function (viewID, evenIfPoppy) {
 			var switchToView = $(viewID, UI.view.views);
 
 			if (!switchToView.length)
@@ -588,7 +598,7 @@ var UI = {
 			var activeID = viewContainer.attr('data-activeView');
 
 			if (activeID === viewID)
-				return UI.view.toTop(viewContainer, false, function () {
+				return UI.view.toTop(viewContainer, evenIfPoppy, function () {
 					UI.event.trigger('viewAlreadyActive', {
 						view: switchToView,
 						id: activeID
@@ -661,9 +671,10 @@ var UI = {
 					inRange = (event.pageX > rightOffset - 9 && event.pageX < rightOffset + 3);
 
 			if (inRange || force) {
-				UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
-					event.preventDefault();
-				}, true);
+				if (!inRange)
+					UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
+						event.preventDefault();
+					}, true);
 
 				if (!(force && inRange)) {
 					event.stopPropagation();

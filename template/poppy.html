@@ -31,6 +31,7 @@
 	<h3 class="jsb-centered">JavaScript Blocker <%=Version.display%></h3>
 	<div id="main-menu" class="generic-menu">
 		<div class="generic-menu-menu">
+			<input type="button" id="main-menu-submit-feedback" value="<%=_('main_menu.submit_feedback')%>" />
 			<input type="button" id="main-menu-contribute" class="jsb-color-blocked" value="<%=_('main_menu.unlock')%>" />
 			<input type="button" id="main-menu-about" value="<%=_('main_menu.about')%>" />
 			<%
@@ -38,7 +39,7 @@
 						messageCount = messageHistory.error.length + messageHistory.debug.length; %>
 		</div>
 		<div class="horizontal-divider"></div>
-		<div id="main-menu-console-info">
+		<div id="main-menu-console-info" class="jsb-align-right">
 			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" />
 			<span id="main-menu-console-message-count"><%=_('main_menu.console.message' + (messageCount === 1 ? '' : 's'), [messageCount])%></span> 
 		</div>
@@ -113,8 +114,31 @@
 	</div>
 </noscript>
 
-<noscript id="easy-menu">
-	<h3 class="jsb-centered">Easy Lists</h3>
+<noscript id="active-rules-menu">
+	<h3 class="jsb-centered"><%=_('rules.active_rules')%></h3>
+	<div class="generic-menu">
+		<ul class="generic-menu-options">
+			<li class="jsb-align-right">
+				<input type="button" id="active-menu-clear" value="<%=_('temporary_menu.clear')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="temporary-rules-menu">
+	<h3 class="jsb-centered"><%=_('rules.temporary_rules')%></h3>
+	<div class="generic-menu">
+		<ul class="generic-menu-options">
+			<li class="jsb-align-right">
+				<input type="button" id="temporary-menu-clear" value="<%=_('temporary_menu.clear')%>" />
+				<input type="button" id="temporary-menu-make-always" value="<%=_('temporary_menu.make_always')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="easy-rules-menu">
+	<h3 class="jsb-centered"><%=_('rules.easy_lists')%></h3>
 	<div class="generic-menu">
 		<ul class="generic-menu-options">
 			<%

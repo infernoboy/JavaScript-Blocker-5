@@ -1,10 +1,51 @@
 <noscript id="rule-container">
 	<div id="rule-toolbar"></div>
 	<div id="rule-views-container" class="ui-view-container">
+		<p id="rule-views-no-rules" class="jsb-info jsb-centered jsb-embossed"><%=_('rules.no_rules')%></p>
 		<div id="rule-views"></div>
 	</div>
 </noscript>
 
-<noscript id="view">
-	<div class="ui-view" id="rule-views-<%=self.viewID%>" data-section="<%=self.viewID%>"></div>
+<noscript id="multi-list-container">
+	<ul class="multi-list-container"></ul>
+</noscript>
+
+<noscript id="multi-list-item">
+	<li>
+		<header data-expander="<%=self.expander%>">
+			<h4><%=self.listName._startsWith('$') ? UI.Rules.getEasyListName(self.listName) : _('rules.' + self.listName)%></h4>
+		</header>
+		<div class="rule-group-list" data-listName="<%=self.listName%>"></div>
+	</li>
+</noscript>
+
+<noscript id="rule-group-type">
+	<header data-expander="<%=self.expander%>">
+		<h4><%=_('rules.type.' + self.type)%></h4>
+	</header>
+	<ul class="rule-group-type" data-type="<%=self.type%>" data-editable="<%=self.editable ? '1' : '0'%>"></ul>
+</noscript>
+
+<noscript id="domain-list-item">
+	<li>
+		<header data-expander="<%=self.expander%>">
+			<h4><%=(self.domain === '*' ? _('rules.all_domains') : self.domain)._escapeHTML()%></h4>
+		</header>
+		<ul class="rule-group-domain" data-domain="<%=self.domain._entityQuotes()%>"></ul>
+	</li>
+</noscript>
+
+<noscript id="kind-list-item">
+	<li>
+		<header data-expander="<%=self.expander%>">
+			<h4><%=_('view.page.host.kind.' + self.kind)%></h4>
+		</header>
+		<ul class="rule-group-kind" data-kind="<%=self.kind%>"></ul>
+	</li>
+</noscript>
+
+<noscript id="rule-list-item">
+	<li class="rule-item" data-rule="<%=self.rule._entityQuotes()%>">
+		<%=self.ruleInfo.action + ' - ' + self.rule._escapeHTML()%>
+	</li>
 </noscript>

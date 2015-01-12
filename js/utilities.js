@@ -1274,7 +1274,7 @@ var Extension = {
 						keys = Object.keys(this).sort(fn);
 
 				if (reverse)
-					a.reverse();
+					keys.reverse();
 
 				for (var i = 0, b = keys.length; i < b; i++)
 					newObject[keys[i]] = this[keys[i]];

@@ -79,7 +79,7 @@ var UserScript = {
 
 		if (excludeFromPage !== true)
 			Page.allowed.pushSource('user_script', attributes.meta.trueNamespace, {
-				action: -1
+				action: script.action
 			});
 
 		return userScript;
@@ -103,9 +103,9 @@ var UserScript = {
 		});
 
 		for (var userScript in enabledUserScripts) {
-			if (enabledUserScripts[userScript] === false)
+			if (!(enabledUserScripts[userScript].action % 2))
 				Page.blocked.pushSource('user_script', userScript, {
-					action: -2
+					action: enabledUserScripts[userScript].action
 				});
 			else {
 				if (enabledUserScripts[userScript].requirements) {

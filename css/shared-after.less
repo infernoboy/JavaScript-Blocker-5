@@ -151,27 +151,29 @@
 				display: inline;
 			}
 
-			> *:after {
-				position: absolute;
-				display: inline-block;
-				content: ' ' attr(data-i18n-hide);
-				margin-left: 7px;
-				opacity: 0;
-				font-weight: 500;
-			}
-
-			&:hover > *:after {
-				opacity: 0.8;
-			}
-
-			&.group-collapsed + * {
-				display: none;
-			}
-
-			&.group-collapsed,
-			&.group-collapsing {
+			&:not(.keep-expanded) {
 				> *:after {
-					content: ' ' attr(data-i18n-show);
+					position: absolute;
+					display: inline-block;
+					content: ' ' attr(data-i18n-hide);
+					margin-left: 7px;
+					opacity: 0;
+					font-weight: 500;
+				}
+
+				&:hover > *:after {
+					opacity: 0.8;
+				}
+
+				&.group-collapsed + * {
+					display: none;
+				}
+
+				&.group-collapsed,
+				&.group-collapsing {
+					> *:after {
+						content: ' ' attr(data-i18n-show);
+					}
 				}
 			}
 		}

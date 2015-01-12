@@ -369,6 +369,10 @@ Rule.prototype.forLocation = function (params) {
 				});
 			});
 
+	if (params.all === true)
+		for (var type in rules)
+			rules[type] = rules[type].all();
+
 	Object.defineProperty(rules, 'rule', {
 		value: this
 	});
@@ -403,6 +407,15 @@ var Rules = {
 		HASH: 2,
 		SEARCH: 4,
 		PATH: 8
+	},
+
+	get fullKindList() {
+		var kinds = [];
+
+		for (var i = Rules.__kinds.length; i--;)
+			kinds.push(Rules.__kinds[i], 'framed:' + Rules.__kinds[i], 'hide:framed:' + Rules.__kinds[i]);
+
+		return kinds;
 	},
 
 	// Used to sort rules so that they are applied based on if the full host is matched or just a sub-domain.

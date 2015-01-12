@@ -1,98 +1,182 @@
-&[data-activeview="#main-views-rule"] {
-	overflow: hidden;
-	margin-top: 0;
-	position: relative;
-}
-
-#main-views-rule {
-	width: 100%;
-	-webkit-flex-direction: column;
-	-webkit-flex-align-items: stretch;
-
-	&.active-view {
-		position: absolute;
-		height: 100%;
-		display: -webkit-flex;
+#view-container {
+	#main-views[data-activeview="#main-views-rule"] {
+		overflow-y: hidden;
+		margin-top: 0;
+		position: relative;
 	}
 
-	#rule-toolbar {
-		position: relative;
-		-webkit-flex: 0 0 25px;
-		padding-top: 3px;
-		margin-top: -2px;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-		background: rgb(246, 245, 246);
+	#main-views-rule {
+		width: 100%;
+		-webkit-flex-direction: column;
+		-webkit-flex-align-items: stretch;
 
-		.view-switcher-container {
+		&.active-view {
 			position: absolute;
-			bottom: 4px;
+			height: 100%;
+			display: -webkit-flex;
+		}
 
-			.view-switcher {
-				margin-top: 1px;
+		#rule-toolbar {
+			position: relative;
+			-webkit-flex: 0 0 25px;
+			padding-top: 3px;
+			margin-top: -2px;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+			background: rgb(246, 245, 246);
 
-				li {
-					width: 82px;
+			.view-switcher-container {
+				position: absolute;
+				bottom: 4px;
 
-					.jsb-large-font& {
+				.view-switcher {
+					margin-top: 1px;
+
+					li {
 						width: 86px;
-					}
 
-					&[data-view="#rule-views-easy"] {
-						width: auto;
-						padding-left: 10px;
-						padding-right: 10px;
+						.jsb-large-font& {
+							width: 90px;
+						}
+
+						&[data-view="#rule-views-easy"] {
+							width: auto;
+							padding-left: 10px;
+							padding-right: 10px;
+						}
 					}
 				}
 			}
 		}
+
+		#rule-views-container {
+			-webkit-flex: 1 1 100%;
+			overflow-y: scroll;
+			overflow-x: auto;
+			margin-top: 1px;
+
+			#rule-views-no-rules {
+				margin-top: 20px;
+				font-size: 15pt;
+			}
+
+			.ui-view {
+				padding: 10px 0;
+			}
+		}
 	}
+}
 
-	#rule-views-container {
-		position: relative;
-		-webkit-flex: 1 1 100%;
-		overflow-y: scroll;
-		overflow-x: auto;
-		margin-top: 1px;
-
-		header {
-			margin-top: 0;
+.multi-list-container {
+	> li {
+		> header {
+			margin-left: 2px;
+			margin-bottom: 4px;
 
 			h4 {
-				margin-left: 2px;
+				margin-left: 1px;
 				font-weight: 500;
 			}
 		}
+	}
 
-		header {
-			&.group-collapsed {
-				margin-bottom: 6px;
+	.rule-group-list {
+		margin-left: 12px;
+	}
+}
+
+*[data-ruleListItems] {
+	div > header {
+		margin-left: 2px;
+
+		&:not(:first-child) {
+			margin-top: 7px;
+		}
+	}
+
+	header {
+		margin-top: 0;
+
+		&.group-collapsed {
+			padding-bottom: 6px;
+		}
+
+		+ .collapsible-group-wrapper {
+			padding-bottom: 3px;
+
+			ul {
+				padding-top: 4px;
+			}
+		}
+
+		h4 {
+			margin-left: 1px;
+			font-weight: 500;
+		}
+	}
+
+	ul li {
+		padding-left: 7px;
+	}
+
+	.rule-group- {
+		&type {
+			h4 {
+				color: darken(@baseColor, 15%);
 			}
 
-			+ .collapsible-group-wrapper {
-				margin-bottom: 6px;
+			> li {
+				padding-top: 7px;
+				padding-left: 13px;
+				border-bottom: 1px solid rgba(0, 0, 0, 0.065);
 
-				ul {
-					padding-top: 4px;
+				&:nth-child(even) {
+					background: rgba(2, 1, 0, 0.022);
+					border-bottom-color: rgba(0, 0, 0, 0.05);
+				}
+
+				&:first-child {
+					padding-top: 0;
+				}
+
+				&:last-child {
+					border-bottom-color: transparent;
 				}
 			}
 		}
 
-		ul li {
-			margin-left: 6px;
-		}
+		&domain {
+			padding-left: 5px;
 
-		.rule-group- {
-			&type,
-			&domain,
-			&kind {
-				border-left: 1px solid rgba(1, 0, 1, 0.04);
-				border-bottom: 1px solid rgba(1, 0, 1, 0.04);
-				margin-left: 4px;
-				background: -webkit-linear-gradient(top, rgba(1, 0, 1, 0), rgba(1, 0, 1, 0) 3%, rgba(1, 0, 1, 0.017));
+			h4 {
+				color: #888;
 			}
 
-			&kind li {
-				margin: 3px 0 3px 6px;
+			> li {
+				margin-top: 5px;
+
+				&:first-child {
+					margin-top: 0;
+				}
+			}
+		}
+
+		&kind {
+			padding-left: 5px;
+
+			.rule-item {
+				padding: 6px 0 6px 8px;
+				border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+				white-space: nowrap;
+				overflow-x: auto;
+
+				&:first-child {
+					padding-top: 0;
+				}
+
+				&:last-child {
+					border-bottom-color: transparent;
+					padding-bottom: 3px;
+				}
 			}
 		}
 	}

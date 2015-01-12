@@ -133,6 +133,12 @@
 					line-height: 19px;
 					border-radius: 4px;
 
+					&[data-poppy] {
+						.poppy-menu-target:after {
+							text-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
+						}
+					}
+
 					.yosemite& {
 						top: 4px;
 					}
@@ -328,7 +334,7 @@
 							}
 
 							&.active-view .poppy-menu-target:after {
-								color: #bbb;
+								color: #aaa;
 							}
 						}
 					}
@@ -366,8 +372,10 @@
 					content: ' ⌄';
 					margin-left: 6px;
 					padding-left: 0;
-					color: #c5c5c5;
+					color: #d3d3d3;
 					-webkit-transform: scale(2.4, 2);
+					text-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
+					-webkit-font-smoothing: antialiased;
 
 					.jsb-large-font& {
 						top: -3px;
@@ -393,13 +401,13 @@
 				.snapshot-info {
 					display: none;
 				}
-
-				@import "view.page.less";
-				@import "view.resource.less";
-				@import "view.setting.less";
-				@import "view.rule.less";
 			}
 		}
+
+		@import "view.page.less";
+		@import "view.resource.less";
+		@import "view.setting.less";
+		@import "view.rule.less";
 	}
 }
 

@@ -595,15 +595,35 @@ UI.Page = {
 					if (action < 0)
 						return;
 
-					var resources = item.data('resources'),
-							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
-							list = $('<ul>');
+					var resources = item.data('resources');
 
-					for (var resourceID in resources) {
-						list.append('<li><pre>' + JSON.stringify(resources[resourceID].rulesForResource(isAllowed), null, 1) + '</pre><div class="horizontal-divider"></div></li>');
-					}
+					var loadingPoppy = Poppy.createLoadingPoppy(event.originalEvent.pageX, event.originalEvent.pageY, true, function () {
+						var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
+								ruleListItems = $('<ul>');
 
-					poppy.setContent(list).show()
+						for (var resourceID in resources) {
+							var rules = resources[resourceID].rulesForResource(isAllowed),
+									ruleLists = {},
+									resourceListItem = $('<li>');
+
+							for (var listName in rules)
+								ruleLists[listName] = rules[listName].rule;
+
+							UI.Rules.buildRuleList(resourceListItem, ruleLists, true, rules, true);
+
+							resourceListItem.append('<div class="horizontal-divider"></div>');
+
+							ruleListItems.append(resourceListItem);
+						}
+
+						poppy.setContent(ruleListItems).show();
+
+						UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
+							poppy.setPosition();
+						}, true);
+					});
+
+					loadingPoppy.setContent('Loading rules...').show(true);
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {

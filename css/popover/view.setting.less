@@ -1,143 +1,145 @@
-&[data-activeview="#main-views-setting"] {
-	overflow: hidden;
-	margin-top: 0;
-	position: relative;
-}
-
-#main-views-setting {
-	width: 100%;
-	-webkit-flex-direction: column;
-	-webkit-flex-align-items: stretch;
-
-	&.active-view {
-		position: absolute;
-		height: 100%;
-		display: -webkit-flex;
+#view-container {
+	#main-views[data-activeview="#main-views-setting"] {
+		overflow: hidden;
+		margin-top: 0;
+		position: relative;
 	}
 
-	#setting-toolbar {
-		padding-top: 3px;
-		margin-top: -2px;
-		-webkit-flex: 0 0 25px;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-		background: rgb(246, 245, 246);
+	#main-views-setting {
+		width: 100%;
+		-webkit-flex-direction: column;
+		-webkit-flex-align-items: stretch;
 
-		.view-switcher-container {
+		&.active-view {
 			position: absolute;
+			height: 100%;
+			display: -webkit-flex;
+		}
 
-			.view-switcher {
-				margin-top: 1px;
+		#setting-toolbar {
+			padding-top: 3px;
+			margin-top: -2px;
+			-webkit-flex: 0 0 25px;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+			background: rgb(246, 245, 246);
 
-				li {
-					width: 82px;
+			.view-switcher-container {
+				position: absolute;
 
-					.jsb-large-font& {
-						width: 86px;
+				.view-switcher {
+					margin-top: 1px;
+
+					li {
+						width: 82px;
+
+						.jsb-large-font& {
+							width: 86px;
+						}
 					}
 				}
 			}
 		}
-	}
 
-	#setting-views-container {
-		position: relative;
-		-webkit-flex: 1 1 100%;
-		overflow-y: scroll;
-		overflow-x: auto;
-		margin-top: 1px;
+		#setting-views-container {
+			position: relative;
+			-webkit-flex: 1 1 100%;
+			overflow-y: scroll;
+			overflow-x: auto;
+			margin-top: 1px;
 
-		.setting-section {
-			padding: 5px 15px;
-			overflow-x: hidden;
+			.setting-section {
+				padding: 5px 15px;
+				overflow-x: hidden;
 
-			.setting-sub-container-wrapper {
-				margin-left: 34px;
+				.setting-sub-container-wrapper {
+					margin-left: 34px;
 
-				.setting-sub-container {
-					.setting-section-setting {
-						&:first-child {
-							margin-top: -1px;
+					.setting-sub-container {
+						.setting-section-setting {
+							&:first-child {
+								margin-top: -1px;
+							}
+
+							&:last-child {
+								margin-bottom: 11px;
+							}
+						}
+					}
+				}
+
+				&-header * {
+					font-weight: 500;
+				}
+
+				&-description,
+				&-header,
+				&-setting {
+					position: relative;
+					display: -webkit-flex;
+					width: 100%;
+					-webkit-align-items: baseline;
+					-webkit-justify-content: center;
+
+					&-right,
+					&-full {
+						margin-left: 18px;
+						text-indent: -18px;
+					}
+
+					&-left {
+						text-align: right;
+						-webkit-flex: 0 0 193px;
+						padding-right: 3px;
+					}
+
+					&-right {
+						-webkit-flex: 0 0 270px;
+
+						select {
+							width: 210px;
 						}
 
-						&:last-child {
-							margin-bottom: 11px;
+						.setting-radio-list {
+							margin-left: -18px;
 						}
 					}
-				}
-			}
 
-			&-header * {
-				font-weight: 500;
-			}
-
-			&-description,
-			&-header,
-			&-setting {
-				position: relative;
-				display: -webkit-flex;
-				width: 100%;
-				-webkit-align-items: baseline;
-				-webkit-justify-content: center;
-
-				&-right,
-				&-full {
-					margin-left: 18px;
-					text-indent: -18px;
-				}
-
-				&-left {
-					text-align: right;
-					-webkit-flex: 0 0 193px;
-					padding-right: 3px;
-				}
-
-				&-right {
-					-webkit-flex: 0 0 270px;
-
-					select {
-						width: 210px;
+					&-full {
+						-webkit-flex: 0 0 410px;
+						padding-left: 40px;
 					}
 
-					.setting-radio-list {
-						margin-left: -18px;
+					.setting-sub-label {
+						margin-left: 2px;
+					}
+
+					.more-info {
+						position: absolute;
+						top: -2px;
+						right: -5px;
 					}
 				}
 
-				&-full {
-					-webkit-flex: 0 0 410px;
-					padding-left: 40px;
+				&-description {
+					margin-bottom: 13px;
+
+					.setting-section-setting-full {
+						-webkit-flex: 0 0 470px;
+						margin-left: -45px;
+						text-indent: 0;
+					}
 				}
 
-				.setting-sub-label {
-					margin-left: 2px;
+				&-divider {
+					height: 1px;
+					background: #e9e9e9;
+					margin: 12px 0 13px;
 				}
 
-				.more-info {
-					position: absolute;
-					top: -2px;
-					right: -5px;
+				&-setting {
+					margin: 9px 0 8px;
+
 				}
-			}
-
-			&-description {
-				margin-bottom: 13px;
-
-				.setting-section-setting-full {
-					-webkit-flex: 0 0 470px;
-					margin-left: -45px;
-					text-indent: 0;
-				}
-			}
-
-			&-divider {
-				height: 1px;
-				background: #e9e9e9;
-				margin: 12px 0 13px;
-			}
-
-			&-setting {
-				margin: 9px 0 8px;
-
 			}
 		}
 	}

@@ -1124,7 +1124,7 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'canvas_data_url',
-				options: [[false, 'Off'], [1, 'Always ask'], [2, 'Ask once per domain'], [3, 'Ask once per domain for session'], [4, 'Always protect']],
+				options: [[false, 'Off'], [1, 'Always ask'], [2, 'Ask once per host'], [3, 'Ask once per host for session'], [4, 'Always protect']],
 				default: 3
 			}
 		}, {

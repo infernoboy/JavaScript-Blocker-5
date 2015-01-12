@@ -60,10 +60,10 @@
 	"view.page.host.kind.framed:*": "Framed All Kinds",
 	"view.page.host.kind.hide:framed:*": "Hide Framed All Kinds",
 
-	"view.page.host.kind.disable": "Disabling",
-	"view.page.host.kind.hide:disable": "Hide Disabling",
-	"view.page.host.kind.framed:disable": "Framed Disabling",
-	"view.page.host.kind.hide:framed:disable": "Hide Framed Disabling",
+	"view.page.host.kind.disable": "Disable",
+	"view.page.host.kind.hide:disable": "Hide Disable",
+	"view.page.host.kind.framed:disable": "Framed Disable",
+	"view.page.host.kind.hide:framed:disable": "Hide Framed Disable",
 
 	"view.page.host.kind.script": "Scripts",
 	"view.page.host.kind.hide:script": "Hide Scripts",
@@ -143,6 +143,7 @@
 	"view_toolbar.rules": "Rules",
 	"view_toolbar.snapshots": "Snapshots",
 
+	"main_menu.submit_feedback": "Submit Feedback",
 	"main_menu.unlock": "Unlock",
 	"main_menu.help": "Help",
 	"main_menu.settings": "Settings",
@@ -252,10 +253,19 @@
 	"settings.userScripts": "User Scripts",
 	"settings.search": "Search",
 
+	"temporary_menu.clear": "Clear",
+	"temporary_menu.make_always": "Make Always",
+
+	"rules.temporary_rules": "Temporary Rules",
+	"rules.active_rules": "Always Rules",
+	"rules.easy_lists": "Easy Lists",
+	"rules.no_rules": "No rules in this list.",
 	"rules.all_domains": "All Domains",
 	"rules.temporary": "Temporary",
+	"rules.page": "For Page",
 	"rules.active": "Always",
 	"rules.easy": "Easy Rules",
+	"rules.predefined": "Predefined",
 	"rules.type.domain": "On Domain",
 	"rules.type.notDomain": "Not On Domain",
 	"rules.type.page": "Matching Page",

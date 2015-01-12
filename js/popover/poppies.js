@@ -26,6 +26,10 @@ Object._extend(Poppy.scripts, {
 				UI.view.switchTo('#main-views-about');
 			})
 
+			.on('click', '#main-menu-submit-feedback', function () {
+				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5 Feedback');
+			})
+
 			.on('click', '#main-menu-console', function (event) {
 				Poppy.closeLinksTo(poppy);
 
@@ -92,7 +96,7 @@ Object._extend(Poppy.scripts, {
 					}
 				}, 0, event);
 			})
-			
+
 			.on('click', '#setting-menu-restore-defaults', function (event) {
 				Settings.import({});
 
@@ -100,16 +104,46 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
-	'easy-menu': function (poppy) {
+	'temporary-rules-menu': function (poppy) {
+		poppy.content
+			.on('click', '#temporary-menu-clear', function (event) {
+				globalPage.Rules.list.temporary.clear();
+			})
+
+			.on('click', '#temporary-menu-make-always', function (event) {
+				globalPage.Rules.list.active.rules.merge(globalPage.Rules.list.temporary.rules, true);
+
+				globalPage.Rules.list.temporary.clear();
+			})
+
+			.on('click', '#temporary-menu-clear, #temporary-menu-make-always', function (event) {
+				poppy.close();
+
+				UI.view.switchTo('#rule-views-temporary', true);
+			})
+	},
+
+	'active-rules-menu': function (poppy) {
+		poppy.content
+			.on('click', '#active-menu-clear', function (event) {
+				globalPage.Rules.list.active.clear();
+			})
+
+			.on('click', '#active-menu-clear', function (event) {
+				poppy.close();
+
+				UI.view.switchTo('#rule-views-active', true);
+			})
+	},
+
+	'easy-rules-menu': function (poppy) {
 		poppy.content
 			.on('click', 'a', function (event) {
 				var easyList = this.parentNode.getAttribute('data-easyList');
 
-				UI.Rules.setEasyRulesList(easyList);
-
 				poppy.close();
 
-				UI.view.switchTo('#rule-views-easy');
+				UI.Rules.setEasyRulesList(easyList);
 			});
 	},
 
