@@ -421,11 +421,23 @@ var Rules = {
 	// Used to sort rules so that they are applied based on if the full host is matched or just a sub-domain.
 	// lion.toggleable.com > .lion.toggleable.com > .toggleable.com > *
 	__prioritize: function (a, b) {
-		if (a === '*' || b.length > a.length || b[0] !== '.')
+		if (a === '*')
 			return 1;
 
-		if (b === '*' || a.length > b.length || a[0] !== '.')
+		if (b === '*')
 			return -1;
+
+		if (a[0] === '.' && b[0] !== '.')
+			return 1;
+
+		if (b[0] === '.' && a[0] !== '.')
+			return -1;
+
+		if (a.length > b.length)
+			return -1;
+
+		if (b.length > a.length)
+			return 1;
 
 		return 0;
 	},

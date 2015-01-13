@@ -393,6 +393,10 @@
 		if (this.scriptName && window.Poppy.scripts[this.scriptName])
 			window.Poppy.scripts[this.scriptName](this);
 
+		Utilities.setImmediateTimeout(function (poppy) {
+			poppy.setPosition();
+		}, [this]);
+
 		return this;
 	};
 
@@ -426,7 +430,8 @@
 			if (shouldHideModal)
 				Poppy.closeModal();
 
-			UI.view.views.unbind('scroll', this.viewDidScroll);
+			if (this.view)
+				this.view.unbind('scroll', this.viewDidScroll);
 
 			if (immediate === true || !this.displayed) {
 				this.remove();

@@ -176,8 +176,6 @@ Special.specials = {
 	},
 
 	autocomplete_disabler: function () {
-		var build = JSB.data;
-
 		function withNode(node) {
 			if (node.nodeName.toUpperCase() === 'INPUT')
 				node.setAttribute('autocomplete', 'on');
@@ -190,22 +188,17 @@ Special.specials = {
 				withNode(inputs[i]);
 		}, true);
 
-		if (build >= 536) {
-			var observer = new MutationObserver(function (mutations) {
-				for (var i = 0; i < mutations.length; i++)
-					if (mutations[i].type === 'childList')
-						for (var j = 0; j < mutations[i].addedNodes.length; j++)
-							withNode(mutations[i].addedNodes[j]);
-			});
+		var observer = new MutationObserver(function (mutations) {
+			for (var i = 0; i < mutations.length; i++)
+				if (mutations[i].type === 'childList')
+					for (var j = 0; j < mutations[i].addedNodes.length; j++)
+						withNode(mutations[i].addedNodes[j]);
+		});
 
-			observer.observe(document, {
-				childList: true,
-				subtree: true
-			});
-		} else
-			document.addEventListener('DOMNodeInserted', function (event) {
-				withNode(event.target);
-			}, true);
+		observer.observe(document, {
+			childList: true,
+			subtree: true
+		});
 	},
 
 	xhr_intercept: function () {
@@ -214,9 +207,9 @@ Special.specials = {
 			send: XMLHttpRequest.prototype.send
 		};
 
-		var SYNCHRONOUS_ALLOW = 0,
-				SYNCHRONOUS_BLOCK = 1,
-				SYNCHRONOUS_ASK = 2;
+		var SYNCHRONOUS_ALLOW = '0',
+				SYNCHRONOUS_BLOCK = '1',
+				SYNCHRONOUS_ASK = '2';
 
 		var shouldShowPrompt = JSB.value.value.alwaysBlock === 'ask',
 				supportedMethods = ['get', 'post', 'put'],
@@ -591,8 +584,6 @@ Special.specials = {
 		Special.specials[special].private = true;
 })();
 
-Special.specials.autocomplete_disabler.data = Utilities.safariBuildVersion;
-
 Special.specials.canvas_data_url.data = {
 	safariBuildVersion: Utilities.safariBuildVersion
 };
@@ -602,4 +593,4 @@ Special.specials.prepareScript.commandToken = Command.requestToken('inlineScript
 Special.specials.installUserScriptPrompt.excludeFromPage = true;
 Special.specials.xhr_intercept.excludeFromPage = true;
 
-Special.begin();
+Special.init();

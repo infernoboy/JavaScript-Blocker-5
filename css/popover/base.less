@@ -135,7 +135,7 @@
 
 					&[data-poppy] {
 						.poppy-menu-target:after {
-							text-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
+							text-shadow: 0 0 0 rgba(0, 0, 0, 0.4);
 						}
 					}
 
@@ -163,10 +163,14 @@
 					}
 
 					&.is-disabled {
-						background: darken(@baseColor, 13%);
+						background: desaturate(darken(@baseColor, 14%), 15%);
 
 						&:active {
 							background: darken(@baseColor, 22%);
+						}
+
+						&[data-poppy] .poppy-menu-target:after {
+							color: #aaa;
 						}
 					}
 
@@ -242,10 +246,8 @@
 								border-left-color: darken(@baseColor, 24%);
 							}
 
-							background: -webkit-linear-gradient(top, rgb(109, 108, 109), rgb(104, 103, 104));
-							background: -webkit-linear-gradient(top, darken(@baseColor, 13%), darken(@baseColor, 15%));
-							border-top-color: rgb(109, 108, 109);
-							border-top-color: darken(@baseColor, 13%);
+							background: -webkit-linear-gradient(top, desaturate(darken(@baseColor, 14%), 15%), desaturate(darken(@baseColor, 16%), 15%));
+							border-top-color: desaturate(darken(@baseColor, 15%), 15%);
 
 							&,
 							.view-switcher-item-container .view-switcher-item-name {
@@ -258,9 +260,7 @@
 							border-top-color: #fdfdfd;
 
 							&.active-view {
-								background: -webkit-linear-gradient(top, rgb(87, 86, 87), rgb(82, 81, 82));
 								background: -webkit-linear-gradient(top, darken(@baseColor, 22%), darken(@baseColor, 24%));
-								border-top-color: rgb(87, 86, 87);
 								border-top-color: darken(@baseColor, 22%);
 							}
 						}
@@ -391,7 +391,7 @@
 				-webkit-flex: 1 1 auto;
 				overflow-y: scroll;
 				overflow-x: hidden;
-				padding: 2px 0;
+				padding: 2px 0 0;
 				margin-top: 1px;
 
 				.yosemite& {

@@ -130,7 +130,7 @@ var Special = {
 		return special;
 	},
 
-	begin: function () {
+	init: function () {
 		if (globalSetting.disabled)
 			return;
 		

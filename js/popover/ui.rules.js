@@ -92,10 +92,11 @@ UI.Rules = {
 					for (rule in rules[kind][type][domain])
 						domainGroup._getWithDefault(kind, {})[rule] = rules[kind][type][domain][rule];
 				}
-
-				groupedRules[type] = groupedRules[type]._sort(globalPage.Rules.__prioritize);
 			}
 		}
+
+		for (type in groupedRules)
+			groupedRules[type] = groupedRules[type]._sort(globalPage.Rules.__prioritize);
 
 		return groupedRules;
 	},
@@ -119,6 +120,9 @@ UI.Rules = {
 
 					event.unbind();
 				}
+
+				if (!event.detail.hasRules)
+					event.detail.view.parent().parent().hide();
 			});
 
 			for (var listName in ruleList) {
@@ -207,7 +211,7 @@ UI.Rules = {
 					kindExpander = domainExpander + '-ruleGroupKind-' + kind;
 
 					kindListItem = Template.create('rules', 'kind-list-item', {
-						expander: keepExpanded ? 0 : domainExpander,
+						expander: keepExpanded ? 0 : kindExpander,
 						kind: kind
 					});
 
@@ -221,36 +225,39 @@ UI.Rules = {
 
 						setTimeout(function (kindUL, ruleListItem) {
 							kindUL.append(ruleListItem);
-						}, 0.25 * ruleTimeoutIndex++, kindUL, ruleListItem);
+						}, 0.05 * ruleTimeoutIndex++, kindUL, ruleListItem);
 					}
 
 					setTimeout(function (kindListItem, kindUL, domainUL) {
 						kindListItem.append(kindUL);
 
 						domainUL.append(kindListItem);
-					}, 0.25 * domainTimeoutIndex++, kindListItem, kindUL, domainUL);
+					}, 0.05 * domainTimeoutIndex++, kindListItem, kindUL, domainUL);
 				}
 
 				setTimeout(function (domainListItem, domainUL, typeUL) {
 					domainListItem.append(domainUL);
 
 					typeUL.append(domainListItem);
-				}, 0.25 * typeTimeoutIndex++, domainListItem, domainUL, typeUL);
+				}, 0.05 * typeTimeoutIndex++, domainListItem, domainUL, typeUL);
 			}
 
 			setTimeout(function (ruleTimeoutIndex, ruleGroupType, container) {
 				if (!ruleGroupType.filter('.rule-group-type').is(':empty'))
 					ruleGroupType.appendTo(container);
-			}, 0.25 * ruleTimeoutIndex, ruleTimeoutIndex, ruleGroupType, container);
+			}, 0.05 * ruleTimeoutIndex, ruleTimeoutIndex, ruleGroupType, container);
 		}
 
 		setTimeout(function (view, ruleList, container) {
 			view.empty().append(container);
 
 			setTimeout(function (view) {
-				UI.Rules.event.trigger('rulesFinishedBuilding', view);
+				UI.Rules.event.trigger('rulesFinishedBuilding', {
+					view: view,
+					hasRules: ruleTimeoutIndex !== 1
+				});
 			}, 0, view);
-		}, 0.5 * ruleTimeoutIndex, view, ruleList, container);
+		}, 0.06 * ruleTimeoutIndex, view, ruleList, container);
 
 		UI.Rules.noRules.toggleClass('jsb-hidden', ruleTimeoutIndex !== 1);
 	},
@@ -306,8 +313,7 @@ UI.Rules = {
 			$('.ui-view', UI.Rules.views).empty();
 
 			var ruleList,
-					useTheseRules,
-					domainGrouped;
+					useTheseRules;
 
 			var isMainSwitch = (event.detail.id === '#main-views-rule'),
 					toView = isMainSwitch ? $('.active-view', UI.Rules.views) : event.detail.view,
@@ -315,21 +321,41 @@ UI.Rules = {
 
 			switch (toID) {
 				case '#rule-views-page':
-					var tab = Tabs.active();
+					toView.empty();
 
-					if (tab) {
+					var pageRulesContainer = $('<ul>').addClass('page-rules-container').appendTo(toView);
+
+					UI.event.addCustomEventListener('receivedPage', function (pageEvent) {
+						if (pageEvent.detail.page.info.protocol === 'data:' || pageEvent.detail.page.info.protocol === 'about:')
+							return;
+
+						pageEvent.unbind();
+
+						var multiListPageItem = Template.create('rules', 'multi-list-page-item', {
+							isFrame: pageEvent.detail.page.info.isFrame,
+							location: pageEvent.detail.page.info.location
+						});
+						
+						var ruleContainer = $('.multi-list-page-item-rules', multiListPageItem);
+
 						ruleList = {};
 
 						useTheseRules = globalPage.Rules.forLocation({
 							all: true,
-							location: tab.url,
+							location: pageEvent.detail.page.info.location,
 							searchKind: globalPage.Rules.fullKindList,
 							excludeLists: globalPage.Special.__excludeLists
 						});
 
 						for (var listName in useTheseRules)
 							ruleList[listName] = globalPage.Rules.list[listName];
-					}
+
+						UI.Rules.buildRuleList(ruleContainer, ruleList, false, useTheseRules);
+
+						multiListPageItem.appendTo(pageRulesContainer);
+					});
+
+					globalPage.Page.requestPageFromActive();
 				break;
 
 				case '#rule-views-temporary':

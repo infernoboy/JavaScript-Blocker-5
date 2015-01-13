@@ -111,7 +111,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#temporary-menu-make-always', function (event) {
-				globalPage.Rules.list.active.rules.merge(globalPage.Rules.list.temporary.rules, true);
+				globalPage.Rules.list.user.rules.merge(globalPage.Rules.list.temporary.rules, true);
 
 				globalPage.Rules.list.temporary.clear();
 			})
@@ -149,6 +149,10 @@ Object._extend(Poppy.scripts, {
 
 	console: function (poppy) {
 		poppy.content
+			.on('change', '#console-debug-mode', function () {
+				window.globalSetting.debugMode = this.checked;
+			})
+
 			.on('click', '#console-clear', function () {
 				LogError.history = [];
 				LogDebug.history = [];

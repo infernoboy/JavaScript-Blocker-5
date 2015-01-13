@@ -230,6 +230,7 @@
 	"console.debug_messages": "Debug Messages",
 	"console.clear": "Clear",
 	"console.report": "Report",
+	"console.debug_mode": "Debug mode",
 
 	"recommend_reload.reload_once": "Reload Once",
 	"recommend_reload.reload_always": "Reload Always",

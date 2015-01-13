@@ -130,7 +130,8 @@ Settings.settings = {
 				[60000, '1 minute'],
 				[300000, '5 minutes'],
 				[600000, '10 minutes'],
-				[1800000, '30 minutes']
+				[1800000, '30 minutes'],
+				[3600000, '1 hour']
 			],
 			default: 5000
 		}

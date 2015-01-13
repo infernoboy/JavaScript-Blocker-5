@@ -85,7 +85,7 @@ var UserScript = {
 		return userScript;
 	},
 
-	begin: function () {
+	init: function () {
 		if (globalSetting.disabled)
 			return;
 		
@@ -249,4 +249,4 @@ var UserScript = {
 	}
 };
 
-UserScript.begin();
+UserScript.init();

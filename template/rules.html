@@ -19,6 +19,13 @@
 	</li>
 </noscript>
 
+<noscript id="multi-list-page-item">
+	<li class="multi-list-page-item">
+		<h2><%=_('view.page.header.' + (self.isFrame ? 'frame' : 'top'))%> − <%=decodeURI(self.location)._escapeHTML()%></h2>
+		<div class="multi-list-page-item-rules"></div>
+	</li>
+</noscript>
+
 <noscript id="rule-group-type">
 	<header data-expander="<%=self.expander%>">
 		<h4><%=_('rules.type.' + self.type)%></h4>

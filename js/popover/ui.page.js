@@ -623,7 +623,7 @@ UI.Page = {
 						}, true);
 					});
 
-					loadingPoppy.setContent('Loading rules...').show(true);
+					loadingPoppy.setContent('Loading rules...').show(true, true);
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {

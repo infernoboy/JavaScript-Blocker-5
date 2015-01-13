@@ -85,11 +85,12 @@ var Settings = {
 				window.globalSetting[event.key] = Settings.getItem(event.key);
 			});
 
-		if (window.UI && UI.Settings && UI.Settings.view.is('.active-view')) {
-			var activeSettingView = $('.active-view', UI.Settings.views);
+		if (!event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')
+			if (window.UI && UI.Settings && UI.Settings.view.is('.active-view')) {
+				var activeSettingView = $('.active-view', UI.Settings.views);
 
-			UI.Settings.populateSection(activeSettingView, activeSettingView.attr('data-section'));
-		}
+				UI.Settings.populateSection(activeSettingView, $('.active-view', UI.Settings.views).attr('data-section'));
+			}
 	},
 
 	all: function () {

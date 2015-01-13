@@ -252,11 +252,13 @@ var Store = (function () {
 
 		if (this.save && Store.ALLOW_SAVE)
 			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
-				console.time('SAVED ' + store.id);
+				if (window.globalSetting.debugMode)
+					console.time('SAVED ' + store.id);
 
 				Settings.__method('setItem', store.id, store.readyJSON());
 
-				console.timeEnd('SAVED ' + store.id);
+				if (window.globalSetting.debugMode)
+					console.timeEnd('SAVED ' + store.id);
 
 				store.triggerEvent('storeDidSave');
 			}, now ? 0 : this.saveDelay, [this]);
@@ -369,6 +371,8 @@ var Store = (function () {
 
 			if (deep && (currentValue instanceof Store) && (storeValue instanceof Store))
 				currentValue.merge(storeValue, true);
+			else if (deep && storeValue instanceof Store)
+				this.set(key, storeValue.clone('Merged'));
 			else
 				this.set(key, storeValue);
 		}

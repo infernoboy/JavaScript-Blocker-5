@@ -249,6 +249,11 @@ function Command (command, data, event) {
 				if (activeTab === renderPage.tab)
 					UI.Page.renderPage(renderPage);
 			}
+
+			UI.event.trigger('receivedPage', {
+				page: page,
+				tab: tab
+			});
 		},
 
 		willBlockFirstVisit: function (host) {

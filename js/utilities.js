@@ -1356,7 +1356,8 @@ Object._copy = function (object, defaultValue) {
 		break;
 
 		default:
-			// LogDebug('getting as reference when not requested as such:', this.id, key, object, cachedKey);
+			// console.trace();
+			// LogDebug('getting as reference when not requested as such:', object);
 
 			return object;
 		break;

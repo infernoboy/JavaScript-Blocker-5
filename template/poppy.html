@@ -162,6 +162,7 @@
 		<h3 class="jsb-centered"><%=_('main_menu.console')%></h3>
 		<input type="button" id="console-clear" value="<%=_('console.clear')%>" />
 		<input type="button" id="console-report" value="<%=_('console.report')%>" />
+		<input type="checkbox" id="console-debug-mode" <%=window.globalSetting.debugMode ? 'checked="checked"' : ''%> /> <label for="console-debug-mode"><%=_('console.debug_mode')%></label>
 		<ul class="console">
 			<li><h4 class="jsb-centered"><%=_('console.error_messages')%></h4></li>
 		<%

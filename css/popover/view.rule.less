@@ -51,7 +51,7 @@
 		#rule-views-container {
 			-webkit-flex: 1 1 100%;
 			overflow-y: scroll;
-			overflow-x: auto;
+			overflow-x: hidden;
 			margin-top: 1px;
 
 			#rule-views-no-rules {
@@ -66,7 +66,23 @@
 	}
 }
 
+.multi-list-page-item {
+	margin-bottom: 10px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+	h2 {
+		margin-left: 3px;
+	}
+
+	&-rules {
+		margin-left: 12px;
+	}
+}
+
 .multi-list-container {
+	min-width: 350px;
+
 	> li {
 		> header {
 			margin-left: 2px;
@@ -126,19 +142,20 @@
 
 			> li {
 				padding-top: 7px;
-				padding-left: 13px;
-				border-bottom: 1px solid rgba(0, 0, 0, 0.065);
+				padding-left: 12px;
+				border-bottom: 1px solid rgba(2, 1, 2, 0.065);
+				border-left: 1px solid transparent;
 
 				&:nth-child(even) {
-					background: rgba(2, 1, 0, 0.022);
-					border-bottom-color: rgba(0, 0, 0, 0.05);
+					background: rgba(2, 1, 2, 0.022);
+					border-color: rgba(2, 1, 2, 0.05);
 				}
 
 				&:first-child {
 					padding-top: 0;
 				}
 
-				&:last-child {
+				&:nth-child(odd):last-child {
 					border-bottom-color: transparent;
 				}
 			}
@@ -148,7 +165,7 @@
 			padding-left: 5px;
 
 			h4 {
-				color: #888;
+				color: #808080;
 			}
 
 			> li {
@@ -168,6 +185,10 @@
 				border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 				white-space: nowrap;
 				overflow-x: auto;
+
+				&::-webkit-scrollbar {
+					height: 3px;
+				}
 
 				&:first-child {
 					padding-top: 0;
