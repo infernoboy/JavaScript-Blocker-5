@@ -107,6 +107,10 @@
 					&-full {
 						-webkit-flex: 0 0 410px;
 						padding-left: 40px;
+
+						.jsb-info {
+							line-height: 1.4;
+						}
 					}
 
 					.setting-sub-label {
@@ -149,4 +153,62 @@
 	li {
 		margin-bottom: 5px;
 	}
+}
+
+.setting-dynamic-container {
+	margin-left: -18px;
+	margin-bottom: 6px;
+
+	.setting-dynamic-list {
+		li {
+			margin-bottom: 6px;
+
+			&,
+			* {
+				white-space: nowrap;
+			}
+		}
+
+		.setting-dynamic- {
+			&name {
+				display: inline-block;
+				width: 100px;
+				overflow: hidden;
+				margin-right: 3px;
+			}
+
+			&content {
+				display: inline-block;
+				color: #888;
+				white-space: nowrap;
+				overflow-x: scroll;
+				width: 250px;
+				margin-right: 3px;
+
+				a {
+					text-decoration: none;
+				}
+			}
+		}
+	}
+
+	.setting-dynamic-{
+		clear: both;
+
+		&new-name {
+			width: 75px;
+		}
+
+		&new-content {
+			width: 335px;
+		}
+
+		&new-save {
+			margin-top: 9px;
+			margin-right: 3px;
+			margin-left: 5px;
+		}
+	}
+
+
 }

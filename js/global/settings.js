@@ -85,11 +85,13 @@ var Settings = {
 				window.globalSetting[event.key] = Settings.getItem(event.key);
 			});
 
-		if (!event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')
+		if (!event.key || !event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')
 			if (window.UI && UI.Settings && UI.Settings.view.is('.active-view')) {
-				var activeSettingView = $('.active-view', UI.Settings.views);
+				var activeSettingView = $('.active-view', UI.Settings.views),
+						focusedTextInput = $('textarea:focus, input[type="text"]:focus', activeSettingView);
 
-				UI.Settings.populateSection(activeSettingView, $('.active-view', UI.Settings.views).attr('data-section'));
+				if (!focusedTextInput.length)
+					UI.Settings.populateSection(activeSettingView, $('.active-view', UI.Settings.views).attr('data-section'));
 			}
 	},
 
@@ -194,7 +196,11 @@ var Settings = {
 			}
 
 			var type = storeSetting.props.type || setting.props.type,
-					options = storeSetting.props.options || setting.props.options;
+					options = storeSetting.props.options || setting.props.options,
+					customValidate = setting.props.validate || storeSetting.props.validate;
+
+			if (customValidate && !customValidate.test(type, value, options, storeSetting.props.otherOption, storeSetting.props.extendOptions))
+				return 'setting.' + customValidate.onFail;
 
 			if (!this.__validate(type, value, options, storeSetting.props.otherOption, storeSetting.props.extendOptions))
 				throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, storeKey, value]));
@@ -217,10 +223,13 @@ var Settings = {
 				setting.props.onChange(value);
 		} else
 			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
+
+		return true;
 	},
 
 	removeItem: function (settingKey, storeKey) {
-		var setting = Settings.map[settingKey];
+		var setting = Settings.map[settingKey],
+				storeSetting = setting.storeKeySettings[storeKey];
 
 		if (!setting)
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
@@ -233,6 +242,12 @@ var Settings = {
 				this.__stores.getStore(settingKey).remove(storeKey);
 			} else
 				this.__stores.getStore(settingKey).clear();
+
+			if (setting.props.onChange)
+				setting.props.onChange();
+
+			if (storeSetting && storeSetting.props.onChange)
+				storeSetting.props.onChange();
 
 			Settings.anySettingChanged({
 				key: settingKey

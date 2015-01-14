@@ -188,6 +188,33 @@ var Utilities = {
 		};
 	},
 
+	humanTime: function (time) {
+		var convertedUnit;
+
+		var seconds = time / 1000,
+				humanTime = {};
+
+		var units = {
+			days: 24 * 60 * 60,
+			hours: 60 * 60,
+			minutes: 60,
+			seconds: 1
+		};
+		
+		for (var unit in units) {
+			if (seconds / units[unit] > 0) {
+				convertedUnit = Math.floor(seconds / units[unit]);
+
+				humanTime[unit] = convertedUnit;
+
+				seconds -= convertedUnit * units[unit];
+			} else
+				humanTime[unit] = 0;
+		};
+
+		return humanTime;
+	},	
+
 	Group: {
 		NONE: 0,
 		IS_ANYTHING: 1,

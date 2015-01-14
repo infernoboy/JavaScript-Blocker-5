@@ -77,6 +77,31 @@
 				opacity: 0.4 @important;
 				pointer-events: none @important;
 			}
+
+			&light-scrollbars {
+				&:hover,
+				&:focus {
+					&::-webkit-scrollbar-thumb {
+						background: rgba(0, 0, 0, 0.3);
+					}
+				}
+				
+				&::-webkit-scrollbar {
+					height: 3px;
+
+					&-track {
+						background: transparent;
+					}
+
+					&-thumb {
+						background: rgba(0, 0, 0, 0.15);
+
+						&:hover {
+							background: rgba(0, 0, 0, 0.5);
+						}
+					}
+				}
+			}
 		}
 
 		pre {

@@ -366,48 +366,6 @@ Settings.settings = {
 			type: 'boolean'
 		}
 	}, {
-		store: 'easyLists',
-		props: {
-			type: 'dynamic-array',
-			default: {
-				$list: {
-					enabled: true,
-					value: ['https://easylist-downloads.adblockplus.org/easylist.txt', 'EasyList'],
-				},
-				$privacy: {
-					enabled: true,
-					value: ['https://easylist-downloads.adblockplus.org/easyprivacy.txt', 'EasyPrivacy'],
-				},
-				$malware: {
-					enabled: true,
-					value: ['https://easylist-downloads.adblockplus.org/malwaredomains_full.txt', 'EasyMalware']
-				}
-			}
-		}
-	}, {
-		setting: 'easyLists',
-		props: {
-			label: 'EasyLists:',
-			extend: {
-				type: 'string',
-				label: ['Add List', 'List URL:'],
-				onPreSave: function (url) {
-					if (!url.length)
-						return alert('Invalid url1!');
-
-					var theURLExist = true;
-
-					if (theURLExist)
-						return [url, url];
-
-					return undefined;
-				},
-				onPostSave: function () {
-					EasyList.fetch();
-				}
-			}
-		}
-	}, {
 		setting: 'ignoreWhitelist',
 		props: {
 			type: 'boolean',
@@ -838,15 +796,78 @@ Settings.settings = {
 			}]
 		}]
 	}, {
-		divider: true //===================================================================================
+		divider: true
 	}, {
-		id: 'easy-list-update',
-		description: 'Last EasyList update was unknown.'
+		header: 'Easy Lists',
 	}, {
-		button: 'updateEasyLists',
+		description: 'easyLists.description',
+	}, {
+		store: 'easyLists',
 		props: {
+			type: 'dynamic-array',
+			isSetting: true,
+			default: {
+				$list: {
+					enabled: true,
+					value: ['https://easylist-downloads.adblockplus.org/easylist.txt', 'EasyList'],
+				},
+				$privacy: {
+					enabled: true,
+					value: ['https://easylist-downloads.adblockplus.org/easyprivacy.txt', 'EasyPrivacy'],
+				},
+				$malware: {
+					enabled: true,
+					value: ['https://easylist-downloads.adblockplus.org/malwaredomains_full.txt', 'EasyMalware']
+				}
+			},
+			validate: {
+				onFail: 'easyLists.validate.fail',
+				test: function (type, value) {
+					var url = $.trim(value.value[0]).toLowerCase();
+
+					return (url._startsWith('http:') || url._startsWith('https:') || url._startsWith('ftp:'))
+				}
+			},
+			onChange: function () {
+				Utilities.Timer.timeout('easyListsChanged', function () {
+					Rules.attachEasyLists();
+
+					EasyList.fetch();
+				}, 5000);
+			}
+		}
+	}, {
+		divider: true,
+	}, {
+		description: 'easyListLastUpdate.description',
+		fill: function () {
+			var lastUpdate = Settings.getItem('EasyListLastUpdate'),
+					nextUpdate = lastUpdate + EasyList.__updateInterval - Date.now(),
+					nextUpdateHuman = Utilities.humanTime(nextUpdate);
+
+			return [(new Date(lastUpdate || Date.now())).toLocaleString(), nextUpdateHuman.days, nextUpdateHuman.hours, nextUpdateHuman.minutes];
+		}
+	}, {
+		setting: 'updateEasyLists',
+		props: {
+			type: 'button',
 			classes: 'single-click',
-			label: ['Update lists now:', 'Update Now']
+			validate: {
+				onFail: 'updateEasyLists.validate.fail',
+				test: function () {
+					var lastUpdate = Settings.getItem('EasyListLastUpdate'),
+							fiveMinutes = 1000 * 60 * 5;
+
+					return Date.now() > lastUpdate + fiveMinutes;
+				}
+			},
+			onClick: function (button) {
+				EasyList.cancelUpdate();
+
+				EasyList.fetch();
+
+				button.disabled = true;
+			}
 		},
 	}],
 
@@ -865,7 +886,7 @@ Settings.settings = {
 			}
 		},
 		settings: [{
-			description: 'Snapshots description',
+			description: 'enableSnapshots.description',
 		}, {
 			setting: 'enableSnapshots',
 			props: {
@@ -882,6 +903,7 @@ Settings.settings = {
 			}
 		}, {
 			when: {
+				hide: true,
 				settings: {
 					group: 'all',
 					items: [{
@@ -909,10 +931,12 @@ Settings.settings = {
 		}, {
 			divider: true //===================================================================================
 		}, {
-			button: 'clearSnapshots',
+			setting: 'clearSnapshots',
 			props: {
-				classes: 'delete',
-				label: ['Delete all snapshots:', 'Delete Snapshots']				
+				type: 'button',
+				onClick: function () {
+					Rules.list.user.rules.snapshot.snapshots.clear();
+				}
 			}
 		}]
 	}],
@@ -1014,7 +1038,7 @@ Settings.settings = {
 		}, {
 			divider: true //===================================================================================
 		}, {
-			description: 'Once any of these features are active'
+			description: 'enabledSpecials.description'
 		}, {
 			setting: 'enabledSpecials',
 			props: {
@@ -1157,63 +1181,7 @@ Settings.settings = {
 				}
 			}
 		}]
-	}],
-
-	// About page
-	__about: {
-		header: {
-			label: false,
-			description: [
-				'<a href="http://javascript-blocker.toggleable.com/" target="_top">',
-					'<img src="images/toggleable.png" alt="Toggleable" style="margin-left:-8px;" width="143" height="59" />',
-					'<img src="Icon-64.png" alt="JavaScript Blocker" style="margin-bottom:14px;margin-left:5px;" width="32" height="32" />',
-				'</a>',
-				'<h4>JavaScript Blocker <span id="js-displayv"></span> (<span id="js-bundleid"></span>)</h4>'].join('')
-		},
-		trial: {
-			id: 'trial-remaining',
-			label: '',
-			classes: 'description',
-			divider: 1
-		},
-		resetSettings: {
-			label: 'Reset all settings to their default values:',
-			setting: 'Reset Settings',
-			classes: 'delete'
-		},
-		removeRules: {
-			label: 'Remove all rules:',
-			setting: 'Remove Rules',
-			divider: 1,
-			classes: 'delete'
-		},
-		showWelcome: {
-			label: 'Show welcome:',
-			setting: 'Show Welcome',
-			classes: 'single-click',
-			divider: 1
-		},
-		createBackup: {
-			label: 'Create a full backup:',
-			setting: 'Create Backup',
-			extra: 1,
-			description: 'Full backup description',
-			classes: 'single-click'
-		},
-		importBackup: {
-			label: 'Import a full backup:',
-			setting: 'Import Backup',
-			extra: 1,
-			classes: 'single-click'
-		}
-	},
-	__search: {
-		headerSearch: {
-			classes: 'extras',
-			label: '',
-			setting: null
-		}
-	}
+	}]
 };
 
 for (var section in Settings.settings)

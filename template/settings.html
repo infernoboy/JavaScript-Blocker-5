@@ -39,7 +39,7 @@
 
 <noscript id="setting-element">
 	<%
-		var inlineSetting = 'data-inlineSetting="' + self.setting.setting + '"',
+		var inlineSetting = 'data-inlineSetting="' + (self.setting.setting || self.setting.store) + '"',
 				storeKeySetting = self.setting.props.storeKey ? ('data-storeKey="' + self.setting.props.storeKey + '"') : '',
 				settingType = self.setting.props.type || self.props.type,
 				localizationKey = 'setting.' + self.setting.setting + (self.setting.props.storeKey ? '.' + self.setting.props.storeKey : ''),
@@ -57,6 +57,15 @@
 		var helpHTML = help ? '<span class="more-info" data-moreInfo="' + help._escapeHTML()._entityQuotes() + '"></span>' : '';
 
 		switch (settingType) {
+			case 'button': %>
+				<%=wrapper.left%>
+					<label class="setting-main-label"><%=mainLabel%>:&nbsp;</label>
+				<%=wrapper.close%>
+				<%=wrapper.right%>
+					<input type="button" id="<%=self.id%>" value="<%=subLabel%>" data-settingButton="<%=self.setting.setting%>" />
+				<%=wrapper.close%><%
+			break;
+
 			case 'boolean': %>
 				<%=wrapper.full%>
 					<input id="<%=self.id%>" type="checkbox" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id%>"><%=mainLabel%></label>
@@ -123,6 +132,58 @@
 						<label class="setting-sub-label"> <%=subLabel%></label><%
 					} %>
 					<%=helpHTML%>
+				<%=wrapper.close%><%
+			break;
+
+			case 'dynamic-array':
+				var sorted = {},
+						sortedKeys = [],
+						value = Settings.getItem(self.setting.store),
+						keys = Object.keys(value);
+
+				for (var key in value)
+					sortedKeys.push([key, value[key]]);
+
+				sortedKeys.sort(function (a, b) {
+					if (a[1].value[1] > b[1].value[1])
+						return 1;
+
+					if (b[1].value[1] > a[1].value[1])
+						return -1;
+
+					return 0;
+				});
+
+				for (var i = 0; i < sortedKeys.length; i++)
+					sorted[sortedKeys[i][0]] = sortedKeys[i][1];
+
+				%>
+
+				<%=wrapper.full%>
+					<div class="setting-dynamic-container">
+						<ul class="setting-dynamic-list"><%
+							for (var key in sorted) { %>
+								<li data-setting="<%=self.setting.store%>" data-storeKey="<%=key%>">
+									<span class="setting-dynamic-name">
+										<input id="<%=self.id + key%>" type="checkbox" <%=inlineSetting%> data-storeKey="<%=key%>" data-dynamic="1" />
+										<label for="<%=self.id + key%>"><%=sorted[key].value[1]._escapeHTML()%></label>
+									</span>
+									<span class="setting-dynamic-content jsb-light-scrollbars"><a href="<%=sorted[key].value[0]._entityQuotes()%>"><%=sorted[key].value[0]._escapeHTML()%></a></span>
+									<% if (!(key in self.props.default)) { %> 
+										<input type="button" class="setting-dynamic-remove" value="Remove" /><%
+									} %>
+								</li><%
+							} %>
+						</ul>
+						<div class="setting-dynamic-new-container" data-setting="<%=self.setting.store%>">
+							<input class="setting-dynamic-new-name" type="text" /> <input class="setting-dynamic-new-content trigger-on-enter" type="text" />
+
+							<div class="jsb-align-right">
+								<input type="button" class="setting-dynamic-restore" value="<%=_('settings.restore_defaults')%>" />
+								<input type="button" class="setting-dynamic-new-save on-enter" value="<%=_('settings.add_item')%>" />
+							</div>
+						</div>
+					</div>
 				<%=wrapper.close%><%
 			break;
 		}

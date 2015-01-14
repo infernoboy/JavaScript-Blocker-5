@@ -321,7 +321,7 @@
 
 													</select><label></label><%
 												} else { %>
-													<textarea <%=disableEdit%> class="render-as-input select-custom-input" spellcheck="off" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
+													<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="off" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
 													<select <%=disableEdit%> class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%>">
 														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
 														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
@@ -335,7 +335,7 @@
 											<% if (self.stateType !== 'unblocked' || kind !== 'script') { %>
 												<span class="page-host-item-info more-info"></span>
 											<% } %>
-											<span class="page-host-item-source-container">
+											<span class="page-host-item-source-container jsb-light-scrollbars">
 												<span class="page-host-item-source" title="<%=_('view.page.host.click_to_edit')%>"><%=$.trim(sourceName._escapeHTML().replace(/([\n\t]|  +)/g, ' '))%></span>
 											</span>
 													<span class="page-host-host-count-container">
@@ -345,7 +345,7 @@
 
 										<div class="page-host-item-description">
 											<% if (resourcesSimplified.length) { %>
-												<p class="jsb-info"><%=resourcesSimplified.join(', ')%></p><%
+												<p class="jsb-info jsb-light-scrollbars"><%=resourcesSimplified.join(', ')%></p><%
 											} %>
 										</div>
 									</li>

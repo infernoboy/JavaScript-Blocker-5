@@ -442,6 +442,24 @@ var Rules = {
 		return 0;
 	},
 
+	attachEasyLists: function () {
+		var easyLists = Settings.getItem('easyLists'),
+				currentLists = Object.keys(Rules.list).filter(function (value) {
+					return value._startsWith('$');
+				});
+
+		for (var i = currentLists.length; i--;)
+			delete Rules.list[currentLists[i]];
+
+		for (var easyList in easyLists)
+			if (easyLists[easyList].enabled)
+				Rules.list[easyList] = new Rule(Rules.__EasyRules.getStore(easyList), null, {
+					longRuleAllowed: true
+				});
+
+		Resource.canLoadCache.clear().saveNow();
+	},
+
 	useCurrent: function () {
 		this.list.active = this.list.user;
 
@@ -519,7 +537,10 @@ var Rules = {
 	forLocation: function (params) {
 		var excludeLists = params.excludeLists ? params.excludeLists : [];
 
-		excludeLists.push(this.list.active === this.list.user ? 'user' : 'temporary');
+		excludeLists.push('user');
+
+		if (this.list.active !== this.list.user)
+			excludeLists.push('temporary');
 
 		var lists = {};
 
@@ -642,6 +663,8 @@ Object.defineProperty(Rules, 'list', {
 	})
 });
 
+Rules.attachEasyLists();
+
 Rules.list.active = Rules.list.user;
 
 Rules.__EasyRules.addCustomEventListener('storeDidSave', function (event) {
@@ -649,18 +672,6 @@ Rules.__EasyRules.addCustomEventListener('storeDidSave', function (event) {
 });
 
 (function () {
-	var easyLists = Settings.getItem('easyLists');
-
-	for (var easyList in easyLists)
-		if (easyLists[easyList].enabled)
-			Object.defineProperty(Rules.list, easyList, {
-				enumerable: true,
-
-				value: new Rule(Rules.__EasyRules.getStore(easyList), null, {
-					longRuleAllowed: true
-				})
-			});
-
 	for (var list in Rules.list) {
 		if (list === 'active')
 			continue;

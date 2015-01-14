@@ -201,6 +201,7 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 				
 				domainRules[rule] = {
 					action: rules.data[rule].value.action,
+					regexp: rules.data[rule].value.regexp,
 					ruleList: ruleList
 				};
 			}

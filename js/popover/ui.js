@@ -239,8 +239,11 @@ var UI = {
 			})
 
 			.on('keypress', '.trigger-on-enter', function (event) {
-				if (event.which === 3 || event.which === 13)
+				if (event.which === 3 || event.which === 13) {
+					this.blur();
+
 					$('.on-enter', this.parentNode).click();
+				}
 			})
 
 			.on('input', 'textarea.render-as-input', function (event) {

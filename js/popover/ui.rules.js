@@ -1,6 +1,8 @@
 "use strict";
 
 UI.Rules = {
+	__lists: ['page', 'temporary', 'active', 'easy'],
+
 	event: new EventListener,
 
 	init: function () {
@@ -13,31 +15,35 @@ UI.Rules = {
 		UI.Rules.views = $('#rule-views', UI.Rules.viewContainer);
 		UI.Rules.noRules = $('#rule-views-no-rules', UI.Rules.viewContainer);
 
-		var viewSwitcherData = {
-			container: '#rule-views-container',
-			views: {}
-		};
+		UI.Rules.buildViewSwitcher();
 
-		var lists = ['page', 'temporary', 'active', 'easy'];
-
-		for (var i = 0; i < lists.length; i++)
-			viewSwitcherData.views['#rule-views-' + lists[i]] = {
-				value: _('rules.' + lists[i]),
-				poppy: i > 0 ? (lists[i] + '-rules-menu') : null
-			};
-
-		UI.Rules.toolbar.append(Template.create('main', 'view-switcher', viewSwitcherData));
-
-		UI.Rules.viewSwitcher = $('.view-switcher', UI.Rules.view);
-
-		for (var i = 0; i < lists.length; i++)
-			UI.view.create('rule-views', lists[i], UI.Rules.views);
+		for (var i = 0; i < UI.Rules.__lists.length; i++)
+			UI.view.create('rule-views', UI.Rules.__lists[i], UI.Rules.views);
 
 		UI.Rules.events.rules();
 
 		UI.Rules.setEasyRulesList(null, true);
 
 		UI.view.switchTo('#rule-views-temporary');
+	},
+
+	buildViewSwitcher: function () {
+		var viewSwitcherData = {
+			container: '#rule-views-container',
+			views: {}
+		};
+
+		for (var i = 0; i < UI.Rules.__lists.length; i++)
+			viewSwitcherData.views['#rule-views-' + UI.Rules.__lists[i]] = {
+				value: _('rules.' + UI.Rules.__lists[i]),
+				poppy: i > 0 ? (UI.Rules.__lists[i] + '-rules-menu') : null
+			};
+
+		$('.view-switcher-container', UI.Rules.toolbar).remove();
+
+		UI.Rules.toolbar.append(Template.create('main', 'view-switcher', viewSwitcherData));
+
+		UI.Rules.viewSwitcher = $('.view-switcher', UI.Rules.view);
 	},
 
 	getEasyLists: function () {
@@ -122,7 +128,7 @@ UI.Rules = {
 				}
 
 				if (!event.detail.hasRules)
-					event.detail.view.parent().parent().hide();
+					event.detail.view.parents('.multi-list-item').hide();
 			});
 
 			for (var listName in ruleList) {
@@ -219,6 +225,8 @@ UI.Rules = {
 
 					for (rule in domainGrouped[type][domain][kind]) {
 						ruleListItem = Template.create('rules', 'rule-list-item', {
+							type: type,
+							kind: kind,
 							rule: rule,
 							ruleInfo: domainGrouped[type][domain][kind][rule],
 						});
@@ -270,10 +278,11 @@ UI.Rules = {
 				type: 'button',
 				value: 'Remove'
 			})
-			.addClass('rule-item-remove');
+			.addClass('rule-item-remove blend-in');
 
 		rules
 			.addClass('rule-item-processed')
+			.find('.rule-item-remove')
 			.append(input);
 
 		Poppy.setAllPositions();
@@ -289,7 +298,7 @@ UI.Rules = {
 							type = self.parents('.rule-group-type').attr('data-type'),
 							kind = self.parents('.rule-group-kind').attr('data-kind'),
 							domain = self.parents('.rule-group-domain').attr('data-domain'),
-							rule = self.parents('.rule-item').attr('data-rule');
+							rule = self.parents('.rule-item-container').attr('data-rule');
 
 					ruleList.__remove(type, kind, domain, rule);
 
@@ -303,6 +312,11 @@ UI.Rules = {
 		viewAlreadyActive: function (event) {
 			if (event.detail.id._startsWith('#rule-views'))
 				UI.Rules.events.viewDidSwitch(event);
+		},
+
+		viewWillSwitch: function (event) {
+			if (event.detail.to.id === '#main-views-rule' && $('.active-view', UI.Rules.views).is('#rule-views-easy'))
+				UI.view.switchTo('#rule-views-temporary');
 		},
 
 
@@ -370,6 +384,9 @@ UI.Rules = {
 					var easyList = $('li[data-view="#rule-views-easy"]', UI.Rules.viewSwitcher).attr('data-easyList');
 
 					ruleList = globalPage.Rules.list[easyList];
+
+					if (!ruleList)
+						UI.Rules.noRules.show();
 				break;
 			}
 
@@ -389,6 +406,7 @@ UI.Rules = {
 };
 
 UI.event.addCustomEventListener('viewAlreadyActive', UI.Rules.events.viewAlreadyActive);
+UI.event.addCustomEventListener('viewWillSwitch', UI.Rules.events.viewWillSwitch);
 UI.event.addCustomEventListener('viewDidSwitch', UI.Rules.events.viewDidSwitch);
 UI.event.addCustomEventListener('elementWasAdded', UI.Rules.events.elementWasAdded);
 

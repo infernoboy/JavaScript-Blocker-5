@@ -11,7 +11,7 @@
 </noscript>
 
 <noscript id="multi-list-item">
-	<li>
+	<li class="multi-list-item">
 		<header data-expander="<%=self.expander%>">
 			<h4><%=self.listName._startsWith('$') ? UI.Rules.getEasyListName(self.listName) : _('rules.' + self.listName)%></h4>
 		</header>
@@ -52,7 +52,48 @@
 </noscript>
 
 <noscript id="rule-list-item">
-	<li class="rule-item" data-rule="<%=self.rule._entityQuotes()%>">
-		<%=self.ruleInfo.action + ' - ' + self.rule._escapeHTML()%>
+	<li class="rule-item-container" data-rule="<%=self.rule._entityQuotes()%>">
+		<div class="rule-item">
+			<div class="rule-item-bubble" data-action="<%=self.ruleInfo.action%>"></div>
+			<div class="rule-item-rule jsb-light-scrollbars">
+				<%
+					var humanString = "rules.list.",
+							isAllowing = !!(self.ruleInfo.action % 2),
+							ruleParts = self.ruleInfo.regexp ? { domain: self.rule } : globalPage.Rules.partsForRule(self.rule),
+							domain = ruleParts.domain === '*' ? 'all domains' : ruleParts.domain;
+
+					if (!self.ruleInfo.regexp) {
+						if (self.kind._contains('user_script')) {
+							domain = globalPage.UserScript.scripts.getStore(domain).getStore('attributes').get('meta', {}).name || 'UNKNOWN';
+						} else if (self.kind._contains('special')) {
+							domain = _('special.' + domain + '.' + (isAllowing ? 'allowed' : 'blocked'), [globalPage.Special.enabled[domain] ? globalPage.Special.enabled[domain].value : '']);
+						}
+					}
+
+					if (self.kind._contains('hide:')) {
+						humanString += isAllowing ? 'show' : 'hide';
+					} else if (self.kind._contains('special')) {
+						humanString += 'special';
+					} else {
+						humanString += isAllowing ? 'allow' : 'block';
+					}
+
+					if (self.ruleInfo.regexp) {
+						humanString += '.matching';
+					} else if (self.kind._contains('special') || self.kind._contains('user_script')) {
+						humanString += '';
+					} else if (self.kind._contains('disable')) {
+						humanString += '.jsb';
+					} else if (domain._startsWith('.')) {
+						domain = domain.substr(1);
+
+						humanString += '.within';
+					} else {
+						humanString += self.kind._contains('xhr') ? '.to' : '.from';
+					} %>
+				<%=_(humanString, [domain._escapeHTML()])%>
+			</div>
+			<div class="rule-item-remove"></div>
+		</div>
 	</li>
 </noscript>

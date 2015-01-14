@@ -40,8 +40,29 @@ UI.Settings = {
 		}
 
 		UI.Settings.views
+			.on('click', '*[data-settingButton]', function (event) {
+				var settingName = this.getAttribute('data-settingButton'),
+						setting = Settings.map[settingName];
+
+				if (setting.props.onClick) {
+					if (setting.props.validate && !setting.props.validate.test()) {
+						var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true);
+
+						poppy
+							.setContent(Template.create('main', 'jsb-readable', {
+								string: _('setting.' + setting.props.validate.onFail)
+							}))
+							.show();
+
+						return;
+					}
+
+					setting.props.onClick(this);
+				}
+			})
+
 			.on('click', '.more-info', function (event) {
-				var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY);
+				var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true);
 
 				poppy
 					.setContent(Template.create('main', 'jsb-readable', {
@@ -108,7 +129,73 @@ UI.Settings = {
 							Settings.setItem(this.getAttribute('data-inlineSetting'), this.checked, this.getAttribute('data-storeKey'));
 						});
 				break;
+
+				case 'dynamic-array':
+					element
+						.prop('checked', currentValue.enabled)
+						.change(function () {
+							var setting = this.getAttribute('data-inlineSetting'),
+									storeKey = this.getAttribute('data-storeKey'),
+									currentValue = Settings.getItem(setting, storeKey)._clone();
+
+							currentValue.enabled = this.checked;
+
+							Settings.setItem(setting, currentValue, storeKey);
+						});
+
+					var remove = element.parent().nextAll('.setting-dynamic-remove');
+
+					if (remove.length)
+						remove.click(function () {
+							var container = $(this).parents('li');
+
+							Settings.removeItem(container.attr('data-setting'), container.attr('data-storeKey'));
+						});
+				break;
 			}
+		}
+	},
+
+	bindDynamicSettingNew: function (containers) {
+		for (var i = containers.length; i--;) {
+			var container = $(containers[i]);
+
+			if (container.attr('data-dynamicNewBound'))
+				continue;
+
+			container.attr('data-dynamicNewBound', 1);
+
+			container
+				.on('click', '.setting-dynamic-restore', function () {
+					var newContainer = $(this).parents('.setting-dynamic-new-container');
+
+					Settings.removeItem(newContainer.attr('data-setting'));
+				})
+
+				.on('click', '.setting-dynamic-new-save', function (event) {
+					var newContainer = $(this).parents('.setting-dynamic-new-container'),
+							newName = $.trim($('.setting-dynamic-new-name', newContainer).val()),
+							newContent = $.trim($('.setting-dynamic-new-content', newContainer).val());
+
+					if (!newName.length || !newContent.length)
+						return;
+
+					var success = Settings.setItem(newContainer.attr('data-setting'), {
+						enabled: true,
+						value: [newContent, newName]
+					}, '$' + Utilities.Token.generate());
+
+					if (success !== true) {
+						var position = $(this).offset(),
+								poppy = new Poppy(position.left - 10, position.top + 10, true);
+
+						poppy.setContent(Template.create('main', 'jsb-readable', {
+							string: _(success)
+						}));
+
+						poppy.show();
+					}
+				});
 		}
 	},
 
@@ -137,18 +224,16 @@ UI.Settings = {
 			else if (setting.description)
 				container.append(Template.create('settings', 'setting-section-description', {
 					id: setting.id || ('description-' + Utilities.Token.generate()),
-					description: setting.description
+					description: _('setting.' + setting.description, setting.fill ? setting.fill() : [])
 				}));
 
-			else if (setting.button) {
-
-			} else if (setting.when) {
+			else if (setting.when) {
 				shouldRender = Utilities.Group.eval(setting.when.settings, allSettings);
 
 				if (shouldRender || !setting.when.hide)
 					this.createList(container, setting.settings, !shouldRender || disabled);
 
-			} else if (setting.setting) {
+			} else if (setting.setting || (setting.store && setting.props && setting.props.isSetting)) {
 				if (setting.props) {
 					if (setting.props.remap || setting.props.readOnly)
 						continue;
@@ -156,7 +241,7 @@ UI.Settings = {
 					settingElement = this.createElementForSetting(setting, null, true);
 
 					listSetting = Template.create('settings', 'setting-section-setting', {
-						setting: setting.setting
+						setting: setting.setting || setting.store
 					});
 
 					listSetting.append(settingElement.children());
@@ -218,8 +303,10 @@ UI.Settings = {
 		},
 
 		elementWasAdded: function (event) {
-			if (event.detail.querySelectorAll)
+			if (event.detail.querySelectorAll) {
 				UI.Settings.bindInlineSettings(event.detail.querySelectorAll('*[data-inlineSetting]'));
+				UI.Settings.bindDynamicSettingNew(event.detail.querySelectorAll('.setting-dynamic-new-container'));
+			}
 		},
 
 		viewWillSwitch: function (event) {

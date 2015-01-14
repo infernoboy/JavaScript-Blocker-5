@@ -104,8 +104,11 @@
 
 			.page-host-disabled,
 			.page-host-snapshot-in-use {
+				position: relative;
+				z-index: 1;
 				padding: 3px 0 1px;
 				background: #fbfbfb;
+				border-bottom: 1px solid #e5e5e5;
 
 				.jsb-info {
 					font-size: 12pt;
@@ -157,6 +160,10 @@
 
 						select {
 							max-width: 88%;
+
+							.jsb-large-font& {
+								max-width: 86%;
+							}
 						}
 					}
 
@@ -440,29 +447,6 @@
 									.page-host-host-count {
 										white-space: pre;
 										text-decoration: none;
-									}
-								}
-							}
-						}
-
-						.page-host-item-source-container,
-						.page-host-item-edit-container textarea,
-						.page-host-item-description .jsb-info, {
-							&:hover,
-							&:focus {
-								&::-webkit-scrollbar-thumb {
-									background: rgba(0, 0, 0, 0.3);
-								}
-							}
-							
-							&::-webkit-scrollbar {
-								height: 3px;
-
-								&-thumb {
-									background: rgba(0, 0, 0, 0.1);
-
-									&:hover {
-										background: rgba(0, 0, 0, 0.5);
 									}
 								}
 							}
