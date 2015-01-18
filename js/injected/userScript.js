@@ -7,7 +7,7 @@ var UserScript = {
 		}.bind(null, script), false);
 	},
 
-	inject: function (script, excludeFromPage) {
+	inject: function (script, parentUserScript) {
 		var isSafe = false,
 				attributes = script.attributes;
 
@@ -58,6 +58,7 @@ var UserScript = {
 		delete meta.match;
 
 		userScript.pieces.args.JSB.scriptInfo = {
+			parentUserScript: parentUserScript,
 			scriptMetaStr: attributes.metaStr,
 			scriptWillUpdate: attributes.autoUpdate,
 			version: 5,
@@ -69,6 +70,7 @@ var UserScript = {
 			name: attributes.meta.name,
 			usedURL: DeepInject.useURL,
 			isUserScript: true,
+			parentUserScript: parentUserScript,
 			private: script.private
 		};
 
@@ -77,7 +79,7 @@ var UserScript = {
 		if (attributes.runAtStart && DeepInject.useURL)
 			Log('this page does not allow inline scripts.', '"' + attributes.meta.name + '"', 'wanted to run before the page loaded but couldn\'t.');
 
-		if (excludeFromPage !== true)
+		if (!parentUserScript)
 			Page.allowed.pushSource('user_script', attributes.meta.trueNamespace, {
 				action: script.action
 			});
@@ -112,19 +114,20 @@ var UserScript = {
 					for (url in enabledUserScripts[userScript].requirements) {
 						requirement = enabledUserScripts[userScript].requirements[url];
 
-						requirementName = 'RequiredFor:' + userScript + ':' + url;
+						requirementName = 'RequirementFor-' + userScript + '-' + url;
 
 						UserScript.inject({
 							runAtStart: true,
 
 							attributes: {
+								parentUserScript: userScript,
 								script: Utilities.decode(requirement.data),
 								meta: {
 									name: requirementName,
 									trueNamespace: requirementName
 								}
 							}
-						}, true);
+						}, userScript);
 					}
 				}
 
@@ -139,6 +142,7 @@ var UserScript = {
 	helpers: {
 		GM_getValue: function (key, defaultValue) {
 			var result = messageExtensionSync('userScript.storage.getItem', {
+				parentUserScript: GM_info.parentUserScript,
 				key: key
 			});
 
@@ -149,27 +153,37 @@ var UserScript = {
 		},
 		GM_setValue: function (key, value) {
 			messageExtensionSync('userScript.storage.setItem', {
+				parentUserScript: GM_info.parentUserScript,
 				key: key,
 				value: value
 			});
 		},
 		GM_deleteValue: function (key) {
 			messageExtensionSync('userScript.storage.removeItem', {
+				parentUserScript: GM_info.parentUserScript,
 				key: key
 			});
 		},
 		GM_listValues: function () {
-			return messageExtensionSync('userScript.storage.keys');
+			return messageExtensionSync('userScript.storage.keys', {
+				parentUserScript: GM_info.parentUserScript
+			});
 		},
 
 		// RESOURCES
 		GM_getResourceText: function (name) {
-			var resource = messageExtensionSync('userScript.getResource', name);
+			var resource = messageExtensionSync('userScript.getResource', {
+				parentUserScript: GM_info.parentUserScript,
+				name: name
+			});
 
 			return resource ? atob(resource.data) : '';
 		},
 		GM_getResourceURL: function (name) {
-			var resource = messageExtensionSync('userScript.getResource', name);
+			var resource = messageExtensionSync('userScript.getResource', {
+				parentUserScript: GM_info.parentUserScript,
+				name: name
+			});
 
 			if (!resource)
 				return '';

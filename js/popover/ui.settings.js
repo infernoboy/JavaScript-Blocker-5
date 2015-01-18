@@ -143,7 +143,7 @@ UI.Settings = {
 							Settings.setItem(setting, currentValue, storeKey);
 						});
 
-					var remove = element.parent().nextAll('.setting-dynamic-remove');
+					var remove = element.parent().nextAll('.setting-dynamic-delete');
 
 					if (remove.length)
 						remove.click(function () {

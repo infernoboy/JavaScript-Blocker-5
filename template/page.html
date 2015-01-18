@@ -63,8 +63,6 @@
 		} %>
 		
 		<div class="page-host-editor">
-			<span class="more-info"></span>
-
 			<%
 				if (self.isFrame) { %>
 					<div class="jsb-info">
@@ -203,9 +201,9 @@
 			<span class="page-host-state-count"><%=itemCount%></span>
 			<span class="page-host-state-count-type">
 				<% if (self.stateType === 'unblocked' || Settings.getItem('showResourceURLs')) { %>
-					<%=_('view.page.host.count_type.item' + (itemCount === 1 ? '' : 's'))%>
+					<%=_('view.page.host.count_type.item'._pluralize(itemCount))%>
 				<% } else { %>
-					<%=_('view.page.host.count_type.host' + (itemCount === 1 ? '' : 's'))%>
+					<%=_('view.page.host.count_type.host'._pluralize(itemCount))%>
 				<% } %>
 			</span>
 		</span>

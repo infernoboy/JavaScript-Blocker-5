@@ -56,7 +56,10 @@ var Special = {
 			if (helpers[helper].args)
 				helperScript.setArguments(helpers[helper].args);
 
-			prepend = helpers[helper].args ? helperScript.executable() : helperScript.asFunction();
+			if (helpers[helper].semiGlobal)
+				prepend = helperScript.inner();
+			else
+				prepend = helpers[helper].args ? helperScript.executable() : helperScript.asFunction();
 
 			cache.unshift(prepend);
 
@@ -105,6 +108,14 @@ var Special = {
 		if (useURL === undefined && this.__injected._contains(name))
 			return;
 
+		if (useURL === undefined && !this.specials[name].excludeFromPage)
+			Page.blocked.pushSource('special', name, {
+				action: this.enabled[name].action
+			});
+
+		if (this.specials[name].noInject)
+			return;
+
 		var special = new DeepInject(name, this.specials[name]);
 
 		this.injectHelpers(special, this.helpers);
@@ -121,11 +132,6 @@ var Special = {
 		};
 
 		special.inject(useURL);
-
-		if (useURL === undefined && !this.specials[name].excludeFromPage)
-			Page.blocked.pushSource('special', name, {
-				action: this.enabled[name].action
-			});
 
 		return special;
 	},
@@ -159,7 +165,7 @@ var Special = {
 
 		for (var special in this.enabled) {
 			if (!this.enabled[special].enabled) {
-				if (!this.enabled[special].excludeFromPage)
+				if (!this.specials[special].excludeFromPage)
 					Page.allowed.pushSource('special', special, {
 						action: this.enabled[special].action
 					});

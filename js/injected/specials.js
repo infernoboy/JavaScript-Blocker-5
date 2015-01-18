@@ -55,30 +55,32 @@ Special.specials = {
 			body: messageExtensionSync('template.create', {
 				template: 'injected',
 				section: 'install-user-script-prompt'
-			})
-		}, function (detail) {
-			var notification = document.getElementById(detail.result),
-					notificationBody = notification.querySelector('.jsb-notification-body');
-
-			notification.querySelector('#jsb-install-user-script').addEventListener('click', function (event) {
-				this.disabled = true;
-
-				this.value = _localize('user_script.adding');
-
-				setTimeout(function () {
+			}),
+			closeButtons: [{
+				title: _localize('user_script.add_script'),
+				callbackID: registerCallback(function () {
 					messageExtension('installUserScriptFromURL', {
 						url: document.location.href
 					}, function (result) {
-						var p = document.createElement('p');
-
-						p.classList.add('jsb-info');
-
-						p.innerHTML = result === true ? _localize('user_script.add_success') : result;
-
-						notificationBody.innerHTML = p.outerHTML;
+						messageTopExtension('notification', {
+							title: _localize('user_script'),
+							subTitle: document.location.href,
+							body: messageExtensionSync('template.create', {
+								template: 'injected',
+								section: 'javascript-alert',
+								data: {
+									body: result ? _localize('user_script.add_success') : result
+								}
+							})
+						});
 					});
-				}, 0);
-			}, true);
+				})
+			}]
+		}, function (detail) {
+			var notification = document.getElementById(detail.result),
+					addScriptButton = notification.querySelectorAll('.jsb-notification-close')[1];
+
+			addScriptButton.classList.add('jsb-color-allowed');
 		});
 	},
 
@@ -592,5 +594,7 @@ Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
 Special.specials.installUserScriptPrompt.excludeFromPage = true;
 Special.specials.xhr_intercept.excludeFromPage = true;
+Special.specials.simple_referrer.noInject = true;
+Special.specials.anchor_titles.noInject = true;
 
 Special.init();

@@ -21,7 +21,14 @@
 
 <noscript id="multi-list-page-item">
 	<li class="multi-list-page-item">
-		<h2><%=_('view.page.header.' + (self.isFrame ? 'frame' : 'top'))%> − <%=decodeURI(self.location)._escapeHTML()%></h2>
+		<h2 class="jsb-light-scrollbars"><%=_('view.page.header.' + (self.isFrame ? 'frame' : 'top'))%> − <%=decodeURI(self.location)._escapeHTML()%></h2>
+		<div class="multi-list-page-item-rules"></div>
+	</li>
+</noscript>
+
+<noscript id="multi-list-resource-item">
+	<li class="multi-list-page-item">
+		<h2 class="jsb-light-scrollbars"><%=_('view.page.header.via_' + (self.isFrame ? 'frame' : 'top'))%> − <%=decodeURI(self.fullSource)._escapeHTML()%></h2>
 		<div class="multi-list-page-item-rules"></div>
 	</li>
 </noscript>
@@ -38,7 +45,7 @@
 		<header data-expander="<%=self.expander%>">
 			<h4><%=(self.domain === '*' ? _('rules.all_domains') : self.domain)._escapeHTML()%></h4>
 		</header>
-		<ul class="rule-group-domain" data-domain="<%=self.domain._entityQuotes()%>"></ul>
+		<ul class="rule-group-domain" data-domain="<%=self.domain._entityQuotes()%>" data-editable="<%=self.editable ? '1' : '0'%>"></ul>
 	</li>
 </noscript>
 
@@ -47,22 +54,29 @@
 		<header data-expander="<%=self.expander%>">
 			<h4><%=_('view.page.host.kind.' + self.kind)%></h4>
 		</header>
-		<ul class="rule-group-kind" data-kind="<%=self.kind%>"></ul>
+		<ul class="rule-group-kind" data-kind="<%=self.kind%>" data-editable="<%=self.editable ? '1' : '0'%>"></ul>
 	</li>
 </noscript>
 
 <noscript id="rule-list-item">
-	<li class="rule-item-container" data-rule="<%=self.rule._entityQuotes()%>">
+	<li class="rule-item-container" data-rule="<%=self.rule._entityQuotes()%>" data-editable="<%=self.editable ? '1' : '0'%>">
 		<div class="rule-item">
-			<div class="rule-item-bubble" data-action="<%=self.ruleInfo.action%>"></div>
-			<div class="rule-item-rule jsb-light-scrollbars">
+			<div class="rule-item-bubble" data-action="<%=self.ruleInfo.action%>"><%=self.ruleInfo.action%></div>
+			<div class="rule-item-rule jsb-light-scrollbars" data-regexp="<%=self.ruleInfo.regexp ? '1' : '0'%>">
 				<%
-					var humanString = "rules.list.",
+					var protocols = "",
+							humanString = "rules.list.",
 							isAllowing = !!(self.ruleInfo.action % 2),
 							ruleParts = self.ruleInfo.regexp ? { domain: self.rule } : globalPage.Rules.partsForRule(self.rule),
 							domain = ruleParts.domain === '*' ? 'all domains' : ruleParts.domain;
 
 					if (!self.ruleInfo.regexp) {
+						if (ruleParts.protocols) {
+							protocols = Object.keys(ruleParts.protocols).map(function (protocol) {
+								return _('rules.protocol.' + protocol);
+							}).join(', ');
+						}
+
 						if (self.kind._contains('user_script')) {
 							domain = globalPage.UserScript.scripts.getStore(domain).getStore('attributes').get('meta', {}).name || 'UNKNOWN';
 						} else if (self.kind._contains('special')) {
@@ -91,9 +105,9 @@
 					} else {
 						humanString += self.kind._contains('xhr') ? '.to' : '.from';
 					} %>
-				<%=_(humanString, [domain._escapeHTML()])%>
+				<%=_(humanString, [protocols, domain._escapeHTML()])%>
 			</div>
-			<div class="rule-item-remove"></div>
+			<div class="rule-item-delete-container"></div>
 		</div>
 	</li>
 </noscript>

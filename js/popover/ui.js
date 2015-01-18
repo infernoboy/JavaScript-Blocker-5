@@ -307,7 +307,7 @@ var UI = {
 
 							group.css('margin-top', 0);
 
-							Utilities.Element.repaint(document.body);
+							// Utilities.Element.repaint(document.documentElement);
 						});
 				}
 			});
@@ -332,6 +332,7 @@ var UI = {
 
 			.addCustomEventListener('elementWasAdded', function (event) {
 				if (event.detail.querySelectorAll) {
+					// ===== Custom Selects =====
 					var customSelects = event.detail.querySelectorAll('.select-custom-input + select:not(.select-custom-ready)');
 
 					for (var i = customSelects.length; i--;) {
@@ -357,11 +358,35 @@ var UI = {
 						if (!customSelects[i].classList.contains('select-cycle'))
 							customSelects[i].selectedIndex = -1;
 					}
-				}
-			})
 
-			.addCustomEventListener('elementWasAdded', function (event) {
-				if (event.detail.querySelectorAll) {
+					// ===== Double-click Buttons =====
+
+					var doubleClickButtons = event.detail.querySelectorAll('.double-click:not(.double-click-ready)');
+
+					for (var i = doubleClickButtons.length; i--;) {
+						doubleClickButtons[i].classList.add('double-click-ready');
+
+						doubleClickButtons[i].addEventListener('click', function (event) {
+							if (!this.classList.contains('one-more-time')) {
+								this.classList.add('one-more-time');
+
+								Utilities.Timer.timeout(this, function (self) {
+									self.classList.remove('one-more-time');
+								}, 2000, [this]);
+
+								event.stopImmediatePropagation();
+
+								event.preventDefault();
+
+								return;
+							}
+
+							this.classList.remove('one-more-time');
+						}, true);
+					}
+
+					// ===== Expanders =====
+
 					var expander,
 							keepExpanded;
 
@@ -386,7 +411,7 @@ var UI = {
 							})
 							.end()
 							.next()
-							.wrapAll('<div class="collapsible-group-wrapper"></div>')
+							.wrapAll('<div class="collapsible-group-wrapper"></div>');
 					}
 				}
 			});

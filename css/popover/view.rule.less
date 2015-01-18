@@ -51,7 +51,7 @@
 		#rule-views-container {
 			-webkit-flex: 1 1 100%;
 			overflow-y: scroll;
-			overflow-x:auto;
+			overflow-x: hidden;
 			margin-top: 1px;
 
 			#rule-views-no-rules {
@@ -73,6 +73,9 @@
 
 	h2 {
 		margin-left: 3px;
+		overflow-x: scroll;
+		white-space: nowrap;
+		padding-bottom: 1px;
 	}
 
 	&-rules {
@@ -163,20 +166,6 @@
 					border-bottom-color: transparent;
 				}
 			}
-
-			&[data-editable="0"] {
-				.rule-group-kind .rule-item-container {
-					padding: 6px 0 6px 0;
-
-					&:first-child {
-						padding-top: 0;
-					}
-
-					&:last-child {
-						padding-bottom: 0;
-					}
-				}
-			}
 		}
 
 		&domain {
@@ -216,27 +205,37 @@
 					-webkit-align-items: center;
 
 					&-bubble {
-						height: 10px;
-						border: 1px solid fade(@allowColor, 5%);
+						height: 8px;
+						padding: 3px 0 0 3px;
+						border: 1px solid @allowColor;
 						border-radius: 11px;
-						-webkit-flex: 0 0 10px;
-						background: lighten(@allowColor, 10%);
-						margin-right: 5px;
+						-webkit-flex: 0 0 8px;
+						background: lighten(@allowColor, 3%);
+						margin-right: 6px;
 						margin-top: -2px;
-						box-shadow: 0 0 2px #000, inset 0 0 1px lighten(@allowColor, 35%), inset 0 1px 1px lighten(@allowColor, 30%), inset 0 3px 2px lighten(@allowColor, 12%);
+						box-shadow: 0 0 2px #111, inset 0 0 1px lighten(@allowColor, 15%), inset 0 1px 1px lighten(@allowColor, 13%), inset 0 3px 2px lighten(@allowColor, 7%);
+						color: #fff;
+						font-size: 0.7em;
+						line-height: 0.8;
+						text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9);
+						font-family: "Menlo-Regular", Courier, monospace;
+
+						.jsb-large-font& {
+							height: 10px;
+							padding-top: 2px;
+							padding-left: 3px;
+							-webkit-flex: 0 0 10px;
+							font-size: 0.8em;
+						}
 
 						&[data-action="0"],
 						&[data-action="2"],
 						&[data-action="4"],
 						&[data-action="6"],
 						&[data-action="8"] {
-							background: lighten(@blockColor, 10%);
-							border-color: fade(@blockColor, 5%);
-							box-shadow: 0 0 2px #000, inset 0 0 1px lighten(@blockColor, 35%), inset 0 1px 1px lighten(@blockColor, 30%), inset 0 3px 2px lighten(@blockColor, 14%);
-						}
-
-						&[data-action="3"] {
-							border-radius: 0;
+							background: lighten(@blockColor, 7%);
+							border-color: @blockColor;
+							box-shadow: 0 0 2px #111, inset 0 0 1px lighten(@blockColor, 35%), inset 0 1px 1px lighten(@blockColor, 33%), inset 0 3px 2px lighten(@blockColor, 16%);
 						}
 					}
 
@@ -251,16 +250,39 @@
 						b {
 							white-space: nowrap;
 						}
+
+						&[data-regexp="1"] b {
+							font-family: "Menlo-Regular", Courier, monospace;
+							letter-spacing: -1px;
+						}
 					}
 
-					&-remove {
+					&-delete-container {
 						-webkit-flex: 0 0 auto;
 						padding-right: 4px;
 
 						input {
-							padding-left: 6px;
-							padding-right: 6px;
+							padding-left: 7px;
+							padding-right: 7px;
 						}
+					}
+				}
+			}
+
+			&[data-editable="0"] {
+				.rule-item-container {
+					padding: 6px 0 6px 0;
+
+					&:first-child {
+						padding-top: 0;
+					}
+
+					&:last-child {
+						padding-bottom: 0;
+					}
+
+					.rule-item-rule {
+						margin-bottom: -4px;
 					}
 				}
 			}
@@ -269,11 +291,17 @@
 			&[data-kind="hide:special"],
 			&[data-kind="hide:framed:special"] {
 				.rule-item-bubble[data-action] {
-					background: @yosemiteBlue;
+					background: darken(@yosemiteBlue, 9%);
 					border-color: fade(@yosemiteBlue, 5%);
-					box-shadow: 0 0 2px #000, inset 0 0 1px lighten(@yosemiteBlue, 35%), inset 0 1px 1px lighten(@yosemiteBlue, 30%), inset 0 3px 2px lighten(@yosemiteBlue, 14%);
+					box-shadow: 0 0 2px #000, inset 0 0 1px lighten(@yosemiteBlue, 25%), inset 0 1px 1px lighten(@yosemiteBlue, 25%), inset 0 3px 2px lighten(@yosemiteBlue, 9%);
 				}
 			}
 		}
+	}
+}
+
+.poppy-no-arrow {
+	.page-rules-container {
+		margin-top: 15px;
 	}
 }

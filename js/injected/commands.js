@@ -188,6 +188,8 @@ var Command = function (type, event) {
 						private: TOKEN.INJECTED[foundSourceID].private,
 
 						attributes: {
+							parentUserScript: data.originSourceName,
+
 							meta: {
 								name: name,
 								trueNamespace: name
@@ -195,7 +197,7 @@ var Command = function (type, event) {
 
 							script: script.executable()
 						}
-					}, true);
+					}, data.originSourceName);
 				});
 			}
 		},
@@ -292,8 +294,10 @@ var Command = function (type, event) {
 		},
 
 		notification: function (detail) {
-			if (Utilities.Page.isTop)
-				new PageNotification(detail.data);
+			if (!Utilities.Page.isTop)
+				return;
+
+			var notification = new PageNotification(detail.data);
 		},
 
 		showBlockedAllFirstVisitNotification: function (detail) {
@@ -735,6 +739,13 @@ var Command = function (type, event) {
 					detail.meta.subTitle = _('via_frame') + ' - ' + detail.meta.subTitle;
 
 				var notification = new PageNotification(detail.meta);
+
+				if (detail.meta.closeButtons)
+					for (var i = 0; i < detail.meta.closeButtons.length; i++) {
+						notification.addCloseButton(detail.meta.closeButtons[i].title, function (callbackID, notification) {
+							Command.sendCallback(detail.sourceID, callbackID, true);
+						}.bind(null, detail.meta.closeButtons[i].callbackID));
+					}
 
 				Handler.event.addCustomEventListener('stylesheetLoaded', function () {
 					resolve(notification.element.id);

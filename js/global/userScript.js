@@ -56,7 +56,6 @@ var UserScript = {
 				event.userInfo.menuCommand[caption].callbackID + ':' +
 				event.userInfo.contextMenuTarget,
 			caption);
-
 	},
 
 	onExecuteMenuCommand: function (event) {
@@ -263,14 +262,15 @@ var UserScript = {
 		};
 	},
 
-	exist: function (namespace) {
-		return !!this.scripts.get(namespace, false);
+	exist: function (namespace, parentUserScript) {
+		return this.scripts.get(parentUserScript || namespace);
 	},
 
 	remove: function (namespace) {
 		this.removeRules(namespace, true);
 
 		this.scripts.remove(namespace);
+		this.subScripts.remove(namespace);
 	},
 
 	add: function (script, isAutoUpdate) {

@@ -62,7 +62,7 @@
 					<label class="setting-main-label"><%=mainLabel%>:&nbsp;</label>
 				<%=wrapper.close%>
 				<%=wrapper.right%>
-					<input type="button" id="<%=self.id%>" value="<%=subLabel%>" data-settingButton="<%=self.setting.setting%>" />
+					<input type="button" id="<%=self.id%>" class="<%=self.setting.props.classes || ''%>" value="<%=subLabel%>" data-settingButton="<%=self.setting.setting%>" />
 				<%=wrapper.close%><%
 			break;
 
@@ -168,9 +168,15 @@
 										<input id="<%=self.id + key%>" type="checkbox" <%=inlineSetting%> data-storeKey="<%=key%>" data-dynamic="1" />
 										<label for="<%=self.id + key%>"><%=sorted[key].value[1]._escapeHTML()%></label>
 									</span>
-									<span class="setting-dynamic-content jsb-light-scrollbars"><a href="<%=sorted[key].value[0]._entityQuotes()%>"><%=sorted[key].value[0]._escapeHTML()%></a></span>
+									<span class="setting-dynamic-content jsb-light-scrollbars">
+										<% if (Utilities.URL.isURL(sorted[key].value[0])) { %>
+											<a href="<%=sorted[key].value[0]._entityQuotes()%>"><%=sorted[key].value[0]._escapeHTML()%></a><%
+										} else { %>
+											<%=sorted[key].value[0]._escapeHTML()%><%
+										} %>
+									</span>
 									<% if (!(key in self.props.default)) { %> 
-										<input type="button" class="setting-dynamic-remove" value="Remove" /><%
+										<input type="button" class="setting-dynamic-delete" value="Delete" /><%
 									} %>
 								</li><%
 							} %>
@@ -179,7 +185,7 @@
 							<input class="setting-dynamic-new-name" type="text" /> <input class="setting-dynamic-new-content trigger-on-enter" type="text" />
 
 							<div class="jsb-align-right">
-								<input type="button" class="setting-dynamic-restore" value="<%=_('settings.restore_defaults')%>" />
+								<input type="button" class="setting-dynamic-restore double-click" value="<%=_('settings.restore_defaults')%>" />
 								<input type="button" class="setting-dynamic-new-save on-enter" value="<%=_('settings.add_item')%>" />
 							</div>
 						</div>

@@ -312,7 +312,7 @@ UI.Page = {
 
 						for (var resourceID in resources)
 							do {
-								hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID]);
+								hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID], ['hide', 'show'._contains(ruleType)]);
 
 								if (hasAffect.hasAffect || !hasAffect.detail)
 									break;
@@ -599,19 +599,18 @@ UI.Page = {
 
 					var loadingPoppy = Poppy.createLoadingPoppy(event.originalEvent.pageX, event.originalEvent.pageY, true, function () {
 						var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
-								ruleListItems = $('<ul>');
+								ruleListItems = $('<ul class="page-rules-container">');
 
 						for (var resourceID in resources) {
 							var rules = resources[resourceID].rulesForResource(isAllowed),
-									ruleLists = {},
-									resourceListItem = $('<li>');
+									ruleLists = {};
+
+							var resourceListItem = Template.create('rules', 'multi-list-resource-item', resources[resourceID], true);
 
 							for (var listName in rules)
 								ruleLists[listName] = rules[listName].rule;
 
-							UI.Rules.buildRuleList(resourceListItem, ruleLists, true, rules, true);
-
-							resourceListItem.append('<div class="horizontal-divider"></div>');
+							UI.Rules.buildRuleList($('.multi-list-page-item-rules', resourceListItem), ruleLists, rules, true);
 
 							ruleListItems.append(resourceListItem);
 						}

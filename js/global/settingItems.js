@@ -242,6 +242,8 @@ Settings.settings = {
 				['#00afba', 'Turquoise'],
 				['#876846', 'Brown'],
 				['#7512b2', 'Purple'],
+				['#e50000', 'Red'],
+				['#000000', 'Black']
 			],
 			default: '#177efb',
 			otherOption: {
@@ -856,7 +858,7 @@ Settings.settings = {
 				onFail: 'updateEasyLists.validate.fail',
 				test: function () {
 					var lastUpdate = Settings.getItem('EasyListLastUpdate'),
-							fiveMinutes = 1000 * 60 * 5;
+							fiveMinutes = TIME.ONE.MINUTE * 5;
 
 					return Date.now() > lastUpdate + fiveMinutes;
 				}
@@ -891,15 +893,7 @@ Settings.settings = {
 			setting: 'enableSnapshots',
 			props: {
 				type: 'boolean',
-				default: true,
-				confirm: {
-					when: false,
-					prompt: 'Do you want to remove snapshots that exist?',
-					onConfirm: function() {
-						Settings.removeItem('Snapshots');
-						alert(_('All snapshots have been removed.'), null, 1);
-					}
-				}
+				default: true
 			}
 		}, {
 			when: {
@@ -934,6 +928,7 @@ Settings.settings = {
 			setting: 'clearSnapshots',
 			props: {
 				type: 'button',
+				classes: 'double-click',
 				onClick: function () {
 					Rules.list.user.rules.snapshot.snapshots.clear();
 				}

@@ -452,24 +452,28 @@ function Command (command, data, event) {
 
 		userScript: {
 			getResource: function (detail) {
-				if (!UserScript.exist(detail.namespace)) {
+				var userScript = UserScript.exist(detail.namespace, detail.meta.parentUserScript);
+
+				if (!userScript) {
 					this.message = null;
 
 					return LogError(detail.namespace + ' does not exist.');
 				}
 
-				if (typeof detail.meta !== 'string') {
+				if (typeof detail.meta.name !== 'string') {
 					this.message = null;
 
-					return LogError([detail.meta + ' is not a string', detail.namespace]);
+					return LogError([detail.meta.name + ' is not a string', detail.namespace]);
 				}
 
-				this.message = UserScript.scripts.getStore(detail.namespace).getStore('resources').get(detail.meta, null);
+				this.message = userScript.getStore('resources').get(detail.meta.name, null);
 			},
 
 			storage: {
 				__storage: function (method, detail) {
-					if (!UserScript.exist(detail.namespace)) {
+					var userScript = UserScript.exist(detail.namespace, detail.meta.parentUserScript);
+
+					if (!userScript) {
 						this.message = null;
 
 						return LogError(detail.namespace + ' does not exist.');
@@ -481,7 +485,7 @@ function Command (command, data, event) {
 						return LogError([detail.meta.key + ' is not a string', method, detail.namespace]);
 					}
 
-					var storage = UserScript.scripts.getStore(detail.namespace).getStore('storage'),
+					var	storage = userScript.getStore('storage'),
 							result = storage[method](detail.meta && detail.meta.key, detail.meta && detail.meta.value);
 
 					this.message = ['keys', 'get']._contains(method) ? result : null;

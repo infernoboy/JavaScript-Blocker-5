@@ -201,15 +201,27 @@
 			}
 
 			&.on-enter {
-				color: #fff;
-				background: -webkit-linear-gradient(top, lighten(@baseColor, 15%), lighten(@baseColor, 2%));
+				color: #fff @important;
+				background: -webkit-linear-gradient(top, lighten(@baseColor, 15%), lighten(@baseColor, 2%)) @important;
 				border-top-color: lighten(@baseColor, 7%) @important;
 				border-left-color: @baseColor @important;
 				border-right-color: @baseColor @important;
-				border-bottom-color: darken(@baseColor, 6%) @important;
+				border-bottom-color: darken(@baseColor, 8%) @important;
 
 				&:active {
-					background: -webkit-linear-gradient(top, lighten(@baseColor, 7%), darken(@baseColor, 6%));
+					background: -webkit-linear-gradient(top, lighten(@baseColor, 7%), darken(@baseColor, 6%)) @important;
+				}
+			}
+
+			&.double-click {
+				&.one-more-time {
+					background: -webkit-linear-gradient(top, darken(red, 5%), darken(red, 10%)) @important;
+					border-color: darken(red, 13%) @important;
+					color: #fff @important;
+
+					&:active {
+						background: -webkit-linear-gradient(top, darken(red, 13%), darken(red, 18%)) @important;
+					}
 				}
 			}
 		}
@@ -512,7 +524,7 @@
 
 		.select-custom-options {
 			li {
-				white-space: pre @important;
+				white-space: nowrap @important;
 				font-size: 0.9em @important;
 				border-bottom: 1px solid rgba(0, 0, 0, 0.08) @important;
 				cursor: pointer @important;

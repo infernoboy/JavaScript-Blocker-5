@@ -172,8 +172,8 @@ Rule.prototype.clear = function () {
 	Rule.event.trigger('rulesWereCleared', this);
 };
 
-Rule.prototype.hasAffectOnResource = function (rule, resource) {
-	var canLoad = resource.canLoad(true);
+Rule.prototype.hasAffectOnResource = function (rule, resource, useHideKinds) {
+	var canLoad = resource.canLoad(true, useHideKinds);
 
 	if (!canLoad.detail)
 		return false;

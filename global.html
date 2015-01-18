@@ -37,62 +37,9 @@
 		<script src="js/global/update.js"></script>
 
 		<script>
-			// Rules.list.blacklist.rules.lock = false;
-
-			// var kinds = Rules.list.blacklist.kind('*');
-
-			// for (var domain in Blacklist.script) {
-			// 	realDomain = domain === '.*' ? '*' : domain;
-
-			// 	domains = kinds.domain(realDomain);
-
-			// 	for (rule in Blacklist.script[domain])
-			// 		domains.set(rule, {
-			// 			regexp: true,
-			// 			action: 4
-			// 		});
-			// }
-
-			// 11
-			// var res = new Resource('script', 'http://a.a/', 'http://a.a/');
-			// var res = new Resource('script', 'http://a.a/', 'http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.a/');
-			// 150
-
 			var ToyStore = new Store('ToyStore', {
 				save: true
 			});
-
-			var group = {
-				group: 'all',
-				items: [
-					{
-						method: 'contains',
-						needle: 'google'
-					},
-					{
-						group: 'any',
-						items: [
-							{
-								method: 'contains',
-								needle: 'analytics'
-							},
-							{
-								method: 'endsWith',
-								needle: 'ga.js'
-							}
-						]
-					}
-				]
-			};
-
-			var resInfo = {
-				"kind":"script",
-				"pageLocation":"http://lion.toggleable.com:160/",
-				"pageProtocol":"http:",
-				"source":"https://lion.toggleable.com:160/test",
-				"isFrame":false
-			};
-
 		</script>
 	</head>
 	<body>

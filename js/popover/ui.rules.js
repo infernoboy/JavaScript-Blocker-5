@@ -107,7 +107,7 @@ UI.Rules = {
 		return groupedRules;
 	},
 
-	buildRuleList: function (view, ruleList, doNotClear, useTheseRules, keepExpanded) {
+	buildRuleList: function (view, ruleList, useTheseRules, keepExpanded) {
 		if (Object._isPlainObject(ruleList)) {
 			var ruleListItem,
 					ruleListItemLI;
@@ -144,7 +144,7 @@ UI.Rules = {
 
 				ruleListItemLI = $('.rule-group-list', ruleListItem);
 
-				UI.Rules.buildRuleList(ruleListItemLI, ruleList[listName], doNotClear, useTheseRules ? useTheseRules[listName] : null, keepExpanded);
+				UI.Rules.buildRuleList(ruleListItemLI, ruleList[listName], useTheseRules ? useTheseRules[listName] : null, keepExpanded);
 
 				ruleListItem.appendTo(ruleListContainer);
 			}
@@ -174,16 +174,16 @@ UI.Rules = {
 
 		var domainGrouped = UI.Rules.groupRulesByDomain(useTheseRules ? useTheseRules : ruleList.rules.all()),
 				container = $('<div>'),
+				editable = (ruleList === globalPage.Rules.list.temporary || ruleList === globalPage.Rules.list.user),
 				ruleTimeoutIndex = 1,
 				domainTimeoutIndex = 1,
 				typeTimeoutIndex = 1;
 
 		view
 			.attr('data-ruleListItems', '1')
-			.data('ruleList', ruleList);
-
-		if (!doNotClear)
-			view.html('<p class="jsb-info">Loading rules... (this may take a while if you are trying to load Easy Rules)</p>');
+			.data('ruleList', ruleList)
+			.empty()
+			.append(container);
 
 		var types = ['page', 'domain', 'notPage', 'notDomain'];
 
@@ -197,31 +197,39 @@ UI.Rules = {
 
 			ruleGroupType = Template.create('rules', 'rule-group-type', {
 				type: type,
-				editable: (ruleList === globalPage.Rules.list.temporary || ruleList === globalPage.Rules.list.user),
+				editable: editable,
 				expander: keepExpanded ? 0 : typeExpander
-			});
+			}, true);
 			
-			typeUL = ruleGroupType.filter('.rule-group-type');
+			typeUL = ruleGroupType.find('.rule-group-type');
+
+			ruleGroupType.appendTo(container);
 
 			for (domain in domainGrouped[type]) {
 				domainExpander = typeExpander + '-ruleGroupDomain-' + domain;
 
 				domainListItem = Template.create('rules', 'domain-list-item', {
 					expander: keepExpanded ? 0 : domainExpander,
-					domain: domain
+					domain: domain,
+					editable: editable
 				});
 
 				domainUL = $('.rule-group-domain', domainListItem);
+
+				typeUL.append(domainListItem);
 
 				for (kind in domainGrouped[type][domain]) {
 					kindExpander = domainExpander + '-ruleGroupKind-' + kind;
 
 					kindListItem = Template.create('rules', 'kind-list-item', {
 						expander: keepExpanded ? 0 : kindExpander,
-						kind: kind
+						kind: kind,
+						editable: editable
 					});
 
 					kindUL = $('.rule-group-kind', kindListItem);
+
+					domainUL.append(kindListItem);
 
 					for (rule in domainGrouped[type][domain][kind]) {
 						ruleListItem = Template.create('rules', 'rule-list-item', {
@@ -229,43 +237,28 @@ UI.Rules = {
 							kind: kind,
 							rule: rule,
 							ruleInfo: domainGrouped[type][domain][kind][rule],
+							editable: editable
 						});
 
 						setTimeout(function (kindUL, ruleListItem) {
 							kindUL.append(ruleListItem);
-						}, 0.05 * ruleTimeoutIndex++, kindUL, ruleListItem);
+						}, 0.5 * ruleTimeoutIndex++, kindUL, ruleListItem);
 					}
-
-					setTimeout(function (kindListItem, kindUL, domainUL) {
-						kindListItem.append(kindUL);
-
-						domainUL.append(kindListItem);
-					}, 0.05 * domainTimeoutIndex++, kindListItem, kindUL, domainUL);
 				}
-
-				setTimeout(function (domainListItem, domainUL, typeUL) {
-					domainListItem.append(domainUL);
-
-					typeUL.append(domainListItem);
-				}, 0.05 * typeTimeoutIndex++, domainListItem, domainUL, typeUL);
 			}
 
-			setTimeout(function (ruleTimeoutIndex, ruleGroupType, container) {
-				if (!ruleGroupType.filter('.rule-group-type').is(':empty'))
-					ruleGroupType.appendTo(container);
-			}, 0.05 * ruleTimeoutIndex, ruleTimeoutIndex, ruleGroupType, container);
+			setTimeout(function (ruleGroupType) {
+				if (ruleGroupType.find('.rule-group-type').is(':empty'))
+					ruleGroupType.remove();
+			}, 0.5 * ruleTimeoutIndex, ruleGroupType);
 		}
 
 		setTimeout(function (view, ruleList, container) {
-			view.empty().append(container);
-
-			setTimeout(function (view) {
-				UI.Rules.event.trigger('rulesFinishedBuilding', {
-					view: view,
-					hasRules: ruleTimeoutIndex !== 1
-				});
-			}, 0, view);
-		}, 0.06 * ruleTimeoutIndex, view, ruleList, container);
+			UI.Rules.event.trigger('rulesFinishedBuilding', {
+				view: view,
+				hasRules: ruleTimeoutIndex !== 1
+			});
+		}, 0.55 * ruleTimeoutIndex, view, ruleList, container);
 
 		UI.Rules.noRules.toggleClass('jsb-hidden', ruleTimeoutIndex !== 1);
 	},
@@ -276,13 +269,13 @@ UI.Rules = {
 		input
 			.attr({
 				type: 'button',
-				value: 'Remove'
+				value: 'Delete'
 			})
-			.addClass('rule-item-remove blend-in');
+			.addClass('rule-item-delete blend-in double-click');
 
 		rules
 			.addClass('rule-item-processed')
-			.find('.rule-item-remove')
+			.find('.rule-item-delete-container')
 			.append(input);
 
 		Poppy.setAllPositions();
@@ -291,7 +284,7 @@ UI.Rules = {
 	events: {
 		rules: function () {
 			UI.container
-				.on('click', '.rule-item-remove', function (event) {
+				.on('click', '.rule-item-delete', function (event) {
 					var self = $(this),
 							view = self.parents('*[data-ruleListItems]'),
 							ruleList = view.data('ruleList'),
@@ -303,7 +296,7 @@ UI.Rules = {
 					ruleList.__remove(type, kind, domain, rule);
 
 					if (view.is('.ui-view'))
-						UI.Rules.buildRuleList(view, ruleList, true);
+						UI.Rules.buildRuleList(view, ruleList);
 					else
 						Poppy.closeAll();
 				});
@@ -364,7 +357,7 @@ UI.Rules = {
 						for (var listName in useTheseRules)
 							ruleList[listName] = globalPage.Rules.list[listName];
 
-						UI.Rules.buildRuleList(ruleContainer, ruleList, false, useTheseRules);
+						UI.Rules.buildRuleList(ruleContainer, ruleList, useTheseRules);
 
 						multiListPageItem.appendTo(pageRulesContainer);
 					});
@@ -391,16 +384,14 @@ UI.Rules = {
 			}
 
 			if (ruleList)
-				UI.Rules.buildRuleList(toView, ruleList, false, useTheseRules);
+				UI.Rules.buildRuleList(toView, ruleList, useTheseRules);
 		},
 
 		elementWasAdded: function (event) {
-			if (event.detail.querySelectorAll) {
-				var rules = $('.rule-group-type[data-editable="1"] .rule-group-kind li:not(.rule-item-processed)', event.detail);
+			var rules = $('.rule-item-container[data-editable="1"]:not(.rule-item-processed)', UI.container);
 
-				if (rules.length)
-					UI.Rules.processRules(rules);
-			}
+			if (rules.length)
+				UI.Rules.processRules(rules);
 		}
 	}
 };

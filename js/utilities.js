@@ -1078,6 +1078,12 @@ var Extension = {
 	},
 
 	String: {
+		_pluralize: {
+			value: function (number) {
+				return number === 1 ? this : this + 's';
+			}
+		},
+
 		_lcut: {
 			value: function (length, prefix) {
 				var trimmed = this._reverse().substr(0, length)._reverse();

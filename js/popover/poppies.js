@@ -62,7 +62,7 @@ Object._extend(Poppy.scripts, {
 				globalPage.Upgrade.importRulesFromJSB4(rules);
 			})
 
-			.on('click', '#rule-menu-remove-temporary', function () {
+			.on('click', '#rule-menu-delete-temporary', function () {
 				globalPage.Rules.list.temporary.clear();
 
 				Poppy.closeAll();
