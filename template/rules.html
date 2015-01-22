@@ -1,5 +1,10 @@
 <noscript id="rule-container">
-	<div id="rule-toolbar"></div>
+	<div id="rule-toolbar">
+		<div id="rule-domain-search-container">
+			<label for="rule-domain-search" class="jsb-label"><%=_('rules.filter')%>:&nbsp;</label>
+			<input type="search" id="rule-domain-search" incremental="incremental" placeholder="<%=_('rules.domain_or_page')%>"/>
+		</div>
+	</div>
 	<div id="rule-views-container" class="ui-view-container">
 		<p id="rule-views-no-rules" class="jsb-info jsb-centered jsb-embossed"><%=_('rules.no_rules')%></p>
 		<div id="rule-views"></div>
@@ -12,7 +17,7 @@
 
 <noscript id="multi-list-item">
 	<li class="multi-list-item">
-		<header data-expander="<%=self.expander%>">
+		<header data-expander="<%=self.expander%>" class="jsb-light-scrollbars">
 			<h4><%=self.listName._startsWith('$') ? UI.Rules.getEasyListName(self.listName) : _('rules.' + self.listName)%></h4>
 		</header>
 		<div class="rule-group-list" data-listName="<%=self.listName%>"></div>
@@ -34,7 +39,7 @@
 </noscript>
 
 <noscript id="rule-group-type">
-	<header data-expander="<%=self.expander%>">
+	<header data-expander="<%=self.expander%>"  class="jsb-light-scrollbars">
 		<h4><%=_('rules.type.' + self.type)%></h4>
 	</header>
 	<ul class="rule-group-type" data-type="<%=self.type%>" data-editable="<%=self.editable ? '1' : '0'%>"></ul>
@@ -42,7 +47,7 @@
 
 <noscript id="domain-list-item">
 	<li>
-		<header data-expander="<%=self.expander%>">
+		<header data-expander="<%=self.expander%>"  class="jsb-light-scrollbars">
 			<h4><%=(self.domain === '*' ? _('rules.all_domains') : self.domain)._escapeHTML()%></h4>
 		</header>
 		<ul class="rule-group-domain" data-domain="<%=self.domain._entityQuotes()%>" data-editable="<%=self.editable ? '1' : '0'%>"></ul>
@@ -51,7 +56,7 @@
 
 <noscript id="kind-list-item">
 	<li>
-		<header data-expander="<%=self.expander%>">
+		<header data-expander="<%=self.expander%>"  class="jsb-light-scrollbars">
 			<h4><%=_('view.page.host.kind.' + self.kind)%></h4>
 		</header>
 		<ul class="rule-group-kind" data-kind="<%=self.kind%>" data-editable="<%=self.editable ? '1' : '0'%>"></ul>
@@ -78,7 +83,11 @@
 						}
 
 						if (self.kind._contains('user_script')) {
-							domain = globalPage.UserScript.scripts.getStore(domain).getStore('attributes').get('meta', {}).name || 'UNKNOWN';
+							try {
+								domain = globalPage.UserScript.getAttribute(domain, 'meta').name;
+							} catch (error) {
+								domain = 'DELETED - ' + domain;
+							}
 						} else if (self.kind._contains('special')) {
 							domain = _('special.' + domain + '.' + (isAllowing ? 'allowed' : 'blocked'), [globalPage.Special.enabled[domain] ? globalPage.Special.enabled[domain].value : '']);
 						}

@@ -522,7 +522,7 @@ var Store = (function () {
 		return this.move(key, newKey).set(newKey, value);
 	};
 
-	Store.prototype.set = function (key, value) {
+	Store.prototype.set = function (key, value, setNull) {
 		if (this.lock) {
 			if (value instanceof Store) {
 				value.lock = true;
@@ -533,7 +533,7 @@ var Store = (function () {
 			return this;
 		}
 
-		if (value === null || value === undefined)
+		if ((value === null && !setNull) || value === undefined)
 			return this;
 
 		setTimeout(function (store) {
@@ -595,7 +595,7 @@ var Store = (function () {
 
 				var value = this.data[key].value;
 
-				if (!(value instanceof Store)) {
+				if (value !== null && !(value instanceof Store)) {
 					if (Store.isStore(value)) {
 						value.name = (this.name || this.id) + ',' + key;
 						value.props = {};
@@ -616,7 +616,7 @@ var Store = (function () {
 						return value;
 					else
 						return Object._copy(value, defaultValue);
-				} else if (!value.destroyed)
+				} else if (value === null || !value.destroyed)
 					return value;
 			} else if (defaultValue !== undefined && defaultValue !== null)
 				return this.set(key, defaultValue).get(key, null, asReference);
@@ -856,7 +856,10 @@ var Store = (function () {
 		}
 
 		var stringable = {
-			STORE: {}
+			STORE: {},
+			props: {
+				lock: this.lock
+			}
 		};
 
 		for (var key in this.data) {

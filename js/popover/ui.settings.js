@@ -1,6 +1,8 @@
 "use strict";
 
 UI.Settings = {
+	__hidden: ['userScript-edit'],
+
 	init: function () {
 		UI.Settings.view = $('#main-views-setting', UI.view.views);
 
@@ -21,6 +23,7 @@ UI.Settings = {
 
 		for (var i = 0; i < sections.length; i++)
 			viewSwitcherData.views['#setting-views-' + sections[i]] = {
+				hide: UI.Settings.__hidden._contains(sections[i]),
 				value: _('settings.' + sections[i])
 			};
 
@@ -31,6 +34,8 @@ UI.Settings = {
 		for (var i = 0; i < sections.length; i++)
 			UI.view.create('setting-views', sections[i], UI.Settings.views);
 
+		UI.Settings.userScriptEdit = $('#setting-views-userScript-edit', UI.Settings.views);
+
 		UI.Settings.events.viewSwitcher();
 
 		try {
@@ -40,6 +45,10 @@ UI.Settings = {
 		}
 
 		UI.Settings.views
+			.on('input', '.user-script-content', function () {
+				this.setAttribute('data-blockViewSwitch', 1);
+			})
+
 			.on('click', '*[data-settingButton]', function (event) {
 				var settingName = this.getAttribute('data-settingButton'),
 						setting = Settings.map[settingName];
@@ -156,6 +165,111 @@ UI.Settings = {
 		}
 	},
 
+	bindUserScriptSettings: function (userScriptSettings) {
+		for (var i = userScriptSettings.length; i--;) {
+			var element = $(userScriptSettings[i]);
+
+			if (element.attr('data-userScriptSettingsBound'))
+				return;
+
+			try {
+				var attributeValue = globalPage.UserScript.getAttribute(element.attr('data-userScript'), element.attr('data-attribute'));
+			} catch (eror) {
+				return;
+			}
+
+			element.attr('data-userScriptSettingsBound', 1);
+
+			element
+				.prop('checked', attributeValue)
+				.change(function () {
+					try {
+						globalPage.UserScript.setAttribute(this.getAttribute('data-userScript'), this.getAttribute('data-attribute'), this.checked);
+					} catch (error) {}
+				});
+		}
+	},
+
+	bindUserScriptStorageEdit: function (userScriptStorages) {
+		for (var i = userScriptStorages.length; i--;) {
+			var element = $(userScriptStorages[i]);
+
+			if (element.attr('data-userScriptStorageBound'))
+				return;
+
+			try {
+				var storageItem = globalPage.UserScript.getStorageItem(element.attr('data-userScript'), element.attr('data-storageKey'));
+			} catch (error) {
+				return;
+			}
+
+			try {
+				var storageItemValue = JSON.stringify(storageItem);
+			} catch (e) {
+				var storageItemValue = '';
+			}
+
+			element.attr('data-userScriptStorageBound', 1);
+
+			if (element.is('.user-script-storage-item-delete'))
+				element
+					.parent()
+					.on('click', '.user-script-storage-item-delete', function () {
+						var userScriptNS = this.getAttribute('data-userScript');
+
+						try {
+							var storage = globalPage.UserScript.getStorageItem(userScriptNS);
+						} catch (error) {
+							return;
+						}
+
+						var result = UI.Settings.saveUserScriptEdit(this, true);
+
+						if (result) {
+							storage.remove(this.getAttribute('data-storageKey'));
+
+							UI.Settings.editUserScript(userScriptNS);
+						}
+					});
+			else
+				element
+					.val(storageItemValue)
+					.on('blur keypress', function (event) {
+						if (this.disabled || (event.which && event.which !== 3 && event.which !== 13))
+							return;
+
+						try {
+							var storage = globalPage.UserScript.getStorageItem(this.getAttribute('data-userScript'));
+						} catch (error) {
+							return;
+						}
+
+						if (this.value === 'undefined') {
+							storage.remove(this.getAttribute('data-storageKey'));
+
+							this.disabled = true;
+
+							this.blur();
+						} else
+							try {
+								storage.set(this.getAttribute('data-storageKey'), JSON.parse(this.value), true);
+
+								this.classList.add('jsb-color-allowed');
+
+								setTimeout(function (self) {
+									self.classList.remove('jsb-color-allowed');
+								}, 1500, this);
+							} catch (e) {
+								this.classList.add('jsb-color-blocked');
+
+								setTimeout(function (self) {
+									self.classList.remove('jsb-color-blocked');
+								}, 1500, this);
+							}
+					});
+		}
+	},
+
 	bindDynamicSettingNew: function (containers) {
 		for (var i = containers.length; i--;) {
 			var container = $(containers[i]);
@@ -186,8 +300,8 @@ UI.Settings = {
 					}, '$' + Utilities.Token.generate());
 
 					if (success !== true) {
-						var position = $(this).offset(),
-								poppy = new Poppy(position.left - 10, position.top + 10, true);
+						var offset = $(this).offset(),
+								poppy = new Poppy(Math.floor(offset.left - 10), Math.floor(offset.top + 10), true);
 
 						poppy.setContent(Template.create('main', 'jsb-readable', {
 							string: _(success)
@@ -200,6 +314,9 @@ UI.Settings = {
 	},
 
 	createList: function (container, settings, disabled) {
+		if (!settings)
+			return;
+
 		var setting,
 				settingItem,
 				settingElement,
@@ -212,12 +329,15 @@ UI.Settings = {
 		for (var i = 0; i < settings.length; i++) {
 			setting = settings[i];
 
-			if (setting.divider)
+			if (setting.customView)
+				setting.customView(container);
+
+			else if (setting.divider)
 				container.append(Template.create('settings', 'setting-section-divider'));
 
 			else if (setting.header)
 				container.append(Template.create('settings', 'setting-section-header', {
-					header: setting.header,
+					header: _('setting.' + setting.header),
 					level: setting.level
 				}));
 
@@ -288,13 +408,98 @@ UI.Settings = {
 		view.empty().append(container);
 	},
 
+	repopulateActiveSection: function (force) {
+		var activeSettingView = $('.active-view', UI.Settings.views),
+				focusedTextInput = $('textarea:focus, input[type="text"]:focus', activeSettingView);
+
+		if (force || (!focusedTextInput.length && activeSettingView.is(':not(#setting-views-userScript-edit)')))
+			UI.Settings.populateSection(activeSettingView, $('.active-view', UI.Settings.views).attr('data-section'));
+	},
+
+	saveUserScriptEdit: function (button, noSwitch) {
+		var userScript = $('.user-script-content', UI.Settings.views),
+				userScriptContent = userScript.val(),
+				result = globalPage.UserScript.add(userScriptContent);
+
+		if (result === true) {
+			userScript.removeAttr('data-blockViewSwitch');
+
+			if (!noSwitch)
+				UI.view.switchTo('#setting-views-userScripts');
+		} else if (button) {
+			var offset = $(button).offset(),
+					poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
+
+			poppy.setContent(Template.create('main', 'jsb-readable', {
+				string: _('setting.saveUserScript.fail')
+			})).show();
+		}
+
+		return result === true;
+	},
+
+	editUserScript: function (userScriptNS) {
+		UI.Settings.userScriptEdit.attr('data-userScriptNS', userScriptNS);
+
+		UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
+			event.preventDefault();
+		}, true);
+
+		UI.view.switchTo('#setting-views-userScript-edit');
+
+		try {
+			var meta = globalPage.UserScript.getAttribute(userScriptNS, 'meta'),
+					script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
+					storage = globalPage.UserScript.getStorageItem(userScriptNS);
+		} catch (e) {
+			return;
+		}
+
+		var list = $('ul', UI.Settings.userScriptEdit);
+
+		$('.setting-section-divider', list).nextAll().addBack().remove();
+
+		list
+			.append(Template.create('settings', 'setting-section-divider'))
+			.append(Template.create('settings', 'setting-section-header', {
+				header: _('setting.userScript.storage', [meta.name._escapeHTML()])
+			}))
+			.append(Template.create('settings', 'setting-section-description', {
+				id: 'description-' + Utilities.Token.generate(),
+				description: _('setting.newUserScriptStorageItem.description')
+			}));
+
+		$('.user-script-content', UI.Settings.userScriptEdit).val(script);
+
+		if (storage && !storage.isEmpty()) {
+			var sortedStorage = storage.keys().sort().reverse();
+
+			for (var i = sortedStorage.length; i--;)
+				list.append(Template.create('settings', 'user-script-storage-item', {
+					userScript: userScriptNS,
+					key: sortedStorage[i],
+					value: storage.get(sortedStorage[i])
+				}));
+		}
+
+		var element = UI.Settings.createElementForSetting(Settings.map.newUserScriptStorageItem, null, true),
+				wrapper = Template.create('settings', 'setting-section-setting', {
+					setting: 'newUserScriptStorageItem'
+				}, true);
+
+		$('li', wrapper).append(element.children());
+
+		list.append(wrapper.children());
+	},
+
 	events: {
 		viewSwitcher: function () {
 			UI.Settings.viewSwitcher
 				.on('click', 'li', function (event) {
-					UI.view.switchTo(this.getAttribute('data-view'));
+					var viewID = this.getAttribute('data-view');
 
-					Settings.setItem('settingCurrentView', this.getAttribute('data-view'));
+					if (!viewID._endsWith('userScript-edit'))
+						Settings.setItem('settingCurrentView', viewID);
 				});
 		},
 
@@ -305,6 +510,8 @@ UI.Settings = {
 		elementWasAdded: function (event) {
 			if (event.detail.querySelectorAll) {
 				UI.Settings.bindInlineSettings(event.detail.querySelectorAll('*[data-inlineSetting]'));
+				UI.Settings.bindUserScriptSettings(event.detail.querySelectorAll('*[data-attribute]'));
+				UI.Settings.bindUserScriptStorageEdit(event.detail.querySelectorAll('*[data-storageKey]'));
 				UI.Settings.bindDynamicSettingNew(event.detail.querySelectorAll('.setting-dynamic-new-container'));
 			}
 		},
@@ -312,6 +519,19 @@ UI.Settings = {
 		viewWillSwitch: function (event) {
 			if (!event.detail.to.id._startsWith('#setting-views'))
 				return;
+
+			if ($('.user-script-content', UI.Settings.userScriptEdit).attr('data-blockViewSwitch')) {
+				event.preventDefault();
+
+				var poppy = new Poppy(0.5, 0, true, 'user-script-confirm-view-switch');
+
+				poppy
+					.modal()
+					.setContent(Template.create('poppy', 'user-script-confirm-view-switch', {
+						viewID: event.detail.to.id
+					}))
+					.show();
+			}
 
 			UI.Settings.populateSection(event.detail.to.view, event.detail.to.view.attr('data-section'));
 		}

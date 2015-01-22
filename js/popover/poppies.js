@@ -56,6 +56,12 @@ Object._extend(Poppy.scripts, {
 
 	'rule-menu': function (poppy) {
 		poppy.content
+			.on('click', '#rule-menu-open-snapshots', function () {
+				Poppy.closeAll();
+				
+				UI.view.switchTo('#main-views-snapshot');
+			})
+
 			.on('click', '#rule-menu-import-rules-from-four', function () {
 				var rules = prompt('Paste the exported rule backup below. This is obtained by clicking Rules > Backup > Export from JSB 4. You must have made a donation or unlocked features without contributing.');
 
@@ -144,6 +150,57 @@ Object._extend(Poppy.scripts, {
 				poppy.close();
 
 				UI.Rules.setEasyRulesList(easyList);
+			});
+	},
+
+	'user-script-storage-add': function (poppy) {
+		var key = $('.user-script-storage-add-key', poppy.content).focus(),
+				value = $('.user-script-storage-add-value', poppy.content);
+
+		poppy.content
+			.on('click', '.user-script-storage-add-add', function () {
+				var keyValue = $.trim(key.val()),
+						valueValue = $.trim(value.val());
+
+				if (!keyValue.length || !valueValue.length)
+					return keyValue.length ? value.focus() : key.focus();
+
+				try {
+					valueValue = JSON.parse(valueValue);
+				} catch (e) {
+					return value.focus();
+				}
+
+				var userScriptNS = UI.Settings.userScriptEdit.attr('data-userScriptNS');
+
+				try {
+					var storage = globalPage.UserScript.getStorageItem(userScriptNS);
+				} catch (error) {
+					return;
+				}
+
+				var result = UI.Settings.saveUserScriptEdit(this, true);
+
+				if (result) {
+					storage.set(keyValue, valueValue);
+
+					UI.Settings.editUserScript(userScriptNS);
+
+					poppy.close();
+				}
+			});
+	},
+
+	'user-script-confirm-view-switch': function (poppy) {
+		poppy.content
+			.on('click', 'input', function () {
+				if (this.className._contains('switch-switch')) {
+					$('.user-script-content', UI.Settings.userScriptEdit).removeAttr('data-blockViewSwitch');
+
+					UI.view.switchTo(this.getAttribute('data-viewID'));
+				}
+
+				poppy.close();
 			});
 	},
 

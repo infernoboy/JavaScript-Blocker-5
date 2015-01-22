@@ -104,6 +104,20 @@
 			}
 		}
 
+		.generic-menu {
+			&-options li {
+				margin-bottom: 5px;
+
+				ul {
+					margin-left: 18px;
+				}
+			}
+			
+			&-menu input:last-child {
+				margin-right: 0
+			}
+		}
+
 		pre {
 			font-size: 8pt;
 
@@ -150,6 +164,10 @@
 			font-size: 110%;
 		}
 
+		strong {
+			font-weight: 500;
+		}
+
 		a,
 		.select-custom-options li {
 			color: @baseColor;
@@ -172,8 +190,13 @@
 				overflow: hidden;
 			}
 
+			&:not(.group-collapsed) + * {
+				opacity: 1;
+			}
+
 			> * {
 				display: inline;
+				white-space: nowrap;
 			}
 
 			&:not(.keep-expanded) {

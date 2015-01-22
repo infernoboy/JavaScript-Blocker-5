@@ -63,7 +63,7 @@
 <noscript id="rule-menu">
 	<h3 class="jsb-centered"><%=_('view_toolbar.rules')%></h3>
 	<div id="rule-menu" class="generic-menu">
-		<ul class="generic-menu-options">
+		<ul class="generic-menu-options generic-menu-menu">
 			<% if (!globalPage.Rules.list.temporary.rules.isEmpty()) { %>
 				<li class="jsb-align-right">
 					<input type="button" id="rule-menu-delete-temporary" value="<%=_('rule_menu.delete_temporary')%>" />
@@ -71,6 +71,7 @@
 				</li>
 			<% } %>
 			<li class="jsb-align-right">
+				<input type="button" id="rule-menu-open-snapshots" value="<%=_('view_toolbar.snapshots')%>" />
 				<input type="button" id="rule-menu-import-rules-from-four" value="Import Rules From JSB 4" />
 			</li>
 		</ul>
@@ -82,23 +83,23 @@
 	<div class="generic-menu">
 		<ul class="generic-menu-options">
 			<li>
-				<h3>Backup</h3>
+				<h3><%=_('setting_menu.backup')%></h3>
 			</li>
 			<li>
 				<ul class="generic-menu-options">
 					<li>
-						<label>Export file:</label>&nbsp;
-						<input id="setting-menu-backup-export" type="button" value="Export" />
+						<label><%=_('setting_menu.export_file')%>:</label>&nbsp;
+						<input id="setting-menu-backup-export" type="button" value="<%=_('setting_menu.export')%>" />
 					</li>
 					<li>
-						<span class="jsb-readable">A file called <b>Unknown</b> will be saved to your downloads folder. You can rename it to whatever you wish.</span>
+						<span class="jsb-readable"><%=_('setting_menu.export.description')%></span>
 						<div class="horizontal-divider"></div>
 					<li>
-						<label>Import file:</label>&nbsp;
-						<input id="setting-menu-backup-import" type="file" value="Import" />
+						<label><%=_('setting_menu.import_file')%>:</label>&nbsp;
+						<input id="setting-menu-backup-import" type="file" value="<%=_('setting_menu.import')%>" />
 					</li>
 					<li>
-						<span class="jsb-readable">You'll have to drag and drop the backup file into the space above. Safari doesn't allow popovers to open a choose file dialog.</span>
+						<span class="jsb-readable"><%=_('setting_menu.import.description')%></span>
 					</li>
 				</ul>
 				<div class="horizontal-divider"></div>
@@ -222,7 +223,22 @@
 <noscript id="change-log">
 	<h3 class="jsb-centered"><%=_('change_log', [self.version])%></h3>
 	<div id="change-log" class="jsb-info jsb-readable"><%=self.changeLog.html()%></div>
-</div>
+</noscript>
+
+<noscript id="user-script-storage-add">
+	<p class="jsb-info"><%=_('setting.newUserScriptStorageItem.json')%></p>
+	<input type="text" class="user-script-storage-add-key trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.key')%>" />:&nbsp;
+	<input type="text" class="user-script-storage-add-value trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.value')%>" />&nbsp;
+	<input type="button" class="user-script-storage-add-add on-enter" value="<%=_('setting.newUserScriptStorageItem.subLabel')%>" />
+</noscript>
+
+<noscript id="user-script-confirm-view-switch">
+	<p class="jsb-info"><%=_('setting.saveUserScript.unsaved')%></p>
+	<div class="jsb-align-right">
+		<input type="button" class="user-script-confirm-view-switch-cancel" value="<%=_('Cancel')%>" />&nbsp;
+		<input type="button" class="user-script-confirm-view-switch-switch" value="<%=_('Switch')%>" data-viewID="<%=self.viewID%>" />
+	</div>
+</noscript>
 
 
 <noscript id="update-150106">

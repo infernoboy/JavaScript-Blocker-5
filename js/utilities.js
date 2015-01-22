@@ -213,7 +213,69 @@ var Utilities = {
 		};
 
 		return humanTime;
-	},	
+	},
+
+	Queue: (function () {
+		var Queue = function Queue (delay) {
+			this.__stopped = false;
+
+			this.delay = typeof delay === 'number' ? delay : 0;
+			
+			this.clear();
+		};
+
+		Queue.prototype.push = function (fn, args) {			
+			this.queue.push([fn, args || []]);
+		};
+
+		Queue.prototype.start = function () {
+			if (this.__started)
+				return;
+
+			this.__stopped = false;
+			this.__started = true;
+
+			for (var b = this.queue.length; this.index < b; this.index++) {
+				if (!this.__started)
+					break;
+
+				this.timers[this.index] = setTimeout(function (self, index, queued) {
+					if (self.__started) {
+						self.queue.shift();
+
+						queued[0].apply(self, queued[1]);
+					} else if (self.__stopped === false) {
+						self.__stopped = true;
+
+						self.index = 0;
+					}
+
+					delete self.timers[index];
+				}, this.delay * this.index, this, this.index, this.queue[this.index]);
+			}
+		};
+		
+		Queue.prototype.stop = function () {
+			this.__started = false;
+
+			var keys = Object.keys(this.timers || {});
+
+			for (var i = 1, b = keys.length; i < b; i++)
+				clearTimeout(this.timers[keys[i]]);
+
+			this.timers = {};
+		};
+
+		Queue.prototype.clear = function () {
+			this.stop();
+
+			this.queue = [];
+			this.index = 0;
+			this.timers = {};
+		}
+
+		return Queue;
+	})(),
 
 	Group: {
 		NONE: 0,

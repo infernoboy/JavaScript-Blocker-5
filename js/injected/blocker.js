@@ -147,6 +147,11 @@ var _ = (function () {
 var Handler = {
 	event: new EventListener,
 
+	checkPageType: function () {
+		if (BLOCKED_ELEMENTS.length === 1 && ['VIDEO', 'EMBED']._contains(BLOCKED_ELEMENTS[0].nodeName.toUpperCase()))
+			Handler.injectStylesheet();
+	},
+
 	setPageLocation: function () {
 		Page.info.location = Utilities.Page.getCurrentLocation();
 		Page.info.locations = [Page.info.location];
@@ -484,6 +489,11 @@ var Element = {
 		if (kind === 'script' && Special.isEnabled('inline_script_execution'))
 			return false;
 
+		if (kind === 'embed')
+			var content = element.outerHTML;
+		else
+			var content = element.innerHTML || element.src || element.outerHTML || element.textContent;
+
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {			
 			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element));
 
@@ -501,11 +511,11 @@ var Element = {
 				element.removeAttribute('data-jsbAllowAndIgnore');
 
 				if (!globalSetting.hideInjected)
-					Page.unblocked.pushSource(kind, element.innerHTML || element.src || element.outerHTML || element.textContent, {
+					Page.unblocked.pushSource(kind, content, {
 						action: -1
 					});
 			} else
-				Page.unblocked.pushSource(kind, element.innerHTML || element.src  || element.outerHTML || element.textContent, {
+				Page.unblocked.pushSource(kind, content, {
 					action: -1
 				});
 
@@ -888,6 +898,8 @@ if (!globalSetting.disabled) {
 
 		if (Page.info.isFrame)
 			window.addEventListener('beforeunload', Handler.unloadedFrame, true);
+
+		setTimeout(Handler.checkPageType, 1000);
 	}
 } else {
 	Page.info.disabled = {

@@ -63,6 +63,7 @@
 				<%=wrapper.close%>
 				<%=wrapper.right%>
 					<input type="button" id="<%=self.id%>" class="<%=self.setting.props.classes || ''%>" value="<%=subLabel%>" data-settingButton="<%=self.setting.setting%>" />
+					<%=helpHTML%>
 				<%=wrapper.close%><%
 			break;
 
@@ -176,7 +177,7 @@
 										} %>
 									</span>
 									<% if (!(key in self.props.default)) { %> 
-										<input type="button" class="setting-dynamic-delete" value="Delete" /><%
+										<input type="button" class="setting-dynamic-delete" value="<%=_('Delete')%>" /><%
 									} %>
 								</li><%
 							} %>
@@ -194,4 +195,56 @@
 			break;
 		}
 	%>
+</noscript>
+
+<noscript id="user-script-item">
+	<li class="setting-section-setting user-script-item <%=self.index > 0 ? 'dividing-border' : ''%>">
+		
+		<div class="setting-section-setting-left">
+			<p class="jsb-info"><b><%=self.attributes.get('meta').name._escapeHTML()%></b></p>
+			<% if (self.attributes.get('canBeUpdated')) { %>
+				<ul class="generic-menu-options generic-menu-menu">
+					<li>
+						<input type="checkbox" id="<%=self.id%>-auto-update" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="autoUpdate" /> <label for="<%=self.id%>-auto-update">Enable automatic updating</label>
+					</li>
+					<li>
+						<input type="checkbox" id="<%=self.id%>-developer" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="developerMode" /> <label for="<%=self.id%>-developer">Enable developer mode</label>
+					</li>
+					<li>
+						<p class="user-script-updated jsb-info jsb-label"><%=_('setting.userScripts.updated', [(new Date(self.attributes.get('lastUpdate'))).toLocaleString()])%></p>
+					</li>
+				</ul><%
+			} else { %>
+				<p class="jsb-info jsb-label jsb-smaller"><%=_('setting.userScript.cannotUpdate')%></p><%
+			} %>
+		</div>
+		<div class="setting-section-setting-right">
+			<input type="button" class="user-script-edit" value="<%=_('view.page.host.edit')%>" data-userScript="<%=self.key._entityQuotes()%>" />&nbsp;
+			<input type="button" class="user-script-delete double-click jsb-color-blocked" value="<%=_('Delete')%>" data-userScript="<%=self.key._entityQuotes()%>" />
+		</div>
+	</li>
+</noscript>
+
+<noscript id="user-script-edit">
+	<li class="setting-section-setting user-script-edit">
+		<div class="setting-section-setting-full">
+			<textarea class="user-script-content"></textarea>
+		</div>
+	</li>
+</noscript>
+
+<noscript id="user-script-storage">
+	<li class="setting-section-setting user-script-storage">
+		<ul></ul>
+	</li>
+</noscript>
+
+<noscript id="user-script-storage-item">
+	<li class="setting-section-setting user-script-storage-item">
+		<div class="setting-section-setting-left"><%=self.key._escapeHTML()%>:&nbsp;</div>
+		<div class="setting-section-setting-right">
+			<input type="text" class="user-script-storage-item-value" data-userScript="<%=self.userScript._entityQuotes()%>" data-storageKey="<%=self.key._entityQuotes()%>" />&nbsp;
+			<input type="button" value="<%=_('Delete')%>" class="user-script-storage-item-delete double-click jsb-color-blocked" data-userScript="<%=self.userScript._entityQuotes()%>" data-storageKey="<%=self.key._entityQuotes()%>" />&nbsp;
+		</div>
+	</li>
 </noscript>

@@ -86,13 +86,8 @@ var Settings = {
 			});
 
 		if (!event.key || !event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')
-			if (window.UI && UI.Settings && UI.Settings.view.is('.active-view')) {
-				var activeSettingView = $('.active-view', UI.Settings.views),
-						focusedTextInput = $('textarea:focus, input[type="text"]:focus', activeSettingView);
-
-				if (!focusedTextInput.length)
-					UI.Settings.populateSection(activeSettingView, $('.active-view', UI.Settings.views).attr('data-section'));
-			}
+			if (window.UI && UI.Settings && UI.Settings.view.is('.active-view'))
+				UI.Settings.repopulateActiveSection();
 	},
 
 	all: function () {

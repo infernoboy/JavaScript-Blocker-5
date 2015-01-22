@@ -137,6 +137,7 @@
 			&.blend-in {
 				background: rgba(255, 255, 255, 0.5);
 				border-color: rgba(200, 200, 200, 0.5);
+				box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02) @important;
 			}
 
 			&[disabled] {
@@ -176,6 +177,8 @@
 				overflow-y: hidden;
 				vertical-align: bottom;
 				resize: none;
+				word-wrap: normal;
+				white-space: pre;
 
 				.jsb-large-font& {
 					height: 17px @important;
@@ -234,23 +237,58 @@
 			color: #111 @important;
 			cursor: text @important;
 
+			.color-allow;
+			.color-block;
+
+			&::-webkit-input-placeholder {
+				padding: 1px 0 @important;
+			}
+
 			&,
 			select {
 				text-align: left @important;
 			}
 		}
 
+		textarea {
+			&::-webkit-input-placeholder {
+				padding: 0 @important;
+			}
+		}
+
 		input[type="search"] {
 			-webkit-appearance: none @important;
 			border-radius: 12px @important;
-			padding: 2px 2px 1px @important;
+			border-bottom-color: rgb(200, 200, 200);
+
+			&::-webkit-search-cancel-button {
+				-webkit-appearance: none @important;
+				margin-left: 3px @important;
+				cursor: default @important;
+
+				&:after {
+					display: block @important;
+					height: 12px @important;
+					width: 12px @important;
+					margin-right: 1px @important;
+					content: '𝘅' @important;
+					text-align: center @important;
+					font-size: 10pt @important;
+					color: #fafafa @important;
+					background: rgba(0, 0, 0, 0.4) @important;
+					background: fade(desaturate(darken(@baseColor, 15%), 15%), 70%) @important;
+					border-radius: 12px @important;
+					line-height: 0.7 @important;
+					text-shadow: 0 0 2px rgba(0, 0, 0, 0.4) @important;
+				}
+			}
 		}
 
 		input[type="file"] {
 			background: transparent @important;
 			border-color: rgb(240, 240, 240) @important;
 			box-shadow: none @important;
-			padding-left: 3px;
+			padding-left: 3px @important;
 		}
 
 		input[type="checkbox"],

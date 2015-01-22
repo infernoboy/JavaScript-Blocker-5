@@ -4,6 +4,7 @@ var UserScript = {
 	__updateInterval: TIME.ONE.DAY * 5,
 
 	scripts: new Store('UserScripts', {
+		private: true,
 		save: true
 	}),
 
@@ -121,7 +122,11 @@ var UserScript = {
 	},
 
 	canBeUpdated: function (meta) {
-		return !!(meta.updateURL && meta.updateURL.length && meta.version.length && ((meta.downloadURL && meta.downloadURL.length || meta.installURL && meta.installURL.length)));
+		var updateURLisURL = Utilities.URL.isURL(meta.updateURL),
+				downloadURLisURL = Utilities.URL.isURL(meta.downloadURL),
+				installURLisURL = Utilities.URL.isURL(meta.installURL);
+
+		return !!(updateURLisURL && meta.version.length && (downloadURLisURL || installURLisURL));
 	},
 
 	update: function (namespace) {
@@ -150,8 +155,11 @@ var UserScript = {
 
 							if (!isDeveloperMode)
 								Tabs.messageActive('notification', {
-									title: _('user_script.updated'),
-									subTitle: currentMeta.name
+									title: _('user_script'),
+									subTitle: currentMeta.name,
+									body: Template.create('main', 'jsb-info', {
+										string: _('user_script.updated_to_version', [updateMeta.version])
+									}, false, true)
 								});
 						});
 					}
@@ -270,7 +278,10 @@ var UserScript = {
 		this.removeRules(namespace, true);
 
 		this.scripts.remove(namespace);
-		this.subScripts.remove(namespace);
+
+		Settings.anySettingChanged({
+			key: 'userScripts'
+		});
 	},
 
 	add: function (script, isAutoUpdate) {
@@ -278,7 +289,7 @@ var UserScript = {
 				detail = parsed.parsed;
 
 		if (detail.name === null || detail.namespace === null) {
-			LogError('unable to add user script because it does not have a name or namespace');
+			LogDebug('unable to add user script because it does not have a name or namespace');
 
 			return -1;
 		}
@@ -286,7 +297,7 @@ var UserScript = {
 		var canBeUpdated = this.canBeUpdated(detail);
 
 		if (isAutoUpdate && !canBeUpdated) {
-			LogError('attempted to update a script, but the new version will no longer be able to auto update.');
+			LogDebug('attempted to update a script, but the new version will no longer be able to auto update.');
 
 			return -2;
 		}
@@ -303,6 +314,7 @@ var UserScript = {
 			updateURL: detail.updateURL,
 			downloadURL: detail.updateURL ? (detail.downloadURL || detail.installURL) : null,
 			autoUpdate: canBeUpdated,
+			canBeUpdated: canBeUpdated,
 			developerMode: attributes.get('developerMode', false),
 			runAtStart: (detail['run-at'] && detail['run-at'].toLowerCase()) === 'document-start',
 			lastUpdate: Date.now()
@@ -314,19 +326,19 @@ var UserScript = {
 		this.removeRules(namespace);
 
 		for (var i = 0; i < allowPages.length; i++)
-			Rules.list.active.addPage('user_script', allowPages[i], {
+			Rules.list.user.addPage('user_script', allowPages[i], {
 				rule: namespace,
 				action: ACTION.AUTO_ALLOW_USER_SCRIPT
 			});
 
 		for (var i = 0; i < allowDomains.length; i++)
-			Rules.list.active.addDomain('user_script', allowDomains[i], {
+			Rules.list.user.addDomain('user_script', allowDomains[i], {
 				rule: namespace,
 				action: ACTION.AUTO_ALLOW_USER_SCRIPT
 			});
 
 		for (var i = 0; i < detail.excludeJSB.length; i++)
-			Rules.list.active.addPage('user_script', detail.excludeJSB[i], {
+			Rules.list.user.addPage('user_script', detail.excludeJSB[i], {
 				rule: namespace,
 				action: ACTION.AUTO_BLOCK_USER_SCRIPT
 			});
@@ -341,7 +353,59 @@ var UserScript = {
 
 		attributes.clear().setMany(newAttributes);
 
+		Settings.anySettingChanged({
+			key: 'userScripts'
+		});
+
 		return true;
+	},
+
+	getAttribute: function (userScriptNS, attribute) {
+		var userScript = UserScript.exist(userScriptNS);
+
+		if (userScript) {
+			var attributes = userScript.get('attributes');
+
+			if (attribute)
+				return attributes.get(attribute);
+
+			return attributes;
+		}
+
+		throw new Error(userScriptNS + ' does not exist.');
+	},
+
+	setAttribute: function (userScriptNS, attribute, value) {
+		var userScript = UserScript.exist(userScriptNS);
+
+		if (userScript)
+			return userScript.get('attributes').set(attribute, value);
+
+		throw new Error(userScriptNS + ' does not exist.');
+	},
+
+	getStorageItem: function (userScriptNS, key) {
+		var userScript = UserScript.exist(userScriptNS);
+
+		if (userScript) {
+			var storage = userScript.getStore('storage')
+
+			if (key)
+				return storage.get(key);
+
+			return storage;
+		}
+
+		throw new Error(userScriptNS + ' does not exist.');
+	},
+
+	setStorageItem: function (userScriptNS, key, value) {
+		var userScript = UserScript.exist(userScriptNS);
+
+		if (userScript)
+			return userScript.getStore('storage').set(key, value);
+
+		throw new Error(userScriptNS + ' does not exist.');
 	}
 };
 

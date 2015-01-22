@@ -147,6 +147,20 @@ Settings.settings = {
 			type: 'boolean',
 			default: true
 		}
+	}, {
+		setting: 'newUserScriptStorageItem',
+		props: {
+			type: 'button',
+			classes: 'user-script-storage-new',
+			onClick: function (button) {
+				var offset = $(button).offset(),
+						poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'user-script-storage-add');
+
+				poppy
+					.setContent(Template.create('poppy', 'user-script-storage-add'))
+					.show();
+			}
+		}
 	}],
 
 	// General Settings
@@ -288,7 +302,7 @@ Settings.settings = {
 	}, {
 		divider: true //===================================================================================
 	}, {
-		header: 'Extra features'
+		header: 'extraFeatures'
 	}, {
 		when: {
 			settings: {
@@ -493,7 +507,7 @@ Settings.settings = {
 	}, {
 		divider: true //===================================================================================
 	}, {
-		header: 'Extra features',
+		header: 'extraFeatures',
 	}, {
 		when: {
 			settings: {
@@ -800,7 +814,7 @@ Settings.settings = {
 	}, {
 		divider: true
 	}, {
-		header: 'Easy Lists',
+		header: 'easyLists',
 	}, {
 		description: 'easyLists.description',
 	}, {
@@ -853,7 +867,6 @@ Settings.settings = {
 		setting: 'updateEasyLists',
 		props: {
 			type: 'button',
-			classes: 'single-click',
 			validate: {
 				onFail: 'updateEasyLists.validate.fail',
 				test: function () {
@@ -875,7 +888,7 @@ Settings.settings = {
 
 	// Snapshot settings
 	snapshots: [{
-		header: 'Extra features'
+		header: 'extraFeatures'
 	}, {
 		when: {
 			settings: {
@@ -937,37 +950,83 @@ Settings.settings = {
 	}],
 
 	// User script settings
-	userScripts: {
-		userScriptsContainer: {
-			extras: 1,
-			description: 'custom helper description',
+	userScripts: [{
+		header: 'extraFeatures',
+	}, {
+		when: {
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'donationVerified',
+					needle: true
+				}]
+			}
 		},
-		createUserScript: {
-			classes: 'single-click',
-			setting: 'Create Script',
-			label: '',
-			extra: 1,
-			divider: 1
-		},
-		user_script_last_update: {
-			id: 'user-script-update',
-			label: '',
-			classes: 'description',
-			extra: 1
-		},
-		userScriptNow: {
-			classes: 'single-click',
-			label: 'Update user scripts now:',
-			setting: 'Update Now',
-			extra: 1
-		},
-		userScriptRedownload: {
-			classes: 'single-click',
-			label: 'Re-download user scripts:',
-			setting: 'Download',
-			extra: 1
+		settings: [{
+			setting: 'newUserScript',
+			props: {
+				type: 'button',
+				onClick: function (button) {
+					var defaultUserScript = "// ==UserScript==\n" +
+						"// @name My User Script:" + Utilities.Token.generate() + "\n" +
+						"// @namespace " + Settings.getItem('installID') + "\n" +
+						"// @version 0.1\n" +
+						"// @updateURL \n" +
+						"// @downloadURL \n" +
+						"// ==/UserScript==\n\n\n";
+
+					UI.Settings.editUserScript('');
+
+					UI.view.switchTo('#setting-views-userScript-edit');
+
+					$('.user-script-content', UI.Settings.userScriptEdit).val(defaultUserScript).focus()[0].selectionStart = defaultUserScript.length;
+				}
+			}
+		}, {
+			divider: true
+		}, {
+			customView: function (container) {
+				var userScript;
+
+				var userScripts = UserScript.scripts.keys().sort().reverse();
+
+				for (var i = userScripts.length; i--;) {
+					userScript = UserScript.scripts.get(userScripts[i]);
+
+					container.append(Template.create('settings', 'user-script-item', {
+						id: 'user-script-setting-' + Utilities.Token.generate(),
+						index: i,
+						key: userScripts[i],
+						attributes: userScript.get('attributes')
+					}));
+				}
+
+				container
+					.on('click', '.user-script-delete', function () {
+						UserScript.remove(this.getAttribute('data-userScript'));
+					})
+
+					.on('click', '.user-script-edit', function () {
+						UI.Settings.editUserScript(this.getAttribute('data-userScript'));
+					});
+			}
+		}]
+	}],
+
+	'userScript-edit': [{
+		customView: function (container) {
+			container.append(Template.create('settings', 'user-script-edit'));
 		}
-	},
+	}, {
+		setting: 'saveUserScript',
+		props: {
+			type: 'button',
+			onClick: function (button) {
+				UI.Settings.saveUserScriptEdit(button);
+			}
+		},
+	}],
 
 	// Other Features settings
 	other: [{
@@ -998,7 +1057,7 @@ Settings.settings = {
 				}
 			}
 		}, {
-			header: 'Extra features'
+			header: 'extraFeatures'
 		}, {
 			setting: 'blockReferrer',
 			props: {

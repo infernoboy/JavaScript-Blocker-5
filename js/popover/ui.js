@@ -252,9 +252,6 @@ var UI = {
 
 			.on('click', '*[data-expander]:not(.keep-expanded) > *', function (event) {
 				if (event.originalEvent.offsetX > this.offsetWidth) {
-					var COLLAPSE_HEIGHT = 0,
-							COLLAPSE_OFFSET = 3;
-
 					var header = $(this.parentNode),
 							groupWrapper = header.next(),
 							group = $('> *:first-child', groupWrapper);
@@ -305,7 +302,10 @@ var UI = {
 
 							groupWrapper.css('display', '');
 
-							group.css('margin-top', 0);
+							group.css({
+								marginTop: 0,
+								opacity: 1
+							});
 
 							// Utilities.Element.repaint(document.documentElement);
 						});

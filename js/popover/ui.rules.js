@@ -1,6 +1,7 @@
 "use strict";
 
 UI.Rules = {
+	__domainFilter: '',
 	__lists: ['page', 'temporary', 'active', 'easy'],
 
 	event: new EventListener,
@@ -108,6 +109,15 @@ UI.Rules = {
 	},
 
 	buildRuleList: function (view, ruleList, useTheseRules, keepExpanded) {
+		if (view.is('.ui-view')) {
+			var buildQueue = UI.Rules.views.data('buildQueue') || new Utilities.Queue(0.05);
+
+			buildQueue.clear();
+
+			UI.Rules.views.data('buildQueue', buildQueue);
+		} else
+			var buildQueue = new Utilities.Queue(0.05);
+
 		if (Object._isPlainObject(ruleList)) {
 			var ruleListItem,
 					ruleListItemLI;
@@ -175,9 +185,7 @@ UI.Rules = {
 		var domainGrouped = UI.Rules.groupRulesByDomain(useTheseRules ? useTheseRules : ruleList.rules.all()),
 				container = $('<div>'),
 				editable = (ruleList === globalPage.Rules.list.temporary || ruleList === globalPage.Rules.list.user),
-				ruleTimeoutIndex = 1,
-				domainTimeoutIndex = 1,
-				typeTimeoutIndex = 1;
+				hasRules = false;
 
 		view
 			.attr('data-ruleListItems', '1')
@@ -206,6 +214,9 @@ UI.Rules = {
 			ruleGroupType.appendTo(container);
 
 			for (domain in domainGrouped[type]) {
+				if (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter))
+					continue;
+
 				domainExpander = typeExpander + '-ruleGroupDomain-' + domain;
 
 				domainListItem = Template.create('rules', 'domain-list-item', {
@@ -216,7 +227,9 @@ UI.Rules = {
 
 				domainUL = $('.rule-group-domain', domainListItem);
 
-				typeUL.append(domainListItem);
+				buildQueue.push(function (typeUL, domainListItem) {
+					typeUL.append(domainListItem);
+				}, [typeUL, domainListItem]);
 
 				for (kind in domainGrouped[type][domain]) {
 					kindExpander = domainExpander + '-ruleGroupKind-' + kind;
@@ -229,38 +242,49 @@ UI.Rules = {
 
 					kindUL = $('.rule-group-kind', kindListItem);
 
-					domainUL.append(kindListItem);
+					buildQueue.push(function (domainUL, kindListItem) {
+						domainUL.append(kindListItem);
+					}, [domainUL, kindListItem]);
 
-					for (rule in domainGrouped[type][domain][kind]) {
-						ruleListItem = Template.create('rules', 'rule-list-item', {
-							type: type,
-							kind: kind,
-							rule: rule,
-							ruleInfo: domainGrouped[type][domain][kind][rule],
-							editable: editable
-						});
+					var ruleKeyChunks = Object.keys(domainGrouped[type][domain][kind])._chunk(100);
 
-						setTimeout(function (kindUL, ruleListItem) {
-							kindUL.append(ruleListItem);
-						}, 0.5 * ruleTimeoutIndex++, kindUL, ruleListItem);
+					for (var j = 0, b = ruleKeyChunks.length; j < b; j++) {
+						var ruleListItems = [];
+
+						for (var k = 0; k < ruleKeyChunks[j].length; k++) {
+							ruleListItems.push(Template.create('rules', 'rule-list-item', {
+								type: type,
+								kind: kind,
+								rule: ruleKeyChunks[j][k],
+								ruleInfo: domainGrouped[type][domain][kind][ruleKeyChunks[j][k]],
+								editable: editable
+							}));
+						}
+
+						buildQueue.push(function (kindUL, ruleListItems) {
+							hasRules = true;
+							kindUL.append(ruleListItems);
+						}, [kindUL, ruleListItems]);
 					}
 				}
 			}
 
-			setTimeout(function (ruleGroupType) {
+			buildQueue.push(function (ruleGroupType) {
 				if (ruleGroupType.find('.rule-group-type').is(':empty'))
 					ruleGroupType.remove();
-			}, 0.5 * ruleTimeoutIndex, ruleGroupType);
+			}, [ruleGroupType]);
 		}
 
-		setTimeout(function (view, ruleList, container) {
+		buildQueue.push(function (view, container) {			
 			UI.Rules.event.trigger('rulesFinishedBuilding', {
 				view: view,
-				hasRules: ruleTimeoutIndex !== 1
+				hasRules: hasRules
 			});
-		}, 0.55 * ruleTimeoutIndex, view, ruleList, container);
+		}, [view, container]);
 
-		UI.Rules.noRules.toggleClass('jsb-hidden', ruleTimeoutIndex !== 1);
+		UI.Rules.noRules.toggleClass('jsb-hidden', buildQueue.queue.length > 4);
+
+		buildQueue.start();
 	},
 
 	processRules: function (rules) {
@@ -284,6 +308,13 @@ UI.Rules = {
 	events: {
 		rules: function () {
 			UI.container
+				.on('search', '#rule-domain-search', function () {
+					UI.Rules.__domainFilter = this.value;
+
+					if ($('.active-view', UI.views).is('#main-views-rule'))
+						UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+				})
+
 				.on('click', '.rule-item-delete', function (event) {
 					var self = $(this),
 							view = self.parents('*[data-ruleListItems]'),
@@ -308,10 +339,12 @@ UI.Rules = {
 		},
 
 		viewWillSwitch: function (event) {
+			if (event.detail.to.id._startsWith('#main-views'))
+				$('#rule-domain-search', UI.Rules.view).val('').trigger('search');
+
 			if (event.detail.to.id === '#main-views-rule' && $('.active-view', UI.Rules.views).is('#rule-views-easy'))
 				UI.view.switchTo('#rule-views-temporary');
 		},
-
 
 		viewDidSwitch: function (event) {
 			if (!UI.Rules.views)
