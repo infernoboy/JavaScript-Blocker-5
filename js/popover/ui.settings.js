@@ -228,7 +228,11 @@ UI.Settings = {
 						if (result) {
 							storage.remove(this.getAttribute('data-storageKey'));
 
-							UI.Settings.editUserScript(userScriptNS);
+							var storageItem = $(this).parents('.user-script-storage-item');
+
+							storageItem.collapse(225 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
+								UI.Settings.editUserScript(userScriptNS);
+							});
 						}
 					});
 			else
@@ -466,6 +470,7 @@ UI.Settings = {
 			}))
 			.append(Template.create('settings', 'setting-section-description', {
 				id: 'description-' + Utilities.Token.generate(),
+				classes: 'dividing-border',
 				description: _('setting.newUserScriptStorageItem.description')
 			}));
 
@@ -493,6 +498,15 @@ UI.Settings = {
 	},
 
 	events: {
+		repopulateActiveSection: function (event) {
+			var id = event.detail.id || event.detail.to.id;
+
+			if (id !== '#main-views-setting' || $('.active-view', UI.Settings.views).is('#setting-views-userScript-edit'))
+				return;
+
+			UI.Settings.repopulateActiveSection();
+		},
+
 		viewSwitcher: function () {
 			UI.Settings.viewSwitcher
 				.on('click', 'li', function (event) {
@@ -538,6 +552,7 @@ UI.Settings = {
 	}
 };
 
+UI.event.addCustomEventListener(['viewWillSwitch', 'viewAlreadyActive'], UI.Settings.events.repopulateActiveSection);
 UI.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
 UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
 UI.event.addCustomEventListener('viewWillSwitch', UI.Settings.events.viewWillSwitch);

@@ -21,7 +21,7 @@
 			margin-top: -2px;
 			-webkit-flex: 0 0 25px;
 			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-			background: rgb(246, 245, 246);
+			background: darken(rgb(246, 245, 246), @darknessLevel);
 
 			.view-switcher-container {
 				position: absolute;
@@ -50,6 +50,7 @@
 
 				.setting-sub-container-wrapper {
 					margin-left: 34px;
+					margin-top: 8px;
 
 					.setting-sub-container {
 						.setting-section-setting {
@@ -112,10 +113,6 @@
 
 					&.user-script-item {
 						margin-bottom: 1px;
-
-						&.dividing-border {
-							border-bottom: 1px solid #f2f2f2;
-						}
 
 						.setting-section-setting-left {
 							-webkit-flex: 0 0 270px;
@@ -195,13 +192,16 @@
 
 				&-divider {
 					height: 1px;
-					background: #e9e9e9;
+					background: darken(#e9e9e9, @darknessLevel);
 					margin: 12px 0 13px;
 				}
 
 				&-setting {
-					margin: 9px 0 8px;
+					margin: 9px 0 0;
 
+					&:last-child {
+						margin-bottom: 8px;
+					}
 				}
 			}
 		}

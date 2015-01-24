@@ -1,3 +1,5 @@
+@darknessLevel: 0%;
+
 @-webkit-keyframes openPoppy  {
 	0% {
 		-webkit-transform: scale(0);
@@ -23,8 +25,12 @@
 	max-width: 97%;
 	border-radius: 6px;
 	padding: 2px;
-	background: -webkit-linear-gradient(top, #ffffff, #fafafa);
+	background: -webkit-linear-gradient(top, darken(#ffffff, @darknessLevel), darken(#fafafa, @darknessLevel));
 	box-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
+
+	& when (@darkMode) {
+		box-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);		
+	}
 
 	&.poppy-up .poppy-arrow {
 		background: -webkit-canvas(poppy-arrow-up);
@@ -54,16 +60,24 @@
 		box-shadow: none;
 		color: #333;
 		padding: 4px 10px 4px 12px;
-		background: #fff;
+		background: darken(#fff, @darknessLevel);
 		z-index: 1;
+
+		& when (@darkMode) {
+			color: #ccc;
+		}
 
 		&,
 		&:active {
 			border-color: rgba(0, 0, 0, 0.065);
+
+			& when (@darkMode) {
+				border-color: rgba(0, 0, 0, 0.5);
+			}
 		}
 
 		&:active {
-			background: #f5f5f5;
+			background: darken(#f5f5f5, @darknessLevel);
 		}
 	}
 
@@ -86,10 +100,10 @@
 		background: -webkit-canvas(poppy-arrow);
 
 		&-settings {
-			background-color: #fafafa;
+			background-color: darken(#fafafa, @darknessLevel);
 
 			&-up {
-				background-color: #fff;
+				background-color: darken(#fff, @darknessLevel);
 			}
 		}
 	}

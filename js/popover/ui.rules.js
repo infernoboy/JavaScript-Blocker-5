@@ -295,7 +295,7 @@ UI.Rules = {
 				type: 'button',
 				value: 'Delete'
 			})
-			.addClass('rule-item-delete blend-in double-click');
+			.addClass('rule-item-delete blend-in double-click jsb-color-blocked');
 
 		rules
 			.addClass('rule-item-processed')
@@ -324,7 +324,7 @@ UI.Rules = {
 							domain = self.parents('.rule-group-domain').attr('data-domain'),
 							rule = self.parents('.rule-item-container').attr('data-rule');
 
-					ruleList.__remove(type, kind, domain, rule);
+					ruleList.__remove(false, type, kind, domain, rule);
 
 					if (view.is('.ui-view'))
 						UI.Rules.buildRuleList(view, ruleList);

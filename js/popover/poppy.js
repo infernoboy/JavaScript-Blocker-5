@@ -122,7 +122,7 @@
 
 	Poppy.createArrow = function (poppy) {
 		var	arrowStyle = window.getComputedStyle(poppy.isUpArrow ? poppy.arrowSettingsUp[0] : poppy.arrowSettings[0]),
-				shadowColor = 'rgba(0, 0, 0, 0.25)',
+				shadowColor = 'rgba(0, 0, 0, ' + (Settings.getItem('darkMode') ? 0.7 : 0.25) + ')',
 				arrowBackgroundColor = arrowStyle.backgroundColor,
 				arrowContext = document.getCSSCanvasContext('2d', poppy.isUpArrow ? 'poppy-arrow-up' : 'poppy-arrow', 30, 20);
 
@@ -388,7 +388,7 @@
 
 		Utilities.Timer.timeout('PoppyCreating', function () {
 			Poppy.__creating = false;
-		}, 100);
+		}, 0);
 
 		if (this.scriptName && window.Poppy.scripts[this.scriptName])
 			window.Poppy.scripts[this.scriptName](this);

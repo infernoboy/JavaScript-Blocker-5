@@ -4,7 +4,7 @@
 
 .jsb-element {
 	& {
-		background: #fff;
+		background: darken(#fff, @darknessLevel);
 
 		&,
 		body {
@@ -112,7 +112,7 @@
 				z-index: 500;
 				-webkit-flex: 0 0 24px;
 				border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-				background: rgb(246, 245, 246);
+				background: darken(rgb(246, 245, 246), @darknessLevel);
 				overflow: hidden;
 
 				.yosemite& {
@@ -134,6 +134,8 @@
 					cursor: default;
 					line-height: 19px;
 					border-radius: 4px;
+
+					.darkness-color();
 
 					&[data-poppy] {
 						.poppy-menu-target:after {
@@ -209,21 +211,21 @@
 					border-radius: 4px;
 					overflow-y: visible;
 					overflow: hidden;
-					box-shadow: 0 1px 0 #cacaca;
+					box-shadow: 0 1px 0 darken(#cacaca, @darknessLevel);
 
 					.jsb-large-font& {
 						font-size: 10pt;
 					}
 
 					li {
-						border-top: 1px solid #fff;
-						border-left: 1px solid rgb(225, 225, 225);
+						border-top: 1px solid darken(#fff, @darknessLevel);
+						border-left: 1px solid darken(rgb(225, 225, 225), @darknessLevel);
 						display: inline-block;
 						list-style-type: none;
 						text-align: center;
 						height: 19px;
 						cursor: default;
-						background: -webkit-linear-gradient(top, #fff, #fff);
+						background: -webkit-linear-gradient(top, darken(#fff, @darknessLevel), darken(#fff, @darknessLevel));
 						width: 74px;
 
 						.jsb-large-font& {
@@ -258,8 +260,8 @@
 						}
 
 						&:active:not(.css-is-dumb) {
-							background: -webkit-linear-gradient(top, #f0f0f0, #f0f0f0);
-							border-top-color: #fdfdfd;
+							background: -webkit-linear-gradient(top, darken(#f0f0f0, @darknessLevel), darken(#f0f0f0, @darknessLevel));
+							border-top-color: darken(#fdfdfd, @darknessLevel);
 
 							&.active-view {
 								background: -webkit-linear-gradient(top, darken(@baseColor, 22%), darken(@baseColor, 24%));
@@ -291,6 +293,8 @@
 							.view-switcher-item-name {
 								color: #616161;								
 								white-space: nowrap;
+
+								.darkness-color();
 							}
 
 							.transition;
@@ -344,7 +348,7 @@
 			}
 
 			.ui-view {
-				background: #fff;
+				background: darken(#fff, @darknessLevel);
 
 				&.active-view {
 					display: block;
@@ -379,6 +383,10 @@
 					text-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
 					-webkit-font-smoothing: antialiased;
 
+					& when (@darkMode) {
+						color: #555;
+					}
+					
 					.jsb-large-font& {
 						top: -3px;
 					}

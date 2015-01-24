@@ -224,7 +224,7 @@ var Settings = {
 
 	removeItem: function (settingKey, storeKey) {
 		var setting = Settings.map[settingKey],
-				storeSetting = setting.storeKeySettings[storeKey];
+				storeSetting = setting.storeKeySettings ? setting.storeKeySettings[storeKey] : null;
 
 		if (!setting)
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));

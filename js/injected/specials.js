@@ -218,7 +218,7 @@ Special.specials = {
 				openToken = Math.random(),
 				openArguments = {};
 
-		function performAction (request, info, args, sendData, awaitPromptResourceID) {
+		function performAction (request, info, args, sendData, awaitPromptResourceID, postParams) {
 			var xhrError;
 
 			var detail = openArguments[request[openToken]],
@@ -241,8 +241,6 @@ Special.specials = {
 			}
 
 			if (info.canLoad.isAllowed) {
-				request[openToken].resendAllowed = true;
-
 				try {
 					XHR.send.apply(request, args);
 				} catch (error) {
@@ -251,7 +249,12 @@ Special.specials = {
 			}
 
 			if (info.canLoad.isAllowed)
-				messageExtension('page.' + pageAction, info);
+				setTimeout(function (pageAction, info, detail, postParams) {
+					if (info.meta === undefined)
+						info.meta = createMetaData(detail, postParams);
+
+					messageExtension('page.' + pageAction, info);
+				}, 0, pageAction, info, detail, postParams);
 
 			if (awaitPromptResourceID)
 				messageExtension('page.modifyBlockedItem', {
@@ -266,6 +269,50 @@ Special.specials = {
 				
 				throw xhrError;
 			}
+		};
+
+		function createMetaData (detail, postParams) {
+			var meta;
+
+			if (detail.method === 'get' || detail.method === 'post') {
+				var toSend = detail.method === 'post' ? postParams : detail.path.split('?')[1];
+
+				if (typeof toSend === 'string') {
+					meta = {
+						type: 'params',
+						data: {}
+					};
+
+					var splitParam;
+
+					var params = toSend.split(/&/g);
+
+					for (var i = 0; i < params.length; i++) {
+						if (!params[i].length)
+							continue;
+
+						splitParam = params[i].split('=');
+
+						meta.data[decodeURIComponent(splitParam[0])] = typeof splitParam[1] === 'string' ? decodeURIComponent(splitParam[1]) : null;
+					}
+				} else if (toSend instanceof window.Blob) {
+					var URL = window.webkitURL || window.URL || {};
+
+					if (typeof URL.createObjectURL === 'function')
+						meta = {
+							type: 'blob',
+							data: URL.createObjectURL(toSend)
+						};
+				} else if (toSend instanceof window.FormData) {
+					// There is no way to retrieve the values of a FormData object.
+					meta = {
+						type: 'formdata',
+						data: null
+					};
+				}
+			}
+
+			return meta;
 		};
 
 		XMLHttpRequest.prototype.open = function () {
@@ -297,23 +344,8 @@ Special.specials = {
 			if (supportedMethods.indexOf(detail.method) === -1)
 				return XHR.send.apply(this, arguments);
 
-			var JSONsendArguments = window[JSB.eventToken].window$JSON$stringify(arguments);
-
-			if (detail.previousJSONsendArguments === JSONsendArguments) {
-				console.warn('XHR Resend?', arguments, this[openToken]);
-
-				try {
-					return detail.resendAllowed ? XHR.send.apply(this, arguments) : this.abort();
-				} catch (error) {
-					console.warn('XHR Resend...Failed?', error);
-				} finally {
-					return;
-				}
-			}
-
-			detail.previousJSONsendArguments = JSONsendArguments;
-
 			var kind = 'xhr_' + detail.method,
+					postParams = arguments[0],
 					awaitPromptResourceID = null,
 					info = {
 						meta: undefined,
@@ -322,53 +354,15 @@ Special.specials = {
 						canLoad: {}
 					};
 
-			if (detail.method === 'get' || detail.method === 'post') {
-				var toSend = detail.method === 'post' ? arguments[0] : detail.path.split('?')[1];
-
-				if (typeof toSend === 'string') {
-					info.meta = {
-						type: 'params',
-						data: {}
-					};
-
-					var splitParam;
-
-					var params = toSend.split(/&/g);
-
-					for (var i = 0; i < params.length; i++) {
-						if (!params[i].length)
-							continue;
-
-						splitParam = params[i].split('=');
-
-						info.meta.data[decodeURIComponent(splitParam[0])] = typeof splitParam[1] === 'string' ? decodeURIComponent(splitParam[1]) : null;
-					}
-				} else if (toSend instanceof window.Blob) {
-					var URL = window.webkitURL || window.URL || {};
-
-					if (typeof URL.createObjectURL === 'function')
-						info.meta = {
-							type: 'blob',
-							data: URL.createObjectURL(toSend)
-						};
-				} else if (toSend instanceof window.FormData) {
-					// There is no way to retrieve the values of a FormData object.
-					info.meta = {
-						type: 'formdata',
-						data: null
-					};
-				}
-			}
-
 			var canLoad = messageExtensionSync('canLoadResource', info);
 
 			try {
 				canLoad.isAllowed;
 			} catch (error) {
-				console.warn('failed to retrieve canLoadResource response', document);
+				console.warn('JSB - failed to retrieve canLoadResource response', document);
 
 				canLoad = {
-					action: -1,
+					action: -13,
 					isAllowed: true
 				};
 			}
@@ -384,7 +378,7 @@ Special.specials = {
 					isAllowed: result.isAllowed
 				};
 
-				return performAction(self, info, args, result.send, awaitPromptResourceID);
+				return performAction(self, info, args, result.send, awaitPromptResourceID, postParams);
 			});
 
 			var shouldPerformAction = (function () {
@@ -395,10 +389,14 @@ Special.specials = {
 
 						awaitPromptResourceID = messageExtensionSync('page.addBlockedItem', info);
 
-						messageTopExtension('showXHRPrompt', {
-							onXHRPromptInput: onXHRPromptInput,
-							meta: info
-						});
+						setTimeout(function (onXHRPromptInput, info, detail, postParams) {
+							info.meta = createMetaData(detail, postParams);
+
+							messageTopExtension('showXHRPrompt', {
+								onXHRPromptInput: onXHRPromptInput,
+								meta: info
+							});
+						}, 0, onXHRPromptInput, info, detail, postParams);
 
 						return false;
 					} else {
@@ -413,12 +411,16 @@ Special.specials = {
 							var isAllowed = JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ALLOW;
 
 							if (JSB.value.value.showSynchronousXHRNotification)
-								messageTopExtension('showXHRPrompt', {
-									synchronousInfoOnly: true,
-									synchronousInfoIsAllowed: isAllowed,
-									onXHRPromptInput: onXHRPromptInput,
-									meta: info
-								});
+								setTimeout(function (isAllowed, onXHRPromptInput, info, detail, postParams) {
+									info.meta = createMetaData(detail, postParams);
+
+									messageTopExtension('showXHRPrompt', {
+										synchronousInfoOnly: true,
+										synchronousInfoIsAllowed: isAllowed,
+										onXHRPromptInput: onXHRPromptInput,
+										meta: info
+									});
+								}, 0, isAllowed, onXHRPromptInput, info, detail, postParams);
 						}
 
 						executeLocalCallback(onXHRPromptInput, {
@@ -433,7 +435,7 @@ Special.specials = {
 			})();
 
 			if (shouldPerformAction)
-				performAction(this, info, arguments, null, awaitPromptResourceID);
+				performAction(this, info, arguments, null, awaitPromptResourceID, postParams);
 		};
 	},
 

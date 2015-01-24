@@ -189,6 +189,15 @@ Settings.settings = {
 			}
 		}
 	}, {
+		setting: 'darkMode',
+		props: {
+			type: 'boolean',
+			default: false,
+			onChange: function () {
+				UI.setLessVariables();
+			}
+		}
+	}, {
 		setting: 'showUnblockedScripts',
 		props: {
 			type: 'boolean',
@@ -249,17 +258,22 @@ Settings.settings = {
 				['#177efb', 'Blue'],
 				['#336699', 'Slate blue'],
 				['#787778', 'Gray'],
+				['#5d5d5d', 'Dark gray'],
 				['#99999f', 'Graphite'],
 				['#ff1fed', 'Pink	'],
 				['#ff7c0c', 'Orange'],
 				['#009e00', 'Green'],
+				['#006100', 'Dark green'],
 				['#00afba', 'Turquoise'],
 				['#876846', 'Brown'],
 				['#7512b2', 'Purple'],
 				['#e50000', 'Red'],
+				['#7a0103', 'Dark red'],
 				['#000000', 'Black']
 			],
-			default: '#177efb',
+			default: function () {				
+				return Settings.getItem('darkMode') ? '#336699' : '#177efb';
+			},
 			otherOption: {
 				prompt: 'Enter a valid 6 digit hex CSS color preceeded by #.',
 				validate: function (value) {
@@ -267,11 +281,7 @@ Settings.settings = {
 				}
 			},
 			onChange: function () {
-				var less = window.less || Popover.window.less;
-
-				less.modifyVars({
-					baseColor: Settings.getItem('baseColor')
-				});
+				UI.setLessVariables();
 			}
 		}
 	}, {
@@ -1004,11 +1014,20 @@ Settings.settings = {
 
 				container
 					.on('click', '.user-script-delete', function () {
-						UserScript.remove(this.getAttribute('data-userScript'));
+						var self = this,
+								userScriptItem = $(this).parents('.user-script-item');
+
+						userScriptItem.collapse(225 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
+							UserScript.remove(self.getAttribute('data-userScript'));
+						});
 					})
 
 					.on('click', '.user-script-edit', function () {
 						UI.Settings.editUserScript(this.getAttribute('data-userScript'));
+
+						setTimeout(function () {
+							UI.view.toTop(UI.Settings.views);
+						});
 					});
 			}
 		}]

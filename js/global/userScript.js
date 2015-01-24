@@ -109,16 +109,16 @@ var UserScript = {
 		var domain;
 
 		var removeAction = [ACTION.AUTO_BLOCK_USER_SCRIPT, ACTION.AUTO_ALLOW_USER_SCRIPT],
-				types = Rules.list.active.kind('user_script'),
+				types = Rules.list.user.kind('user_script'),
 				allTypes = types.all();
 
 		if (includeUserDefined)
 			removeAction.push(ACTION.ALLOW, ACTION.BLOCK);
-
+		
 		for (var ruleType in allTypes)
 			for (domain in allTypes[ruleType])
 				if (allTypes[ruleType][domain][namespace] && removeAction._contains(allTypes[ruleType][domain][namespace].action))
-					types[ruleType](domain).remove(namespace);
+					Rules.list.user.__remove(false, ruleType, 'user_script', domain, namespace);
 	},
 
 	canBeUpdated: function (meta) {

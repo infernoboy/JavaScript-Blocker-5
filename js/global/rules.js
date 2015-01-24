@@ -19,6 +19,7 @@ var ACTION = {
 	ALLOW_AFTER_FIRST_VISIT: -9,
 	AWAIT_XHR_PROMPT: -10,
 	AWAIT_XHR_PROMPT_ALLOWED: -11,
+	AUTO_ALLOW_DOCUMENT_FAILURE: -13,
 	KIND_DISABLED: -85,
 	UNBLOCKABLE: -87
 };
@@ -43,10 +44,10 @@ function Rule (store, storeProps, ruleProps) {
 	this.addDomain = this.__add.bind(this, 'domain');
 	this.addNotDomain = this.__add.bind(this, 'notDomain');
 	
-	this.removePage = this.__remove.bind(this, 'page');
-	this.removeNotPage = this.__remove.bind(this, 'notPage');
-	this.removeDomain = this.__remove.bind(this, 'domain');
-	this.removeNotDomain = this.__remove.bind(this, 'notDomain');
+	this.removePage = this.__remove.bind(this, false, 'page');
+	this.removeNotPage = this.__remove.bind(this, false, 'notPage');
+	this.removeDomain = this.__remove.bind(this, false, 'domain');
+	this.removeNotDomain = this.__remove.bind(this, false, 'notDomain');
 };
 
 Rule.event = new EventListener;
@@ -94,8 +95,12 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	if (!types.hasOwnProperty(type))
 		throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
 
-	if (type.toLowerCase()._endsWith('page') && !Rules.isRegExp(domain))
-		throw new TypeError(Rules.ERROR.TYPE.PAGE_NOT_REGEXP);
+	if (type.toLowerCase()._endsWith('page')) {
+	 	if (!Rules.isRegExp(domain))
+			throw new TypeError(Rules.ERROR.TYPE.PAGE_NOT_REGEXP);
+
+		domain = domain.toLowerCase();
+	}
 
 	var rules = types[type](domain),
 			action = typeof this.action === 'number' ? this.action : rule.action;
@@ -127,12 +132,12 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	return added;
 };
 
-Rule.prototype.__remove = function (type, kind, domain, rule) {
+Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) {
 	if (kind === undefined) {
 		var self = this;
 
 		this.rules.forEach(function (kind) {
-			self.__remove(type, kind);
+			self.__remove(false, type, kind);
 		});
 	} else {
 		var types = this.kind(kind);
@@ -143,9 +148,9 @@ Rule.prototype.__remove = function (type, kind, domain, rule) {
 		if (domain === undefined)
 			types[type]().clear();
 		else if (rule === undefined)
-			types[type]().remove(domain, true);
+			types[type]().remove(domain);
 		else
-			types[type](domain).remove(rule);
+			types[type](domain, domainIsLocation).remove(rule);
 	}
 
 	if (kind._endsWith('*'))
@@ -195,19 +200,22 @@ Rule.prototype.kind = function (kindName) {
 
 	var kind = this.rules.getStore(kindName);
 
-	kind.__rules = function (type, domain) {
+	kind.__rules = function (type, domain, domainIsLocation) {
 		if (!this.hasOwnProperty(type))
 			throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
 
-		var rules;
-
 		var domains = this.getStore(type);
 
-		if (Array.isArray(domain)) {
-			if (domain.length === 1)
-				return this.__rules(type, [domain[0], null]);
+		if (!domain)
+			return domains;
 
-			rules = new Store(domains.name + ',' + domain.join(), {
+		var rules;
+
+		if (Array.isArray(domain)) {
+			// if (domain.length === 1)
+			// 	return this.__rules(type, [domain[0], null]);
+
+			rules = new Store(domains.name + ',' + domain, {
 				selfDestruct: TIME.ONE.HOUR,
 				ignoreSave: true,
 				private: true
@@ -216,11 +224,37 @@ Rule.prototype.kind = function (kindName) {
 			rules.parent = this;
 
 			for (var i = 0; i < domain.length; i++)
-				if (!rules.keyExist(domain[i]) && domains.keyExist(domain[i]))
-					rules.set(domain[i], this.__rules(type, domain[i]));
-		} else if (typeof domain === 'string')
-			rules = domains.getStore(domain);
-		else
+				if (domains.keyExist(domain[i]))
+					rules.set(domain[i], domains.get(domain[i]));
+		} else if (typeof domain === 'string') {
+			if (type === 'domain' || type === 'notDomain' || !domainIsLocation)
+				rules = domains.getStore(domain);
+			else {
+				rules = new Store(domains.name + ',filtered-' + domain, {
+					selfDestruct: TIME.ONE.HOUR,
+					ignoreSave: true,
+					private: true
+				});
+
+				rules.parent = this;
+
+				var regExp,
+						matches;
+
+				domains.forEach(function (page, pageStore) {
+					try {
+						regExp = Rules.__regExpCache[page] || (Rules.__regExpCache[page] = new RegExp(page));
+
+						matches = type === 'page' ? regExp.test(domain) : !regExp.test(domain);
+
+						if (matches)
+							rules.set(page, pageStore);
+					} catch (error) {
+						LogError(error);
+					}
+				});
+			}
+		} else
 			rules = domains;
 
 		return rules;
@@ -310,52 +344,18 @@ Rule.prototype.forLocation = function (params) {
 		return rules;
 	}
 
-	if (!Rules.kindSupported(params.searchKind))
-		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
-
-	var regExp,
-			lowerPage;
-
-	var location = params.location.toLowerCase(),
+	var types = this.kind(params.searchKind),
+			location = params.location.toLowerCase(),
 			host = params.pageRulesOnly ? '' : Utilities.URL.extractHost(location),
 			hostParts = params.pageRulesOnly ? [] : (params.excludeParts ? [host] : Utilities.URL.hostParts(host, true));
 
 	if (!params.excludeAllDomains)
 		hostParts.push('*');	
 
-	var types = this.kind(params.searchKind);
-
 	var rules = {
-		page: types.page().filter(function (page) {
-			try {
-				lowerPage = page.toLowerCase();
-
-				regExp = Rules.__regExpCache[lowerPage] || (Rules.__regExpCache[lowerPage] = new RegExp(lowerPage));
-
-				return regExp.test(location);
-			} catch (error) {
-				LogError(error);
-
-				return false;
-			}
-		}),
-
+		page: types.page(location, true),
 		domain: params.pageRulesOnly ? undefined : types.domain(hostParts),
-
-		notPage: types.notPage().filter(function (page) {
-			try {
-				lowerPage = page.toLowerCase();
-
-				regExp = Rules.__regExpCache[lowerPage] || (Rules.__regExpCache[lowerPage] = new RegExp(lowerPage));
-
-				return !regExp.test(location);
-			} catch (error) {
-				LogError(error);
-
-				return false;
-			}
-		}),
-
+		notPage: types.notPage(location, true),
 		notDomain: params.pageRulesOnly ? undefined : types.notDomain().filter(function (domain) {
 			return !hostParts._contains(domain);
 		})

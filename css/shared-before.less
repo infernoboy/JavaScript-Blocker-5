@@ -6,6 +6,8 @@
 @focusShadow: rgb(171, 221, 254);
 @background: rgb(239, 239, 244);
 @easeOutQuad: cubic-bezier(0.250, 0.460, 0.450, 0.940);
+@darkMode: false;
+@darknessLevel: 0%;
 
 .shared-before(@important) {
 	@-webkit-keyframes shake {
@@ -29,7 +31,19 @@
 		86% { -webkit-transform: translateX(-7px); }
 		100% { -webkit-transform: translateX(0); }
 	}
-	
+
+	.- () when (@darkMode) {
+		@blockColor: #ce2f2a;
+	}
+
+	.-();
+
+	.- () when (@darkMode) {
+		@focusShadow: rgb(41, 91, 124);
+	}
+
+	.-();
+
 	.color-allow() {
 		&.jsb-color-allowed {
 			color: @allowColor @important;
@@ -40,6 +54,10 @@
 		&.jsb-color-blocked {
 			color: @blockColor @important;
 		}
+	}
+
+	.darkness-color () when (@darkMode) {
+		color: #c9c9c9 @important;
 	}
 
 	.jsb-element,
@@ -55,14 +73,26 @@
 			&-track {
 				border-radius: 5px @important;
 				background: rgba(0, 0, 0, 0.07) @important;
+
+				& when (@darkMode) {
+					background: rgba(255, 255, 255, 0.06) @important;
+				}
 			}
 
 			&-thumb {
 				border-radius: 5px @important;
 				background: rgba(0, 0, 0, 0.3) @important;
+
+				& when (@darkMode) {
+					background: rgba(255, 255, 255, 0.2) @important;
+				}
 				
 				&:hover {
 					background: rgba(0, 0, 0, 0.5) @important;
+
+					& when (@darkMode) {
+						background: rgba(255, 255, 255, 0.4) @important;
+					}
 				}
 			}
 		}
@@ -96,6 +126,8 @@
 			float: none @important;
 			text-indent: 0 @important;
 
+			.darkness-color();
+
 			&:after {
 				content: none @important;
 			}
@@ -112,14 +144,14 @@
 		select,
 		button,
 		textarea {
-			background: #fff @important;
+			background: darken(#fff, @darknessLevel) @important;
 			border: none @important;
 			border-radius: 4px @important;
-			color: #333 @important;
+			color: darken(#333, @darknessLevel) @important;
 			// color: desaturate(darken(@baseColor, 35%), 60%);
 			text-shadow: 0 1px 0 rgba(255,255,255,0.5) @important;
-			border: 1px solid rgb(200, 200, 200) @important;
-			border-bottom-color: rgb(168, 168, 168) @important;
+			border: 1px solid darken(rgb(200, 200, 200), @darknessLevel) @important;
+			border-bottom-color: darken(rgb(168, 168, 168), @darknessLevel) @important;
 			box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) @important;
 			width: auto @important;
 			height: auto @important;
@@ -131,12 +163,14 @@
 			font-weight: normal @important;
 			text-align: center @important;
 
+			.darkness-color();
+
 			.color-allow;
 			.color-block;
 
 			&.blend-in {
-				background: rgba(255, 255, 255, 0.5);
-				border-color: rgba(200, 200, 200, 0.5);
+				background: darken(rgba(255, 255, 255, 0.5), @darknessLevel);
+				border-color: darken(rgba(200, 200, 200, 0.5), @darknessLevel);
 				box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02) @important;
 			}
 
@@ -197,8 +231,8 @@
 			}
 
 			&:active {
-				background: #f5f5f5 @important;
-				border-color: rgb(185, 185, 185) @important;
+				background: darken(#f5f5f5, @darknessLevel) @important;
+				border-color: darken(rgb(185, 185, 185), @darknessLevel) @important;
 				-webkit-animation: none @important;
 				text-shadow: 0 0 0 rgba(0, 0, 0, 0.3) @important;
 			}
@@ -234,7 +268,7 @@
 		input[type="number"],
 		textarea {
 			border-radius: 2px @important;
-			color: #111 @important;
+			color: lighten(#111, @darknessLevel) @important;
 			cursor: text @important;
 
 			.color-allow;
@@ -259,7 +293,7 @@
 		input[type="search"] {
 			-webkit-appearance: none @important;
 			border-radius: 12px @important;
-			border-bottom-color: rgb(200, 200, 200);
+			border-bottom-color: darken(rgb(200, 200, 200), @darknessLevel);
 
 			&::-webkit-search-cancel-button {
 				-webkit-appearance: none @important;
@@ -286,7 +320,7 @@
 
 		input[type="file"] {
 			background: transparent @important;
-			border-color: rgb(240, 240, 240) @important;
+			border-color: darken(rgb(240, 240, 240), @darknessLevel) @important;
 			box-shadow: none @important;
 			padding-left: 3px @important;
 		}
@@ -298,28 +332,35 @@
 			-webkit-appearance: none @important;
 			height: 14px @important;
 			width: 14px @important;
-			background: #fff @important;
+			background: darken(#fff, @darknessLevel) @important;
 			padding: 1px 4px 3px 1px @important;
 			border-radius: 3px @important;
 			margin-bottom: -2px @important;
-			border-bottom-color: rgb(190, 190, 190) @important;
+			border-bottom-color: darken(rgb(190, 190, 190), @darknessLevel) @important;
 			box-shadow: inset 0 0 2px rgba(0, 0, 0, 0) @important;
 			-webkit-transition: background 0.15s ease-out, border-color 0.15s ease-out @important;
+			overflow: hidden @important;
+			font-family: "Menlo-Regular" @important;
 
 			&:active {
-				background: #f3f3f3 @important;
+				background: darken(#f3f3f3, @darknessLevel) @important;
 			}
 
 			&:after {
 				display: inline-block @important;
-				color: #fff @important;
+				color: rgba(255, 255, 255, 0) @important;
 				font-weight: bold @important;
-				content: '✔︎' @important;
-				font-family: "Menlo-Regular" @important;
-				-webkit-transform: translate(2px, -2px) scaleY(0) scaleX(0) @important;
-				-webkit-transition: -webkit-transform 0.15s ease-out @important;
+				content: '⸀' @important;
+				-webkit-transform: translate(5px, -11px) scaleX(1.1) scaleY(1.5) rotate(220deg) @important;
 				-webkit-font-smoothing: antialiased @important;
-				text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15) @important;
+				-webkit-transition: color 0.15s ease-out, text-shadow 0.15s @important;
+				text-shadow: -1px -1px 0 rgba(0, 0, 0, 0), 0 0 0 rgba(255, 255, 255, 0) @important;
+				font-size: 20px @important;
+
+				.lion& {
+					-webkit-transform: translate(4px, -8px) scaleX(1.1) scaleY(1.5) rotate(220deg) @important;
+					font-size: 15px @important;
+				}
 			}
 
 			&:checked {
@@ -327,16 +368,17 @@
 				border-color: lighten(@baseColor, 1%) @important;
 
 				&:after {
-					-webkit-transform: translate(2px, -2px) scaleY(1.5) scaleX(1.15) @important;
-
-					.jsb-large-font& {
-						-webkit-transform: translate(1px, -4px) scaleY(1.2) scaleX(0.85) @important;
-					}
+					color: rgba(255, 255, 255, 1) @important;
+					text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.18), 0 0 0 rgba(255, 255, 255, 0.6) @important;
 				}
 
 				&:active:after {
-					opacity: 0.8 @important;
+					opacity: 0.9 @important;
 				}
+			}
+
+			&:focus {
+				border-color: darken(@focusShadow, 5%) @important;
 			}
 
 			+ label {
@@ -355,12 +397,14 @@
 
 			color: #3a3a3a @important;
 			-webkit-appearance: none @important;
-			border-bottom-color: rgb(190, 190, 190) @important;
+			border-bottom-color: darken(rgb(190, 190, 190), @darknessLevel) @important;
 			z-index: 1 @important;
 			padding-right: 21px @important;
 			white-space: pre @important;
 			overflow: hidden @important;
 			margin-top: 1px @important;
+
+			.darkness-color();
 
 			&:after {
 				display: inline-block @important;
@@ -586,6 +630,10 @@
 			height: 1px @important;
 			background: rgba(0, 0, 0, 0.08) @important;
 			margin: 7px 0 @important;
+
+			& when (@darkMode) {
+				background: rgba(0, 0, 0, 0.45);
+			}
 		}
 
 		.vertical-divider {
@@ -604,14 +652,14 @@
 			display: inline-block @important;
 			height: 19px @important;
 			width: 19px @important;
-			border: 1px solid rgb(201, 201, 201) @important;
-			border-bottom-color: rgb(173, 173, 173) @important;
+			border: 1px solid darken(rgb(201, 201, 201), @darknessLevel) @important;
+			border-bottom-color: darken(rgb(173, 173, 173), @darknessLevel) @important;
 			color: @baseColor @important;
 			text-shadow: 0 0 0 lighten(@baseColor, 15%);
 			border-radius: 20px @important;
 			text-align: center @important;
 			line-height: 20px @important;
-			background: #fff @important;
+			background: darken(#fff, @darknessLevel) @important;
 			cursor: default @important;
 			-webkit-user-select: none @important;
 			font-family: Helvetica @important;
@@ -619,8 +667,12 @@
 			box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) @important;
 			font-size: 1.2em @important;
 
+			& when (@darkMode) {
+				color: lighten(@baseColor, 12%);
+			}
+
 			&:active {
-				background: #f0f0f0 @important;
+				background: darken(#f0f0f0, @darknessLevel) @important;
 			}
 
 			&:before {

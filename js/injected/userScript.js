@@ -219,7 +219,7 @@ var UserScript = {
 		},
 
 		GM_log: function () {
-			JSB.console.debug.apply(JSB.console, arguments);
+			console.debug.apply(console, arguments);
 		},
 
 		GM_openInTab: function (url) {

@@ -54,7 +54,11 @@
 			&embossed {
 				color: rgba(0, 0, 0, 0.3);
 				font-weight: 500;
-				text-shadow: 0 1px 1px #fff, 0 0 0 rgba(0, 0, 0, 0.3), 0 0 1px #fff;
+				text-shadow: 0 1px 1px darken(#fff, @darknessLevel), 0 0 0 rgba(0, 0, 0, 0.3), 0 0 1px darken(#fff, @darknessLevel);
+
+				& when (@darkMode) {
+					color: rgba(255, 255, 255, 0.3);
+				}
 			}
 
 			&smaller {
@@ -83,6 +87,10 @@
 				&:focus {
 					&::-webkit-scrollbar-thumb {
 						background: rgba(0, 0, 0, 0.3);
+
+						& when (@darkMode) {
+							background: rgba(255, 255, 255, 0.2);
+						}
 					}
 				}
 				
@@ -96,8 +104,16 @@
 					&-thumb {
 						background: rgba(0, 0, 0, 0.15);
 
+						& when (@darkMode) {
+							background: rgba(255, 255, 255, 0.1);
+						}
+
 						&:hover {
 							background: rgba(0, 0, 0, 0.5);
+
+							& when (@darkMode) {
+								background: rgba(255, 255, 255, 0.4);
+							}
 						}
 					}
 				}
@@ -136,6 +152,10 @@
 		ul,
 		ol {
 			list-style: none;
+
+			li.dividing-border {
+				border-bottom: 1px solid darken(#f2f2f2, @darknessLevel);
+			}
 		}
 
 		ol {
@@ -150,6 +170,10 @@
 			color: #5a668c;
 			font-weight: normal;
 			margin: 0 7px 10px;
+
+			& when (@darkMode) {
+				color: lighten(#5a668c, 10%);
+			}
 		}
 
 		h1 {
@@ -172,8 +196,16 @@
 		.select-custom-options li {
 			color: @baseColor;
 
+			& when (@darkMode) {
+				color: lighten(@baseColor, 12%);
+			}
+
 			&:active {
 				color: darken(@baseColor, 10%);
+
+				& when (@darkMode) {
+					color: lighten(@baseColor, 7%);
+				}
 			}
 
 			&.no-underline {

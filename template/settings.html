@@ -30,7 +30,7 @@
 </noscript>
 
 <noscript id="setting-section-description">
-	<li id="<%=self.id%>" class="setting-section-description">
+	<li id="<%=self.id%>" class="setting-section-description <%=self.classes || ''%>">
 		<div class="setting-section-setting-full">
 			<p class="jsb-info"><%=self.description%></p>
 		</div>
@@ -201,7 +201,7 @@
 	<li class="setting-section-setting user-script-item <%=self.index > 0 ? 'dividing-border' : ''%>">
 		
 		<div class="setting-section-setting-left">
-			<p class="jsb-info"><b><%=self.attributes.get('meta').name._escapeHTML()%></b></p>
+			<p class="jsb-info"><b><%=(self.attributes.get('meta') || { name: '' }).name._escapeHTML()%></b></p>
 			<% if (self.attributes.get('canBeUpdated')) { %>
 				<ul class="generic-menu-options generic-menu-menu">
 					<li>

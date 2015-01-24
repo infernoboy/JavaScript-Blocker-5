@@ -317,7 +317,7 @@ UI.Page = {
 								if (hasAffect.hasAffect || !hasAffect.detail)
 									break;
 
-								hasAffect.detail.ruleList.__remove(hasAffect.detail.ruleType, hasAffect.detail.ruleKind, hasAffect.detail.domain, hasAffect.detail.rule);
+								hasAffect.detail.ruleList.__remove(false, hasAffect.detail.ruleType, hasAffect.detail.ruleKind, hasAffect.detail.domain, hasAffect.detail.rule);
 							} while (true);
 
 						ruleWasCreated = true;

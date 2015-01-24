@@ -22,7 +22,7 @@
 			padding-top: 3px;
 			margin-top: -2px;
 			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-			background: rgb(246, 245, 246);
+			background: darken(rgb(246, 245, 246), @darknessLevel);
 
 			.jsb-large-font& {
 				-webkit-flex: 0 0 57px;
@@ -83,6 +83,10 @@
 	padding-bottom: 5px;
 	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 
+	& when (@darkMode) {
+		border-bottom-color: rgba(0, 0, 0, 0.6);
+	}
+
 	h2 {
 		margin-left: 3px;
 		overflow-x: scroll;
@@ -115,6 +119,10 @@
 
 		.rule-group-type > li:nth-child(even) {
 			border-left-color: rgba(2, 1, 2, 0.05);
+
+			& when (@darkMode) {
+				border-left-color: rgba(2, 1, 2, 0.3);
+			}
 		}
 	}
 }
@@ -163,7 +171,11 @@
 			}
 
 			h4 {
-				color: darken(@baseColor, 15%);
+				color: darken(@baseColor, 13%);
+
+				& when (@darkMode) {
+					color: lighten(@baseColor, 20%);
+				}
 			}
 
 			> li {
@@ -172,9 +184,18 @@
 				border-bottom: 1px solid rgba(2, 1, 2, 0.065);
 				border-left: 1px solid transparent;
 
+				& when (@darkMode) {
+					border-bottom-color: rgba(2, 1, 2, 0.18);
+				}
+
 				&:nth-child(even) {
 					background: rgba(2, 1, 2, 0.022);
 					border-bottom-color: rgba(2, 1, 2, 0.05);
+
+					& when (@darkMode) {
+						background: rgba(255, 254, 255, 0.022);
+						border-bottom-color: rgba(2, 1, 2, 0.3);
+					}
 				}
 
 				&:first-child {

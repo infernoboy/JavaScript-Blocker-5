@@ -418,6 +418,10 @@ var UI = {
 
 		UI.view.init();
 
+		setTimeout(function () {
+			UI.setLessVariables();
+		}, 500);
+
 		Settings.map.showResourceURLs.props.onChange();
 
 		window.addEventListener('keydown', UI.events.keyboardShortcut, true);
@@ -447,6 +451,14 @@ var UI = {
 				heightDifference: originalHeight - popover.height,
 			});
 		}, 10, originalWidth, originalHeight, popover);
+	},
+
+	setLessVariables: function () {
+		(window.less || Popover.window.less).modifyVars({
+			darkMode: Settings.getItem('darkMode'),
+			darknessLevel: Settings.getItem('darkMode') ? 81 : 0,
+			baseColor: Settings.getItem('baseColor')
+		});
 	},
 
 	events: {
@@ -738,10 +750,13 @@ var UI = {
 								event.preventDefault();
 							}, true);
 
+						UI.event.addCustomEventListener('poppyDidShow', function () {
+							menuHolder.removeAttr('data-poppyMenuWillShow', 1);
+						}, true);
+
+						poppy.show()
+
 						setTimeout(function (poppy, menuHolder) {
-							UI.event.addCustomEventListener('poppyDidShow', function () {
-								menuHolder.removeAttr('data-poppyMenuWillShow', 1);
-							}, true);
 
 							poppy.show();
 						}, 0, poppy, menuHolder);

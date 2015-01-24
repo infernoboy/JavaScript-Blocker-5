@@ -100,6 +100,22 @@ globalPage.Template = Template;
 			marginTop: 0
 		}, speed, typeof easing === 'string' ? easing : 'swing', onComplete);
 	};
+
+	$.fn.collapse = function (speed, easing, onComplete) {
+		$(this).animate({
+			height: 0,
+			marginTop: 0,
+			marginBottom: 0,
+			paddingTop: 0,
+			paddingBottom: 0
+		}, speed, typeof easing === 'string' ? easing : 'swing', function () {
+			onComplete.call(this);
+
+			$(this).remove();
+		});
+
+		return this;
+	}
 })();
 
 window.addEventListener('error', function (event) {

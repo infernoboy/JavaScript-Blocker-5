@@ -218,8 +218,10 @@ var Handler = {
 				frames = document.getElementsByTagName('frame');
 
 		for (i = 0, b = scripts.length; i < b; i++)
-			if (!Element.triggersBeforeLoad(scripts[i]))
-				Element.processUnblockable('script', scripts[i], true);
+			if (!Element.triggersBeforeLoad(scripts[i]) && globalSetting.showUnblockedScripts)
+				setTimeout(function (script) {
+					Element.processUnblockable('script', script, true);
+				}, 10 * i, scripts[i]);
 
 		for (i = 0, b = anchors.length; i < b; i++)
 			Element.handle.anchor(anchors[i]);
@@ -486,7 +488,7 @@ var Element = {
 	},
 
 	processUnblockable: function (kind, element, doesNotTrigger) {
-		if (kind === 'script' && Special.isEnabled('inline_script_execution'))
+		if (kind === 'script' && (Special.isEnabled('inline_script_execution') || !globalSetting.showUnblockedScripts))
 			return false;
 
 		if (kind === 'embed')
@@ -587,7 +589,7 @@ var Element = {
 	},
 
 	handle: {
-		node: function (node) {
+		node: function (node) {			
 			var nodeName = node.nodeName.toUpperCase();
 
 			if (nodeName === 'A')
@@ -869,7 +871,9 @@ if (!globalSetting.disabled) {
 				for (var i = 0; i < mutations.length; i++)
 					if (mutations[i].type === 'childList')
 						for (var j = 0; j < mutations[i].addedNodes.length; j++)
-							Element.handle.node(mutations[i].addedNodes[j]);
+							setTimeout(function (node) {
+								Element.handle.node(node);
+							}, 10 * (i + j), mutations[i].addedNodes[j]);
 			});
 
 			observer.observe(document, {

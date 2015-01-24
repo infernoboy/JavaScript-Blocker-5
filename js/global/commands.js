@@ -171,6 +171,7 @@ function Command (command, data, event) {
 				hideInjected: Settings.getItem('hideInjected'),
 				confirmShortURL: Settings.getItem('confirmShortURL'),
 				blockReferrer: Settings.getItem('blockReferrer'),
+				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 
 				contentURLs: window.CONTENT_URLS
 			};

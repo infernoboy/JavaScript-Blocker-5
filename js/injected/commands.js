@@ -224,13 +224,15 @@ var Command = function (type, event) {
 
 		getFrameInfo: function (detail) {
 			if (detail.data.frameID === Page.info.id)
-				GlobalPage.message('bounce', {
-					command: 'receiveFrameInfo',
-					detail: {
-						attachTo: detail.data.attachTo,
-						info: Page.info
-					}
-				});
+				setTimeout(function (detail) {
+					GlobalPage.message('bounce', {
+						command: 'receiveFrameInfo',
+						detail: {
+							attachTo: detail.data.attachTo,
+							info: Page.info
+						}
+					});
+				}, 0, detail);
 		},
 
 		recommendPageReload: function () {

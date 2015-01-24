@@ -96,6 +96,13 @@ var Special = {
 			JSB: JSB
 		});
 
+		var specialSetup = new DeepInject(null, function () {
+			if (window[JSB.eventToken])
+				var console = window[JSB.eventToken].console;
+		}, true);
+
+		deepInject.prepend([specialSetup.inner()]);
+
 		document.addEventListener('JSBCommander:' + deepInject.id + ':' + TOKEN.EVENT, this.JSBCommanderHandler, true);
 
 		return deepInject;
@@ -117,7 +124,7 @@ var Special = {
 			return;
 
 		var special = new DeepInject(name, this.specials[name]);
-
+		
 		this.injectHelpers(special, this.helpers);
 		this.setup(special);
 
@@ -319,8 +326,6 @@ var Special = {
 							writable: false,
 							value: deepFreezeObject(JSB[key])
 						});
-
-				JSB.console = window[JSB.eventToken].console;
 
 				window[JSB.eventToken].document$addEventListener('JSBCallback:' + JSB.sourceID + ':' + JSB.eventToken, JSBCallbackHandler, true);
 			});
