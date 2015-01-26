@@ -36,12 +36,14 @@ function Resource (resource) {
 				sourceProto = Utilities.URL.protocol(this.source),
 				locationProto = Utilities.URL.protocol(this.pageLocation);
 
-		if (protos._contains(sourceProto))
-			this.source = Utilities.URL.strip(this.source);
+		// if (protos._contains(sourceProto))
+		// 	this.source = Utilities.URL.strip(this.source);
 
 		if (protos._contains(locationProto))
 			this.pageLocation = Utilities.URL.strip(this.pageLocation);
 	}
+
+	this.lowerSource = this.source.toLowerCase();
 };
 
 Resource.longRegExps = new Store('LongRegExps');
@@ -106,7 +108,7 @@ Resource.prototype.__addRule = function (action, domain, rule, framed, temporary
 	if (this.sourceIsURL)
 		rule.rule = Resource.mapDomain(this.sourceHost, rule.rule);
 	else if (!Rules.isRegExp(rule.rule))
-		rule.rule = this.source;
+		rule.rule = this.lowerSource;
 
 	return Rules.list[temporary ? 'temporary' : 'active'].__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, rule);
 };
@@ -115,7 +117,7 @@ Resource.prototype.__humanize = function (allow, rule, framed, temporary) {
 	if (this.sourceIsURL)
 		rule = Resource.mapDomain(this.sourceHost, rule);
 	else
-		rule = Rules.isRegExp(rule) ? rule : this.source;
+		rule = Rules.isRegExp(rule) ? rule : this.lowerSource;
 
 	var action = allow ? 'allow' : 'block',
 			from = (this.sourceIsURL && rule._startsWith('.')) ? 'within' : (Rules.isRegExp(rule) ? 'matching' : 'from'),
@@ -193,7 +195,7 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 			if (checkAction && !!(rules.data[rule].value.action % 2) !== isAllowed)
 				continue;
 
-			if (Rules.matches(rule, rules.data[rule].value.regexp, self.source, self.pageLocation)) {
+			if (Rules.matches(rule, rules.data[rule].value.regexp, self.lowerSource, self.pageLocation)) {
 				domainRules = matchedList
 					._getWithDefault(ruleKind, {})
 					._getWithDefault(ruleType, {})
@@ -219,9 +221,10 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 };
 
 Resource.prototype.shouldHide = function () {
-	var easyHide = (this.action === ACTION.BLACKLIST || this.action === ACTION.WHITELIST) && Settings.getItem('autoHideEasyList');
+	var easyHide = (this.action === ACTION.BLACKLIST || this.action === ACTION.WHITELIST) && Settings.getItem('autoHideEasyList'),
+			nonEasyHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action !== ACTION.BLACKLIST && this.action !== ACTION.WHITELIST && Settings.getItem('autoHideNonEasyList'));
 
-	return easyHide || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
+	return easyHide || nonEasyHide || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
 };
 
 Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
@@ -250,13 +253,13 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	var searchKinds = useHideKinds ? this.hideKinds : this.searchKinds,
 			store = Resource.canLoadCache.getStore(searchKinds.concat(excludeLists).join('-')),
 			pageSources = store.getStore(this.pageLocation),
-			pageCached = pageSources.get(this.source);
+			pageCached = pageSources.get(this.lowerSource);
 
 	if (pageCached && !detailed && Rules.list.active === Rules.list.user)
 		return pageCached;
 
 	var hostSources = store.getStore(this.pageHost),
-			domainCached = hostSources.get(this.source);
+			domainCached = hostSources.get(this.lowerSource);
 
 	if (domainCached && domainCached.action >= 0 && !detailed && Rules.list.active === Rules.list.user)
 		return domainCached;
@@ -291,7 +294,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 					continue;
 
 				for (i = 0, b = longRegExps.data[action].value.regExps.length; i < b; i++) {
-					if (longRegExps.data[action].value.regExps[i].test(self.source)) {
+					if (longRegExps.data[action].value.regExps[i].test(self.lowerSource)) {
 						canLoad = longRegExps.data[action].value.canLoad;
 
 						if (action % 2)
@@ -342,7 +345,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 						continue;
 
 					for (i = 0, b = longRegExps.length; i < b; i++) {
-						if (longRegExps[i].test(self.source)) {
+						if (longRegExps[i].test(self.lowerSource)) {
 							canLoad = {
 								action: parseInt(action, 10),
 								list: ruleListName
@@ -372,7 +375,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	if (!detailed && canLoad.list !== 'temporary' && Rules.list.active === Rules.list.user)
 		Utilities.setImmediateTimeout(function (canLoad, store, source) {
 			store.set(source, canLoad);
-		}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.source]);
+		}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.lowerSource]);
 
 	return canLoad;
 };

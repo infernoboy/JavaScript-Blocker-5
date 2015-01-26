@@ -112,6 +112,22 @@ Object._extend(Poppy.scripts, {
 
 	'temporary-rules-menu': function (poppy) {
 		poppy.content
+			.on('click', '#temporary-menu-new', function (event) {
+				var newPoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'create-rule');
+
+				newPoppy.setContent(Template.create('poppy', 'create-rule', {
+					editing: false,
+					list: 'temporary',
+					type: 'domain',
+					domain: '',
+					kind: '',
+					rule: '',
+					action: 0
+				}));
+
+				newPoppy.show();
+			})
+
 			.on('click', '#temporary-menu-clear', function (event) {
 				globalPage.Rules.list.temporary.clear();
 			})
@@ -131,12 +147,26 @@ Object._extend(Poppy.scripts, {
 
 	'active-rules-menu': function (poppy) {
 		poppy.content
-			.on('click', '#active-menu-clear', function (event) {
-				globalPage.Rules.list.active.clear();
+			.on('click', '#active-menu-new', function (event) {
+				var newPoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'create-rule');
+
+				newPoppy.setContent(Template.create('poppy', 'create-rule', {
+					editing: false,
+					list: 'user',
+					type: 'domain',
+					domain: '',
+					kind: '',
+					rule: '',
+					action: 0
+				}));
+
+				newPoppy.show();
 			})
 
 			.on('click', '#active-menu-clear', function (event) {
 				poppy.close();
+
+				globalPage.Rules.list.active.clear();
 
 				UI.view.switchTo('#rule-views-active', true);
 			})
@@ -202,6 +232,157 @@ Object._extend(Poppy.scripts, {
 
 				poppy.close();
 			});
+	},
+
+	'create-rule': function (poppy) {
+		var list = $('#create-rule-list', poppy.content),
+				type = $('#create-rule-type', poppy.content),
+				kind = $('#create-rule-kind', poppy.content),
+				kinds = $('#create-rule-kinds', poppy.content),
+				domain = $('#create-rule-domain', poppy.content),
+				whichItem = $('#create-rule-which-item', poppy.content),
+				ruleContainer = $('#create-rule-rule-container', poppy.content);
+
+		poppy.content
+			.on('change', '#create-rule-type', function () {
+				var isAll = this.value === 'domain-all';
+				
+				domain.parent().toggleClass('jsb-hidden', isAll);
+
+				poppy.setPosition();
+
+				if (!isAll)
+					domain.focus();
+			})
+
+			.on('change', '#create-rule-kind', function () {
+				var isDisable = (this.value === 'disable' || this.value === 'enable');
+
+				$('option[value="jsb"]', whichItem).prop({
+					disabled: !isDisable,
+					selected: isDisable
+				});
+
+				$('option:not([value="jsb"])', whichItem)
+					.prop({
+						disabled: isDisable,
+					});
+
+				if (whichItem[0].selectedIndex === -1)
+					$('option:eq(1)', whichItem).prop('selected', true);
+
+				whichItem.change();
+			})
+
+			.on('change', '#create-rule-which-item', function () {
+				setTimeout(function (self) {
+					if (self.value === 'items-of-kind')
+						kinds.show();
+					else
+						kinds.hide();
+					
+					if (self.value !== 'items-of-kind' && self.value !== 'items-all')
+						ruleContainer.hide();
+					else 
+						ruleContainer.show();
+
+					poppy.setPosition();
+				}, 50, this);
+			})
+
+			.on('click', '#create-rule-save', function () {
+				var self = $(this),
+						container = $('#create-rule', poppy.content),
+						editing = container.attr('data-editing') === '1';
+
+				if (editing) {
+					var originalListName = container.attr('data-listName'),
+							originalType = container.attr('data-type'),
+							originalDomain = container.attr('data-domain'),
+							originalKind = container.attr('data-kind'),
+							originalRule = container.attr('data-rule'),
+							originalAction = parseInt(container.attr('data-action'), 10),
+							originalList = globalPage.Rules.list[originalListName];
+
+					if (originalList)
+						originalList.__remove(false, originalType, originalKind, originalDomain, originalRule);
+				}
+
+				var newListName = list.val(),
+						newKindAction = kind.val(),
+						newType = type.val(),
+						newDomain = $.trim(domain.val()),
+						whichItemVal = whichItem.val(),
+						newRule = $.trim($('#create-rule-rule', ruleContainer).val()),
+						isHide = (newKindAction === 'hide' || newKindAction === 'show'),
+						isDisable = (newKindAction === 'enable' || newKindAction === 'disable'),
+						newAction = (newKindAction === 'show' || newKindAction === 'enable' || newKindAction === 'allow') ? 1 : 0,
+						newKindPrefix = '',
+						newKinds = [];
+
+				if (!newRule.length)
+					newRule = '*';
+
+				if (!newDomain.length)
+					newDomain = '*';
+
+				if ($('#create-rule-when-framed', poppy.content).is(':checked'))
+					newKindPrefix += 'framed:';
+
+				if (isHide)
+					newKindPrefix += 'hide:';
+
+				if (newType === 'domain-all') {
+					newType = 'domain';
+					newDomain = '*';
+				}
+
+				if (isDisable) {
+					newKinds.push(newKindPrefix + 'disable');
+
+					newRule = '*';
+
+				} else if (whichItemVal === 'items-all')
+					newKinds.push(newKindPrefix + '*');
+
+				else if (whichItemVal === 'items-of-kind')
+					$('#create-rule-kinds input:checked', poppy.content).each(function () {
+						newKinds.push(newKindPrefix + this.getAttribute('data-kind'));
+					});
+
+				try {
+					for (var i = newKinds.length; i--;)
+						globalPage.Rules.list[newListName].__add(newType, newKinds[i], newDomain, {
+							rule: newRule,
+							action: newAction
+						});
+
+					Poppy.closeAll();
+				} catch (error) {
+					var offset = self.offset(),
+							errorPoppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
+
+					errorPoppy.setContent(Template.create('main', 'jsb-readable', {
+						string: error.message
+					}));
+
+					errorPoppy.linkTo(poppy).show();
+
+					if (editing)
+						originalList.__add(originalType, originalKind, originalDomain, {
+							rule: originalRule,
+							action: originalAction
+						});
+				}
+			});
+
+		type.change();
+
+		if (kind.val() === 'disable' || kind.val() === 'enable')
+			kind.change();
+
+		domain.change();
+		whichItem.change();
 	},
 
 	console: function (poppy) {

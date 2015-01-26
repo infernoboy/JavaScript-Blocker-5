@@ -217,7 +217,7 @@ UI.Page = {
 					Rules = globalPage.Rules,
 					ruleKindPrefix = section.find('.page-host-editor-when-framed').is(':checked') ? 'framed:' : '',
 					notWhere = section.find('.page-host-editor-where-not').is(':checked'),
-					ruleList = section.find('.page-host-editor-duration').val() === 'always' ? Rules.list.user : Rules.list.temporary,
+					ruleList = Rules.list[section.find('.page-host-editor-list').val()],
 					addRule = notWhere ? ruleList.addNotDomain : ruleList.addDomain,
 					ruleType = section.find('.page-host-editor-kind').val(),
 					ruleWhere = section.find('.page-host-editor-where'),
@@ -601,6 +601,10 @@ UI.Page = {
 						var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
 								ruleListItems = $('<ul class="page-rules-container">');
 
+						UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
+							poppy.setPosition();
+						}, true);
+
 						for (var resourceID in resources) {
 							var rules = resources[resourceID].rulesForResource(isAllowed),
 									ruleLists = {};
@@ -616,10 +620,6 @@ UI.Page = {
 						}
 
 						poppy.setContent(ruleListItems).show();
-
-						UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
-							poppy.setPosition();
-						}, true);
 					});
 
 					loadingPoppy.setContent('Loading rules...').show(true, true);

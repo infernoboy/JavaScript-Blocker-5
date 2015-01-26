@@ -112,8 +112,12 @@
 				z-index: 500;
 				-webkit-flex: 0 0 24px;
 				border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-				background: darken(rgb(246, 245, 246), @darknessLevel);
+				background: darken(rgb(245, 245, 245), @darknessLevel);
 				overflow: hidden;
+
+				& when (@darkMode) {
+					border-bottom-color: rgba(0, 0, 0, 0.4);
+				}
 
 				.yosemite& {
 					padding-top: 4px;
@@ -153,6 +157,10 @@
 						&,
 						* {
 							color: #000;
+
+							& when (@darkMode) {
+								color: #bbb;
+							}
 						}
 					}
 
@@ -163,7 +171,7 @@
 							color: #fff;
 						}
 
-						box-shadow: 0 1px 0 #cacaca;
+						box-shadow: 0 1px 0 darken(#cacaca, @darknessLevel);
 					}
 
 					&.is-disabled {
@@ -386,7 +394,7 @@
 					& when (@darkMode) {
 						color: #555;
 					}
-					
+
 					.jsb-large-font& {
 						top: -3px;
 					}
@@ -414,6 +422,7 @@
 			}
 		}
 
+		@import "view.setup.less";
 		@import "view.page.less";
 		@import "view.resource.less";
 		@import "view.setting.less";

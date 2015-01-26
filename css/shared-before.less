@@ -33,7 +33,7 @@
 	}
 
 	.- () when (@darkMode) {
-		@blockColor: #ce2f2a;
+		@blockColor: #c42c28;
 	}
 
 	.-();
@@ -57,7 +57,8 @@
 	}
 
 	.darkness-color () when (@darkMode) {
-		color: #c9c9c9 @important;
+		color: #cacaca @important;
+		text-shadow: 0 1px 0 #000;
 	}
 
 	.jsb-element,
@@ -97,6 +98,19 @@
 			}
 		}
 
+		&::selection,
+		*::selection {
+			background: desaturate(@yosemiteBlue, 20%);
+			color: #fff;
+		}
+
+		& when (@darkMode) {
+			&::selection,
+			*::selection {
+				color: #eee;
+			}
+		}
+
 		font-size: 9pt @important;
 
 		* {
@@ -125,6 +139,7 @@
 			opacity: 1;
 			float: none @important;
 			text-indent: 0 @important;
+			letter-spacing: normal @important;
 
 			.darkness-color();
 
@@ -144,11 +159,10 @@
 		select,
 		button,
 		textarea {
-			background: darken(#fff, @darknessLevel) @important;
+			background: darken(#fff, @darknessLevel - 5%) @important;
 			border: none @important;
 			border-radius: 4px @important;
 			color: darken(#333, @darknessLevel) @important;
-			// color: desaturate(darken(@baseColor, 35%), 60%);
 			text-shadow: 0 1px 0 rgba(255,255,255,0.5) @important;
 			border: 1px solid darken(rgb(200, 200, 200), @darknessLevel) @important;
 			border-bottom-color: darken(rgb(168, 168, 168), @darknessLevel) @important;
@@ -332,7 +346,7 @@
 			-webkit-appearance: none @important;
 			height: 14px @important;
 			width: 14px @important;
-			background: darken(#fff, @darknessLevel) @important;
+			background: darken(#fff, @darknessLevel - 5%) @important;
 			padding: 1px 4px 3px 1px @important;
 			border-radius: 3px @important;
 			margin-bottom: -2px @important;
@@ -344,6 +358,10 @@
 
 			&:active {
 				background: darken(#f3f3f3, @darknessLevel) @important;
+
+				& when (@darkMode) {
+					background: #313131 @important;
+				}
 			}
 
 			&:after {
@@ -418,8 +436,7 @@
 				margin-left: -16px @important;
 				margin-right: 0 @important;
 				pointer-events: none @important;
-				color: darken(@baseColor, 5%) @important;
-				color: #fff;
+				color: #fff @important;
 				font-weight: bold @important;
 				background: -webkit-linear-gradient(top, lighten(@baseColor, 15%), lighten(@baseColor, 2%));
 				height: 18px @important;
@@ -431,7 +448,7 @@
 				border-top-right-radius: 4px @important;
 				border-bottom-right-radius: 4px @important;
 				-webkit-font-smoothing: antialiased @important;
-				text-shadow: 0 0 0 rgba(255, 255, 255, 0.7);
+				text-shadow: 0 0 0 rgba(255, 255, 255, 0.7) @important;
 
 				.yosemite& {
 					top: -2px @important;
@@ -444,6 +461,12 @@
 					.yosemite& {
 						top: -5px @important;
 					}
+				}
+
+				& when (@darkMode) {
+					border-top-color: darken(@baseColor, 20%);
+					border-right-color: darken(@baseColor, 25%);
+					border-bottom-color: darken(@baseColor, 29%);
 				}
 
 				&,
@@ -475,7 +498,7 @@
 			}
 
 			&:active {
-				background: #f0f0f0;
+				background: darken(#f0f0f0, @darknessLevel);
 				
 				+ label {
 					background: -webkit-linear-gradient(top, lighten(@baseColor, 7%), darken(@baseColor, 6%));
@@ -631,8 +654,16 @@
 			background: rgba(0, 0, 0, 0.08) @important;
 			margin: 7px 0 @important;
 
+			&-short {
+				margin: 5px 0 @important;
+			}
+
 			& when (@darkMode) {
 				background: rgba(0, 0, 0, 0.45);
+			}
+
+			&-transparent {
+				background-color: transparent @important;
 			}
 		}
 
@@ -659,7 +690,7 @@
 			border-radius: 20px @important;
 			text-align: center @important;
 			line-height: 20px @important;
-			background: darken(#fff, @darknessLevel) @important;
+			background: darken(#fff, @darknessLevel - 5%) @important;
 			cursor: default @important;
 			-webkit-user-select: none @important;
 			font-family: Helvetica @important;

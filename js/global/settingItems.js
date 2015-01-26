@@ -6,7 +6,11 @@ Settings.settings = {
 		setting: 'donationVerified',
 		props: {
 			type: 'boolean',
-			default: true // Make sure I change this to false before general release..
+			default: function () {
+				return true; // Make sure I change this to false before general release..
+
+				return Trial.isActive();
+			}
 		}
 	}, {
 		setting: 'installID',
@@ -225,19 +229,25 @@ Settings.settings = {
 			}]
 		}
 	}, {
-		setting: 'quickCyclePageItems',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
 		setting: 'createRulesOnClose',
 		props: {
 			type: 'boolean',
 			default: false
 		}
 	}, {
+		setting: 'quickCyclePageItems',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
 		setting: 'autoHideEasyList',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		setting: 'autoHideNonEasyList',
 		props: {
 			type: 'boolean',
 			default: false

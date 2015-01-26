@@ -23,45 +23,6 @@
 				</div><%
 			} %>
 
-		<% if (snapshotInUse) { %>
-			<div class="page-host-snapshot-in-use">
-				<p class="jsb-info jsb-embossed jsb-centered">Snapshot in use.</p>
-			</div><%
-		}
-
-		if (self.disabled) {
-			if (self.disabled.action > -1) { %>
-				<div class="page-host-disabled">
-					<p class="jsb-info jsb-embossed jsb-centered"><%=_('view.page.host.disabled')%></p>
-				</div><%
-			}
-		} else { %>
-			<div class="page-host-columns">
-				<div class="page-host-columns-resize" title="<%=_('view.page.host.double_click_resize')%>"></div>
-				<%=Template.create('page', 'host-column', {
-					stateType: 'allowed',
-					state: self.state.allowed || {}
-				}, null, true)%>
-				<%=Template.create('page', 'host-column', {
-					stateType: 'blocked',
-					state: self.state.blocked || {}
-				}, null, true)%>
-			</div>
-
-			<% if (self.state.unblocked) {
-				var unblockedKeys = Object.keys(self.state.unblocked);
-
-				unblockedKeys._remove(unblockedKeys.indexOf('script'));
-
-				if (Settings.getItem('showUnblockedScripts') || unblockedKeys.length) { %>
-					<%=Template.create('page', 'host-unblocked', {
-						stateType: 'unblocked',
-						state: self.state.unblocked
-					}, null, true)%><%
-				}
-			}
-		} %>
-		
 		<div class="page-host-editor">
 			<%
 				if (self.isFrame) { %>
@@ -72,9 +33,9 @@
 				} %>
 
 			<div class="jsb-info">
-				<select class="page-host-editor-duration" title="<%=_('view.page.editor.duration.title')%>">
-					<option value="always"><%=_('view.page.host.editor.always')%></option>
-					<option value="temporarily" <%=Settings.getItem('lastRuleWasTemporary') ? 'selected="selected"' : ''%>><%=_('view.page.host.editor.temporarily')%></option>
+				<select class="page-host-editor-list" title="<%=_('view.page.editor.list.title')%>">
+					<option value="user"><%=_('view.page.host.editor.always')%></option>
+					<option value="temporary" <%=Settings.getItem('lastRuleWasTemporary') ? 'selected="selected"' : ''%>><%=_('view.page.host.editor.temporarily')%></option>
 				</select><label></label>
 
 				<select class="page-host-editor-kind" title="<%=_('view.page.editor.kind.title')%>">
@@ -111,7 +72,7 @@
 					if (!['*', 'disable', 'user_script']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
 						b++; %>
 						<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i] + self.id%>" data-kind="<%=kinds[i]%>" />
-						<label for="page-host-editor-kinds-<%=kinds[i] + self.id%>"><%=_('view.page.host.kind.' + kinds[i])%></label><%
+						<label for="page-host-editor-kinds-<%=kinds[i] + self.id%>"><%=_('view.page.host.kind.' + kinds[i])%></label>&nbsp;<%
 
 						if (b > 4 && !didBreak) {
 							didBreak = true; %>
@@ -157,6 +118,45 @@
 				</div>
 			</div>
 		</div>
+
+		<% if (snapshotInUse) { %>
+			<div class="page-host-snapshot-in-use">
+				<p class="jsb-info jsb-embossed jsb-centered">Snapshot in use.</p>
+			</div><%
+		}
+
+		if (self.disabled) {
+			if (self.disabled.action > -1) { %>
+				<div class="page-host-disabled">
+					<p class="jsb-info jsb-embossed jsb-centered"><%=_('view.page.host.disabled')%></p>
+				</div><%
+			}
+		} else { %>
+			<div class="page-host-columns">
+				<div class="page-host-columns-resize" title="<%=_('view.page.host.double_click_resize')%>"></div>
+				<%=Template.create('page', 'host-column', {
+					stateType: 'allowed',
+					state: self.state.allowed || {}
+				}, null, true)%>
+				<%=Template.create('page', 'host-column', {
+					stateType: 'blocked',
+					state: self.state.blocked || {}
+				}, null, true)%>
+			</div>
+
+			<% if (self.state.unblocked) {
+				var unblockedKeys = Object.keys(self.state.unblocked);
+
+				unblockedKeys._remove(unblockedKeys.indexOf('script'));
+
+				if (Settings.getItem('showUnblockedScripts') || unblockedKeys.length) { %>
+					<%=Template.create('page', 'host-unblocked', {
+						stateType: 'unblocked',
+						state: self.state.unblocked
+					}, null, true)%><%
+				}
+			}
+		} %>
 	</div>
 </noscript>
 

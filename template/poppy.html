@@ -116,6 +116,9 @@
 	<div class="generic-menu">
 		<ul class="generic-menu-options">
 			<li class="jsb-align-right">
+				<% if (!globalPage.Rules.snapshotInUse()) { %>
+					<input type="button" id="active-menu-new" value="<%=_('active_menu.new')%>" /><%
+				} %>
 				<input type="button" id="active-menu-clear" class="double-click" value="<%=_('temporary_menu.clear')%>" />
 			</li>
 		</ul>
@@ -127,8 +130,9 @@
 	<div class="generic-menu">
 		<ul class="generic-menu-options">
 			<li class="jsb-align-right">
-				<input type="button" id="temporary-menu-clear" class="double-click" value="<%=_('temporary_menu.clear')%>" />
+				<input type="button" id="temporary-menu-new" value="<%=_('active_menu.new')%>" />
 				<input type="button" id="temporary-menu-make-always" value="<%=_('temporary_menu.make_always')%>" />
+				<input type="button" id="temporary-menu-clear" class="double-click" value="<%=_('temporary_menu.clear')%>" />
 			</li>
 		</ul>
 	</div>
@@ -238,6 +242,114 @@
 		<input type="button" class="user-script-confirm-view-switch-cancel" value="<%=_('Cancel')%>" />&nbsp;
 		<input type="button" class="user-script-confirm-view-switch-switch" value="<%=_('Switch')%>" data-viewID="<%=self.viewID%>" />
 	</div>
+</noscript>
+
+<noscript id="create-rule">
+	<% if (!Settings.getItem('donationVerified')) { %>
+		<p class="jsb-info"><%=_('extra_features_required')%></p><%
+	} else {
+		var selected = "selected=\"selected\"",
+				checked = "checked=\"checked\"",
+				isAllowed = !!(self.action % 2); %>
+
+		<h3 class="jsb-centered"><%=self.editing ? 'Edit' : 'New'%> Rule</h3>
+		<div id="create-rule" data-editing="<%=self.editing ? 1 : 0%>" data-listName="<%=self.list%>" data-type="<%=self.type%>" data-domain="<%=self.domain._entityQuotes()%>" data-kind="<%=self.kind%>" data-rule="<%=self.rule._entityQuotes()%>" data-action="<%=self.action%>">
+			<input type="checkbox" id="create-rule-when-framed" <%=self.kind._contains('framed:') ? checked : ''%> /> <label for="create-rule-when-framed"><%=_('view.page.host.editor.when_framed')%></label>		
+
+			<div class="horizontal-divider horizontal-divider-transparent"></div>
+
+			<select id="create-rule-list">
+				<option value="user"<%=self.list === 'user' ? selected : ''%>><%=_('view.page.host.editor.always')%></option>
+				<option value="temporary" <%=self.list === 'temporary' ? selected : ''%>><%=_('view.page.host.editor.temporarily')%></option>
+			</select><label></label>&nbsp;
+
+			<select id="create-rule-kind" title="<%=_('view.page.editor.kind.title')%>">
+				<option value="block" <%=!isAllowed ? selected : ''%>>
+					<%=_('view.page.host.editor.block')%>
+				</option>
+
+				<option value="allow" <%=isAllowed ? selected : ''%>>
+					<%=_('view.page.host.editor.allow')%>
+				</option>
+
+				<option value="hide" <%=(!isAllowed && self.kind._contains('hide:')) ? selected : ''%>>
+					<%=_('view.page.host.editor.hide')%>
+				</option>
+
+				<option value="show" <%=(isAllowed && self.kind._contains('hide:')) ? selected : ''%>>
+					<%=_('view.page.host.editor.show')%>
+				</option>
+
+				<option value="enable" <%=(isAllowed && self.kind._contains('disable')) ? selected : ''%>>
+					<%=_('view.page.host.editor.enable')%>
+				</option>
+
+				<option value="disable" <%=(!isAllowed && self.kind._contains('disable')) ? selected : ''%>>
+					<%=_('view.page.host.editor.disable')%>
+				</option>
+			</select><label></label>&nbsp;
+
+			<select id="create-rule-which-item" title="<%=_('view.page.editor.which.title')%>">
+				<option value="items-all" <%=self.kind._contains('*') ? selected : ''%>>
+					<%=_('view.page.host.editor.all_resources')%>
+				</option>
+				<option value="items-of-kind" <%=!self.kind._contains('*') ? selected : ''%>>
+					<%=_('view.page.host.editor.checked_kinds')%>
+				</option>
+				<option value="jsb" disabled="disabled">
+					<%=_('JSB')%>
+				</option>
+			</select><label></label>
+
+			<div class="horizontal-divider horizontal-divider-transparent"></div>
+
+			<div id="create-rule-kinds">
+				<%
+					var kinds = globalPage.Rules.__kinds,
+							divisor = Settings.getItem('largeFont') ? 4 : 5,
+							b = 0;
+
+					for (var i = 0; i < kinds.length; i++) {
+						if (!['*', 'disable']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
+							b++; %>
+							<input type="checkbox" id="create-rule-kinds-<%=kinds[i]%>" data-kind="<%=kinds[i]%>" <%=globalPage.Rules.baseKind(self.kind) === globalPage.Rules.baseKind(kinds[i]) ? checked : ''%> />
+							<label for="create-rule-kinds-<%=kinds[i]%>"><%=_('view.page.host.kind.' + kinds[i])%></label>&nbsp;<%
+
+							if (!(b % divisor)) { %>
+								<br /> <%
+							}
+						}
+					} %>
+				<div class="horizontal-divider horizontal-divider-transparent"></div>
+			</div>
+
+			<label class="jsb-label"><%=_('rule.on')%>:</label>&nbsp;
+			<select id="create-rule-type">
+				<option value="domain-all" <%=self.domain === '*' ? selected : ''%>>all domains</option>
+				<option value="domain" <%=(self.domain !== '*' && self.type === 'domain') ? selected : ''%>>domain</option>
+				<option value="notDomain" <%=(self.domain !== '*' && self.type === 'notDomain') ? selected : ''%>>not domain</option>
+				<option value="page" <%=(self.domain !== '*' && self.type === 'page') ? selected : ''%>>page</option>
+				<option value="notPage" <%=(self.domain !== '*' && self.type === 'notPage') ? selected : ''%>>not page</option>
+			</select><label></label>&nbsp;
+
+			<span id="create-rule-domain-wrapper">
+				<input type="text" id="create-rule-domain" value="<%=self.domain._entityQuotes()%>" />&nbsp;
+				<span class="more-info" data-moreInfo="<%=_('create_rule.domain_info')._entityQuotes()%>"></span>
+			</span>
+
+			<div id="create-rule-rule-container">
+				<div class="horizontal-divider horizontal-divider-transparent"></div>
+
+				<label for="create-rule-rule" class="jsb-label"><%=_('rule.rule')%>:</label>&nbsp;
+				<input type="text" id="create-rule-rule"  class="trigger-on-enter" value="<%=self.rule._entityQuotes()%>" />&nbsp;
+				<span class="more-info" data-moreInfo="<%=_('create_rule.rule_info')._entityQuotes()%>"></span>
+			</div>
+
+			<div class="jsb-align-right">
+				<input type="button" id="create-rule-save" class="on-enter" value="<%=_('Save')%>" />
+			</div>
+		</div><%
+	} %>
 </noscript>
 
 

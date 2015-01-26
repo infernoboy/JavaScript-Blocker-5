@@ -57,6 +57,7 @@
 
 	Poppy.scripts = {};
 
+	Poppy.poppies = poppies;
 
 	Poppy.setAllPositions = function () {
 		for (var poppyID in poppies)
@@ -122,7 +123,7 @@
 
 	Poppy.createArrow = function (poppy) {
 		var	arrowStyle = window.getComputedStyle(poppy.isUpArrow ? poppy.arrowSettingsUp[0] : poppy.arrowSettings[0]),
-				shadowColor = 'rgba(0, 0, 0, ' + (Settings.getItem('darkMode') ? 0.7 : 0.25) + ')',
+				shadowColor = 'rgba(1, 0, 1, ' + (Settings.getItem('darkMode') ? 1 : 0.25) + ')',
 				arrowBackgroundColor = arrowStyle.backgroundColor,
 				arrowContext = document.getCSSCanvasContext('2d', poppy.isUpArrow ? 'poppy-arrow-up' : 'poppy-arrow', 30, 20);
 
@@ -172,12 +173,11 @@
 		this.position = Object._copy(this.originalPosition);
 
 		this.isUpArrow = false;
+		this.noArrow = false;
 
-		this.poppy.removeClass('poppy-up');
+		this.poppy.removeClass('poppy-up poppy-no-arrow');
 
-		this.content.width('');
-
-		this.content.width(this.content.width() + 1); // Prevents annoying Safari rounding
+		this.content.width('');		
 
 		var position = {
 			arrow: {
@@ -192,6 +192,11 @@
 				top: 'auto'
 			}
 		};
+
+		this.poppy.css(position.poppy);
+		this.arrow.css(position.arrow);
+
+		this.content.width(this.content.width() + 1); // Prevents annoying Safari rounding
 
 		var poppyAndContent = this.poppy.find(this.content).addBack();
 
@@ -227,19 +232,14 @@
 
 				this.isUpArrow = true;
 
-				// this.position.y += Poppy.__offset;
-
 				position.poppy.bottom = 'auto';
-				// position.poppy.bottom = containerHeight - this.position.y - poppyHeight -;
-				// Log(position.poppy.bottom)
 				position.poppy.top = Math.max(arrowHeight + Poppy.__offset, this.position.y + arrowHeight - 5);
 
 				position.arrow.bottom = 'auto';
-				// position.arrow.bottom = poppyHeight;
 				position.arrow.top = -(arrowHeight);
 				
-				if (this.position.y + poppyHeight + arrowHeight > containerHeight) { // If overflow on bottom side
-					while (this.position.y + this.poppy.outerHeight() + arrowHeight > containerHeight) {
+				if (position.poppy.top + poppyHeight + arrowHeight > containerHeight) { // If overflow on bottom side
+					while (position.poppy.top + this.poppy.outerHeight() + arrowHeight > containerHeight) {
 						this.noArrow = true;
 
 						if (position.poppy.top > 1) {
@@ -477,6 +477,13 @@
 				if (otherPoppyID !== poppyID && (!poppy.linkedTo || !linkTree._contains(otherPoppyID)))
 					poppies[otherPoppyID].close();
 		});
+
+		Poppy.__container
+			.on('dblclick', '*', function () {
+				Poppy.__creating = false;
+
+				Poppy.closeAll();
+			});
 	}, true);
 
 	UI.event.addCustomEventListener('pageWillRender', Poppy.closeAll);

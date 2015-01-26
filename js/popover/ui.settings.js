@@ -68,16 +68,6 @@ UI.Settings = {
 
 					setting.props.onClick(this);
 				}
-			})
-
-			.on('click', '.more-info', function (event) {
-				var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true);
-
-				poppy
-					.setContent(Template.create('main', 'jsb-readable', {
-						string: this.getAttribute('data-moreInfo')
-					}))
-					.show();
 			});
 	},
 

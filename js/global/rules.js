@@ -103,7 +103,17 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	}
 
 	var rules = types[type](domain),
+			isRegExp = Rules.isRegExp(rule.rule),
 			action = typeof this.action === 'number' ? this.action : rule.action;
+
+	if (isRegExp)
+		try {
+			new RegExp(rule.rule);
+
+			rule.rule = rule.rule.toLowerCase();
+		} catch (error) {
+			throw new TypeError(error.message);
+		}
 
 	if (kind._endsWith('*'))
 		Resource.canLoadCache.clear();
@@ -113,7 +123,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	}
 
 	rules.set(rule.rule, {
-		regexp: Rules.isRegExp(rule.rule),
+		regexp: isRegExp,
 		action: action
 	});
 
@@ -215,7 +225,7 @@ Rule.prototype.kind = function (kindName) {
 			// if (domain.length === 1)
 			// 	return this.__rules(type, [domain[0], null]);
 
-			rules = new Store(domains.name + ',' + domain, {
+			rules = new Store(domains.name + ',' + type + ',' + domain, {
 				selfDestruct: TIME.ONE.HOUR,
 				ignoreSave: true,
 				private: true
@@ -223,14 +233,25 @@ Rule.prototype.kind = function (kindName) {
 
 			rules.parent = this;
 
-			for (var i = 0; i < domain.length; i++)
-				if (domains.keyExist(domain[i]))
-					rules.set(domain[i], domains.get(domain[i]));
+			if (type._startsWith('not'))
+				domains.forEach(function (testDomain, domainValue) {
+					if (!domain._contains(testDomain))
+						rules.set(testDomain, domainValue);
+				});
+			else
+				for (var i = 0; i < domain.length; i++)
+					if (domains.keyExist(domain[i]))
+						rules.set(domain[i], domains.get(domain[i]));
 		} else if (typeof domain === 'string') {
-			if (type === 'domain' || type === 'notDomain' || !domainIsLocation)
-				rules = domains.getStore(domain);
-			else {
-				rules = new Store(domains.name + ',filtered-' + domain, {
+			if (type === 'domain' || type === 'notDomain' || !domainIsLocation) {
+				if (type._startsWith('not'))
+					rules = domains.filter(function (testDomain) {
+						return domain !== testDomain;
+					});
+				else
+					rules = domains.getStore(domain);
+			} else {
+				rules = new Store(domains.name + ',' + type + ',' + domain, {
 					selfDestruct: TIME.ONE.HOUR,
 					ignoreSave: true,
 					private: true
@@ -350,15 +371,13 @@ Rule.prototype.forLocation = function (params) {
 			hostParts = params.pageRulesOnly ? [] : (params.excludeParts ? [host] : Utilities.URL.hostParts(host, true));
 
 	if (!params.excludeAllDomains)
-		hostParts.push('*');	
+		hostParts.push('*');
 
 	var rules = {
 		page: types.page(location, true),
 		domain: params.pageRulesOnly ? undefined : types.domain(hostParts),
 		notPage: types.notPage(location, true),
-		notDomain: params.pageRulesOnly ? undefined : types.notDomain().filter(function (domain) {
-			return !hostParts._contains(domain);
-		})
+		notDomain: params.pageRulesOnly ? undefined : types.notDomain(hostParts)
 	};
 
 	if (typeof params.isAllowed === 'boolean')
@@ -466,13 +485,15 @@ var Rules = {
 		return this;
 	},
 
-	kindSupported: function (kind) {
+	baseKind: function (kind) {
 		if (typeof kind !== 'string')
 			throw new TypeError(Rules.ERROR.KIND.NOT_STRING);
 
-		kind = kind.substr(kind.lastIndexOf(':') + 1);
+		return kind.substr(kind.lastIndexOf(':') + 1);
+	},
 
-		return this.__kinds._contains(kind);
+	kindSupported: function (kind) {
+		return this.__kinds._contains(this.baseKind(kind));
 	},
 
 	kindShouldBadge: function (kind) {

@@ -242,7 +242,22 @@ var UI = {
 				if (event.which === 3 || event.which === 13) {
 					this.blur();
 
-					$('.on-enter', this.parentNode).click();
+					var clickElement;
+
+					var clickContainer = this.parentNode;
+
+					for (var i = 0; i < 3; i++) {
+
+						clickElement = $('.on-enter', clickContainer);
+
+						if (clickElement.length) {
+							clickElement.click();
+
+							break;
+						}
+						
+						clickContainer = clickContainer.parentNode;
+					}
 				}
 			})
 
@@ -456,7 +471,7 @@ var UI = {
 	setLessVariables: function () {
 		(window.less || Popover.window.less).modifyVars({
 			darkMode: Settings.getItem('darkMode'),
-			darknessLevel: Settings.getItem('darkMode') ? 81 : 0,
+			darknessLevel: Settings.getItem('darkMode') ? 83 : 0,
 			baseColor: Settings.getItem('baseColor')
 		});
 	},
@@ -536,6 +551,16 @@ var UI = {
 			this.viewSwitcher = $('.view-switcher', this.viewToolbar);
 
 			UI.container
+				.on('click', '.more-info[data-moreInfo]', function (event) {
+					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false);
+
+					poppy
+						.setContent(Template.create('main', 'jsb-readable', {
+							string: this.getAttribute('data-moreInfo')
+						}))
+						.show();
+				})
+
 				.on('click', '*[data-poppy] .poppy-menu-target', function (event) {
 					UI.view.showPoppyMenu(this, event);
 				})
@@ -755,11 +780,6 @@ var UI = {
 						}, true);
 
 						poppy.show()
-
-						setTimeout(function (poppy, menuHolder) {
-
-							poppy.show();
-						}, 0, poppy, menuHolder);
 					}
 				}
 			}

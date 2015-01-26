@@ -22,7 +22,11 @@
 			padding-top: 3px;
 			margin-top: -2px;
 			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-			background: darken(rgb(246, 245, 246), @darknessLevel);
+			background: darken(rgb(245, 245, 245), @darknessLevel);
+
+			& when (@darkMode) {
+				border-bottom-color: rgba(0, 0, 0, 0.4);
+			}
 
 			.jsb-large-font& {
 				-webkit-flex: 0 0 57px;
@@ -103,13 +107,19 @@
 	min-width: 350px;
 
 	> li {
-		> header {
-			margin-left: 2px;
-			margin-bottom: 4px;
+		.multi-list-item-wrapper {
+			> header {
+				margin-left: 2px;
+				margin-bottom: 4px;
 
-			h4 {
-				margin-left: 1px;
-				font-weight: 500;
+				h4 {
+					margin-left: 1px;
+					font-weight: 500;
+				}
+			}			
+
+			&[data-editable="1"] h4 {
+				cursor: pointer;
 			}
 		}
 	}
@@ -133,6 +143,7 @@
 
 		&:not(:first-child) {
 			margin-top: 7px;
+			background: red;
 		}
 	}
 
@@ -162,6 +173,17 @@
 	}
 
 	.rule-group- {
+		&type-wrapper {
+			&[data-editable="1"] {
+				.rule-group-type-header,
+				.rule-group-domain-header,
+				.rule-group-kind-header,
+				.rule-item-container .rule-item-rule {
+					cursor: pointer;
+				}
+			}
+		}
+
 		&type {
 			margin-bottom: 10px;
 
@@ -284,10 +306,9 @@
 						overflow-x: scroll;
 						margin-bottom: -3px;
 						padding-bottom: 1px;
-						margin-right: 4px;
 
 						&,
-						b {
+						strong {
 							white-space: nowrap;
 						}
 					}
@@ -297,6 +318,7 @@
 						padding-right: 4px;
 
 						input {
+							margin-left: 4px;
 							padding-left: 7px;
 							padding-right: 7px;
 						}
@@ -338,5 +360,24 @@
 .poppy-no-arrow {
 	.page-rules-container {
 		margin-top: 15px;
+	}
+}
+
+#create-rule {
+	.horizontal-divider {
+		margin: 3px 0 2px;
+	}
+
+	&-kinds {
+		line-height: 1.8;
+	}
+
+	&-domain,
+	&-rule {
+		width: 270px;
+	}
+
+	&-save {
+		margin-top: 5px;
 	}
 }

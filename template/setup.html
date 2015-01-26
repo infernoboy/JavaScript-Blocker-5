@@ -1,3 +1,10 @@
 <noscript id="setup-container">
-	<input type="button" id="mark-setup-complete" value="Setup Complete" />
+	<div id="setup-container">
+		<h1 class="jsb-bold"><%=_('JSB')%></h1>
+		<input id="setup-auto-hide" type="checkbox" data-inlineSetting="autoHideNonEasyList" /> <label for="setup-auto-hide"><%=_('setting.autoHideNonEasyList.label')%></label>
+		<div class="horizontal-divider"></div>
+		<div class="jsb-align-right">
+			<input type="button" id="mark-setup-complete" value="<%=_('view.page.host.done')%>" />
+		</div>
+	</div>
 </noscript>

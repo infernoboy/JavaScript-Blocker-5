@@ -25,18 +25,18 @@
 	max-width: 97%;
 	border-radius: 6px;
 	padding: 2px;
-	background: -webkit-linear-gradient(top, darken(#ffffff, @darknessLevel), darken(#fafafa, @darknessLevel));
-	box-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
+	background: -webkit-linear-gradient(top, darken(#ffffff, @darknessLevel + 0.7%), darken(#fafafa, @darknessLevel + 0.7%));
+	box-shadow: 0 1px 10px rgba(1, 0, 1, 0.3);
 
 	& when (@darkMode) {
-		box-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);		
+		box-shadow: 0 1px 10px rgba(5, 4, 5, 0.9);
 	}
 
 	&.poppy-up .poppy-arrow {
 		background: -webkit-canvas(poppy-arrow-up);
 	}
 
-	&.poppy-open {
+	&-open {
 		-webkit-animation: openPoppy 0.36s 1 normal linear;
 
 		&-quick {
@@ -47,6 +47,7 @@
 			-webkit-animation-duration: 0.001s;
 		}
 	}
+
 
 	input.poppy-close {
 		display: none;
@@ -64,7 +65,8 @@
 		z-index: 1;
 
 		& when (@darkMode) {
-			color: #ccc;
+			color: #cacaca;
+			text-shadow: 0 1px 0 #000;			
 		}
 
 		&,
@@ -100,10 +102,10 @@
 		background: -webkit-canvas(poppy-arrow);
 
 		&-settings {
-			background-color: darken(#fafafa, @darknessLevel);
+			background-color: darken(#fafafa, @darknessLevel + 1%);
 
 			&-up {
-				background-color: darken(#fff, @darknessLevel);
+				background-color: darken(#fff, @darknessLevel + 1%);
 			}
 		}
 	}

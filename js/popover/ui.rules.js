@@ -149,7 +149,8 @@ UI.Rules = {
 
 				ruleListItem = Template.create('rules', 'multi-list-item', {
 					expander: keepExpanded ? 0 : 'ruleList-' + listName,
-					listName: listName
+					listName: listName,
+					editable: ((listName === 'active' && !globalPage.Rules.snapshotInUse()) || listName === 'temporary')
 				});
 
 				ruleListItemLI = $('.rule-group-list', ruleListItem);
@@ -207,7 +208,7 @@ UI.Rules = {
 				type: type,
 				editable: editable,
 				expander: keepExpanded ? 0 : typeExpander
-			}, true);
+			});
 			
 			typeUL = ruleGroupType.find('.rule-group-type');
 
@@ -319,9 +320,9 @@ UI.Rules = {
 					var self = $(this),
 							view = self.parents('*[data-ruleListItems]'),
 							ruleList = view.data('ruleList'),
-							type = self.parents('.rule-group-type').attr('data-type'),
-							kind = self.parents('.rule-group-kind').attr('data-kind'),
-							domain = self.parents('.rule-group-domain').attr('data-domain'),
+							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
+							kind = self.parents('.rule-group-kind-wrapper').attr('data-kind'),
+							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
 							rule = self.parents('.rule-item-container').attr('data-rule');
 
 					ruleList.__remove(false, type, kind, domain, rule);
@@ -330,7 +331,152 @@ UI.Rules = {
 						UI.Rules.buildRuleList(view, ruleList);
 					else
 						Poppy.closeAll();
+				})
+
+				.on('click', '.multi-list-item-wrapper[data-editable="1"] .multi-list-item-header', function (event) {
+					if (event.originalEvent.offsetX > this.offsetWidth)
+						return;
+
+					var ruleList = globalPage.Rules.list[this.parentNode.parentNode.getAttribute('data-listName')],
+							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]];
+
+					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+
+					if (originPoppy)
+						poppy.linkTo(originPoppy);
+
+					poppy.setContent(Template.create('poppy', 'create-rule', {
+						editing: false,
+						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
+						type: 'domain',
+						domain: '',
+						kind: '',
+						rule: '',
+						action: 0
+					}));
+
+					poppy.show();
+				})
+
+				.on('click', '.rule-group-type-wrapper[data-editable="1"] .rule-group-type-header', function (event) {
+					if (event.originalEvent.offsetX > this.offsetWidth)
+						return;
+
+					var self = $(this),
+							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]],
+							view = self.parents('*[data-ruleListItems]'),
+							ruleList = view.data('ruleList'),
+							type = this.parentNode.parentNode.getAttribute('data-type');
+
+					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+
+					if (originPoppy)
+						poppy.linkTo(originPoppy);
+
+					poppy.setContent(Template.create('poppy', 'create-rule', {
+						editing: false,
+						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
+						type: type,
+						domain: '',
+						kind: '',
+						rule: '',
+						action: 0
+					}));
+
+					poppy.show();
+				})
+
+				.on('click', '.rule-group-domain-wrapper[data-editable="1"] .rule-group-domain-header', function (event) {
+					if (event.originalEvent.offsetX > this.offsetWidth)
+						return;
+
+					var self = $(this),
+							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]],
+							view = self.parents('*[data-ruleListItems]'),
+							ruleList = view.data('ruleList'),
+							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
+							domain = this.parentNode.parentNode.getAttribute('data-domain');
+
+					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+
+					if (originPoppy)
+						poppy.linkTo(originPoppy);
+
+					poppy.setContent(Template.create('poppy', 'create-rule', {
+						editing: false,
+						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
+						type: type,
+						domain: domain,
+						kind: '',
+						rule: '',
+						action: 0
+					}));
+
+					poppy.show();
+				})
+
+				.on('click', '.rule-group-kind-wrapper[data-editable="1"] .rule-group-kind-header', function (event) {
+					if (event.originalEvent.offsetX > this.offsetWidth)
+						return;
+
+					var self = $(this),
+							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]],
+							view = self.parents('*[data-ruleListItems]'),
+							ruleList = view.data('ruleList'),
+							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
+							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
+							kind = this.parentNode.parentNode.getAttribute('data-kind');
+
+					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+
+					if (originPoppy)
+						poppy.linkTo(originPoppy);
+
+					poppy.setContent(Template.create('poppy', 'create-rule', {
+						editing: false,
+						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
+						type: type,
+						domain: domain,
+						kind: kind,
+						rule: '',
+						action: 0
+					}));
+
+					poppy.show();
+				})
+
+				.on('click', '.rule-item-container[data-editable="1"] .rule-item-rule', function (event) {
+					var self = $(this),
+							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]],
+							view = self.parents('*[data-ruleListItems]'),
+							ruleList = view.data('ruleList'),
+							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
+							kind = self.parents('.rule-group-kind-wrapper').attr('data-kind'),
+							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
+							rule = self.parents('.rule-item-container').attr('data-rule'),
+							action = parseInt(self.prev().attr('data-action'), 10);
+
+					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+
+					if (originPoppy)
+						poppy.linkTo(originPoppy);
+
+					poppy.setContent(Template.create('poppy', 'create-rule', {
+						editing: true,
+						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
+						type: type,
+						domain: domain,
+						kind: kind,
+						rule: rule,
+						action: action
+					}));
+
+					poppy.show();
 				});
+		},
+
+		poppyDidShow: function (event) {
+			UI.Rules.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
 		},
 
 		viewAlreadyActive: function (event) {
@@ -429,6 +575,7 @@ UI.Rules = {
 	}
 };
 
+UI.event.addCustomEventListener('poppyDidShow', UI.Rules.events.poppyDidShow);
 UI.event.addCustomEventListener('viewAlreadyActive', UI.Rules.events.viewAlreadyActive);
 UI.event.addCustomEventListener('viewWillSwitch', UI.Rules.events.viewWillSwitch);
 UI.event.addCustomEventListener('viewDidSwitch', UI.Rules.events.viewDidSwitch);

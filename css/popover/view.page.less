@@ -16,6 +16,7 @@
 		margin-top: -3px;
 
 		.page-host-section {
+			overflow: hidden;
 			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
 			&:not(:first-child) {
@@ -34,19 +35,25 @@
 			.page-host-header {
 				position: relative;
 				padding: 5px 3px 6px;
-				background: darken(rgb(246, 245, 246), @darknessLevel);
+				background: darken(rgb(245, 245, 245), @darknessLevel);
 				border-top: 1px solid darken(#fff, @darknessLevel);
 				border-bottom: 1px solid darken(#ddd, @darknessLevel);
+				z-index: 2;
 
 				&.floated-header {
 					position: absolute;
+					z-index: 3;
 				}
 
 				.page-host- {
 					&type {
 						&:after {
 							content: '│';
-							color: darken(#ddd, @darknessLevel);
+							color: #ddd;
+
+							& when (@darkMode) {
+								color: darken(#ddd, @darknessLevel - 22%);
+							}
 						}
 					}
 
@@ -56,7 +63,11 @@
 					&hidden-count {
 						&:before {
 							content: '│';
-							color: darken(#ddd, @darknessLevel);
+							color: #ddd;
+
+							& when (@darkMode) {
+								color: darken(#ddd, @darknessLevel - 22%);
+							}
 						}
 					}
 
@@ -83,6 +94,7 @@
 			.page-host-snapshot-in-use {
 				position: relative;
 				display: none;
+				z-index: 2;
 				background: darken(#fafafa, @darknessLevel);
 				padding: 4px 4px 2px 2px;
 				border-bottom: 1px solid darken(#e5e5e5, @darknessLevel);
@@ -105,7 +117,7 @@
 			.page-host-disabled,
 			.page-host-snapshot-in-use {
 				position: relative;
-				z-index: 1;
+				z-index: 2;
 				padding: 3px 0 1px;
 				background: darken(#fbfbfb, @darknessLevel);
 				border-bottom: 1px solid darken(#e5e5e5, @darknessLevel);
@@ -121,7 +133,7 @@
 			}
 
 			.page-host-editor {
-				padding: 4px 4px 4px 2px;
+				padding: 4px 4px 3px 2px;
 				z-index: 0;
 				border-bottom-color: darken(#e0e0e0, @darknessLevel);
 
@@ -143,10 +155,6 @@
 					.jsb-large-font& {
 						margin-top: 0;
 						padding-top: 0;
-					}
-
-					label {
-						margin-right: 5px;
 					}
 				}
 
@@ -287,6 +295,7 @@
 
 			.page-host-unblocked {
 				position: relative;
+				margin-top: -5px;
 				border-bottom: 1px solid darken(#e5e5e5, @darknessLevel);
 				background: darken(#fff, @darknessLevel);
 				padding: 0 3px 1px;
@@ -389,7 +398,7 @@
 							background: @backgroundColor;
 
 							& when (@darkMode) {
-								background: darken(@backgroundColor, 89%);
+								background: fade(darken(@backgroundColor, 87%), 50%);
 							}
 						}
 
@@ -427,6 +436,10 @@
 							.page-host-item-edit-select,
 							.page-host-item-source-container > * {
 								color: darken(gold, 23%);
+
+								& when (@darkMode) {
+									color: darken(gold, 14%);
+								}
 							}
 						}
 
