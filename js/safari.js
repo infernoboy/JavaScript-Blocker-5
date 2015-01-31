@@ -196,6 +196,7 @@ var GlobalPage = {
 };
 
 var SettingStore = {
+	__locked: false,
 	__cache: {},
 
 	available:  !!(window.safari && safari.extension && safari.extension.settings),
@@ -210,6 +211,10 @@ var SettingStore = {
 
 			value: value
 		});
+	},
+
+	lock: function (lock) {
+		this.__locked = lock;
 	},
 
 	isSet: function (key) {
@@ -248,6 +253,9 @@ var SettingStore = {
 	},
 
 	setItem: function (key, value, noCache) {
+		if (this.__locked)
+			return;
+
 		if (['setItem', 'getItem', 'removeItem', 'clear', 'addEventListener', 'removeEventListener']._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
 
@@ -260,10 +268,16 @@ var SettingStore = {
 	},
 
 	setJSON: function (key, value) {		
+		if (this.__locked)
+			return;
+
 		safari.extension.settings.setItem(key, JSON.stringify(value));
 	},
 
 	removeItem: function (key) {
+		if (this.__locked)
+			return;
+		
 		delete this.__cache[key];
 
 		safari.extension.settings.removeItem(key);

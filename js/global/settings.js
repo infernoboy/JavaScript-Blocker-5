@@ -301,8 +301,6 @@ var Settings = {
 		if (!settings)
 			return LogError('failed to import settings');
 
-		Store.ALLOW_SAVE = false;
-
 		SettingStore.clear();
 
 		for (var setting in settings)
@@ -314,6 +312,8 @@ var Settings = {
 			} catch (e) {
 				LogError('failed to import setting - ' + setting, e);
 			}
+
+		SettingStore.lock(true);
 
 		UI.view.switchTo('#main-views-page');
 

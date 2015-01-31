@@ -17,6 +17,7 @@ UI.Settings = {
 		});
 
 		var viewSwitcherData = {
+			id: 'setting-views-switcher',
 			container: '#setting-views-container',
 			views: {}
 		};
@@ -69,6 +70,11 @@ UI.Settings = {
 					setting.props.onClick(this);
 				}
 			});
+
+		UI.event.addCustomEventListener(['viewWillSwitch', 'viewAlreadyActive'], UI.Settings.events.repopulateActiveSection);
+		UI.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
+		UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
+		UI.event.addCustomEventListener('viewWillSwitch', UI.Settings.events.viewWillSwitch);
 	},
 
 	bindInlineSettings: function (inlineSettings) {
@@ -95,12 +101,19 @@ UI.Settings = {
 					if (settingType === 'option') {
 						var options = $('option', element);
 
-						for (var b = options.length; b--;) 
+						for (var b = options.length; b--;) {
+							if (options[b].classList.contains('select-custom-option')) {
+								options[b].setAttribute('value', currentValue);
+
+								element.parent().prev().val(currentValue);
+							}
+
 							if (options[b].value.toString() === currentValue) {
 								element[0].selectedIndex = b;
 
 								break;
 							}
+						}
 					} else if (currentValue === element.val())
 						element.prop('checked', true);
 
@@ -541,11 +554,6 @@ UI.Settings = {
 		}
 	}
 };
-
-UI.event.addCustomEventListener(['viewWillSwitch', 'viewAlreadyActive'], UI.Settings.events.repopulateActiveSection);
-UI.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
-UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
-UI.event.addCustomEventListener('viewWillSwitch', UI.Settings.events.viewWillSwitch);
 
 document.addEventListener('DOMContentLoaded', UI.Settings.init, true);
 

@@ -106,7 +106,7 @@ Page.requestPage = function (event) {
 	if (window.globalSetting.disabled)
 		return;
 
-	if (event.type === 'activate' && Popover.visible())
+	if (event.type === 'activate' && Popover.visible() && UI.Page.view.is('.active-view'))
 		UI.view.toTop(UI.view.views);
 
 	if (event.target instanceof BrowserTab) {

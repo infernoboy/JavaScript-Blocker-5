@@ -531,6 +531,8 @@ UI.Page = {
 						kinds.slideUp(225 * window.globalSetting.speedMultiplier);
 
 					$('.page-host-columns .page-host-item', section).toggleClass('page-host-item-disabled', this.value !== 'items-checked');
+
+					$('.page-host-editor-where', section).trigger('change');
 				})
 
 				.on('change', '.page-host-editor-where', function (event) {
@@ -592,7 +594,7 @@ UI.Page = {
 							isAllowed = item.parents('.page-host-column').is('.page-host-column-allowed'),
 							action = parseInt(item.attr('data-action'), 10);
 
-					if (action < 0)
+					if (![0, 1, 2, 3, 4, 5]._contains(action))
 						return;
 
 					var resources = item.data('resources');

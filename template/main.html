@@ -10,6 +10,7 @@
 
 				<%
 					var mainSwitcher = Template.create('main', 'view-switcher', {
+						id: 'main-views-switcher',
 						container: '#main-views',
 						views: {
 							'#main-views-page': {
@@ -64,9 +65,7 @@
 					<div id="rules"></div>
 				</div>
 
-				<div id="main-views-snapshot" class="ui-view">
-					<p class="jsb-info">SNAPSHOT VIEW</p>
-				</div>
+				<div id="main-views-snapshot" class="ui-view"></div>
 
 				<div id="main-views-resource-content" class="ui-view">
 					<p class="jsb-info">RESOURCE CONTENT VIEW</p>
@@ -102,7 +101,7 @@
 </noscript>
 
 <noscript id="view-switcher">
-	<div class="view-switcher-container">
+	<div id="<%=self.id || ''%>" class="view-switcher-container <%=self.mini ? 'mini' : ''%>">
 		<ul class="view-switcher" data-container="<%=self.container%>">
 		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container poppy-menu-target"><span class="view-switcher-item-name"><%=self.views[viewID].value%></span><span class="view-switcher-item-notification"></span></span></li><% } %>
 		</ul>

@@ -84,6 +84,9 @@
 					<label class="setting-main-label" for="<%=self.id%>"><%=mainLabel%>:&nbsp</label>
 				<%=wrapper.close%>
 				<%=wrapper.right%>
+					<% if (self.props.otherOption) { %>
+						<textarea class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="off" wrap="off" rows="0"></textarea><%
+					} %>
 					<select id="<%=self.id%>" <%=inlineSetting%> <%=storeKeySetting%>>
 						<% for (var i = 0; i < options.length; i++) { %>
 							<option value="<%=options[i][0]%>"><%=options[i][1]%></option><% 

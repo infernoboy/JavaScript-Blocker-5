@@ -19,7 +19,7 @@ if (!window.MutationObserver)
 var BLOCKED_ELEMENTS = [],
 		FRAMED_PAGES = {},
 		STYLESHEET_INJECTED = false,
-		FRAME_ID_ON_PARENT = null,
+		PARENT = {},
 		RECOMMEND_PAGE_RELOAD = false,
 		SHOWED_UPDATE_PROMPT = false,
 		BROKEN = false;
@@ -54,20 +54,18 @@ var Page = {
 		sendPageInfo.timeout = null;
 
 		function requestFrameInfo () {
-			window.top.postMessage({
+			GlobalPage.message('bounce', {
 				command: 'getFrameInfoWithID',
-				data: Page.info.id
-			}, '*');
+				detail: Page.info.id
+			});
 		};
 
 		requestFrameInfo.timeout = null;
 
-		var fn;
-
 		return function sendPage (now) {
-			try {
-				if (!document.hidden) {
-					fn = Page.info.isFrame ? requestFrameInfo : sendPageInfo;
+			Handler.whenVisible(function () {
+				try {
+					var fn = Page.info.isFrame ? requestFrameInfo : sendPageInfo;
 
 					clearTimeout(fn.timeout);
 
@@ -75,16 +73,14 @@ var Page = {
 						fn();
 					else
 						fn.timeout = setTimeout(fn, 150);
-				} else {
-					Handler.event.addMissingCustomEventListener('documentBecameVisible', Page.send, true);
-				}
-			} catch (error) {
-				if (!BROKEN) {
-					BROKEN = true;
+				} catch (error) {
+					if (!BROKEN) {
+						BROKEN = true;
 
-					console.error('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error.message);
+						console.error('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error.message);
+					}
 				}
-			}
+			});
 		}
 	})(),
 
@@ -258,13 +254,13 @@ var Handler = {
 		Handler.setPageLocation();
 
 		if (Page.info.isFrame)
-			window.parent.postMessage({
+			GlobalPage.message('bounce', {
 				command: 'rerequestFrameURL',
-				data: {
-					id: FRAME_ID_ON_PARENT,
+				detail: {
+					parent: PARENT,
 					reason: 'hashDidChange'
 				}
-			}, '*');
+			});
 
 		Page.send();
 	},
@@ -272,6 +268,13 @@ var Handler = {
 	visibilityChange: function (event) {
 		if (!document.hidden)
 			Handler.event.trigger('documentBecameVisible');
+	},
+
+	whenVisible: function (fn) {
+		if (document.hidden)
+			Handler.event.addMissingCustomEventListener('documentBecameVisible', fn, true);
+		else
+			fn();
 	},
 
 	contextMenu: function (event) {
@@ -582,6 +585,7 @@ var Element = {
 			command: 'requestFrameURL',
 			data: {
 				id: frame.id,
+				pageID: TOKEN.PAGE,
 				reason: reason,
 				token: Utilities.Token.create(frame.id)
 			}
@@ -672,7 +676,7 @@ var Element = {
 					id = frame.getAttribute('id');
 
 			if (!id || !id.length)
-				frame.setAttribute('id', (id = Utilities.Token.generate()));
+				frame.setAttribute('id', (id = 'frame-' + Utilities.Token.generate()));
 
 			var idToken = frame.getAttribute('data-jsbFrameProcessed');
 
@@ -866,22 +870,19 @@ if (!globalSetting.disabled) {
 			}
 		}
 
-		if (Utilities.safariBuildVersion > 535) {
-			var observer = new MutationObserver(function (mutations) {
-				for (var i = 0; i < mutations.length; i++)
-					if (mutations[i].type === 'childList')
-						for (var j = 0; j < mutations[i].addedNodes.length; j++)
-							setTimeout(function (node) {
-								Element.handle.node(node);
-							}, 10 * (i + j), mutations[i].addedNodes[j]);
-			});
+		var observer = new MutationObserver(function (mutations) {
+			for (var i = 0; i < mutations.length; i++)
+				if (mutations[i].type === 'childList')
+					for (var j = 0; j < mutations[i].addedNodes.length; j++)
+						setTimeout(function (node) {
+							Element.handle.node(node);
+						}, 10 * (i + j), mutations[i].addedNodes[j]);
+		});
 
-			observer.observe(document, {
-				childList: true,
-				subtree: true
-			});
-		} else
-			document.addEventListener('DOMNodeInserted', Element.handle.node, true);
+		observer.observe(document, {
+			childList: true,
+			subtree: true
+		});
 
 		document.addEventListener('contextmenu', Handler.contextMenu, false);
 		document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);

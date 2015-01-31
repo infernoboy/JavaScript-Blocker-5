@@ -40,7 +40,7 @@
 
 			&info {
 				text-indent: 0 @important;
-				padding: 1px @important;
+				padding: 1px 0 @important;
 				margin: 4px 0 5px @important;
 				overflow: auto @important;
 				font-weight: normal @important;
@@ -192,16 +192,33 @@
 			font-weight: 500;
 		}
 
+		.select-custom-options li {
+			&:before,
+			.jsb-label:before {
+				content: '✓ ';
+				opacity: 0;
+			}
+
+			&,
+			* {
+				white-space: nowrap;
+			}
+
+			.jsb-label {
+				margin-left: 3px;
+			}
+		}
+
 		a,
 		.select-custom-options li {
-			color: @baseColor;
+			color: darken(@baseColor, 7%);
 
 			& when (@darkMode) {
 				color: lighten(@baseColor, 12%);
 			}
 
 			&:active {
-				color: darken(@baseColor, 10%);
+				color: darken(@baseColor, 15%);
 
 				& when (@darkMode) {
 					color: lighten(@baseColor, 7%);
@@ -210,6 +227,10 @@
 
 			&.no-underline {
 				text-decoration: none;
+			}
+
+			&.select-custom-selected:before {
+				opacity: 1;
 			}
 		}
 

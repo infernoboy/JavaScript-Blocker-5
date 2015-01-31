@@ -247,7 +247,7 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		setting: 'autoHideNonEasyList',
+		setting: 'autoHideNoRule',
 		props: {
 			type: 'boolean',
 			default: false
@@ -287,7 +287,7 @@ Settings.settings = {
 			otherOption: {
 				prompt: 'Enter a valid 6 digit hex CSS color preceeded by #.',
 				validate: function (value) {
-					return value.match(/^#[a-f0-9]+$/i) && value.length === 7;
+					return value.match(/^#[a-f0-9]+$/i) && (value.length === 7 || value.length === 4);
 				}
 			},
 			onChange: function () {
@@ -866,7 +866,7 @@ Settings.settings = {
 			},
 			onChange: function () {
 				Utilities.Timer.timeout('easyListsChanged', function () {
-					Rules.attachEasyLists();
+					Rules.attachEasyLists(true);
 
 					EasyList.fetch();
 				}, 5000);
@@ -1086,6 +1086,13 @@ Settings.settings = {
 				}
 			}
 		}, {
+			setting: 'enabledSpecials',
+			props: {
+				storeKey: 'historyFixer',
+				readOnly: true,
+				default: true
+			}
+		}, {
 			header: 'extraFeatures'
 		}, {
 			setting: 'blockReferrer',
@@ -1201,25 +1208,12 @@ Settings.settings = {
 				default: true
 			}
 		}, {
-			when: {
-				hide: true,
-				settings: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.IS,
-						key: 'canBlockInlineScripts',
-						needle: true
-					}]
-				}
-			},
-			settings: [{
-				setting: 'enabledSpecials',
-				props: {
-					type: 'boolean',
-					storeKey: 'inline_script_execution',
-					default: false
-				}
-			}]
+			setting: 'enabledSpecials',
+			props: {
+				type: 'boolean',
+				storeKey: 'inline_script_execution',
+				default: false
+			}
 		}, {
 			setting: 'enabledSpecials',
 			props: {

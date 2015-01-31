@@ -131,12 +131,12 @@ var UI = {
 				}
 			})
 
-			.on('mousemove mouseup click', function (event) {
+			.on('mousemove mouseup click dblclick', Utilities.throttle(function (event) {
 				var timerExisted = Utilities.Timer.remove('timeout', 'showPoppyMenu');
 
 				if (timerExisted)
 					$('*[data-poppyMenuWillShow]', UI.container).removeAttr('data-poppyMenuWillShow')
-			});
+			}, 0, true));
 
 		$(document)
 			.on('mousedown', '.popover-resize', function (event) {
@@ -150,21 +150,30 @@ var UI = {
 				this.setAttribute('data-resizeStartHeight', Popover.popover.height);
 			})
 
+			.on('input', '.select-custom-input', Utilities.throttle(function () {
+				var select = $(this).next().find('select');
+
+				if (select)
+					$('.select-custom-option', select).prop('selected', true).attr('value', this.value).change();
+			}, 500, null, true))
+
 			.on('mousedown', '.select-custom-input + .select-wrapper select:not(.select-cycle)', function (event) {
 				event.preventDefault();
 			})
 
 			.on('click', '.select-custom-input + .select-wrapper select:not(.select-cycle)', function (event) {
-				var input = $(this.parentNode).prev(),
+				var self = $(this),
+						input = $(this.parentNode).prev(),
 						poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
-						options = $('option', this);
+						options = $('option:not(.select-custom-option)', this);
 
 				var optionsTemplate = Template.create('poppy', 'select-custom-options', {
-					options: options
+					options: options,
+					value: self.val()
 				});
 
 				$('li', optionsTemplate).click(function (event) {
-					input.val(this.getAttribute('data-value')).focus();
+					input.val(this.getAttribute('data-value')).focus().trigger('input');
 
 					poppy.close();
 
@@ -330,10 +339,7 @@ var UI = {
 		UI.event
 			.addCustomEventListener('viewWillSwitch', function (event) {		
 				if (event.detail.from.id === '#main-views-resource-content') 
-					$(event.detail.from.id, UI.view.views).empty();
-
-				if (event.detail.to.id === '#main-views-snapshot')
-					event.detail.to.view.html('<pre>' + JSON.stringify(globalPage.Rules.list.user.rules.snapshot.snapshots.all(), null, 1) + '</pre>');
+					$(event.detail.from.id, UI.view.views).empty();					
 			})
 
 			.addCustomEventListener('viewDidSwitch', function (event) {
@@ -362,6 +368,7 @@ var UI = {
 						customSelects[i].previousElementSibling.value = customSelects[i].value;
 
 						$(customSelects[i])
+							.append('<option class="select-custom-option">Custom Option</option>')
 							.next()
 							.addBack()
 							.wrapAll('<div class="select-wrapper"></div>')
@@ -370,8 +377,8 @@ var UI = {
 							.parent()
 							.wrapInner('<div class="select-custom-wrapper"></div>');
 
-						if (!customSelects[i].classList.contains('select-cycle'))
-							customSelects[i].selectedIndex = -1;
+						// if (!customSelects[i].classList.contains('select-cycle'))
+						// 	customSelects[i].selectedIndex = -1;
 					}
 
 					// ===== Double-click Buttons =====
@@ -468,11 +475,13 @@ var UI = {
 		}, 10, originalWidth, originalHeight, popover);
 	},
 
-	setLessVariables: function () {
+	setLessVariables: function (variables) {
+		variables = variables || {};
+
 		(window.less || Popover.window.less).modifyVars({
-			darkMode: Settings.getItem('darkMode'),
-			darknessLevel: Settings.getItem('darkMode') ? 83 : 0,
-			baseColor: Settings.getItem('baseColor')
+			darkMode: variables.darkMode || Settings.getItem('darkMode'),
+			darknessLevel: variables.darknessLevel || Settings.getItem('darkMode') ? 83 : 0,
+			baseColor: variables.baseColor || Settings.getItem('baseColor')
 		});
 	},
 

@@ -123,7 +123,7 @@
 
 	Poppy.createArrow = function (poppy) {
 		var	arrowStyle = window.getComputedStyle(poppy.isUpArrow ? poppy.arrowSettingsUp[0] : poppy.arrowSettings[0]),
-				shadowColor = 'rgba(1, 0, 1, ' + (Settings.getItem('darkMode') ? 1 : 0.25) + ')',
+				shadowColor = 'rgba(1, 0, 1, ' + (Settings.getItem('darkMode') ? 1 : 0.26) + ')',
 				arrowBackgroundColor = arrowStyle.backgroundColor,
 				arrowContext = document.getCSSCanvasContext('2d', poppy.isUpArrow ? 'poppy-arrow-up' : 'poppy-arrow', 30, 20);
 
@@ -167,6 +167,14 @@
 		});
 
 		return loadingPoppy;
+	};
+
+	Poppy.prototype.shake = function () {
+		this.poppy.removeClass('shake');
+
+		Utilities.setImmediateTimeout(function (poppy) {
+			poppy.addClass('shake');
+		}, [this.poppy]);
 	};
 
 	Poppy.prototype.calculatePosition = function () {
@@ -285,11 +293,14 @@
 		return this;
 	};
 
-	Poppy.prototype.setContent = function (content) {
-		this.content.empty().append(content);
+	Poppy.prototype.setContent = function (content, script) {
+		this.content.off().empty().append(content);
 
-		if (this.displayed)
+		if (this.displayed) {
+			this.executeScript();
+
 			return this.setPosition();
+		}
 
 		return this;
 	};
@@ -364,6 +375,11 @@
 		return [this.linkedTo.id].concat(this.linkedTo.linkTree());
 	};
 
+	Poppy.prototype.executeScript = function () {
+		if (this.scriptName && window.Poppy.scripts[this.scriptName])
+			window.Poppy.scripts[this.scriptName](this);
+	};
+
 	Poppy.prototype.show = function (quick, instant) {
 		if (this.closed || UI.event.trigger('poppyWillShow', this))
 			return this;
@@ -384,14 +400,15 @@
 			.addClass('poppy-open')
 			.one('webkitAnimationEnd', function (event) {
 				UI.event.trigger('poppyIsFullyShown', this);
+
+				this.poppy.removeClass('poppy-open');
 			}.bind(this));
 
 		Utilities.Timer.timeout('PoppyCreating', function () {
 			Poppy.__creating = false;
 		}, 0);
 
-		if (this.scriptName && window.Poppy.scripts[this.scriptName])
-			window.Poppy.scripts[this.scriptName](this);
+		this.executeScript();
 
 		Utilities.setImmediateTimeout(function (poppy) {
 			poppy.setPosition();
@@ -460,29 +477,26 @@
 		Poppy.__container = $('#container');
 		Poppy.__viewOffsetTop = UI.view.views.offset().top;
 
-		Poppy.__container.mouseup(function (event) {
-			if (Poppy.__creating || !$.contains(document, event.target) || event.target === Poppy.__modal[0])
-				return;
-
-			var poppyElement = $(event.target).parents('.poppy');
-
-			if (!poppyElement.length)
-				return Poppy.closeAll();
-
-			var poppyID = poppyElement.attr('data-id'),
-					poppy = poppies[poppyID],
-					linkTree = poppy ? poppy.linkTree() : [];
-
-			for (var otherPoppyID in poppies)
-				if (otherPoppyID !== poppyID && (!poppy.linkedTo || !linkTree._contains(otherPoppyID)))
-					poppies[otherPoppyID].close();
-		});
-
 		Poppy.__container
-			.on('dblclick', '*', function () {
-				Poppy.__creating = false;
+			.bind('mouseup dblclick', function (event) {
+				if (event.type === 'dblclick')
+					Poppy.__creating = false;
+				
+				if (Poppy.__creating || !$.contains(document, event.target) || event.target === Poppy.__modal[0])
+					return;
 
-				Poppy.closeAll();
+				var poppyElement = $(event.target).parents('.poppy');
+
+				if (!poppyElement.length)
+					return Poppy.closeAll();
+
+				var poppyID = poppyElement.attr('data-id'),
+						poppy = poppies[poppyID],
+						linkTree = poppy ? poppy.linkTree() : [];
+
+				for (var otherPoppyID in poppies)
+					if (otherPoppyID !== poppyID && (!poppy.linkedTo || !linkTree._contains(otherPoppyID)))
+						poppies[otherPoppyID].close();
 			});
 	}, true);
 

@@ -1,0 +1,62 @@
+#view-container {
+	#snapshot-container {
+		padding: 3px;
+
+		h4 {
+			font-weight: 500;
+			margin-left: 0;
+		}
+
+		.snapshot-list {
+			margin-left: 13px;
+
+			li {
+				padding: 8px 0;
+				clear: both;
+
+				&:not(:last-child) {
+					border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+					& when (@darkMode) {
+						border-bottom-color: rgba(0, 0, 0, 0.6);
+					}
+				}
+
+				&.snapshot-active .snapshot-item-name {
+					font-weight: bold;
+				}
+
+				.snapshot-item-name {
+					display: inline-block;
+					text-decoration: none;
+					max-width: 300px;
+					overflow: hidden;
+
+					&.current:after {
+						display: inline-block;
+						margin-left: 7px;
+						padding: 1px 5px;
+						content: attr(data-i18n-current);
+						color: #fff;
+						font-size: 0.9em;
+						background: @baseColor;
+						border-radius: 3px;
+
+						&:after {
+							content: 'test';
+						}
+					}
+				}
+
+				.snapshot-item-delete,
+				.snapshot-item-close,
+				.snapshot-item-preview, {
+					float: right;
+					margin-top: -3px;
+					margin-left: 4px;
+					margin-right: 1px;
+				}
+			}
+		}
+	}
+}

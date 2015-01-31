@@ -20,7 +20,7 @@
 
 .poppy {
 	position: fixed;
-	min-width: 37px;
+	min-width: 100px;
 	min-height: 20px;
 	max-width: 97%;
 	border-radius: 6px;
@@ -48,6 +48,13 @@
 		}
 	}
 
+	&.shake {
+		-webkit-animation: shake 0.4s linear 0 1;
+
+		.poppy-arrow {
+			-webkit-animation: unshake 0.4s linear 0 1;
+		}
+	}
 
 	input.poppy-close {
 		display: none;

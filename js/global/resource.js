@@ -54,6 +54,10 @@ Resource.canLoadCache = new Store('ResourceCanLoad', {
 	saveDelay: TIME.ONE.SECOND * 30
 });
 
+Resource.canLoadCache.addCustomEventListener('storeDidClear', function () {
+	Rule.listCache.clear();
+});
+
 Resource.__many = function (action, resources, domain, rule, framed, temporary) {
 	if (!Array.isArray(resources))
 		throw new TypeError(resources + ' is not an array');
@@ -110,21 +114,7 @@ Resource.prototype.__addRule = function (action, domain, rule, framed, temporary
 	else if (!Rules.isRegExp(rule.rule))
 		rule.rule = this.lowerSource;
 
-	return Rules.list[temporary ? 'temporary' : 'active'].__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, rule);
-};
-
-Resource.prototype.__humanize = function (allow, rule, framed, temporary) {
-	if (this.sourceIsURL)
-		rule = Resource.mapDomain(this.sourceHost, rule);
-	else
-		rule = Rules.isRegExp(rule) ? rule : this.lowerSource;
-
-	var action = allow ? 'allow' : 'block',
-			from = (this.sourceIsURL && rule._startsWith('.')) ? 'within' : (Rules.isRegExp(rule) ? 'matching' : 'from'),
-			rule = (this.sourceIsURL && rule._startsWith('.')) ? rule.substr(1) : rule,
-			message = [temporary ? 'Temporarily ' + action : action._ucfirst(), framed ? this.framedKind : this.kind, from, rule];
-
-	return message.join(' ');
+	return Rules.list[temporary ? 'temporary' : 'user'].__add(Rules.isRegExp(domain) ? 'page' : 'domain', framed ? this.framedKind : this.kind, domain, rule);
 };
 
 Resource.prototype.block = function () {
@@ -195,7 +185,7 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 			if (checkAction && !!(rules.data[rule].value.action % 2) !== isAllowed)
 				continue;
 
-			if (Rules.matches(rule, rules.data[rule].value.regexp, self.lowerSource, self.pageLocation)) {
+			if (Rules.matches(rule, rules.data[rule].value.regexp, rules.data[rule].value.regexp ? self.lowerSource : self.source, self.pageLocation)) {
 				domainRules = matchedList
 					._getWithDefault(ruleKind, {})
 					._getWithDefault(ruleType, {})
@@ -222,9 +212,9 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 
 Resource.prototype.shouldHide = function () {
 	var easyHide = (this.action === ACTION.BLACKLIST || this.action === ACTION.WHITELIST) && Settings.getItem('autoHideEasyList'),
-			nonEasyHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action !== ACTION.BLACKLIST && this.action !== ACTION.WHITELIST && Settings.getItem('autoHideNonEasyList'));
+			noRuleHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action < 0 && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideNoRule'));
 
-	return easyHide || nonEasyHide || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
+	return (!this.unblockable && (easyHide || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
 };
 
 Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {

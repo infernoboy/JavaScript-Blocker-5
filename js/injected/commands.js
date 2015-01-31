@@ -123,6 +123,17 @@ var Command = function (type, event) {
 	var Commands = {};
 
 	Commands.global = {
+		getFrameInfoWithID: function (detail, event) {	
+			if (Utilities.Page.isTop)
+				GlobalPage.message('bounce', {
+					command: 'getFrameInfo',
+					detail: {
+						attachTo: Page.info.id,
+						frameID: detail.data
+					}
+				});
+		},
+
 		reload: function () {
 			if (Utilities.Page.isTop)
 				document.location.reload();
@@ -214,6 +225,11 @@ var Command = function (type, event) {
 			}
 		},
 
+		rerequestFrameURL: function (detail) {
+			if (detail.data.parent.pageID === Page.info.id)
+				Element.requestFrameURL(document.getElementById(detail.data.parent.frameID), detail.data.reason);
+		},
+
 		receiveFrameInfo: function (detail) {
 			if (Utilities.Page.isTop && detail.data.attachTo === Page.info.id) {
 				FRAMED_PAGES[detail.data.info.id] = detail.data.info;
@@ -233,6 +249,81 @@ var Command = function (type, event) {
 						}
 					});
 				}, 0, detail);
+		},
+
+		receiveFrameURL: function (detail) {
+			var message = detail.data;
+
+			if (message.pageID !== Page.info.id)
+				return;
+
+			if (!Utilities.Token.valid(message.token, message.id, true))
+				return LogDebug('invalid token received for frame URL.', message);
+
+			var frame = document.getElementById(message.id);
+
+			Utilities.Timer.remove('timeout', 'FrameURLRequestFailed' + message.id);
+
+			if (!frame) {
+				LogDebug('received frame URL, but frame does not exist - ' + message.id);
+
+				frame = Element.createFromObject('iframe', {
+					id: message.id
+				});
+			} else {
+				Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
+
+				var locationURL,
+						locationURLStore,
+						frameURL,
+						frameURLStore,
+						frameItemID;
+
+				var frameSources = Page.allowed.getStore('frame').getStore('source'),
+						allFrameSources = frameSources.all();
+
+				for (locationURL in allFrameSources) {
+					locationURLStore = frameSources.getStore(locationURL);
+
+					for (frameURL in allFrameSources[locationURL]) {
+						frameURLStore = locationURLStore.getStore(frameURL);
+
+						for (frameItemID in allFrameSources[locationURL][frameURL]) {
+							if (allFrameSources[locationURL][frameURL][frameItemID].meta && allFrameSources[locationURL][frameURL][frameItemID].meta.waiting && allFrameSources[locationURL][frameURL][frameItemID].meta.id === message.id) {
+								frameURLStore.remove(frameItemID);
+
+								Page.allowed.decrementHost('frame', Utilities.URL.extractHost(frameURL));
+							}
+						}
+					}
+				}
+			}
+
+			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank',
+					previousURLTokenString = previousURL + 'FrameURL';
+
+			if (frame && !Utilities.Token.valid(frame.getAttribute('data-jsbFrameURLToken'), previousURLTokenString))
+				return;
+
+			if (previousURL !== message.url)
+				Element.afterCanLoad({
+					reason: message.reason,
+					previousURL: previousURL
+				}, frame, false, {
+					isAllowed: true,
+					action: -1
+				}, message.url, {
+					target: frame,
+					url: message.url,
+					unblockable: true
+				}, null, 'frame');
+
+			if (frame) {
+				Utilities.Token.expire(previousURLTokenString);
+
+				frame.setAttribute('data-jsbFrameURL', message.url);
+				frame.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(message.url + 'FrameURL', true));
+			}
 		},
 
 		recommendPageReload: function () {
@@ -308,120 +399,20 @@ var Command = function (type, event) {
 	};
 
 	Commands.window = {
-		getFrameInfoWithID: function (detail, event) {	
-			if (Utilities.Page.isTop)
-				GlobalPage.message('bounce', {
-					command: 'getFrameInfo',
-					detail: {
-						attachTo: Page.info.id,
-						frameID: detail.data
-					}
-				});
-		},
-
 		requestFrameURL: function (detail, event) {
-			FRAME_ID_ON_PARENT = detail.data.id;
+			PARENT.frameID = detail.data.id;
+			PARENT.pageID = detail.data.pageID;
 
-			window.parent.postMessage({
+			GlobalPage.message('bounce', {
 				command: 'receiveFrameURL',
-				data: {
+				detail: {
 					id: detail.data.id,
+					pageID: detail.data.pageID,
 					reason: detail.data.reason,
 					url: Page.info.location,
 					token: detail.data.token
 				}
-			}, event.origin);
-		},
-
-		rerequestFrameURL: function (detail) {
-			Element.requestFrameURL(document.getElementById(detail.data.id), detail.data.reason);
-		},
-
-		receiveFrameURL: function (detail) {
-			var message = detail.data;
-
-			if (!Utilities.Token.valid(message.token, message.id, true))
-				return LogDebug('invalid token received for frame URL.', message);
-
-			var frame = document.getElementById(message.id);
-
-			Utilities.Timer.remove('timeout', 'FrameURLRequestFailed' + message.id);
-
-			if (!frame) {
-				LogDebug('received frame URL, but frame does not exist - ' + message.id);
-
-				frame = Element.createFromObject('iframe', {
-					id: message.id
-				});
-			} else {
-				Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
-
-				var locationURL,
-						locationURLStore,
-						frameURL,
-						frameURLStore,
-						frameItemID;
-
-				var frameSources = Page.allowed.getStore('frame').getStore('source'),
-						allFrameSources = frameSources.all();
-
-				for (locationURL in allFrameSources) {
-					locationURLStore = frameSources.getStore(locationURL);
-
-					for (frameURL in allFrameSources[locationURL]) {
-						frameURLStore = locationURLStore.getStore(frameURL);
-
-						for (frameItemID in allFrameSources[locationURL][frameURL]) {
-							if (allFrameSources[locationURL][frameURL][frameItemID].meta && allFrameSources[locationURL][frameURL][frameItemID].meta.waiting && allFrameSources[locationURL][frameURL][frameItemID].meta.id === message.id) {
-								frameURLStore.remove(frameItemID);
-
-								Page.allowed.decrementHost('frame', Utilities.URL.extractHost(frameURL));
-							}
-						}
-					}
-				}
-			}
-
-			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank',
-					previousURLTokenString = previousURL + 'FrameURL';
-
-			if (frame && !Utilities.Token.valid(frame.getAttribute('data-jsbFrameURLToken'), previousURLTokenString))
-				return;
-
-			if (previousURL !== message.url)
-				Element.afterCanLoad({
-					reason: message.reason,
-					previousURL: previousURL
-				}, frame, false, {
-					isAllowed: true,
-					action: -1
-				}, message.url, {
-					target: frame,
-					url: message.url,
-					unblockable: true
-				}, null, 'frame');
-
-			if (frame) {
-				Utilities.Token.expire(previousURLTokenString);
-
-				frame.setAttribute('data-jsbFrameURL', message.url);
-				frame.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(message.url + 'FrameURL', true));
-			}
-		},
-
-		historyStateChange: function (detail, event) {
-			Handler.setPageLocation();
-
-			if (Page.info.isFrame)
-				window.parent.postMessage({
-					command: 'rerequestFrameURL',
-					data: {
-						id: FRAME_ID_ON_PARENT,
-						reason: 'historyStateDidChange'
-					}
-				}, '*');
-
-			Page.send();
+			});
 		}
 	};
 
@@ -471,6 +462,21 @@ var Command = function (type, event) {
 				unblockable: info.unblockable,
 				meta: info.meta
 			});
+
+			Page.send();
+		},
+
+		historyStateChange: function (detail, event) {
+			Handler.setPageLocation();
+
+			if (Page.info.isFrame)
+				GlobalPage.message('bounce', {
+					command: 'rerequestFrameURL',
+					detail: {
+						parent: PARENT,
+						reason: 'historyStateDidChange'
+					}
+				});
 
 			Page.send();
 		},
@@ -882,6 +888,7 @@ var Command = function (type, event) {
 	Commands.injected.showXHRPrompt.topCallbackOnly = true;
 
 	Commands.injected.inlineScriptsAllowed.private = true;
+	Commands.injected.historyStateChange.private = true;
 	Commands.injected.addResourceRule.private = true;
 	Commands.injected.installUserScriptFromURL.private = true;
 

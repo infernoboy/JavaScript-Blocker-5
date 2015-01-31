@@ -121,7 +121,7 @@
 
 		<% if (snapshotInUse) { %>
 			<div class="page-host-snapshot-in-use">
-				<p class="jsb-info jsb-embossed jsb-centered">Snapshot in use.</p>
+				<p class="jsb-info jsb-embossed jsb-centered"><%=_('snapshots.snapshot', [UI.Snapshots.getName(globalPage.Rules.list.active.snapshot.id, globalPage.Rules.list.active.snapshot.snapshots)])._escapeHTML()%></p>
 			</div><%
 		}
 
@@ -325,9 +325,20 @@
 												} else { %>
 													<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="off" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
 													<select <%=disableEdit%> class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%>">
-														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
-														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
-														<option value="^<%=source._escapeRegExp()._entityQuotes()%>$"><%=source._escapeHTML()%></option>
+													<%
+														var sourceParts = Utilities.URL.pageParts(source),
+																index = sourceParts.parts.length - 1;
+
+														if (sourceParts.search.length) { %>
+															<option value="^<%=sourceParts.parts[index]._escapeRegExp()._entityQuotes()%><%=sourceParts.search._escapeRegExp()._entityQuotes()%>$"><%=sourceParts.parts[index]._escapeHTML()%><%=sourceParts.search._escapeHTML()%></option>
+															<option value="^<%=sourceParts.parts[index]._escapeRegExp()._entityQuotes()%>\\?.*$"><%=sourceParts.parts[index]._escapeHTML()%>?</option><%
+
+															index -= 1;
+														}
+
+														for (var c = index + 1; c--;) { %>
+															<option value="^<%=sourceParts.parts[c]._escapeRegExp()._entityQuotes()%><%=c < sourceParts.parts.length - 1 ? '.*' : ''%>$"><%=sourceParts.parts[c]._escapeHTML()%></option><%
+														} %>
 													</select><label></label><%
 												} %>
 											</div>

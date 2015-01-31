@@ -28,14 +28,14 @@
 
 <noscript id="multi-list-page-item">
 	<li class="multi-list-page-item">
-		<h2 class="jsb-light-scrollbars"><%=_('view.page.header.' + (self.isFrame ? 'frame' : 'top'))%> − <%=decodeURI(self.location)._escapeHTML()%></h2>
+		<h2 class="jsb-light-scrollbars"><%=_('view.page.header.' + (self.isFrame ? 'frame' : 'top'))%> − <%=decodeURIComponent(self.location)._escapeHTML()%></h2>
 		<div class="multi-list-page-item-rules"></div>
 	</li>
 </noscript>
 
 <noscript id="multi-list-resource-item">
 	<li class="multi-list-page-item">
-		<h2 class="jsb-light-scrollbars"><%=_('view.page.header.via_' + (self.isFrame ? 'frame' : 'top'))%> − <%=decodeURI(self.fullSource)._escapeHTML()%></h2>
+		<h2 class="jsb-light-scrollbars"><%=_('view.page.header.via_' + (self.isFrame ? 'frame' : 'top'))%> − <%=decodeURIComponent(self.fullSource)._escapeHTML()%></h2>
 		<div class="multi-list-page-item-rules"></div>
 	</li>
 </noscript>

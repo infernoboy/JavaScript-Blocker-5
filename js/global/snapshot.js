@@ -122,6 +122,29 @@ Snapshot.prototype.unkeep = function (id) {
 	this.kept.remove(id);
 };
 
+Snapshot.prototype.setName = function (id, name) {
+	if (typeof name !== 'string')
+		return false;
+
+	name = $.trim(name);
+
+	if (!name.length)
+		return false;
+
+	var snapshot = this.unkept.get(id) || this.kept.get(id);
+
+	if (!snapshot)
+		return false;
+
+	snapshot.name = name;
+
+	this.kept.set(id, snapshot);
+
+	this.unkept.remove(id);
+
+	return true;
+};
+
 Snapshot.prototype.add = function (keep, name) {
 	if (typeof name !== 'string')
 		name = null;

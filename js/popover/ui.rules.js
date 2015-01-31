@@ -30,6 +30,7 @@ UI.Rules = {
 
 	buildViewSwitcher: function () {
 		var viewSwitcherData = {
+			id: 'rule-views-switcher',
 			container: '#rule-views-container',
 			views: {}
 		};
@@ -40,7 +41,7 @@ UI.Rules = {
 				poppy: i > 0 ? (UI.Rules.__lists[i] + '-rules-menu') : null
 			};
 
-		$('.view-switcher-container', UI.Rules.toolbar).remove();
+		$('#rule-views-switcher', UI.Rules.toolbar).remove();
 
 		UI.Rules.toolbar.append(Template.create('main', 'view-switcher', viewSwitcherData));
 
@@ -320,17 +321,37 @@ UI.Rules = {
 					var self = $(this),
 							view = self.parents('*[data-ruleListItems]'),
 							ruleList = view.data('ruleList'),
-							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
-							kind = self.parents('.rule-group-kind-wrapper').attr('data-kind'),
-							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
-							rule = self.parents('.rule-item-container').attr('data-rule');
+							typeWrapper = self.parents('.rule-group-type-wrapper'),
+							type = typeWrapper.attr('data-type'),
+							kindWrapper = self.parents('.rule-group-kind-wrapper'),
+							kind = kindWrapper.attr('data-kind'),
+							domainWrapper = self.parents('.rule-group-domain-wrapper'),
+							domain = domainWrapper.attr('data-domain'),
+							ruleContainer = self.parents('.rule-item-container'),
+							rule = ruleContainer.attr('data-rule');
 
 					ruleList.__remove(false, type, kind, domain, rule);
 
-					if (view.is('.ui-view'))
-						UI.Rules.buildRuleList(view, ruleList);
-					else
-						Poppy.closeAll();
+					Poppy.closeAll();
+
+					ruleContainer.hide(225 * window.globalSetting.speedMultiplier, function () {
+						ruleContainer.remove();
+
+						if ($('ul', kindWrapper).is(':empty'))
+							kindWrapper.parent().hide(225 * window.globalSetting.speedMultiplier, function () {
+								$(this).remove();
+
+								if ($('ul', domainWrapper).is(':empty'))
+									domainWrapper.parent().hide(225 * window.globalSetting.speedMultiplier, function () {
+										$(this).remove();
+
+										if ($('ul', typeWrapper).is(':empty'))
+											typeWrapper.hide(225 * window.globalSetting.speedMultiplier, function () {
+												$(this).remove();
+											});
+									});
+							});
+					});
 				})
 
 				.on('click', '.multi-list-item-wrapper[data-editable="1"] .multi-list-item-header', function (event) {
@@ -458,10 +479,7 @@ UI.Rules = {
 
 					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
 
-					if (originPoppy)
-						poppy.linkTo(originPoppy);
-
-					poppy.setContent(Template.create('poppy', 'create-rule', {
+					var templateArgs = {
 						editing: true,
 						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
 						type: type,
@@ -469,9 +487,16 @@ UI.Rules = {
 						kind: kind,
 						rule: rule,
 						action: action
-					}));
+					};
 
-					poppy.show();
+					poppy.templateArgs = templateArgs;
+
+					if (originPoppy)
+						poppy.linkTo(originPoppy);
+
+					poppy
+						.setContent(Template.create('poppy', 'create-rule', templateArgs))
+						.show();
 				});
 		},
 

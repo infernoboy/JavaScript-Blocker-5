@@ -51,6 +51,10 @@ function Rule (store, storeProps, ruleProps) {
 };
 
 Rule.event = new EventListener;
+Rule.listCache = new Store('RuleListCache', {
+	ignoreSave: true,
+	private: true
+});
 
 Rule.withLocationRules = function (allRules, callback) {
 	var ruleList,
@@ -99,12 +103,21 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	 	if (!Rules.isRegExp(domain))
 			throw new TypeError(Rules.ERROR.TYPE.PAGE_NOT_REGEXP);
 
-		domain = domain.toLowerCase();
+		try {
+			new RegExp(domain);
+
+			domain = domain.toLowerCase();	
+		} catch (error) {
+			throw new TypeError('Page: ' + error.message);
+		}		
 	}
 
-	var rules = types[type](domain),
+	var rules = type._startsWith('not') ? types[type]() : types[type](domain),
 			isRegExp = Rules.isRegExp(rule.rule),
 			action = typeof this.action === 'number' ? this.action : rule.action;
+
+	if (type._startsWith('not'))
+		rules = rules.getStore(domain);
 
 	if (isRegExp)
 		try {
@@ -112,10 +125,10 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 
 			rule.rule = rule.rule.toLowerCase();
 		} catch (error) {
-			throw new TypeError(error.message);
+			throw new TypeError('Rule: ' + error.message + ' - ' + rule.rule);
 		}
 
-	if (kind._endsWith('*'))
+	if (kind._endsWith('*') || type._startsWith('not'))
 		Resource.canLoadCache.clear();
 	else {		
 		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind + '-?'));
@@ -147,20 +160,28 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 		var self = this;
 
 		this.rules.forEach(function (kind) {
-			self.__remove(false, type, kind);
+			self.__remove(false, type, kind, domain);
 		});
+
+		return;
 	} else {
 		var types = this.kind(kind);
 
 		if (!types.hasOwnProperty(type))
-			throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
+			throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);			
 
 		if (domain === undefined)
 			types[type]().clear();
 		else if (rule === undefined)
 			types[type]().remove(domain);
-		else
-			types[type](domain, domainIsLocation).remove(rule);
+		else {
+			if (type._startsWith('not'))
+				var rules = types[type]().getStore(domain);
+			else
+				var rules = types[type](domain, domainIsLocation);
+
+			rules.remove(rule);
+		}
 	}
 
 	if (kind._endsWith('*'))
@@ -214,69 +235,65 @@ Rule.prototype.kind = function (kindName) {
 		if (!this.hasOwnProperty(type))
 			throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
 
+		domainIsLocation = !!domainIsLocation;
+
 		var domains = this.getStore(type);
 
 		if (!domain)
 			return domains;
 
-		var rules;
+		var isArray = Array.isArray(domain),
+				isSimple = !isArray && !type._startsWith('not') && (type === 'domain' || type === 'notDomain' || !domainIsLocation);
+
+		if (isSimple)
+			return domains.getStore(domain);
+
+		var baseKey = this.parent ? this.parent.name || this.parent.id : this.name || this.id,
+				listCache = Rule.listCache.getStore(baseKey, {
+					maxLife: TIME.ONE.HOUR,
+				}),
+				cacheKey = domains.name + ',' + (isArray ? '[' + domain + ']' : domain) + ',' + domainIsLocation,
+				cachedRules = listCache.get(cacheKey);
+
+		if (cachedRules && !cachedRules.destroyed)
+			return cachedRules;
+
+		var rules = listCache.getStore(cacheKey, {
+			maxLife: Infinity
+		}, this);
 
 		if (Array.isArray(domain)) {
-			// if (domain.length === 1)
-			// 	return this.__rules(type, [domain[0], null]);
-
-			rules = new Store(domains.name + ',' + type + ',' + domain, {
-				selfDestruct: TIME.ONE.HOUR,
-				ignoreSave: true,
-				private: true
-			});
-
-			rules.parent = this;
-
-			if (type._startsWith('not'))
-				domains.forEach(function (testDomain, domainValue) {
+			if (type._startsWith('not')) {
+				for (var testDomain in domains.data)
 					if (!domain._contains(testDomain))
-						rules.set(testDomain, domainValue);
-				});
-			else
+						rules.set(testDomain, domains.get(testDomain));
+			} else {
 				for (var i = 0; i < domain.length; i++)
 					if (domains.keyExist(domain[i]))
 						rules.set(domain[i], domains.get(domain[i]));
-		} else if (typeof domain === 'string') {
-			if (type === 'domain' || type === 'notDomain' || !domainIsLocation) {
-				if (type._startsWith('not'))
-					rules = domains.filter(function (testDomain) {
-						return domain !== testDomain;
-					});
-				else
-					rules = domains.getStore(domain);
+			}
+		} else {
+			if (type._startsWith('not')) {
+				for (var testDomain in domains.data)
+					if (testDomain !== domain)
+						rules.set(testDomain, domains.get(testDomain));
 			} else {
-				rules = new Store(domains.name + ',' + type + ',' + domain, {
-					selfDestruct: TIME.ONE.HOUR,
-					ignoreSave: true,
-					private: true
-				});
-
-				rules.parent = this;
-
 				var regExp,
 						matches;
 
-				domains.forEach(function (page, pageStore) {
+				for (var testPage in domains.data)
 					try {
-						regExp = Rules.__regExpCache[page] || (Rules.__regExpCache[page] = new RegExp(page));
+						regExp = Rules.__regExpCache[testPage] || (Rules.__regExpCache[testPage] = new RegExp(testPage));
 
 						matches = type === 'page' ? regExp.test(domain) : !regExp.test(domain);
 
 						if (matches)
-							rules.set(page, pageStore);
+							rules.set(testPage, domains.get(testPage));
 					} catch (error) {
 						LogError(error);
 					}
-				});
 			}
-		} else
-			rules = domains;
+		}
 
 		return rules;
 	};
@@ -432,7 +449,7 @@ var Rules = {
 		var kinds = [];
 
 		for (var i = Rules.__kinds.length; i--;)
-			kinds.push(Rules.__kinds[i], 'framed:' + Rules.__kinds[i], 'hide:framed:' + Rules.__kinds[i]);
+			kinds.push(Rules.__kinds[i], 'hide:' + Rules.__kinds[i], 'framed:' + Rules.__kinds[i], 'hide:framed:' + Rules.__kinds[i]);
 
 		return kinds;
 	},
@@ -461,7 +478,7 @@ var Rules = {
 		return 0;
 	},
 
-	attachEasyLists: function () {
+	attachEasyLists: function (clearCache) {
 		var easyLists = Settings.getItem('easyLists'),
 				currentLists = Object.keys(Rules.list).filter(function (value) {
 					return value._startsWith('$');
@@ -476,7 +493,8 @@ var Rules = {
 					longRuleAllowed: true
 				});
 
-		Resource.canLoadCache.clear().saveNow();
+		if (clearCache)
+			Resource.canLoadCache.clear().saveNow();
 	},
 
 	useCurrent: function () {
@@ -706,8 +724,14 @@ Rules.__EasyRules.addCustomEventListener('storeDidSave', function (event) {
 })();
 
 Rule.event.addCustomEventListener('ruleWasAdded', function (event) {
+	Rule.listCache.getStore(event.detail.self.rules.name || event.detail.self.rules.id).clear();
+
 	if ([0, 1]._contains(event.detail.action))
 		Utilities.Timer.timeout('setLastRuleWasTemporary', function (list) {
 			Settings.setItem('lastRuleWasTemporary', list === Rules.list.temporary);
 		}, 100, [event.detail.self]);
+});
+
+Rule.event.addCustomEventListener('ruleWasRemoved', function (event) {
+	Rule.listCache.getStore(event.detail.self.rules.name || event.detail.self.rules.id).clear();
 });

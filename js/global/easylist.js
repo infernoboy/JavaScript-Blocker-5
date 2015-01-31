@@ -42,8 +42,6 @@ EasyList.fetch = function () {
 			new EasyList(list, lists[list].value[0]);
 		else
 			Rules.__EasyRules.remove(list);
-
-	Settings.setItem('EasyListLastUpdate', Date.now());
 };
 
 EasyList.prototype.merge = function () {
@@ -55,8 +53,11 @@ EasyList.prototype.merge = function () {
 			return self.temporaryRules.rules.clear();
 		}
 
-		Rules.list[self.name].rules.addCustomEventListener('storeDidSave', function (self) {
+		Rules.list[self.name].rules.addCustomEventListener('storeWouldHaveSaved', function (self) {
 			EasyList.__updating--;
+
+			if (EasyList.__updating === 0)
+				Settings.setItem('EasyListLastUpdate', Date.now());
 
 			self.temporaryRules.rules.clear();
 		}.bind(null, self), true);
@@ -69,6 +70,8 @@ EasyList.prototype.merge = function () {
 
 EasyList.prototype.download = function () {
 	return $.get(this.url).fail(function (error) {
+		EasyList.__updating--;
+
 		LogError('failed to download easy list ' + this.name, error.statusText);
 	});
 };
@@ -117,6 +120,8 @@ EasyList.prototype.process = function (list) {
 
 				var rule = subLine.replace(/\//g, '\\/')
 					.replace(/\(/g, '\\(')
+					.replace(/\[/g, '\\[')
+					.replace(/\]/g, '\\]')
 					.replace(/\)/g, '\\)')
 					.replace(/\+/g, '\\+')
 					.replace(/\?/g, '\\?')

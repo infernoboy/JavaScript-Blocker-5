@@ -71,7 +71,9 @@
 				</li>
 			<% } %>
 			<li class="jsb-align-right">
-				<input type="button" id="rule-menu-open-snapshots" value="<%=_('view_toolbar.snapshots')%>" />
+				<% if (Settings.getItem('enableSnapshots')) { %>
+					<input type="button" id="rule-menu-open-snapshots" value="<%=_('view_toolbar.snapshots')%>" /><%
+				} %>
 				<input type="button" id="rule-menu-import-rules-from-four" value="Import Rules From JSB 4" />
 			</li>
 		</ul>
@@ -210,7 +212,7 @@
 	<h3 class="jsb-centered"><%=_('select.options')%></h3>
 	<ul class="select-custom-options"><%
 		self.options.each(function () { %>
-			<li data-value="<%=this.value._entityQuotes()%>"><%=this.innerText._escapeHTML()%></li><%
+			<li class="<%=self.value === this.value ? 'select-custom-selected' : ''%>" data-value="<%=this.value._entityQuotes()%>"><%=this.innerText._escapeHTML()%><%=this.value !== this.innerText ? ('<br><span class="jsb-label jsb-smaller"> ' + this.value._escapeHTML() + '</span>') : ''%></li><%
 		}); %>
 	</ul>
 </noscript>
@@ -346,10 +348,23 @@
 			</div>
 
 			<div class="jsb-align-right">
+				<% if (self.editing) { %>
+					<input type="button" id="create-rule-duplicate" value="<%=_('Duplicate')%>" />&nbsp;<%
+				} %>
 				<input type="button" id="create-rule-save" class="on-enter" value="<%=_('Save')%>" />
 			</div>
 		</div><%
 	} %>
+</noscript>
+
+<noscript id="snapshot-item">
+	<input type="button" id="snapshot-item-name-set" value="Name" />&nbsp;
+	<input type="button" id="snapshot-item-keep" value="<%=self.kept ? 'Unkeep' : 'Keep'%>" />
+</noscript>
+
+<noscript id="snapshot-item-name">
+	<input type="text" id="snapshot-item-name" class="trigger-on-enter" />&nbsp;
+	<input type="button" id="snapshot-item-name-save" class="on-enter" value="<%=_('Save')%>" />
 </noscript>
 
 

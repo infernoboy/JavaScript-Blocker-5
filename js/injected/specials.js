@@ -17,27 +17,6 @@ Special.specials = {
 			})
 		});
 
-		var localHistory = {
-			pushState: window.history.pushState,
-			replaceState: window.history.replaceState
-		};
-
-		window.history.pushState = function () {
-			localHistory.pushState.apply(window.history, arguments);
-
-			window.postMessage({
-				command: 'historyStateChange'
-			}, '*');
-		};
-
-		window.history.replaceState = function () {
-			localHistory.replaceState.apply(window.history, arguments);
-
-			window.postMessage({
-				command: 'historyStateChange'
-			}, '*');
-		};
-
 		var myEvent = document.createEvent('CustomEvent');
 
 		myEvent.initCustomEvent('JSBCommander:' + JSB.sourceID + ':' + JSB.eventToken, false, false, {
@@ -82,6 +61,25 @@ Special.specials = {
 
 			addScriptButton.classList.add('jsb-color-allowed');
 		});
+	},
+
+	historyFixer: function () {
+		var localHistory = {
+			pushState: window.history.pushState,
+			replaceState: window.history.replaceState
+		};
+
+		window.history.pushState = function () {
+			localHistory.pushState.apply(window.history, arguments);
+
+			messageExtension('historyStateChange');
+		};
+
+		window.history.replaceState = function () {
+			localHistory.replaceState.apply(window.history, arguments);
+
+			messageExtension('historyStateChange');
+		};
 	},
 
 	inline_script_execution: function () {
@@ -254,7 +252,7 @@ Special.specials = {
 						info.meta = createMetaData(detail, postParams);
 
 					messageExtension('page.' + pageAction, info);
-				}, 0, pageAction, info, detail, postParams);
+				}.bind(null, pageAction, info, detail, postParams));
 
 			if (awaitPromptResourceID)
 				messageExtension('page.modifyBlockedItem', {
@@ -283,7 +281,9 @@ Special.specials = {
 						data: {}
 					};
 
-					var splitParam;
+					var splitParam,
+							paramName,
+							paramValue;
 
 					var params = toSend.split(/&/g);
 
@@ -293,7 +293,19 @@ Special.specials = {
 
 						splitParam = params[i].split('=');
 
-						meta.data[decodeURIComponent(splitParam[0])] = typeof splitParam[1] === 'string' ? decodeURIComponent(splitParam[1]) : null;
+						try {
+							paramName = decodeURIComponent(splitParam[0]);
+						} catch (error) {
+							paramName = splitParam[0];
+						}
+
+						try {
+							paramValue = typeof splitParam[1] === 'string' ? decodeURIComponent(splitParam[1]) : null;
+						} catch (error) {
+							paramValue = splitParam[1];
+						}
+
+						meta.data[paramName] = paramValue;
 					}
 				} else if (toSend instanceof window.Blob) {
 					var URL = window.webkitURL || window.URL || {};
@@ -372,17 +384,17 @@ Special.specials = {
 			var self = this,
 					args = arguments;
 
-			var onXHRPromptInput = registerCallback(function (result) {
-				info.canLoad = {
-					action: result.isAllowed ? -5 : -6,
-					isAllowed: result.isAllowed
-				};
-
-				return performAction(self, info, args, result.send, awaitPromptResourceID, postParams);
-			});
-
 			var shouldPerformAction = (function () {
 				if (canLoad.action !== -8 && canLoad.action < 0 && shouldShowPrompt) {
+					var onXHRPromptInput = registerCallback(function (result) {
+						info.canLoad = {
+							action: result.isAllowed ? -5 : -6,
+							isAllowed: result.isAllowed
+						};
+
+						return performAction(self, info, args, result.send, awaitPromptResourceID, postParams);
+					});
+
 					if (!detail.sync) {
 						info.canLoad.isAllowed = false;
 						info.canLoad.action = -10;
@@ -396,7 +408,7 @@ Special.specials = {
 								onXHRPromptInput: onXHRPromptInput,
 								meta: info
 							});
-						}, 0, onXHRPromptInput, info, detail, postParams);
+						}.bind(null, onXHRPromptInput, info, detail, postParams));
 
 						return false;
 					} else {
@@ -420,7 +432,7 @@ Special.specials = {
 										onXHRPromptInput: onXHRPromptInput,
 										meta: info
 									});
-								}, 0, isAllowed, onXHRPromptInput, info, detail, postParams);
+								}.bind(null, isAllowed, onXHRPromptInput, info, detail, postParams));
 						}
 
 						executeLocalCallback(onXHRPromptInput, {
@@ -595,6 +607,7 @@ Special.specials.canvas_data_url.data = {
 Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
 Special.specials.installUserScriptPrompt.excludeFromPage = true;
+Special.specials.historyFixer.excludeFromPage = true;
 Special.specials.xhr_intercept.excludeFromPage = true;
 Special.specials.simple_referrer.noInject = true;
 Special.specials.anchor_titles.noInject = true;

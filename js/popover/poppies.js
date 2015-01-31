@@ -290,6 +290,14 @@ Object._extend(Poppy.scripts, {
 				}, 50, this);
 			})
 
+			.on('click', '#create-rule-duplicate', function () {
+				poppy.templateArgs.editing = false;
+
+				var template = Template.create('poppy', 'create-rule', poppy.templateArgs);
+
+				poppy.setContent(template);
+			})
+
 			.on('click', '#create-rule-save', function () {
 				var self = $(this),
 						container = $('#create-rule', poppy.content),
@@ -351,6 +359,9 @@ Object._extend(Poppy.scripts, {
 					});
 
 				try {
+					if (newKinds.length === 0)
+						throw new Error(_('rules.no_kinds_selected'));
+
 					for (var i = newKinds.length; i--;)
 						globalPage.Rules.list[newListName].__add(newType, newKinds[i], newDomain, {
 							rule: newRule,
@@ -358,6 +369,9 @@ Object._extend(Poppy.scripts, {
 						});
 
 					Poppy.closeAll();
+
+					if (UI.Rules.view.is('.active-view'))
+						UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
 				} catch (error) {
 					var offset = self.offset(),
 							errorPoppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
@@ -383,6 +397,45 @@ Object._extend(Poppy.scripts, {
 
 		domain.change();
 		whichItem.change();
+	},
+
+	'snapshot-item': function (poppy) {
+		poppy.content
+			.on('click', '#snapshot-item-name-set', function () {
+				poppy.setContent(Template.create('poppy', 'snapshot-item-name'));
+
+				$('#snapshot-item-name', poppy.content).focus();
+			})
+
+			.on('click', '#snapshot-item-name-save', function () {
+				var name = $('#snapshot-item-name', poppy.content),
+						nameVal = name.val();
+
+				if (UI.Snapshots.snapshot.setName(poppy.snapshotID, nameVal)) {
+					UI.event.addCustomEventListener('poppyDidClose', function () {
+						UI.Snapshots.buildSnapshots();
+					}, true);
+
+					poppy.close();
+				} else {
+					name.focus();
+
+					poppy.shake();
+				}
+			})
+
+			.on('click', '#snapshot-item-keep', function () {
+				var snapshot = poppy.snapshots.get(poppy.snapshotID);
+
+				poppy.snapshots.remove(poppy.snapshotID);
+				poppy.oppositeSnapshots.set(poppy.snapshotID, snapshot);
+
+				UI.event.addCustomEventListener('poppyDidClose', function () {
+					UI.Snapshots.buildSnapshots();
+				}, true);
+
+				poppy.close();
+			})
 	},
 
 	console: function (poppy) {

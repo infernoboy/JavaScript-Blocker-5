@@ -219,7 +219,10 @@ var Utilities = {
 		var Queue = function Queue (delay) {
 			this.__stopped = false;
 
-			this.delay = typeof delay === 'number' ? delay : 0;
+			this.delay = typeof delay === 'number' ? delay : 1;
+
+			if (delay === false)
+				this.delay = false;
 			
 			this.clear();
 		};
@@ -228,12 +231,33 @@ var Utilities = {
 			this.queue.push([fn, args || []]);
 		};
 
+		Queue.prototype.next = function () {
+			if (!this.__started)
+				return;
+
+			var next = this.queue.shift();
+
+			if (next) {
+				next[0].apply(this, next[1]);
+
+				if (this.delay === false)
+					this.next();
+				else
+					Utilities.setImmediateTimeout(this.next.bind(this));
+			}
+
+			return this;
+		}
+
 		Queue.prototype.start = function () {
 			if (this.__started)
 				return;
 
 			this.__stopped = false;
 			this.__started = true;
+
+			if (this.delay === 0)
+				return this.next();
 
 			for (var b = this.queue.length; this.index < b; this.index++) {
 				if (!this.__started)
@@ -264,6 +288,8 @@ var Utilities = {
 				clearTimeout(this.timers[keys[i]]);
 
 			this.timers = {};
+
+			return this;
 		};
 
 		Queue.prototype.clear = function () {
@@ -781,10 +807,11 @@ var Utilities = {
 		pageParts: function (url) {
 			this.__anchor.href = url;
 
-			var parts = [this.__anchor.origin + '/'],
+			var parts = [this.__anchor.origin !== 'null' ? (this.__anchor.origin + '/') : this.__anchor.protocol],
 					splitPath = this.__anchor.pathname.split(/\//g);
 		
-			splitPath._remove(0);
+			if (splitPath.length > 1)
+				splitPath._remove(0);
 
 			if (splitPath[0].length)
 				for (var i = 0; i < splitPath.length; i++)

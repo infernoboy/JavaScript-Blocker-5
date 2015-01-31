@@ -4,6 +4,7 @@
 	"Close": "Close",
 	"Alert": "Alert",
 	"Save": "Save",
+	"Duplicate": "Duplicate",
 	"Cancel": "Cancel",
 	"Switch": "Switch",
 	"Delete": "Delete",
@@ -202,8 +203,8 @@
 	"setting.largeFont.label": "Use large font",
 	"setting.quickCyclePageItems.label": "Quickly cycle through page editor items",
 	"setting.createRulesOnClose.label": "Create rules when closing the popover",
-	"setting.autoHideEasyList.label": "Automatically hide whitelisted and blacklisted items",
-	"setting.autoHideNonEasyList.label": "Automatically hide non-whitelisted and non-blacklisted items",
+	"setting.autoHideEasyList.label": "Hide whitelisted and blacklisted items",
+	"setting.autoHideNoRule.label": "Hide allowed and blocked items that didn't match a rule",
 	"setting.recommendReloadAlways.label": "When a page has items blocked because it was loaded in the background, reload it automatically",
 	"setting.darkMode.label": "Use dark mode",
 	"setting.baseColor.label": "Color",
@@ -252,7 +253,7 @@
 	"setting.clearSnapshots.label": "Delete all snapshots",
 	"setting.clearSnapshots.subLabel": "Delete Snapshots",
 
-	"setting.confirmShortURL.label": "Confirm show URL redirects before they occur",
+	"setting.confirmShortURL.label": "Confirm short URL redirects before they occur",
 	"setting.blockReferrer.label": "EXPERIMENTAL: Enable full referer blocking",
 	"setting.focusNewTab.label": "When a new tab opens, make it active",
 
@@ -312,6 +313,8 @@
 	"create_rule.domain_info": "Pages must begin with <b>^</b>, end with <b>$</b>, and be a valid regular expression.",
 	"create_rule.rule_info": "Enter * or leave blank to match all resources.<br><br>Include protocol matching by separating them with a comma followed by a <b>|</b> and then the domain (e.g. <b>http:,https:,ftp:|.google.com</b>).<br><br>Start a domain with <b>.</b> to include all subdomains.<br><br>Start with a <b>^</b> and end with <b>$</b> to use regular expression matching.",
 
+	"rules.no_kinds_selected": "You have to select at least one kind to create a rule for.",
+	"rules.visibility": "Visibility",
 	"rules.filter": "Filter",
 	"rules.domain_or_page": "Domain or page",
 	"rules.temporary_rules": "Temporary Rules",
@@ -360,6 +363,8 @@
 	"rules.protocol.data:": " ",
 	"rules.protocol.javascript:": " ",
 
+	"snapshots.snapshot": "Snapshot: {0}",
+
 	"special.all domains.allowed": "No other features",
 	"special.all domains.blocked": "All other features",
 	"special.anchor_titles": "Titleless links",
@@ -380,6 +385,8 @@
 	"special.inline_script_execution": "Inline script execution",
 	"special.inline_script_execution.blocked": "Block inline script execution",
 	"special.inline_script_execution.allowed": "Allow inline script execution",
+	"special.contextmenu_overrides.allowed": "Allow context menu to be disabled",
+	"special.contextmenu_overrides.blocked": "Force context menu to be available",
 	"special.environmental_information": "Environmental information",
 	"special.environmental_information.blocked": "Randomize environmental information",
 	"special.environmental_information.allowed": "Allow normal environmental information",

@@ -101,6 +101,11 @@ var Store = (function () {
 		if (!Store.isStore(object))
 			throw new TypeError('cannot create store from object');
 
+		if (!object.props)
+			object.props = {};
+
+		object.props.private = true;
+
 		var store = new Store(object.name, object.props);
 
 		if (!store.isNew)
@@ -113,12 +118,12 @@ var Store = (function () {
 
 	Store.inherit = function (props, store) {
 		for (var i = 0; i < Store.__inheritable.length; i++)
-			props[Store.__inheritable[i]] = props[Store.__inheritable[i]] || store[Store.__inheritable[i]];
+			props[Store.__inheritable[i]] = (Store.__inheritable[i] in props) ? props[Store.__inheritable[i]] : store[Store.__inheritable[i]];
 
 		return props;
 	};
 
-	Store.compare = function (left, right) {
+	Store.compare = function (left, right, parent) {
 		if (!(left instanceof Store) || !(right instanceof Store))
 			throw new TypeError('left or right is not an instance of Store');
 
@@ -139,13 +144,16 @@ var Store = (function () {
 			right: right
 		};
 
-		if (!Store.compareCache)
+		if (!Store.compareCache || Store.compareCache.destroyed)
 			Store.compareCache = new Store('Compare', {
-				maxLife: TIME.ONE.MINUTE * 10,
+				maxLife: TIME.ONE.MINUTE * 1,
+				destroyChildren: true,
 				private: true
 			});
 
-		var store = Store.compareCache.getStore(left.id + '-' + right.id);
+		var store = Store.compareCache.getStore(left.id + '|' + right.id, null, parent);
+
+		store.clear();
 
 		var sides = {
 			left: store.getStore('left'),
@@ -163,9 +171,7 @@ var Store = (function () {
 				else if (oppositeValue === undefined)
 					sides[side].set(key, thisValue);
 				else if (thisValue instanceof Store) {
-					compared = Store.compare(compare.left.getStore(key, null, null, true), compare.right.getStore(key, null, null, true));
-
-					compared.store.parent = store;
+					compared = Store.compare(compare.left.getStore(key, null, null, true), compare.right.getStore(key, null, null, true), store);
 
 					for (comparedSide in sides) {
 						inside = compared.sides[comparedSide];
@@ -180,9 +186,9 @@ var Store = (function () {
 			}
 		}
 
-		sides.left = sides.left.readyJSON();
-		sides.right = sides.right.readyJSON();
-		sides.both = sides.both.readyJSON();
+		sides.left = sides.left.readyJSON(null, true);
+		sides.right = sides.right.readyJSON(null, true);
+		sides.both = sides.both.readyJSON(null, true);
 
 		return {
 			store: store,
@@ -202,8 +208,8 @@ var Store = (function () {
 		set: function (newParent) {
 			var hasParent = (this.private ? this.__parent : parent[this.id]) instanceof Store;
 
-			if (hasParent)
-				return;
+			if (hasParent && newParent !== null)
+				this.parent = null;
 
 			if (newParent instanceof Store) {
 				newParent.children[this.id] = this;
@@ -240,7 +246,6 @@ var Store = (function () {
 	});
 
 	Store.BREAK = Utilities.Token.generate();
-	Store.ALLOW_SAVE = true;
 
 	Store.prototype.__parent = undefined;
 	Store.prototype.__data = {};
@@ -250,7 +255,7 @@ var Store = (function () {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
-		if (this.save && Store.ALLOW_SAVE)
+		if (this.save)
 			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
 				if (window.globalSetting.debugMode)
 					console.time('SAVED ' + store.id);
@@ -522,7 +527,7 @@ var Store = (function () {
 		return this.move(key, newKey).set(newKey, value);
 	};
 
-	Store.prototype.set = function (key, value, setNull) {
+	Store.prototype.set = function (key, value, setNull, parent) {
 		if (this.lock) {
 			if (value instanceof Store) {
 				value.lock = true;
@@ -553,7 +558,7 @@ var Store = (function () {
 		};
 
 		if (value instanceof Store)
-			value.parent = this;
+			value.parent = parent || this;
 
 		if (!this.ignoreSave)
 			if (value instanceof Store)
@@ -631,11 +636,11 @@ var Store = (function () {
 		});
 	};
 
-	Store.prototype.getStore = function (key, defaultProps) {
+	Store.prototype.getStore = function (key, defaultProps, parent) {
 		var store = this.get(key),
 				requiredName = (this.name || this.id) + ',' + key;
 
-		if (!(store instanceof Store) || !store.data) {
+		if (!(store instanceof Store) || !store.data || store.destroyed) {
 			if (!(defaultProps instanceof Object))
 				defaultProps = {};
 
@@ -643,7 +648,7 @@ var Store = (function () {
 
 			Store.inherit(defaultProps, this);
 
-			store = this.set(key, new Store(requiredName, defaultProps));
+			store = this.set(key, new Store(requiredName, defaultProps), null, parent);
 		}
 
 		return store;
@@ -744,19 +749,26 @@ var Store = (function () {
 		this.clear();
 
 		this.data = store.readyJSON(swapPrefix).STORE;
+
+		return this;
 	};
 
 	Store.prototype.clear = function (ignoreSave) {
 		if (this.lock)
 			return;
 
-		for (var child in this.children)
-			this.children[child].clear(true);
+		for (var child in this.children) {
+			this.children[child].destroy(true, false, true);
+
+			delete this.children[child];
+		}
 
 		this.data = {};
 
 		if (!ignoreSave)
 			this.__save();
+
+		this.triggerEvent('storeDidClear');
 
 		return this;
 	};
@@ -841,7 +853,7 @@ var Store = (function () {
 		return JSON.stringify(this.all(), null, 2);
 	};
 
-	Store.prototype.readyJSON = function (swapPrefix) {
+	Store.prototype.readyJSON = function (swapPrefix, noProps) {
 		var value,
 				finalValue;
 
@@ -861,6 +873,9 @@ var Store = (function () {
 				lock: this.lock
 			}
 		};
+
+		if (noProps)
+			delete stringable.props;
 
 		for (var key in this.data) {
 			value = this.get(key, null, null, true);

@@ -12,7 +12,7 @@ var SourceSimplifier = {
 					if (ref[i] instanceof RegExp) {
 						if (ref[i].test(url.toLowerCase()))
 							return simplified
-					} else if ((host[0] === '.' && host._endsWith(ref[i])) || host === ref[i])
+					} else if ((ref[i][0] === '.' && host._endsWith(ref[i])) || host === ref[i])
 						return simplified;
 				}
 			} else if ((ref instanceof RegExp) && ref.test(url.toLowerCase()))
@@ -27,6 +27,7 @@ SourceSimplifier.__map = {
 	'Advertisements': /(^.*\?file=ads&.*$)|(^https?:\/\/([^\/]+\.)?(adsafeprotected|bkrtx)\.com\/.*$)|(^.*\/recommendations\/ad\..*$)|(^.*\/smartbanner\/.*$)|(^https?:\/\/([^\/]+\.)?ads\.[^\.]+\..*\/.*$)|(^.*:\/\/ads\..*$)|(^.*_(160x600|728x90|320x250)_?\..*$)|(^.*(160x600|728x90)\.html?.*$)|(^.*=300x250&.*$)/,
 	'Tracking': /^(https?:\/\/([^\/]+\.)?a\.wikia-beacon\.com\/.*)|(.*\/analytics\/js\/.*)$/,
 
+	'Atlas Tracking': ['.atdmt.com'],
 	'JavaScript Frameworks': ['ajax.googleapis.com'],
 	'Google Tracking': /^(.*\/google-analytics-.*)|(https?:\/\/([^\/]+\.)?(google-analytics|googletagservices)\.com\/.*)$/,
 	'Twitter': ['platform.twitter.com', 'www.twitter.com'],
