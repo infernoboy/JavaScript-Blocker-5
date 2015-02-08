@@ -63,5 +63,86 @@ var Upgrade = {
 				}				
 			}
 		}
+	},
+
+	settings: {
+		mapAlwaysBlock: function (value) {
+			if (value === 'domain')
+				return 'host';
+			else if (value === 'topLevel')
+				return 'domain';
+			else if (value === 'nowhere')
+				return 'blacklist';
+			else if (value === 'trueNowhere')
+				return 'nowhere';
+
+			return value;
+		},
+
+		map: {
+			persistDisabled: true,
+			language: true,
+			toolbarDisplay: true,
+			updateNotify: true,
+			ignoreWhitelist: true,
+			ignoreBlacklist: true,
+			secureOnly: true,
+			allowExtensions: true,
+
+			animations: 'useAnimations',
+			largeFont: 'useLargeFont',
+			showUnblocked: 'showUnblockedScripts',
+			hideJSBInjected: 'hideInjected',
+			simplifyDomainNames: 'showItemDescription',
+			hideWhitelistBlacklistItems: 'autoHideEasyList',
+			
+			simpleMode: function (value) {
+				return {
+					key: 'showResourceURLs',
+					value: !value
+				};
+			},
+
+			enablescript: function (value) {
+				return {
+					key: 'enabledKinds',
+					storeKey: 'script',
+					value: value
+				};
+			},
+
+			alwaysBlockscript: function (value) {
+				return {
+					key: 'alwaysBlock',
+					storeKey: 'script',
+					value: Upgrade.settings.mapAlwaysBlock(value)
+				};
+			},
+
+			enableframe: function (value) {
+				return {
+					key: 'enabledKinds',
+					storeKey: 'frame',
+					value: value
+				};
+			},
+
+			alwaysBlockframe: function (value) {
+				return {
+					key: 'alwaysBlock',
+					storeKey: 'frame',
+					value: Upgrade.settings.mapAlwaysBlock(value)
+				};
+			},
+
+			showPlaceholderframe: function (value) {
+				return {
+					key: 'showPlaceholder',
+					storeKey: 'frame',
+					value: value
+				};
+			}
+
+		}
 	}
 };

@@ -163,14 +163,16 @@ var Settings = {
 		return value;
 	},
 
-	setItem: function (settingKey, value, storeKey) {
+	setItem: function (settingKey, value, storeKey, changeConfirmed) {
 		var setting = Settings.map[settingKey];
 
 		if (!setting)
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
 
 		var type = setting.props.type,
-				options = setting.props.options;
+				options = setting.props.options,
+				otherOption = setting.props.otherOption,
+				confirmChange = setting.props.confirm;
 
 		if (setting.storeKeySettings) {
 			var storeSetting = setting.storeKeySettings[storeKey];
@@ -192,12 +194,14 @@ var Settings = {
 
 			var type = storeSetting.props.type || setting.props.type,
 					options = storeSetting.props.options || setting.props.options,
-					customValidate = setting.props.validate || storeSetting.props.validate;
+					otherOption = storeSetting.props.otherOption || setting.props.otherOption,
+					customValidate = setting.props.validate || storeSetting.props.validate,
+					confirmChange = setting.props.confirm || storeSetting.props.confirm;
 
-			if (customValidate && !customValidate.test(type, value, options, storeSetting.props.otherOption, storeSetting.props.extendOptions))
+			if (customValidate && !customValidate.test(type, value, options, otherOption, storeSetting.props.extendOptions))
 				return 'setting.' + customValidate.onFail;
 
-			if (!this.__validate(type, value, options, storeSetting.props.otherOption, storeSetting.props.extendOptions))
+			if (!this.__validate(type, value, options, otherOption, storeSetting.props.extendOptions))
 				throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, storeKey, value]));
 
 			this.__stores.getStore(settingKey).set(storeKey, value);
@@ -211,7 +215,36 @@ var Settings = {
 			Settings.anySettingChanged({
 				key: settingKey
 			});
-		} else if (this.__validate(type, value, options, setting.props.otherOption, setting.props.extendOptions)) {			
+		} else if (this.__validate(type, value, options, otherOption, setting.props.extendOptions)) {			
+			if (confirmChange && !changeConfirmed) {
+				var shouldConfirm = Utilities.Group.eval(confirmChange.when, Settings.all());
+
+				if (shouldConfirm) {
+					var poppy = new Popover.window.Poppy(0.5, 0, true);
+
+					poppy.setContent(Template.create('poppy', 'confirm-setting-change', {
+						string: _('setting.' + settingKey + '.confirm')
+					}));
+
+					poppy.modal().show();
+
+					poppy.content
+						.on('click', '#setting-confirm-cancel', function () {
+							poppy.close();
+
+							UI.Settings.repopulateActiveSection();
+						})
+
+						.on('click', '#setting-confirm-change', function () {
+							poppy.close();
+
+							Settings.setItem(settingKey, value, storeKey, true);
+						});
+					
+					return false;
+				}
+			}
+
 			this.__method('setItem', settingKey, value);
 
 			if (setting.props.onChange)
@@ -308,7 +341,7 @@ var Settings = {
 				if (settings[setting] && settings[setting].STORE)
 					SettingStore.setItem(setting, settings[setting]);
 				else
-					Settings.setItem(setting, settings[setting]);
+					Settings.setItem(setting, settings[setting], null, true);
 			} catch (e) {
 				LogError('failed to import setting - ' + setting, e);
 			}

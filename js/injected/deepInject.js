@@ -53,7 +53,7 @@ DeepInject.cleanLine = function (script) {
 };
 
 DeepInject.prototype.setHeader = function (header) {
-	this.pieces.header = ['function ', this.fnName, ' (', header.join(', '), ')', ' {'].join('');
+	this.pieces.header = 'function ' + this.fnName + ' (' + header.join(', ') + ')' + ' {';
 
 	return this;
 };
@@ -76,7 +76,7 @@ DeepInject.prototype.inner = function () {
 };
 
 DeepInject.prototype.asFunction = function () {
-	return [this.pieces.header, "\n", this.inner(), "\n", '}'].join('');
+	return this.pieces.header + "\n" + this.inner() + "\n" + '}';
 };
 
 DeepInject.prototype.executable = function () {
@@ -97,7 +97,7 @@ DeepInject.prototype.executable = function () {
 		}
 	}
 
-	return ['//# sourceURL=', this.cleanName, "\n", '(', this.asFunction(), ')(', args.join(', '), ')'].join('');
+	return '//# sourceURL=' + this.cleanName + "\n" + '(' + this.asFunction() + ')(' + args.join(', ') + ')';
 };
 
 DeepInject.prototype.prepend = function (script) {

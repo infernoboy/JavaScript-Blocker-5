@@ -48,9 +48,13 @@ function Rule (store, storeProps, ruleProps) {
 	this.removeNotPage = this.__remove.bind(this, false, 'notPage');
 	this.removeDomain = this.__remove.bind(this, false, 'domain');
 	this.removeNotDomain = this.__remove.bind(this, false, 'notDomain');
+
+	if (this.rules.useSnapshot && Settings.getItem('autoSnapshots'))
+		this.rules.snapshot.autoSnapshots(true);
 };
 
 Rule.event = new EventListener;
+
 Rule.listCache = new Store('RuleListCache', {
 	ignoreSave: true,
 	private: true
@@ -250,7 +254,7 @@ Rule.prototype.kind = function (kindName) {
 
 		var baseKey = this.parent ? this.parent.name || this.parent.id : this.name || this.id,
 				listCache = Rule.listCache.getStore(baseKey, {
-					maxLife: TIME.ONE.HOUR,
+					maxLife: TIME.ONE.HOUR * 12,
 				}),
 				cacheKey = domains.name + ',' + (isArray ? '[' + domain + ']' : domain) + ',' + domainIsLocation,
 				cachedRules = listCache.get(cacheKey);
@@ -434,7 +438,7 @@ var Rules = {
 		},
 		TYPE: {
 			NOT_SUPPORTED: 'type not supported',
-			PAGE_NOT_REGEXP: 'page does not begin with ^ or end with $'
+			PAGE_NOT_REGEXP: 'Page must begin with ^ and end with $.'
 		}
 	},
 
@@ -499,6 +503,10 @@ var Rules = {
 
 	useCurrent: function () {
 		this.list.active = this.list.user;
+
+		UI.Rules.buildViewSwitcher();
+
+		UI.view.switchTo('#rule-views-active');
 
 		return this;
 	},
@@ -661,9 +669,6 @@ Object.defineProperty(Rules, 'list', {
 
 				if (rules.rules.name && exclude._contains(rules.rules.name))
 					throw new Error('active rules cannot be set to ' + rules.rules.name);
-
-				if (this.active !== this.user && this.active.autoDestruct)
-					this.active.destroy(true);
 
 				if (this.__active instanceof Rule)
 					Resource.canLoadCache.clear();

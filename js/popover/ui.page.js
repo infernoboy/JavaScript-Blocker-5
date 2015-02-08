@@ -116,8 +116,67 @@ UI.Page = {
 				}
 			});
 
+		UI.container
+			.on('click', '.show-resource-source', function (event) {
+				var url = this.getAttribute('data-url'),
+						kind = this.getAttribute('data-kind'),
+						protocol = Utilities.URL.protocol(url);
+
+				if (kind === 'image') {
+					var imageContainer = Template.create('page', 'resource-image', {
+						url: decodeURIComponent(url)
+					});
+
+					$('img', imageContainer).load(function () {
+						imageContainer.removeClass('loading');
+					});
+
+					$('#main-views-resource-content', UI.view.views).empty().append(imageContainer);
+
+					Poppy.closeAll();
+
+					UI.view.switchTo('#main-views-resource-content');
+
+					return;
+				}
+
+				if (protocol === 'data:' || protocol === 'javascript:') {
+					var script = protocol === 'data:' ? url.substr(url.indexOf(',') + 1) : url.substr(url.indexOf(':') + 1);
+
+					UI.Page.showResource(Utilities.beautifyScript(script));
+
+					return;
+				}
+
+				var loadingPoppy = Poppy.createLoadingPoppy(event.originalEvent.pageX, event.originalEvent.pageY, false, function (loadingPoppy) {
+					var xhr = $.ajax({
+						dataType: 'text',
+						url: url
+					});
+
+					xhr
+						.done(function (source) {
+							UI.Page.showResource(Utilities.beautifyScript(source));
+						})
+
+						.fail(function (result) {
+							loadingPoppy.setContent(result.statusText + ' - ' + result.status);
+						});
+				});
+
+				loadingPoppy.setContent(_('view.page.item.info.loading')).show(true);
+			});
+
 		UI.event.trigger('UIReady', null, true);
 		globalPage.Command.event.trigger('UIReady', null, true);
+	},
+
+	showResource: function (resource) {
+		$('#main-views-resource-content', UI.view.views).empty().append(resource);
+
+		Poppy.closeAll();
+
+		UI.view.switchTo('#main-views-resource-content');
 	},
 
 	clear: function () {
@@ -188,8 +247,6 @@ UI.Page = {
 			if ((wasInEditMode && force === true) || (!wasInEditMode && force === false))
 				return;
 
-			section.toggleClass('page-host-editing');
-
 			var editButtons = $('.page-host-edit', section),
 					items = $('.page-host-columns .page-host-item', section).find('.page-host-item-container, .page-host-item-edit-container');
 
@@ -198,13 +255,25 @@ UI.Page = {
 			if (quick)
 				pageHostEditor.toggle().css('margin-top', 0);
 			else {
+				var viewContainer = UI.Page.view.parents('.ui-view-container'),
+						viewScrollTop = viewContainer.scrollTop();
+
 				if (wasInEditMode)
 					pageHostEditor.marginSlideUp(310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
 				else
 					pageHostEditor.marginSlideDown(310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+
+				var editorHeight = pageHostEditor.outerHeight();
+
+				if (viewScrollTop !== undefined && viewScrollTop > editorHeight)
+					viewContainer.animate({
+						scrollTop: viewScrollTop + editorHeight
+					}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
 			}
 		
 			items.toggle();
+
+			section.toggleClass('page-host-editing');
 
 			UI.event.trigger(wasInEditMode ? 'sectionSwitchedOutOfEditMode' : 'sectionSwitchedToEditMode', section);
 		},
@@ -582,49 +651,38 @@ UI.Page = {
 
 					for (var resourceID in resources)
 						items.push({
+							kind: resources[resourceID].kind,
+							baseSource: resources[resourceID].baseSource,
 							fullSource: resources[resourceID].fullSource,
 							meta: resources[resourceID].meta && resources[resourceID].meta._isEmpty() ? undefined : resources[resourceID].meta
 						});
 
-					poppy.setContent('<pre>' + JSON.stringify(items, null, 1)._escapeHTML() + '</pre>').show();
+					poppy.setContent(Template.create('poppy', 'resource-list', {
+						items: items
+					}));
+
+					poppy.show();
 				})
 
 				.on('click', '.page-host-item-info', function (event) {
-					var item = $(this).parents('.page-host-item'),
-							isAllowed = item.parents('.page-host-column').is('.page-host-column-allowed'),
-							action = parseInt(item.attr('data-action'), 10);
+					var item = $(this).parents('.page-host-item');
 
-					if (![0, 1, 2, 3, 4, 5]._contains(action))
-						return;
+					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true, 'item-info');
 
-					var resources = item.data('resources');
+					poppy.isAllowed = item.parents('.page-host-column').is('.page-host-column-allowed');
+					poppy.resources = item.data('resources');
 
-					var loadingPoppy = Poppy.createLoadingPoppy(event.originalEvent.pageX, event.originalEvent.pageY, true, function () {
-						var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
-								ruleListItems = $('<ul class="page-rules-container">');
+					poppy.setContent(Template.create('poppy', 'item-info', {
+						kind: item.parents('.page-host-items').attr('data-kind'),
+						action: parseInt(item.attr('data-action'), 10)
+					}));
 
-						UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
-							poppy.setPosition();
-						}, true);
+					if (poppy.content.is(':empty'))
+						poppy.setContent(Template.create('main', 'jsb-readable', {
+							string: _('view.page.item.info.no_info')
+						}));
 
-						for (var resourceID in resources) {
-							var rules = resources[resourceID].rulesForResource(isAllowed),
-									ruleLists = {};
-
-							var resourceListItem = Template.create('rules', 'multi-list-resource-item', resources[resourceID], true);
-
-							for (var listName in rules)
-								ruleLists[listName] = rules[listName].rule;
-
-							UI.Rules.buildRuleList($('.multi-list-page-item-rules', resourceListItem), ruleLists, rules, true);
-
-							ruleListItems.append(resourceListItem);
-						}
-
-						poppy.setContent(ruleListItems).show();
-					});
-
-					loadingPoppy.setContent('Loading rules...').show(true, true);
+					poppy.show();
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {
@@ -656,6 +714,8 @@ UI.Page = {
 
 							break;
 						}
+
+						loadingPoppy.close();
 					});
 
 					loadingPoppy.setContent(_('poppy.beautifying_script')).show(true);

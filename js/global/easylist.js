@@ -42,6 +42,8 @@ EasyList.fetch = function () {
 			new EasyList(list, lists[list].value[0]);
 		else
 			Rules.__EasyRules.remove(list);
+
+	UI.event.trigger('easyListsUpdateStarted');
 };
 
 EasyList.prototype.merge = function () {
@@ -193,6 +195,21 @@ EasyList.prototype.process = function (list) {
 
 	Utilities.Timer.timeout('ReplaceNewEasyList-' + this.name, this.merge.bind(this), 2000);
 };
+
+Command.event.addCustomEventListener('UIReady', function () {
+	UI.event.addCustomEventListener(['popoverOpened', 'easyListsUpdateStarted'], function (event) {
+		if (EasyList.__updating) {
+			var poppy = new Popover.window.Poppy(0.5, 0, true);
+
+			poppy.setContent(Template.create('main', 'jsb-readable', {
+				header: _('rules.easy_lists.updating'),
+				string: _('rules.easy_lists.updating.description')
+			}));
+
+			poppy.show();
+		}
+	});
+}, true);
 
 EasyList.updateCheck();
 

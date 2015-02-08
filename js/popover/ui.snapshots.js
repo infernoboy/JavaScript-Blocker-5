@@ -34,7 +34,7 @@ UI.Snapshots = {
 			})
 
 			.on('click', '.snapshot-item-close', function () {
-				globalPage.Rules.list.active = globalPage.Rules.list.user;
+				globalPage.Rules.useCurrent();
 
 				UI.Snapshots.buildSnapshots();
 			})
@@ -68,6 +68,8 @@ UI.Snapshots = {
 				id: snapshotID,
 				snapshots: snapshots
 			};
+
+			UI.Rules.buildViewSwitcher();
 
 			UI.view.switchTo('#main-views-rule');
 			UI.view.switchTo('#rule-views-active');

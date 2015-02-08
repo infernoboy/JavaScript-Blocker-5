@@ -148,12 +148,24 @@
 				content: none @important;
 			}
 
+			&.shake {
+				-webkit-animation: shake 0.4s linear 0 1;
+			}
+
+			&.unshake {
+				-webkit-animation: unshake 0.4s linear 0 1;
+			}
+
 			.color-allow;
 			.color-block;
 		}
 
 		&.jsb-large-font {
 			font-size: 11pt @important;
+		}
+
+		div {
+			display: block @important;
 		}
 
 		input,
@@ -336,7 +348,7 @@
 
 		input[type="file"] {
 			background: transparent @important;
-			border-color: darken(rgb(240, 240, 240), @darknessLevel) @important;
+			border-color: darken(rgb(235, 235, 235), @darknessLevel) @important;
 			box-shadow: none @important;
 			padding-left: 3px @important;
 		}
@@ -373,7 +385,7 @@
 				content: '⸀' @important;
 				-webkit-transform: translate(5px, -11px) scaleX(1.1) scaleY(1.5) rotate(220deg) @important;
 				-webkit-font-smoothing: antialiased @important;
-				-webkit-transition: color 0.15s ease-out, text-shadow 0.15s @important;
+				-webkit-transition: color 0.15s ease-out, text-shadow 0.15s ease-out, -webkit-transform 0.15s ease-out @important;
 				text-shadow: -1px -1px 0 rgba(0, 0, 0, 0), 0 0 0 rgba(255, 255, 255, 0) @important;
 				font-size: 20px @important;
 
@@ -409,6 +421,26 @@
 
 		input[type="radio"] {
 			border-radius: 20px @important;
+
+			&:after {
+				content: '•';
+				-webkit-transform: translate(-1px, -5px) scale(2) @important;
+				-webkit-transition: text-shadow 0.15s ease-out @important;
+
+				.lion& {
+					-webkit-transform: translate(1px, -3px) scale(2) @important;
+				}
+			}
+
+			&:checked:after {
+				-webkit-transform: translate(1px, -2px) scale(1) @important;
+				text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 rgba(255, 255, 255, 0.9) @important;
+				font-size: 14px;
+
+				.lion& {
+					-webkit-transform: translate(1px, -3px) scale(0.7) @important;
+				}
+			}
 		}
 
 		select {
@@ -635,13 +667,17 @@
 		}
 
 		.select-custom-options {
-			min-width: 180px;
+			min-width: 100px;
 
 			li {
 				white-space: nowrap @important;
 				border-bottom: 1px solid rgba(0, 0, 0, 0.08) @important;
 				cursor: pointer @important;
 				padding: 4px 0 @important;
+
+				& when (@darkMode) {
+					border-bottom-color: rgba(0, 0, 0, 0.45);
+				}
 
 				&:last-child {
 					border-bottom: none @important;

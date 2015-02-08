@@ -153,7 +153,7 @@ var Store = (function () {
 
 		var store = Store.compareCache.getStore(left.id + '|' + right.id, null, parent);
 
-		store.clear();
+		store.remove();
 
 		var sides = {
 			left: store.getStore('left'),
@@ -168,8 +168,10 @@ var Store = (function () {
 
 				if (thisValue === undefined && oppositeValue === undefined)
 					sides.both.set(key, undefined)
+
 				else if (oppositeValue === undefined)
 					sides[side].set(key, thisValue);
+
 				else if (thisValue instanceof Store) {
 					compared = Store.compare(compare.left.getStore(key, null, null, true), compare.right.getStore(key, null, null, true), store);
 
@@ -179,8 +181,10 @@ var Store = (function () {
 						if (!inside.STORE._isEmpty())
 							sides[comparedSide].set(key, inside);
 					}
+
 				} else if (JSON.stringify(thisValue) === JSON.stringify(oppositeValue))
 					sides.both.set(key, thisValue);
+
 				else if (thisValue !== undefined)
 					sides[side].set(key, thisValue);
 			}

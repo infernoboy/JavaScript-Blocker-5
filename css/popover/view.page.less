@@ -569,11 +569,10 @@
 
 						.page-host-item-description {
 							.jsb-info {
-								color: rgba(0, 0, 0, 0.4);
-								margin-top: -1px;
-								margin-left: 19px;
-								text-shadow: 0 1px 0 darken(rgba(255, 255, 255, 0.9), @darknessLevel);
-								white-space: nowrap;
+								color: rgba(0, 0, 0, 0.5);
+								margin-top: -2px;
+								margin-left: 21px;
+								// white-space: nowrap;
 
 								& when (@darkMode) {
 									color: rgba(255, 255, 255, 0.4);
@@ -599,6 +598,30 @@
 					}
 				}
 			}
+		}
+	}
+}
+
+#resource-list {
+	li {
+		&,
+		*:not(pre) {
+			word-wrap: normal;
+			white-space: nowrap;
+		}
+
+		p {
+			display: inline-block;
+			padding-bottom: 3px;
+			margin-bottom: 0;
+		}
+
+		.show-resource-source {
+			margin-right: 2px;
+		}
+
+		.horizontal-divider {
+			margin: 4px 0;
 		}
 	}
 }

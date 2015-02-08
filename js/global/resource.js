@@ -16,6 +16,7 @@ function Resource (resource) {
 	this.fullLocation = resource.pageLocation;
 	this.pageHost = Utilities.URL.extractHost(this.pageLocation);
 	this.source = this.sourceIsURL ? resource.source : resource.source;
+	this.baseSource = this.source;
 	this.fullSource = this.source;
 	this.sourceHost = Rules.kindShouldBadge(this.kind) ? Utilities.URL.extractHost(this.source) : '';
 	this.action = resource.action;
@@ -36,8 +37,8 @@ function Resource (resource) {
 				sourceProto = Utilities.URL.protocol(this.source),
 				locationProto = Utilities.URL.protocol(this.pageLocation);
 
-		// if (protos._contains(sourceProto))
-		// 	this.source = Utilities.URL.strip(this.source);
+		if (protos._contains(sourceProto))
+			this.baseSource = Utilities.URL.strip(this.source);
 
 		if (protos._contains(locationProto))
 			this.pageLocation = Utilities.URL.strip(this.pageLocation);

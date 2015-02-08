@@ -46,6 +46,12 @@
 				font-weight: normal @important;
 			}
 
+			&nowrap {
+				overflow: auto @important;
+				white-space: nowrap @important;
+				word-wrap: normal @important;
+			}
+
 			&readable {
 				display: inline-block;
 				max-width: 300px;
@@ -62,7 +68,7 @@
 			}
 
 			&smaller {
-				font-size: smaller;
+				font-size: 0.9em;
 			}
 
 			&hidden,
@@ -122,7 +128,9 @@
 
 		.generic-menu {
 			&-options li {
-				margin-bottom: 5px;
+				&:not(:last-child) {
+					margin-bottom: 5px;
+				}
 
 				ul {
 					margin-left: 18px;
@@ -205,7 +213,7 @@
 			}
 
 			.jsb-label {
-				margin-left: 3px;
+				margin-left: 2px;
 			}
 		}
 
@@ -262,8 +270,11 @@
 					font-weight: 500;
 				}
 
-				&:hover > *:after {
-					opacity: 0.8;
+				&:hover,
+				&.show-label {
+					> *:after {
+						opacity: 0.8;
+					}
 				}
 
 				&.group-collapsed + * {

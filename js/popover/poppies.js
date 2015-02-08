@@ -164,12 +164,35 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#active-menu-clear', function (event) {
+				UI.event.addCustomEventListener('poppyDidClose', function () {
+					globalPage.Rules.list.user.clear();
+
+					UI.view.switchTo('#rule-views-active', true);
+				}, true);
+
 				poppy.close();
-
-				globalPage.Rules.list.active.clear();
-
-				UI.view.switchTo('#rule-views-active', true);
 			})
+	},
+
+	'snapshot-rules-menu': function (poppy) {
+		poppy.content
+			.on('click', '#snapshot-menu-merge-always', function () {
+				globalPage.Rules.list.user.rules.merge(globalPage.Rules.list.active.rules, true);
+			})
+
+			.on('click', '#snapshot-menu-make-always', function () {
+				globalPage.Rules.list.user.rules.replaceWith(globalPage.Rules.list.active.rules);
+			})
+
+			.on('click', '#snapshot-menu-merge-always, #snapshot-menu-make-always, #snapshot-menu-close', function () {
+				UI.event.addCustomEventListener('poppyDidClose', function () {
+					globalPage.Rules.useCurrent();
+
+					UI.view.switchTo('#rule-views-active');
+				}, true);
+
+				poppy.close();
+			});
 	},
 
 	'easy-rules-menu': function (poppy) {
@@ -183,6 +206,58 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'item-info': function (poppy) {
+		poppy.content
+			.on('click', '#item-info-show-user-script', function () {
+				poppy.close();
+
+				var resource = poppy.resources[Object.keys(poppy.resources)[0]];
+
+				UI.Settings.editUserScript(resource.fullSource);
+
+				UI.view.switchTo('#setting-views-userScript-edit');
+				UI.view.switchTo('#main-views-setting');
+
+				UI.view.toTop(UI.Settings.views);
+			})
+
+			.on('click', '#item-info-show-rules', function () {
+				poppy.setContent(_('view.page.item.info.loading'));
+
+				setTimeout(function () {
+					var resources = poppy.resources,
+							rulePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true),
+							ruleListItems = $('<ul class="page-rules-container">');
+
+					UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
+						rulePoppy.setPosition();
+					}, true);
+
+					var resourceID,
+							rules,
+							ruleLists,
+							resourceListItem,
+							listName;
+
+					for (resourceID in resources) {
+						rules = resources[resourceID].rulesForResource(poppy.isAllowed);
+						ruleLists = {};
+
+						resourceListItem = Template.create('rules', 'multi-list-resource-item', resources[resourceID]);
+
+						for (listName in rules)
+							ruleLists[listName] = rules[listName].rule;
+
+						UI.Rules.buildRuleList($('.multi-list-page-item-rules', resourceListItem), ruleLists, rules, true);
+
+						ruleListItems.append(resourceListItem);
+					}
+
+					rulePoppy.setContent(ruleListItems).show();
+				});
+			});
+	},
+
 	'user-script-storage-add': function (poppy) {
 		var key = $('.user-script-storage-add-key', poppy.content).focus(),
 				value = $('.user-script-storage-add-value', poppy.content);
@@ -192,12 +267,17 @@ Object._extend(Poppy.scripts, {
 				var keyValue = $.trim(key.val()),
 						valueValue = $.trim(value.val());
 
-				if (!keyValue.length || !valueValue.length)
+				if (!keyValue.length || !valueValue.length) {
+					poppy.shake();
+
 					return keyValue.length ? value.focus() : key.focus();
+				}
 
 				try {
 					valueValue = JSON.parse(valueValue);
 				} catch (e) {
+					poppy.shake();
+
 					return value.focus();
 				}
 
@@ -206,6 +286,8 @@ Object._extend(Poppy.scripts, {
 				try {
 					var storage = globalPage.UserScript.getStorageItem(userScriptNS);
 				} catch (error) {
+					poppy.shake();
+
 					return;
 				}
 
@@ -253,6 +335,8 @@ Object._extend(Poppy.scripts, {
 
 				if (!isAll)
 					domain.focus();
+				else
+					domain.blur();
 			})
 
 			.on('change', '#create-rule-kind', function () {
@@ -359,8 +443,11 @@ Object._extend(Poppy.scripts, {
 					});
 
 				try {
-					if (newKinds.length === 0)
+					if (newKinds.length === 0) {
+						$('#create-rule-kinds', poppy.content).shake();
+
 						throw new Error(_('rules.no_kinds_selected'));
+					}
 
 					for (var i = newKinds.length; i--;)
 						globalPage.Rules.list[newListName].__add(newType, newKinds[i], newDomain, {

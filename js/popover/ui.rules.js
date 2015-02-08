@@ -23,8 +23,6 @@ UI.Rules = {
 
 		UI.Rules.events.rules();
 
-		UI.Rules.setEasyRulesList(null, true);
-
 		UI.view.switchTo('#rule-views-temporary');
 	},
 
@@ -35,17 +33,28 @@ UI.Rules = {
 			views: {}
 		};
 
-		for (var i = 0; i < UI.Rules.__lists.length; i++)
+		var actualView;
+
+		for (var i = 0; i < UI.Rules.__lists.length; i++) {
+			actualView = (UI.Rules.__lists[i] === 'active' && globalPage.Rules.snapshotInUse()) ? 'snapshot' : UI.Rules.__lists[i];
+
 			viewSwitcherData.views['#rule-views-' + UI.Rules.__lists[i]] = {
-				value: _('rules.' + UI.Rules.__lists[i]),
-				poppy: i > 0 ? (UI.Rules.__lists[i] + '-rules-menu') : null
+				value: _('rules.' + actualView),
+				poppy: i > 0 ? (actualView + '-rules-menu') : null
 			};
+		}
 
 		$('#rule-views-switcher', UI.Rules.toolbar).remove();
 
 		UI.Rules.toolbar.append(Template.create('main', 'view-switcher', viewSwitcherData));
 
-		UI.Rules.viewSwitcher = $('.view-switcher', UI.Rules.view);
+		UI.Rules.viewSwitcher = $('.view-switcher', UI.Rules.toolbar);
+
+		UI.Rules.viewContainer.attr('data-activeView', '');
+
+		$('.active-view', UI.Rules.views).removeClass('active-view');
+
+		UI.Rules.setEasyRulesList(null, true);
 	},
 
 	getEasyLists: function () {
@@ -186,8 +195,13 @@ UI.Rules = {
 
 		var domainGrouped = UI.Rules.groupRulesByDomain(useTheseRules ? useTheseRules : ruleList.rules.all()),
 				container = $('<div>'),
-				editable = (ruleList === globalPage.Rules.list.temporary || ruleList === globalPage.Rules.list.user),
+				editable = 0,
 				hasRules = false;
+
+		if (ruleList === globalPage.Rules.list.temporary)
+			editable = 1;
+		else if (ruleList == globalPage.Rules.list.active)
+			editable = globalPage.Rules.snapshotInUse() ? 2 : 1;
 
 		view
 			.attr('data-ruleListItems', '1')
@@ -290,18 +304,26 @@ UI.Rules = {
 	},
 
 	processRules: function (rules) {
-		var input = $('<input>')
+		var input = $('<input>');
+
+		var editable = rules.attr('data-editable'),
+				isEditable = rules.attr('data-editable') !== '0';
+
+		if (!isEditable)
+			return;
+
+		var isSnapshot = editable === '2';
 
 		input
 			.attr({
 				type: 'button',
-				value: 'Delete'
+				value: isSnapshot ? _('Restore') : _('Delete')
 			})
-			.addClass('rule-item-delete blend-in double-click jsb-color-blocked');
+			.addClass((isSnapshot ? 'rule-item-restore' : 'rule-item-delete') + ' blend-in ' + (isSnapshot ? '' : 'double-click jsb-color-blocked'));
 
 		rules
 			.addClass('rule-item-processed')
-			.find('.rule-item-delete-container')
+			.find('.rule-item-action-container')
 			.append(input);
 
 		Poppy.setAllPositions();
@@ -352,6 +374,27 @@ UI.Rules = {
 									});
 							});
 					});
+				})
+
+				.on('click', '.rule-item-restore', function (event) {
+					var self = $(this),
+							typeWrapper = self.parents('.rule-group-type-wrapper'),
+							type = typeWrapper.attr('data-type'),
+							kindWrapper = self.parents('.rule-group-kind-wrapper'),
+							kind = kindWrapper.attr('data-kind'),
+							domainWrapper = self.parents('.rule-group-domain-wrapper'),
+							domain = domainWrapper.attr('data-domain'),
+							ruleContainer = self.parents('.rule-item-container'),
+							rule = ruleContainer.attr('data-rule'),
+							action = parseInt(ruleContainer.attr('data-action'), 10);
+
+					globalPage.Rules.list.user.__add(type, kind, domain, {
+						rule: rule,
+						action: action
+					});
+
+					this.disabled = true;
+					this.value = _('Restored');
 				})
 
 				.on('click', '.multi-list-item-wrapper[data-editable="1"] .multi-list-item-header', function (event) {
@@ -592,7 +635,7 @@ UI.Rules = {
 		},
 
 		elementWasAdded: function (event) {
-			var rules = $('.rule-item-container[data-editable="1"]:not(.rule-item-processed)', UI.container);
+			var rules = $('.rule-item-container:not(.rule-item-processed)', UI.container);
 
 			if (rules.length)
 				UI.Rules.processRules(rules);

@@ -191,62 +191,6 @@ var UI = {
 				this.setAttribute('data-currentIndex', this.selectedIndex);
 			})
 
-			.on('change', 'select', function (event) {
-				if (this.value === 'select-custom-option') {
-					var self = this,
-							previousIndex = this.getAttribute('data-currentIndex'),
-							originalIndex = this.selectedIndex,
-							previousOption = $('option', this).eq(previousIndex),
-							option = $('option', this).eq(originalIndex),
-							label = $(this).next(),
-							offset = label.offset(),
-							poppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true);
-
-					var template = Template.create('poppy', 'select-custom-option', {
-						default: previousOption.attr('data-page') || previousOption.attr('data-domain')
-					}, true);
-
-					UI.event.addCustomEventListener('poppyWillClose', function (event) {
-						if (event.detail === poppy) {
-							event.unbind();
-
-							if (!poppy.useThisOption)
-								self.selectedIndex = previousIndex;
-						}
-					});
-
-					UI.event.addCustomEventListener('poppyDidShow', function (event) {
-						if (event.detail === poppy) {
-							event.unbind();
-
-							$('.select-custom-option', event.detail.content).focus();
-						}
-					});
-
-					template
-						.on('click', '.select-custom-option-cancel', function () {
-							poppy.close();
-						})
-
-						.on('click', '.select-custom-option-save', function () {
-							var newOptionValue = $.trim($('.select-custom-option', poppy.content).val());
-
-							if (newOptionValue.length) {
-								poppy.useThisOption = newOptionValue;
-
-								$('<option />').text(poppy.useThisOption).insertBefore(option);
-
-								self.selectedIndex = originalIndex;
-							}
-
-							poppy.close();
-						});
-
-					poppy.setContent(template).show();
-				} else
-					this.setAttribute('data-currentIndex', this.selectedIndex);
-			})
-
 			.on('keypress', '.trigger-on-enter', function (event) {
 				if (event.which === 3 || event.which === 13) {
 					this.blur();
@@ -337,9 +281,11 @@ var UI = {
 			});
 
 		UI.event
-			.addCustomEventListener('viewWillSwitch', function (event) {		
-				if (event.detail.from.id === '#main-views-resource-content') 
-					$(event.detail.from.id, UI.view.views).empty();					
+			.addCustomEventListener('viewWillSwitch', function (event) {	
+				event.afterwards(function (event) {
+					if (!event.defaultPrevented && event.detail.from.id === '#main-views-resource-content') 
+						$(event.detail.from.id, UI.view.views).empty();					
+				});
 			})
 
 			.addCustomEventListener('viewDidSwitch', function (event) {
@@ -412,7 +358,8 @@ var UI = {
 					var expander,
 							keepExpanded;
 
-					var headers = event.detail.querySelectorAll('*[data-expander]');
+					var headers = event.detail.querySelectorAll('*[data-expander]'),
+							showExpanderLabels = Settings.getItem('showExpanderLabels');
 
 					for (var i = headers.length; i--;) {
 						if (headers[i].classList.contains('header-expander-ready'))
@@ -425,6 +372,7 @@ var UI = {
 
 						$(headers[i])
 							.toggleClass('keep-expanded', keepExpanded)
+							.toggleClass('show-label', showExpanderLabels)
 							.toggleClass('group-collapsed', !keepExpanded && !!Settings.getItem('expander', expander))
 							.find('> *')
 							.attr({
@@ -745,51 +693,44 @@ var UI = {
 					inRange = (event.pageX > rightOffset - 9 && event.pageX < rightOffset + 3);
 
 			if (inRange || force) {
-				if (!inRange)
-					UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
+				event.stopPropagation();
+
+				if (force)
+					UI.event.addCustomEventListener(self.parent().hasClass('active-view') ? 'viewWillScrollToTop' : 'viewWillSwitch', function (event) {
 						event.preventDefault();
 					}, true);
 
-				if (!(force && inRange)) {
-					event.stopPropagation();
+				var poppyName = self.parent().attr('data-poppy'),
+						poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
 
-					if (!self.parent().hasClass('active-view') && force)
-						UI.event.addCustomEventListener('viewWillSwitch', function (event) {
+				poppy.setContent(Template.create('poppy', poppyName)).stayOpenOnScroll();
+
+				if (force)
+					UI.event.addCustomEventListener('poppyWillClose', function (event) {
+						if (event.detail === poppy) {
+							event.unbind();
+							event.preventDefault();
+						}
+					});
+
+				var preventDefault = UI.event.trigger('poppyMenuWillShow', {
+					target: self,
+					menuHolder: menuHolder
+				});
+
+				if (!preventDefault) {
+					menuHolder.attr('data-poppyMenuWillShow', 1);
+
+					if (!inRange)
+						UI.event.addCustomEventListener('willDisable', function (event) {
 							event.preventDefault();
 						}, true);
 
-					var poppyName = self.parent().attr('data-poppy'),
-							poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
+					UI.event.addCustomEventListener('poppyDidShow', function () {
+						menuHolder.removeAttr('data-poppyMenuWillShow', 1);
+					}, true);
 
-					poppy.setContent(Template.create('poppy', poppyName)).stayOpenOnScroll();
-
-					if (force)
-						UI.event.addCustomEventListener('poppyWillClose', function (event) {
-							if (event.detail === poppy) {
-								event.unbind();
-								event.preventDefault();
-							}
-						});
-
-					var preventDefault = UI.event.trigger('poppyMenuWillShow', {
-						target: self,
-						menuHolder: menuHolder
-					});
-
-					if (!preventDefault) {
-						menuHolder.attr('data-poppyMenuWillShow', 1);
-
-						if (!inRange)
-							UI.event.addCustomEventListener('willDisable', function (event) {
-								event.preventDefault();
-							}, true);
-
-						UI.event.addCustomEventListener('poppyDidShow', function () {
-							menuHolder.removeAttr('data-poppyMenuWillShow', 1);
-						}, true);
-
-						poppy.show()
-					}
+					poppy.show()
 				}
 			}
 		},

@@ -323,25 +323,27 @@ var UserScript = {
 		var allowPages = detail.matchJSB.concat(detail.includeJSB),
 				allowDomains = detail.domain;
 
-		this.removeRules(namespace);
+		if (!Rules.snapshotInUse()) {
+			this.removeRules(namespace);
 
-		for (var i = 0; i < allowPages.length; i++)
-			Rules.list.user.addPage('user_script', allowPages[i], {
-				rule: namespace,
-				action: ACTION.AUTO_ALLOW_USER_SCRIPT
-			});
+			for (var i = 0; i < allowPages.length; i++)
+				Rules.list.user.addPage('user_script', allowPages[i], {
+					rule: namespace,
+					action: ACTION.AUTO_ALLOW_USER_SCRIPT
+				});
 
-		for (var i = 0; i < allowDomains.length; i++)
-			Rules.list.user.addDomain('user_script', allowDomains[i], {
-				rule: namespace,
-				action: ACTION.AUTO_ALLOW_USER_SCRIPT
-			});
+			for (var i = 0; i < allowDomains.length; i++)
+				Rules.list.user.addDomain('user_script', allowDomains[i], {
+					rule: namespace,
+					action: ACTION.AUTO_ALLOW_USER_SCRIPT
+				});
 
-		for (var i = 0; i < detail.excludeJSB.length; i++)
-			Rules.list.user.addPage('user_script', detail.excludeJSB[i], {
-				rule: namespace,
-				action: ACTION.AUTO_BLOCK_USER_SCRIPT
-			});
+			for (var i = 0; i < detail.excludeJSB.length; i++)
+				Rules.list.user.addPage('user_script', detail.excludeJSB[i], {
+					rule: namespace,
+					action: ACTION.AUTO_BLOCK_USER_SCRIPT
+				});
+		}
 
 		setTimeout(function (self, userScript, detail) {
 			// If a script was just updated, the resources and

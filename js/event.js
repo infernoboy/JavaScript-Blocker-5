@@ -7,6 +7,8 @@ function EventListener () {
 
 	Object.defineProperty(this, 'fnWrapper', {
 		value: function (info) {
+			this.__afterwards = [];
+
 			this.info = info;
 			this.defaultPrevented = false;
 		}
@@ -26,6 +28,10 @@ function EventListener () {
 		Utilities.setImmediateTimeout(function (event, self) {
 			event.removeCustomEventListener(self.type, self.info.fn);
 		}, [self, this]);
+	};
+
+	this.fnWrapper.prototype.afterwards = function (fn) {
+		this.__afterwards.push(fn.bind(null, this));
 	};
 };
 
@@ -108,10 +114,10 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 	var info;
 
 	var newListeners = [],
-			previousFnInstance = {},
 			fnInstance = {},
 			defaultPrevented = false,
 			afterwards = [],
+			fnInstances = [],
 			listeners = this.listeners(name);
 
 	listeners.triggerSubsequentListeners = !!triggerSubsequentListeners;
@@ -124,30 +130,32 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 		else {
 			fnInstance = new this.fnWrapper(info);
 
+			fnInstance.defaultPrevented = defaultPrevented;
 			fnInstance.type = name;
 			fnInstance.detail = detail;
-
-			fnInstance.afterwards = function (event, fn) {
-				afterwards.push(fn.bind(null, event));
-			}.bind(null, fnInstance);
 
 			Object._extend(fnInstance, EventListener.eventInfo)
 
 			defaultPrevented = fnInstance.__run().defaultPrevented || defaultPrevented;
 
-			previousFnInstance.defaultPrevented = defaultPrevented;
+			afterwards = afterwards.concat(fnInstance.__afterwards);
 
-			previousFnInstance = fnInstance;
+			fnInstances.push(fnInstance);
 		}
 
 		if (!info.once)
 			newListeners.push(info);
 	}
 
+	for (var i = 0; i < fnInstances.length; i++)
+		fnInstances[i].defaultPrevented = defaultPrevented;
+
 	for (var i = 0; i < afterwards.length; i++)
 		afterwards[i]();
 
 	this.__listeners[name].fns = newListeners;
+
+	fnInstances = undefined;
 
 	return defaultPrevented;
 };

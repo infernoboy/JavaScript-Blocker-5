@@ -17,9 +17,9 @@
 
 <noscript id="multi-list-item">
 	<li class="multi-list-item">
-		<div class="multi-list-item-wrapper" data-listName="<%=self.listName%>" data-editable="<%=self.editable ? '1' : '0'%>">
+		<div class="multi-list-item-wrapper" data-listName="<%=self.listName%>" data-editable="<%=self.editable%>">
 			<header data-expander="<%=self.expander%>" class="jsb-light-scrollbars">
-				<h4 class="multi-list-item-header"><%=self.listName._startsWith('$') ? UI.Rules.getEasyListName(self.listName) : _('rules.' + self.listName)%></h4>
+				<h4 class="multi-list-item-header"><%=self.listName._startsWith('$') ? UI.Rules.getEasyListName(self.listName) : _('rules.' + (self.listName === 'active' && globalPage.Rules.snapshotInUse() ? 'snapshot' : self.listName))%></h4>
 			</header>
 			<div class="rule-group-list"></div>
 		</div>
@@ -41,7 +41,7 @@
 </noscript>
 
 <noscript id="rule-group-type">
-	<div class="rule-group-type-wrapper" data-type="<%=self.type%>" data-editable="<%=self.editable ? '1' : '0'%>">
+	<div class="rule-group-type-wrapper" data-type="<%=self.type%>" data-editable="<%=self.editable%>">
 		<header data-expander="<%=self.expander%>"  class="jsb-light-scrollbars">
 			<h4 class="rule-group-type-header"><%=_('rules.type.' + self.type)%></h4>
 		</header>
@@ -51,7 +51,7 @@
 
 <noscript id="domain-list-item">
 	<li>
-		<div class="rule-group-domain-wrapper" data-domain="<%=self.domain._entityQuotes()%>" data-editable="<%=self.editable ? '1' : '0'%>">
+		<div class="rule-group-domain-wrapper" data-domain="<%=self.domain._entityQuotes()%>" data-editable="<%=self.editable%>">
 			<header data-expander="<%=self.expander%>" class="jsb-light-scrollbars">
 				<h4 class="rule-group-domain-header"><%=(self.domain === '*' ? _('rules.all_domains') : self.domain)._escapeHTML()%></h4>
 			</header>
@@ -62,7 +62,7 @@
 
 <noscript id="kind-list-item">
 	<li>
-		<div class="rule-group-kind-wrapper" data-kind="<%=self.kind%>" data-editable="<%=self.editable ? '1' : '0'%>">
+		<div class="rule-group-kind-wrapper" data-kind="<%=self.kind%>" data-editable="<%=self.editable%>">
 			<header data-expander="<%=self.expander%>" class="jsb-light-scrollbars">
 				<h4 class="rule-group-kind-header"><%=_('view.page.host.kind.' + self.kind)%></h4>
 			</header>
@@ -72,9 +72,9 @@
 </noscript>
 
 <noscript id="rule-list-item">
-	<li class="rule-item-container" data-rule="<%=self.rule._entityQuotes()%>" data-editable="<%=self.editable ? '1' : '0'%>">
+	<li class="rule-item-container" data-rule="<%=self.rule._entityQuotes()%>" data-action="<%=self.ruleInfo.action%>" data-editable="<%=self.editable%>">
 		<div class="rule-item">
-			<div class="rule-item-bubble" data-action="<%=self.ruleInfo.action%>"><%=self.ruleInfo.action%></div>
+			<div class="rule-item-bubble" data-action="<%=self.ruleInfo.action%>"><%=window.globalSetting.debugMode ? self.ruleInfo.action : ''%></div>
 			<div class="rule-item-rule jsb-light-scrollbars" data-regexp="<%=self.ruleInfo.regexp ? '1' : '0'%>">
 				<%
 					var protocols = "",
@@ -124,7 +124,7 @@
 					} %>
 				<%=_(humanString, [protocols, domain._escapeHTML()])%>
 			</div>
-			<div class="rule-item-delete-container"></div>
+			<div class="rule-item-action-container"></div>
 		</div>
 	</li>
 </noscript>

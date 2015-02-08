@@ -1,3 +1,18 @@
-#main-views[data-activeview="#resource-content-view"] {
-	overflow-x: auto;
+#view-container {
+	#main-views[data-activeview="#main-views-resource-content"] {
+		overflow-x: auto;
+
+		#main-views-resource-content {
+			#resource-image {
+				text-align: center;
+				padding: 3px;
+
+				&.loading:before {
+					content: attr(data-i18n-loading);
+					display: block;
+					margin-bottom: 3px;
+				}
+			}
+		}
+	}
 }

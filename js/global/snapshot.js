@@ -27,11 +27,11 @@ function Snapshot (store, props) {
 	this.firstKept = this.__outerMost.bind(this, false, true);
 	this.firstUnkept = this.__outerMost.bind(this, false, false);
 
-	store.addCustomEventListener('storeDidSave', function () {
+	this.__checkForChanges = function () {
 		Utilities.Timer.timeout('CheckForChanges' + this.snapshots.name, function (snapshot) {
 			snapshot.checkForChanges();
 		}, TIME.ONE.SECOND * 30, [this]);
-	}.bind(this));
+	}.bind(this);
 };
 
 Snapshot.prototype.__outerMost = function (latest, kept, returnID) {
@@ -47,6 +47,13 @@ Snapshot.prototype.__outerMost = function (latest, kept, returnID) {
 		snapshot.snapshot = Store.promote(snapshot.snapshot);
 
 	return snapshot;
+};
+
+Snapshot.prototype.autoSnapshots = function (value) {
+	this.store.removeCustomEventListener('storeDidSave', this.__checkForChanges);
+
+	if (value)
+		this.store.addCustomEventListener('storeDidSave', this.__checkForChanges);
 };
 
 Snapshot.prototype.latest = function (returnID) {

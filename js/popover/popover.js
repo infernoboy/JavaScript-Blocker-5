@@ -75,34 +75,38 @@ globalPage.Template = Template;
 	};
 
 	$.fn.marginSlideUp = function (speed, easing, onComplete) {
-		var self = $(this).eq(0);
+		this.each(function () {
+			var self = $(this);
 
-		self.animate({
-			marginTop: -self.outerHeight()
-		}, speed, typeof easing === 'string' ? easing : 'swing', function () {
-			self.hide();
+			self.animate({
+				marginTop: -self.outerHeight()
+			}, speed, typeof easing === 'string' ? easing : 'swing', function () {
+				self.hide();
 
-			if (typeof onComplete === 'function')
-				onComplete.call(self);
+				if (typeof onComplete === 'function')
+					onComplete.call(self);
+			});
 		});
 	};
 
 	$.fn.marginSlideDown = function (speed, easing, onComplete) {
-		var self = $(this).eq(0);
+		this.each(function () {
+			var self = $(this);
 
-		self.show();
+			self.show();
 
-		var height = self.outerHeight();
+			var height = self.outerHeight();
 
-		self.css('margin-top', -height);
+			self.css('margin-top', -height);
 
-		self.animate({
-			marginTop: 0
-		}, speed, typeof easing === 'string' ? easing : 'swing', onComplete);
+			self.animate({
+				marginTop: 0
+			}, speed, typeof easing === 'string' ? easing : 'swing', onComplete);
+		});
 	};
 
 	$.fn.collapse = function (speed, easing, onComplete) {
-		$(this).animate({
+		this.animate({
 			height: 0,
 			marginTop: 0,
 			marginBottom: 0,
@@ -115,7 +119,19 @@ globalPage.Template = Template;
 		});
 
 		return this;
-	}
+	};
+
+	$.fn.shake = function (unshake) {
+		var className = unshake ? 'unshake' : 'shake';
+
+		this.removeClass(className);
+
+		setTimeout(function (self, className) {
+			self.addClass(className);
+		}, 0, this, className);
+
+		return this;
+	};
 })();
 
 window.addEventListener('error', function (event) {

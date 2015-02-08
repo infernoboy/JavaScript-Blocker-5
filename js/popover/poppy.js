@@ -69,7 +69,7 @@
 	};
 
 	Poppy.poppyDisplayed = function () {
-		return $('.poppy-open', Poppy.__container).length > 0;
+		return $('.poppy-displayed', Poppy.__container).length > 0;
 	};
 
 	Poppy.poppyWithScriptNameExist = function (scriptName) {
@@ -159,8 +159,6 @@
 			if (event.detail === loadingPoppy) {
 				event.unbind();
 				
-				loadingPoppy.close();
-
 				if (typeof onFullyShown === 'function')
 					onFullyShown(loadingPoppy);
 			}
@@ -170,11 +168,8 @@
 	};
 
 	Poppy.prototype.shake = function () {
-		this.poppy.removeClass('shake');
-
-		Utilities.setImmediateTimeout(function (poppy) {
-			poppy.addClass('shake');
-		}, [this.poppy]);
+		this.poppy.shake();
+		this.arrow.shake(true);
 	};
 
 	Poppy.prototype.calculatePosition = function () {
@@ -186,6 +181,8 @@
 		this.poppy.removeClass('poppy-up poppy-no-arrow');
 
 		this.content.width('');		
+
+		var spacing = 5;
 
 		var position = {
 			arrow: {
@@ -217,18 +214,18 @@
 				halfArrowWidth = Math.floor(this.arrow.outerWidth() / 2),
 				arrowHeight = this.arrow.outerHeight();
 				
-		if (this.position.x - poppyWidth / 2 <= 7) { // If overflow on left side
-			position.poppy.left = 7;
-			position.arrow.left = this.position.x - halfArrowWidth - 7;
+		if (this.position.x - poppyWidth / 2 <= spacing) { // If overflow on left side
+			position.poppy.left = spacing;
+			position.arrow.left = this.position.x - halfArrowWidth - spacing;
 			
 			if (position.arrow.left < halfArrowWidth / 2)
-				position.arrow.left = 5;
-		} else if (this.position.x + poppyWidth / 2 > containerWidth - 7) { // If overflow on right side
-			position.poppy.left = containerWidth - poppyWidth - 7;
+				position.arrow.left = 3;
+		} else if (this.position.x + poppyWidth / 2 > containerWidth - spacing) { // If overflow on right side
+			position.poppy.left = containerWidth - poppyWidth - spacing;
 			position.arrow.left = this.position.x - position.poppy.left - halfArrowWidth;
 				
-			if (position.arrow.left > poppyWidth - (halfArrowWidth * 2) - 5)
-				position.arrow.left = poppyWidth - (halfArrowWidth * 2) - 5;
+			if (position.arrow.left > poppyWidth - (halfArrowWidth * 2) - spacing)
+				position.arrow.left = poppyWidth - (halfArrowWidth * 2) - 3;
 		} else { // If fits
 			position.poppy.left = this.position.x - Math.floor(poppyWidth / 2);
 			position.arrow.left = Math.floor(poppyWidth / 2) - halfArrowWidth;
@@ -241,32 +238,42 @@
 				this.isUpArrow = true;
 
 				position.poppy.bottom = 'auto';
-				position.poppy.top = Math.max(arrowHeight + Poppy.__offset, this.position.y + arrowHeight - 5);
+				position.poppy.top = Math.max(arrowHeight + Poppy.__offset, this.position.y + arrowHeight - spacing);
 
 				position.arrow.bottom = 'auto';
 				position.arrow.top = -(arrowHeight);
 				
 				if (position.poppy.top + poppyHeight + arrowHeight > containerHeight) { // If overflow on bottom side
-					while (position.poppy.top + this.poppy.outerHeight() + arrowHeight > containerHeight) {
+					var currentHeightTotal;
+
+					while ((currentHeightTotal = position.poppy.top + this.poppy.outerHeight() + 15) > containerHeight) {
 						this.noArrow = true;
 
-						if (position.poppy.top > 1) {
+						if (position.poppy.top > spacing) {
 							position.poppy.top--;
 							this.position.y--;
-						} else
-							poppyAndContent.css('height', '-=5px');
+						} else {
+							poppyAndContent.css('height', '-=' + (currentHeightTotal - containerHeight - 15 + spacing) + 'px');
+
+							break;
+						}
 					}
 				}
 			} else {
 				if (poppyHeight + arrowHeight > this.position.y) { // If overflow on top side
-					while (this.poppy.outerHeight() + arrowHeight > this.position.y) {
+					var currentHeightTotal;
+
+					while ((currentHeightTotal = this.poppy.outerHeight() + arrowHeight + 15) > this.position.y) {
 						this.noArrow = true;
 
-						if (position.poppy.bottom > 1) {
+						if (position.poppy.bottom > spacing) {
 							position.poppy.bottom--;
 							this.position.y++;
-						} else
-							poppyAndContent.css('height', '-=5px');
+						} else {
+							poppyAndContent.css('height', '-=' + (currentHeightTotal - this.position.y - 15 + spacing) + 'px');
+
+							break;
+						}
 					}
 				}
 			}
@@ -397,7 +404,7 @@
 		this.poppy
 			.toggleClass('poppy-open-quick', !!quick)
 			.toggleClass('poppy-open-instant', !!instant)
-			.addClass('poppy-open')
+			.addClass('poppy-open poppy-displayed')
 			.one('webkitAnimationEnd', function (event) {
 				UI.event.trigger('poppyIsFullyShown', this);
 

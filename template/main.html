@@ -114,5 +114,8 @@
 
 
 <noscript id="jsb-readable">
+	<% if (self.header) { %>
+		<h3 class="jsb-centered"><%=self.header%></h3><%
+	} %>
 	<p class="jsb-info jsb-readable"><%=self.string%></p>
 </noscript>

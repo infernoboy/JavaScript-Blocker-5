@@ -10,12 +10,34 @@ function Page (page, tab) {
 
 	page.state = Store.promote(page.state);
 
-	page.state.forEach(function (state, kinds, store) {
-		kinds.forEach(function (kind, resources, store) {
-			resources.getStore('source').map(function (location, source) {
-				return source.map(function (sourceName, items) {
-					return items.map(function (itemID, attributes) {
-						return new Resource({
+
+	var state,
+			kinds,
+			kind,
+			sources,
+			location,
+			source,
+			sourceName,
+			items,
+			itemID,
+			attributes;
+
+	for (state in page.state.data) {
+		kinds = page.state.get(state);
+
+		for (kind in kinds.data) {
+			sources = kinds.get(kind).getStore('source');
+
+			for (location in sources.data) {
+				source = sources.get(location);
+
+				for (sourceName in source.data) {
+					items = source.get(sourceName);
+
+					for (itemID in items.data) {
+						attributes = items.get(itemID);
+
+						items.set(itemID, new Resource({
 							kind: kind,
 							pageLocation: location,
 							source: sourceName,
@@ -23,12 +45,12 @@ function Page (page, tab) {
 							action: attributes.action,
 							unblockable: attributes.unblockable,
 							meta: attributes.meta
-						});
-					}, true);
-				}, true);
-			}, true);
-		});
-	});
+						}));
+					}
+				}
+			}
+		}
+	}
 
 	var storedPage = Page.pages.get(page.state.name);
 

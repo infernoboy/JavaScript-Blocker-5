@@ -199,12 +199,14 @@ function Command (command, data, event) {
 
 		receivePage: function (thePage) {
 			var tab = this.event.target,
+					popoverVisible = Popover.visible(),
 					activeTab = Tabs.active();
 
 			if (!Page.protocolSupported(thePage.protocol)) {
 				ToolbarItems.badge(0, activeTab);
 
-				UI.Page.clear();
+				if (popoverVisible)
+					UI.Page.clear();
 
 				if (thePage.protocol === 'topsites:')
 					return;
@@ -241,13 +243,14 @@ function Command (command, data, event) {
 			if (!activeTab || !activeTab.url) {
 				ToolbarItems.badge(0, activeTab);
 
-				UI.Page.clear();
+				if (popoverVisible)
+					UI.Page.clear();
 			} else if (renderPage.isTop) {
 				Page.awaitFromTab(tab, true);
 
 				renderPage.badgeState(Settings.getItem('toolbarDisplay'));
 
-				if (activeTab === renderPage.tab)
+				if (activeTab === renderPage.tab && popoverVisible)
 					UI.Page.renderPage(renderPage);
 			}
 

@@ -277,7 +277,7 @@ Special.specials = {
 
 				if (typeof toSend === 'string') {
 					meta = {
-						type: 'params',
+						type: 'query',
 						data: {}
 					};
 

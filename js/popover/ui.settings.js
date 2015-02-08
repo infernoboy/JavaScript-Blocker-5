@@ -9,8 +9,7 @@ UI.Settings = {
 		UI.Settings.view.append(Template.create('settings', 'setting-container'));
 
 		UI.Settings.toolbar = $('#setting-toolbar', UI.Settings.view);
-		UI.Settings.viewContainer = $('#setting-views-container', UI.Settings.view);
-		UI.Settings.views = $('#setting-views', UI.Settings.viewContainer);
+		UI.Settings.views = $('#setting-views-container', UI.Settings.view);
 
 		var sections = Object.keys(Settings.settings).filter(function (value) {
 			return !value._startsWith('__');
@@ -268,9 +267,11 @@ UI.Settings = {
 								}, 1500, this);
 							} catch (e) {
 								this.classList.add('jsb-color-blocked');
+								this.classList.add('shake');
 
 								setTimeout(function (self) {
 									self.classList.remove('jsb-color-blocked');
+									self.classList.remove('shake');
 								}, 1500, this);
 							}
 					});
@@ -295,26 +296,39 @@ UI.Settings = {
 
 				.on('click', '.setting-dynamic-new-save', function (event) {
 					var newContainer = $(this).parents('.setting-dynamic-new-container'),
-							newName = $.trim($('.setting-dynamic-new-name', newContainer).val()),
-							newContent = $.trim($('.setting-dynamic-new-content', newContainer).val());
+							newName = $('.setting-dynamic-new-name', newContainer),
+							newNameVal = $.trim(newName.val()),
+							newContent = $('.setting-dynamic-new-content', newContainer),
+							newContentVal = $.trim(newContent.val());
 
-					if (!newName.length || !newContent.length)
+					if (!newNameVal.length) {
+						newName.shake().focus();
+
 						return;
+					}
+
+					if (!newContentVal.length) {
+						newContent.shake().focus();
+
+						return;
+					}
 
 					var success = Settings.setItem(newContainer.attr('data-setting'), {
 						enabled: true,
-						value: [newContent, newName]
+						value: [newContentVal, newNameVal]
 					}, '$' + Utilities.Token.generate());
 
 					if (success !== true) {
 						var offset = $(this).offset(),
-								poppy = new Poppy(Math.floor(offset.left - 10), Math.floor(offset.top + 10), true);
+								poppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true);
 
 						poppy.setContent(Template.create('main', 'jsb-readable', {
 							string: _(success)
 						}));
 
 						poppy.show();
+
+						newContent.shake().focus();
 					}
 				});
 		}
@@ -408,11 +422,15 @@ UI.Settings = {
 	},
 
 	populateSection: function (view, settingSection)  {
-		var container = Template.create('settings', 'setting-section-container');
+		var container = Template.create('settings', 'setting-section-container'),
+				currentSection = $('> .setting-section', view);
 
 		this.createList(container, Settings.settings[settingSection])
 
-		view.empty().append(container);
+		if (currentSection.length)
+			currentSection.replaceWith(container);
+		else
+			view.append(container);
 	},
 
 	repopulateActiveSection: function (force) {
@@ -447,10 +465,6 @@ UI.Settings = {
 
 	editUserScript: function (userScriptNS) {
 		UI.Settings.userScriptEdit.attr('data-userScriptNS', userScriptNS);
-
-		UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
-			event.preventDefault();
-		}, true);
 
 		UI.view.switchTo('#setting-views-userScript-edit');
 
@@ -521,7 +535,7 @@ UI.Settings = {
 		},
 
 		poppyDidShow: function (event) {
-			UI.Settings.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
+			UI.Settings.views.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
 		},
 
 		elementWasAdded: function (event) {

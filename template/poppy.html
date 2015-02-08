@@ -71,9 +71,7 @@
 				</li>
 			<% } %>
 			<li class="jsb-align-right">
-				<% if (Settings.getItem('enableSnapshots')) { %>
-					<input type="button" id="rule-menu-open-snapshots" value="<%=_('view_toolbar.snapshots')%>" /><%
-				} %>
+				<input type="button" id="rule-menu-open-snapshots" value="<%=_('view_toolbar.snapshots')%>" />
 				<input type="button" id="rule-menu-import-rules-from-four" value="Import Rules From JSB 4" />
 			</li>
 		</ul>
@@ -116,12 +114,21 @@
 <noscript id="active-rules-menu">
 	<h3 class="jsb-centered"><%=_('rules.active_rules')%></h3>
 	<div class="generic-menu">
+		<% if (!globalPage.Rules.snapshotInUse()) { %>
+			<input type="button" id="active-menu-new" value="<%=_('active_menu.new')%>" /><%
+		} %>
+		<input type="button" id="active-menu-clear" class="double-click" value="<%=_('temporary_menu.clear')%>" />
+	</div>
+</noscript>
+
+<noscript id="snapshot-rules-menu">
+	<h3 class="jsb-centered"><%=_('rules.snapshot_rules')%></h3>
+	<div class="generic-menu">
 		<ul class="generic-menu-options">
 			<li class="jsb-align-right">
-				<% if (!globalPage.Rules.snapshotInUse()) { %>
-					<input type="button" id="active-menu-new" value="<%=_('active_menu.new')%>" /><%
-				} %>
-				<input type="button" id="active-menu-clear" class="double-click" value="<%=_('temporary_menu.clear')%>" />
+				<input type="button" id="snapshot-menu-merge-always" value="<%=_('snapshot_menu.merge_always')%>" />
+				<input type="button" id="snapshot-menu-make-always" value="<%=_('temporary_menu.make_always')%>" />
+				<input type="button" id="snapshot-menu-close" value="<%=_('Close')%>" />
 			</li>
 		</ul>
 	</div>
@@ -130,13 +137,9 @@
 <noscript id="temporary-rules-menu">
 	<h3 class="jsb-centered"><%=_('rules.temporary_rules')%></h3>
 	<div class="generic-menu">
-		<ul class="generic-menu-options">
-			<li class="jsb-align-right">
-				<input type="button" id="temporary-menu-new" value="<%=_('active_menu.new')%>" />
-				<input type="button" id="temporary-menu-make-always" value="<%=_('temporary_menu.make_always')%>" />
-				<input type="button" id="temporary-menu-clear" class="double-click" value="<%=_('temporary_menu.clear')%>" />
-			</li>
-		</ul>
+		<input type="button" id="temporary-menu-new" value="<%=_('active_menu.new')%>" />
+		<input type="button" id="temporary-menu-make-always" value="<%=_('temporary_menu.make_always')%>" />
+		<input type="button" id="temporary-menu-clear" class="double-click" value="<%=_('temporary_menu.clear')%>" />
 	</div>
 </noscript>
 
@@ -233,7 +236,7 @@
 
 <noscript id="user-script-storage-add">
 	<p class="jsb-info"><%=_('setting.newUserScriptStorageItem.json')%></p>
-	<input type="text" class="user-script-storage-add-key trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.key')%>" />:&nbsp;
+	<input type="text" class="user-script-storage-add-key trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.key')%>" />
 	<input type="text" class="user-script-storage-add-value trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.value')%>" />&nbsp;
 	<input type="button" class="user-script-storage-add-add on-enter" value="<%=_('setting.newUserScriptStorageItem.subLabel')%>" />
 </noscript>
@@ -335,7 +338,7 @@
 			</select><label></label>&nbsp;
 
 			<span id="create-rule-domain-wrapper">
-				<input type="text" id="create-rule-domain" value="<%=self.domain._entityQuotes()%>" />&nbsp;
+				<input type="text" id="create-rule-domain" class="trigger-on-enter" value="<%=self.domain._entityQuotes()%>" />&nbsp;
 				<span class="more-info" data-moreInfo="<%=_('create_rule.domain_info')._entityQuotes()%>"></span>
 			</span>
 
@@ -343,9 +346,11 @@
 				<div class="horizontal-divider horizontal-divider-transparent"></div>
 
 				<label for="create-rule-rule" class="jsb-label"><%=_('rule.rule')%>:</label>&nbsp;
-				<input type="text" id="create-rule-rule"  class="trigger-on-enter" value="<%=self.rule._entityQuotes()%>" />&nbsp;
+				<input type="text" id="create-rule-rule" class="trigger-on-enter" value="<%=self.rule._entityQuotes()%>" />&nbsp;
 				<span class="more-info" data-moreInfo="<%=_('create_rule.rule_info')._entityQuotes()%>"></span>
 			</div>
+
+			<div class="horizontal-divider horizontal-divider-transparent"></div>
 
 			<div class="jsb-align-right">
 				<% if (self.editing) { %>
@@ -365,6 +370,42 @@
 <noscript id="snapshot-item-name">
 	<input type="text" id="snapshot-item-name" class="trigger-on-enter" />&nbsp;
 	<input type="button" id="snapshot-item-name-save" class="on-enter" value="<%=_('Save')%>" />
+</noscript>
+
+<noscript id="item-info">
+	<% if (self.kind === 'user_script') { %>
+		<input type="button" id="item-info-show-user-script" value="<%=_('view.page.item.info.show_user_script')%>" />&nbsp;<%
+	} %>
+	<% if (self.action >= 0 && self.action <= 5) { %>
+		<input type="button" id="item-info-show-rules" value="<%=_('view.page.item.info.show_rules')%>" /><%
+	} %>
+</noscript>
+
+<noscript id="resource-list">
+	<ul id="resource-list">
+	<% for (var i = 0; i < self.items.length; i++) { %>
+		<li>
+			<% if (self.items[i].kind === 'script' || self.items[i].kind === 'image') { %>
+				<input type="button" class="show-resource-source" value="<%=_('expander.show')%>" data-kind="<%=self.items[i].kind%>" data-url="<%=self.items[i].fullSource._entityQuotes()%>" />&nbsp;<%
+			} %><p class="jsb-nowrap jsb-light-scrollbars"><span class="jsb-nowrap"><%=(self.items[i].kind._startsWith('xhr_') ? self.items[i].baseSource : self.items[i].fullSource)._escapeHTML()%></span>
+			</p>
+			<% if (self.items[i].meta) { %>
+				<pre class="jsb-indented"><%=JSON.stringify(self.items[i].meta, null, 2)._escapeHTML()%></pre><%
+			} %>
+			<% if (i < self.items.length - 1) { %>
+				<div class="horizontal-divider"></div><%
+			} %>
+		</li><%
+	} %>
+	</ul>
+</noscript>
+
+<noscript id="confirm-setting-change">
+	<p class="jsb-readable"><%=self.string%></p>
+	<div class="jsb-align-right">
+		<input type="button" id="setting-confirm-cancel" value="<%=_('Cancel')%>" />&nbsp;
+		<input type="button" id="setting-confirm-change" value="Change" />
+	</div>
 </noscript>
 
 

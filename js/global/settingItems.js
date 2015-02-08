@@ -241,6 +241,12 @@ Settings.settings = {
 			default: false
 		}
 	}, {
+		setting: 'showExpanderLabels',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
 		setting: 'autoHideEasyList',
 		props: {
 			type: 'boolean',
@@ -346,13 +352,6 @@ Settings.settings = {
 				type: 'boolean',
 				helpText: 'simpleMode help',
 				default: false,
-				confirm: [{
-					when: true,
-					prompt: 'A different rule set will be used in this mode.',
-					onConfirm: function () {
-						GlobalPage.message('convertSimpleToExpert');
-					}
-				}],
 				onChange: function () {
 					var showResourceURLs = Settings.getItem('showResourceURLs');
 
@@ -436,13 +435,23 @@ Settings.settings = {
 	}, {
 		setting: 'blockFirstVisit',
 		props: {
-			type: 'option',
+			type: 'option-radio',
 			options: [
 				['nowhere', 'Nowhere'],
 				['host', 'Different hosts &amp; subdomains'],
 				['domain', 'Different hostnames'],
 			],
 			default: 'host',
+			confirm: {
+				when: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.NOT.IS,
+						key: 'blockFirstVisit',
+						needle: 'nowhere'
+					}]
+				}
+			},
 			onChange: function () {
 				Rules.list.firstVisit.rules.clear();
 			}
@@ -674,8 +683,8 @@ Settings.settings = {
 				settings: [{
 					setting: 'synchronousXHRMethod',
 					props: {
-						type: 'option',
-						options: [[0, 'Automatically allow'], [1, 'Automatically block'], [2, 'Invasively ask']],
+						type: 'option-radio',
+						options: [[0, 'Allow'], [1, 'Block'], [2, 'Invasively ask']],
 						default: 0,
 						onChange: function () {
 							Special.__enabled = null;
@@ -921,40 +930,24 @@ Settings.settings = {
 			}
 		},
 		settings: [{
-			description: 'enableSnapshots.description',
+			description: 'autoSnapshots.description',
 		}, {
-			setting: 'enableSnapshots',
+			setting: 'autoSnapshots',
 			props: {
 				type: 'boolean',
-				default: true
+				default: true,
+				onChange: function () {
+					Rules.list.user.rules.snapshot.autoSnapshots(Settings.getItem('autoSnapshots'));
+				}
 			}
 		}, {
-			when: {
-				hide: true,
-				settings: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.IS,
-						key: 'enableSnapshots',
-						needle: true
-					}]
-				}
-			},
-			settings: [{
-				setting: 'autoSnapshots',
-				props: {
-					type: 'boolean',
-					default: true
-				}
-			}, {
-				setting: 'snapshotsLimit',
-				props: {
-					type: 'range',
-					label: ['Store only', 'unkept snapshots'],
-					options: [1, 999],
-					default: 15
-				}
-			}],
+			setting: 'snapshotsLimit',
+			props: {
+				type: 'range',
+				label: ['Store only', 'unkept snapshots'],
+				options: [1, 999],
+				default: 15
+			}
 		}, {
 			divider: true //===================================================================================
 		}, {
@@ -1034,10 +1027,6 @@ Settings.settings = {
 
 					.on('click', '.user-script-edit', function () {
 						UI.Settings.editUserScript(this.getAttribute('data-userScript'));
-
-						setTimeout(function () {
-							UI.view.toTop(UI.Settings.views);
-						});
 					});
 			}
 		}]
@@ -1239,7 +1228,7 @@ Settings.settings = {
 				otherOption: {
 					prompt: 'Enter a custom font name to use.',
 					validate: function (value) {
-						return /^[a-z0-9_-]+$/g.test(value);
+						return /^[ a-z0-9_-]+$/ig.test(value);
 					}
 				}
 			}
@@ -1253,7 +1242,7 @@ Settings.settings = {
 				otherOption: {
 					prompt: 'Enter a custom zoom level to use.',
 					validate: function (value) {
-						return /^-?[0-9]+$/g.test(value);
+						return /^[0-9]+$/g.test(value);
 					}
 				}
 			}

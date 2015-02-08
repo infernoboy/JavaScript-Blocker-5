@@ -63,7 +63,7 @@ var Page = {
 		requestFrameInfo.timeout = null;
 
 		return function sendPage (now) {
-			Handler.whenVisible(function () {
+			Handler.onDocumentVisible(function () {
 				try {
 					var fn = Page.info.isFrame ? requestFrameInfo : sendPageInfo;
 
@@ -270,7 +270,7 @@ var Handler = {
 			Handler.event.trigger('documentBecameVisible');
 	},
 
-	whenVisible: function (fn) {
+	onDocumentVisible: function (fn) {
 		if (document.hidden)
 			Handler.event.addMissingCustomEventListener('documentBecameVisible', fn, true);
 		else
@@ -850,9 +850,9 @@ if (!globalSetting.disabled) {
 		// 	Page.send(true);
 		// }, 0);
 	} else {
-		if (Handler.shouldCheckBlockFirstVisit()) {
-			var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
+		var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
 
+		setTimeout(function (willBlockFirstVisit) {
 			if (willBlockFirstVisit) {
 				Page.info.blockedByFirstVisit = willBlockFirstVisit;
 
@@ -868,7 +868,7 @@ if (!globalSetting.disabled) {
 					}, true);
 				}
 			}
-		}
+		}, 500, willBlockFirstVisit);
 
 		var observer = new MutationObserver(function (mutations) {
 			for (var i = 0; i < mutations.length; i++)
