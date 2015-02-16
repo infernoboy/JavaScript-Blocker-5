@@ -1,14 +1,14 @@
 "use strict";
 
-function EasyList (listName, listURL) {
+function FilterList (listName, listURL) {
 	if (!Rules.list[listName])
-		throw new Error(listName + ' is not a valid EasyList.');
+		throw new Error(listName + ' is not a valid FilterList.');
 
-	EasyList.__updating++;
+	FilterList.__updating++;
 
 	this.name = listName;
 	this.url = listURL;
-	this.temporaryRules = EasyList.__temporary.get(this.name, new Rule('EasyTemporary', {
+	this.temporaryRules = FilterList.__temporary.get(this.name, new Rule('FilterTemporary', {
 		private: true
 	}));
 
@@ -19,47 +19,49 @@ function EasyList (listName, listURL) {
 	this.download().done(this.process.bind(this));
 };
 
-EasyList.__cancel = 0;
-EasyList.__updating = 0;
-EasyList.__updateInterval = TIME.ONE.DAY * 4;
+FilterList.__cancel = 0;
+FilterList.__updating = 0;
+FilterList.__updateInterval = TIME.ONE.DAY * 4;
 
-EasyList.__temporary = new Store('EasyTemporary');
+FilterList.__temporary = new Store('FilterTemporary');
 
-EasyList.cancelUpdate = function () {
-	EasyList.__cancel = parseInt(EasyList.__updating, 10);
+FilterList.cancelUpdate = function () {
+	FilterList.__cancel = parseInt(FilterList.__updating, 10);
 };
 
-EasyList.updateCheck = function () {
-	if (Date.now() - Settings.getItem('EasyListLastUpdate') > EasyList.__updateInterval)
-		EasyList.fetch();
+FilterList.updateCheck = function () {
+	if (Date.now() - Settings.getItem('FilterListLastUpdate') > FilterList.__updateInterval)
+		FilterList.fetch();
 };
 
-EasyList.fetch = function () {
-	var lists = Settings.getItem('easyLists');
+FilterList.fetch = function () {
+	var lists = Settings.getItem('filterLists');
 
 	for (var list in lists)
 		if (lists[list].enabled)
-			new EasyList(list, lists[list].value[0]);
+			new FilterList(list, lists[list].value[0]);
 		else
-			Rules.__EasyRules.remove(list);
+			Rules.__FilterRules.remove(list);
 
-	UI.event.trigger('easyListsUpdateStarted');
+	Command.event.addCustomEventListener('UIReady', function () {	
+		UI.event.trigger('filterListsUpdateStarted');
+	}, true);
 };
 
-EasyList.prototype.merge = function () {
+FilterList.prototype.merge = function () {
 	Utilities.setImmediateTimeout(function (self) {
-		if (EasyList.__cancel) {
-			EasyList.__cancel--;
-			EasyList.__updating--;
+		if (FilterList.__cancel) {
+			FilterList.__cancel--;
+			FilterList.__updating--;
 
 			return self.temporaryRules.rules.clear();
 		}
 
 		Rules.list[self.name].rules.addCustomEventListener('storeWouldHaveSaved', function (self) {
-			EasyList.__updating--;
+			FilterList.__updating--;
 
-			if (EasyList.__updating === 0)
-				Settings.setItem('EasyListLastUpdate', Date.now());
+			if (FilterList.__updating === 0)
+				Settings.setItem('FilterListLastUpdate', Date.now());
 
 			self.temporaryRules.rules.clear();
 		}.bind(null, self), true);
@@ -70,15 +72,15 @@ EasyList.prototype.merge = function () {
 	}, [this]);
 };
 
-EasyList.prototype.download = function () {
+FilterList.prototype.download = function () {
 	return $.get(this.url).fail(function (error) {
-		EasyList.__updating--;
+		FilterList.__updating--;
 
-		LogError('failed to download easy list ' + this.name, error.statusText);
+		LogError('failed to download filter list ' + this.name, error.statusText);
 	});
 };
 
-EasyList.prototype.process = function (list) {
+FilterList.prototype.process = function (list) {
 	var	lines = list.split(/\n/);
 
 	var kindMap = {
@@ -89,7 +91,7 @@ EasyList.prototype.process = function (list) {
 	};
 
 	for (var i = 0, b = lines.length; i < b; i++) {
-		if (this.valid && EasyList.__cancel === 0)
+		if (this.valid && FilterList.__cancel === 0)
 			Utilities.setImmediateTimeout(function (self, line, lineNumber) {
 				if (line._contains('##') || line._contains('#@#') || line._contains('$popup') || !line.length)
 					return; // Ignore element hiding rules, popup rules, and empty lines.
@@ -100,13 +102,13 @@ EasyList.prototype.process = function (list) {
 						line = action === ACTION.WHITELIST ? line.substr(2) : line;
 
 				if (lineNumber === 0 && line[0] !== '[') {
-					EasyList.__updating--;
+					FilterList.__updating--;
 
-					LogError('invalid Easy List - ' + self.name + ' - ' + self.url);
+					LogError('invalid Filter List - ' + self.name + ' - ' + self.url);
 
 					self.valid = false;
 
-					Settings.removeItem('easyLists', self.name);
+					Settings.removeItem('filterLists', self.name);
 
 					return;
 				}
@@ -193,24 +195,24 @@ EasyList.prototype.process = function (list) {
 			}, [this, $.trim(lines[i]), i]);
 	}
 
-	Utilities.Timer.timeout('ReplaceNewEasyList-' + this.name, this.merge.bind(this), 2000);
+	Utilities.Timer.timeout('ReplaceNewFilterList-' + this.name, this.merge.bind(this), 2000);
 };
 
 Command.event.addCustomEventListener('UIReady', function () {
-	UI.event.addCustomEventListener(['popoverOpened', 'easyListsUpdateStarted'], function (event) {
-		if (EasyList.__updating) {
+	UI.event.addCustomEventListener(['popoverOpened', 'filterListsUpdateStarted'], function (event) {
+		if (FilterList.__updating) {
 			var poppy = new Popover.window.Poppy(0.5, 0, true);
 
 			poppy.setContent(Template.create('main', 'jsb-readable', {
-				header: _('rules.easy_lists.updating'),
-				string: _('rules.easy_lists.updating.description')
+				header: _('rules.filter_lists.updating'),
+				string: _('rules.filter_lists.updating.description')
 			}));
 
-			poppy.show();
+			poppy.stayOpenOnScroll().show();
 		}
 	});
 }, true);
 
-EasyList.updateCheck();
+FilterList.updateCheck();
 
-Utilities.Timer.interval('EasyListUpdateCheck', EasyList.updateCheck, EasyList.__updateInterval);
+Utilities.Timer.interval('FilterListUpdateCheck', FilterList.updateCheck, FilterList.__updateInterval);

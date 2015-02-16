@@ -18,7 +18,7 @@
 
 		#rule-toolbar {
 			position: relative;
-			-webkit-flex: 0 0 54px;
+			-webkit-flex: 0 0 56px;
 			padding-top: 3px;
 			margin-top: -2px;
 			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -46,7 +46,7 @@
 							width: 90px;
 						}
 
-						&[data-view="#rule-views-easy"] {
+						&[data-view="#rule-views-filter"] {
 							width: auto;
 							padding-left: 10px;
 							padding-right: 10px;
@@ -56,11 +56,17 @@
 		 	}
 
 		 	#rule-domain-search-container {
-		 		padding: 3px 0 0 4px;
+		 		padding: 3px 0 0 3px;
 
 		 		input {
+		 			position: relative;
+		 			top: -1px;
 		 			width: 150px;
 		 		}
+		 	}
+
+		 	.horizontal-divider {
+		 		margin-top: 4px;
 		 	}
 		}
 

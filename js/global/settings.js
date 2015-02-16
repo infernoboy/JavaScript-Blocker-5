@@ -1,6 +1,8 @@
 "use strict";
 
 var Settings = {
+	__locked: false,
+
 	__method: function (method, setting, value) {
 		if (SettingStore.available)
 			return SettingStore[method](setting, value);
@@ -74,19 +76,60 @@ var Settings = {
 
 	map: {},
 
+	lock: function (lock, doNotSwitch) {
+		Settings.__locked = lock;
+
+		Settings.setItem('locked', lock, 'settings');
+
+		if (!doNotSwitch) {
+			if (lock)
+				UI.view.switchTo('#main-views-page');
+			else
+				UI.view.switchTo('#main-views-setting');
+		}
+	},
+
+	isLocked: function () {
+		return !!Settings.__locked;
+	},
+
+	passwordIsSet: function () {
+		return typeof SecureSettings.getItem('lockPassword') === 'string';
+	},
+
+	getPassword: function () {
+		return SecureSettings.getItem('lockPassword');
+	},
+
+	setPassword: function (newPassword, previousPassword) {
+		if (Settings.passwordIsSet()) {
+			var currentPassword = Settings.getPassword();
+
+			if (currentPassword !== previousPassword)
+				return -2;
+		}
+
+		if (!newPassword.length)
+			return -1;
+
+		SecureSettings.setItem('lockPassword', newPassword);
+
+		return 0;
+	},
+
 	onChange: function (event) {
 		if (Settings.map[event.key] && typeof Settings.map[event.key].props.onChange === 'function')
 			Settings.map[event.key].props.onChange(event.oldValue, event.newValue);
 	},
 
 	anySettingChanged: function (event) {
-		if (Utilities.Page.isGlobal && event.key in window.globalSetting)
+		if (Utilities.Page.isGlobal && window.globalSetting && event.key in window.globalSetting)
 			setTimeout(function () {
 				window.globalSetting[event.key] = Settings.getItem(event.key);
 			});
 
 		if (!event.key || !event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')
-			if (window.UI && UI.Settings && UI.Settings.view.is('.active-view'))
+			if (window.UI && UI.Settings && UI.Settings.view && UI.Settings.view.is('.active-view'))
 				UI.Settings.repopulateActiveSection();
 	},
 
@@ -106,7 +149,8 @@ var Settings = {
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
 
 		var value,
-				defaultValue;
+				defaultValue,
+				isExtra;
 
 		if (setting.storeKeySettings || setting.store) {
 			var hasOwnDefaults = setting.props.default,
@@ -118,17 +162,11 @@ var Settings = {
 				});
 
 			if (!storeKey) {
-				var storedValues = this.__stores.getStore(settingKey).all();
+				var storedValues = {},
+						storeKeys = Object.keys(defaultStorage).concat(this.__stores.getStore(settingKey).keys());
 
-				for (var key in defaultStorage)
-					if (!(key in storedValues)) {
-						storeKey = (!hasOwnDefaults && defaultStorage[key].props.remap) ? defaultStorage[key].props.remap : key;
-
-						storedValues[key] = storedValues.hasOwnProperty(storeKey) ? storedValues[storeKey] : (hasOwnDefaults ? defaultStorage[storeKey] : defaultStorage[storeKey].props.default);
-
-						if (typeof storedValues[key] === 'function')
-							storedValues[key] = storedValues[key]();
-					}
+				for (var i = storeKeys.length; i--;)
+					storedValues[storeKeys[i]] = Settings.getItem(settingKey, storeKeys[i]);
 
 				return storedValues;
 			}
@@ -141,22 +179,27 @@ var Settings = {
 			value = this.__stores.getStore(settingKey).get(storeKey);
 
 			defaultValue = hasOwnDefaults ? defaultStorage[storeKey] : defaultStorage[storeKey].props.default;
+
+			isExtra = setting.storeKeySettings[storeKey] ? setting.storeKeySettings[storeKey].props.isExtra : false;
 		} else {
 			value = this.__method('getItem', settingKey);
 
 			defaultValue = setting.props.default;
+
+			isExtra = setting.props.isExtra;
 		}
 
 		if (typeof defaultValue === 'function')
 			defaultValue = defaultValue();
 
 		try {
-			value = (value === null || value === undefined || setting.props.readOnly) ? defaultValue : value;
+			value = (value === null || value === undefined || setting.props.readOnly || (isExtra && !Extras.isActive())) ? defaultValue : value;
 
 			if (typeof defaultValue === 'object' && typeof value !== 'object')
 				value = JSON.parse(value);
 		} catch (error) {
 			LogError(error, setting);
+
 			throw new Error('no default value for ' + settingKey);
 		}
 
@@ -217,9 +260,25 @@ var Settings = {
 			});
 		} else if (this.__validate(type, value, options, otherOption, setting.props.extendOptions)) {			
 			if (confirmChange && !changeConfirmed) {
-				var shouldConfirm = Utilities.Group.eval(confirmChange.when, Settings.all());
+				var shouldConfirm = false;
+
+				if (confirmChange.when)
+					shouldConfirm = Utilities.Group.eval(confirmChange.when, Settings.all());
+				else if (confirmChange.toValues)
+					shouldConfirm = confirmChange.toValues._contains(value);
 
 				if (shouldConfirm) {
+					if (confirmChange.prompt) {
+						var confirmed = confirmChange.prompt();
+
+						if (!confirmed)
+							UI.Settings.repopulateActiveSection();
+						else
+							Settings.setItem(settingKey, value, storeKey, true);
+
+						return;
+					}
+
 					var poppy = new Popover.window.Poppy(0.5, 0, true);
 
 					poppy.setContent(Template.create('poppy', 'confirm-setting-change', {
@@ -317,11 +376,25 @@ var Settings = {
 		return Settings.map;
 	},
 
-	export: function () {
+	export: function (options) {
 		var exported = SettingStore.all();
 
-		delete exported['EasyListLastUpdate'];
-		delete exported['Storage-EasyRules'];
+		if (!options.exportFirstVisit)
+			delete exported['Storage-FirstVisit'];
+
+		if (!options.exportRules) {
+			delete exported['Storage-Rules'];
+			delete exported['Storage-StoreSettings'].STORE.expander;
+		}
+
+		if (!options.exportSnapshots)
+			delete exported['Storage-Snapshots'];
+
+		if (!options.exportUserScripts)
+			delete exported['Storage-UserScripts'];
+
+		delete exported['FilterListLastUpdate'];
+		delete exported['Storage-FilterRules'];
 		delete exported['Storage-Predefined'];
 		delete exported['Storage-ResourceCanLoad'];
 
@@ -355,6 +428,8 @@ var Settings = {
 
 			UI.Page.showModalInfo(_('settings.safari_restart'));
 		});
+
+		SecureSettings.clear();
 	}
 };
 

@@ -1,7 +1,9 @@
 <noscript id="host-section">
-	<% var snapshotInUse = globalPage.Rules.snapshotInUse(); %>
+	<%
+		var isLocked = globalPage.Rules.isLocked(),
+				snapshotInUse = globalPage.Rules.snapshotInUse(); %>
 
-	<div class="page-host-section <%=snapshotInUse ? 'page-host-snapshot' : ''%>" data-id="<%=self.id%>">
+	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>">
 		<div class="page-host-header">
 			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
 			<input type="button" class="page-host-edit" value="<%=_('view.page.host.edit')%>" />

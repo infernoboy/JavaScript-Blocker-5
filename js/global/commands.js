@@ -42,7 +42,7 @@ function Command (command, data, event) {
 
 			return this.__message;
 		},
-		set: function (message) {			
+		set: function (message) {
 			if (this.isEvent)
 				this.event.message = message;
 			else if (typeof this.event === 'function')
@@ -169,7 +169,6 @@ function Command (command, data, event) {
 				enabledKinds: Settings.getItem('enabledKinds'),
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
-				confirmShortURL: Settings.getItem('confirmShortURL'),
 				blockReferrer: Settings.getItem('blockReferrer'),
 				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 

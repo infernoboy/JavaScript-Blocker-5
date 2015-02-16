@@ -70,6 +70,10 @@ UI.Settings = {
 				}
 			});
 
+		UI.Settings.events.elementWasAdded({
+			detail: document.body
+		});
+
 		UI.event.addCustomEventListener(['viewWillSwitch', 'viewAlreadyActive'], UI.Settings.events.repopulateActiveSection);
 		UI.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
 		UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
@@ -548,6 +552,18 @@ UI.Settings = {
 		},
 
 		viewWillSwitch: function (event) {
+			if (event.detail.to.id === '#main-views-setting' && Settings.isLocked()) {
+				event.preventDefault();
+
+				if (!Poppy.poppyWithScriptNameExist('setting-menu')) {
+					UI.event.addCustomEventListener('poppyDidShow', function (event) {
+						event.detail.close();
+					}, true);
+
+					UI.view.showPoppyMenu($('.view-switcher *[data-poppy="setting-menu"] .poppy-menu-target')[0], event, true);
+				}
+			}
+
 			if (!event.detail.to.id._startsWith('#setting-views'))
 				return;
 

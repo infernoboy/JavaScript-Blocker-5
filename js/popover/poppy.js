@@ -57,8 +57,6 @@
 
 	Poppy.scripts = {};
 
-	Poppy.poppies = poppies;
-
 	Poppy.setAllPositions = function () {
 		for (var poppyID in poppies)
 			poppies[poppyID].setPosition();
@@ -167,6 +165,17 @@
 		return loadingPoppy;
 	};
 
+	Poppy.prototype.linkToOpenPoppy = function () {
+		for (var poppyID in poppies)
+			if (poppies[poppyID].displayed && !poppies[poppyID].closed && !poppies[poppyID].reverseLink && poppies[poppyID] !== this && poppies[poppyID].reverseLink !== this) {
+				this.linkTo(poppies[poppyID]);
+
+				break;
+			}
+
+		return this;
+	};
+
 	Poppy.prototype.shake = function () {
 		this.poppy.shake();
 		this.arrow.shake(true);
@@ -181,8 +190,6 @@
 		this.poppy.removeClass('poppy-up poppy-no-arrow');
 
 		this.content.width('');		
-
-		var spacing = 5;
 
 		var position = {
 			arrow: {
@@ -214,18 +221,20 @@
 				halfArrowWidth = Math.floor(this.arrow.outerWidth() / 2),
 				arrowHeight = this.arrow.outerHeight();
 				
-		if (this.position.x - poppyWidth / 2 <= spacing) { // If overflow on left side
-			position.poppy.left = spacing;
-			position.arrow.left = this.position.x - halfArrowWidth - spacing;
+		if (this.position.x - poppyWidth / 2 <= -Poppy.__offset) { // If overflow on left side
+			position.poppy.left = -Poppy.__offset;
+			position.arrow.left = this.position.x - halfArrowWidth + Poppy.__offset;
 			
 			if (position.arrow.left < halfArrowWidth / 2)
 				position.arrow.left = 3;
-		} else if (this.position.x + poppyWidth / 2 > containerWidth - spacing) { // If overflow on right side
-			position.poppy.left = containerWidth - poppyWidth - spacing;
+
+		} else if (this.position.x + poppyWidth / 2 > containerWidth + Poppy.__offset) { // If overflow on right side
+			position.poppy.left = containerWidth - poppyWidth + Poppy.__offset;
 			position.arrow.left = this.position.x - position.poppy.left - halfArrowWidth;
 				
-			if (position.arrow.left > poppyWidth - (halfArrowWidth * 2) - spacing)
+			if (position.arrow.left > poppyWidth - (halfArrowWidth * 2) + Poppy.__offset)
 				position.arrow.left = poppyWidth - (halfArrowWidth * 2) - 3;
+
 		} else { // If fits
 			position.poppy.left = this.position.x - Math.floor(poppyWidth / 2);
 			position.arrow.left = Math.floor(poppyWidth / 2) - halfArrowWidth;
@@ -238,22 +247,22 @@
 				this.isUpArrow = true;
 
 				position.poppy.bottom = 'auto';
-				position.poppy.top = Math.max(arrowHeight + Poppy.__offset, this.position.y + arrowHeight - spacing);
+				position.poppy.top = Math.max(arrowHeight + Poppy.__offset, this.position.y + arrowHeight + Poppy.__offset);
 
 				position.arrow.bottom = 'auto';
-				position.arrow.top = -(arrowHeight);
+				position.arrow.top = -arrowHeight;
 				
 				if (position.poppy.top + poppyHeight + arrowHeight > containerHeight) { // If overflow on bottom side
 					var currentHeightTotal;
 
-					while ((currentHeightTotal = position.poppy.top + this.poppy.outerHeight() + 15) > containerHeight) {
+					while ((currentHeightTotal = position.poppy.top + this.poppy.outerHeight() + 15 - Poppy.__offset) > containerHeight) {
 						this.noArrow = true;
 
-						if (position.poppy.top > spacing) {
+						if (position.poppy.top > -Poppy.__offset) {
 							position.poppy.top--;
 							this.position.y--;
 						} else {
-							poppyAndContent.css('height', '-=' + (currentHeightTotal - containerHeight - 15 + spacing) + 'px');
+							poppyAndContent.css('height', '-=' + (currentHeightTotal - containerHeight - 15) + 'px');
 
 							break;
 						}
@@ -266,11 +275,11 @@
 					while ((currentHeightTotal = this.poppy.outerHeight() + arrowHeight + 15) > this.position.y) {
 						this.noArrow = true;
 
-						if (position.poppy.bottom > spacing) {
+						if (position.poppy.bottom > -Poppy.__offset) {
 							position.poppy.bottom--;
 							this.position.y++;
 						} else {
-							poppyAndContent.css('height', '-=' + (currentHeightTotal - this.position.y - 15 + spacing) + 'px');
+							poppyAndContent.css('height', '-=' + (currentHeightTotal - this.position.y - 15) + 'px');
 
 							break;
 						}
@@ -371,6 +380,7 @@
 			throw new TypeError(poppy + ' is not a Poppy');
 
 		this.linkedTo = poppy;
+		poppy.reverseLink = this;
 
 		return this;
 	};
@@ -444,6 +454,9 @@
 
 			this.closed = true;
 
+			if (this.linkedTo)
+				this.linkedTo.reverseLink = undefined;
+
 			for (var poppyID in poppies)
 				if (poppies[poppyID].isModal && poppyID !== this.id) {
 					shouldHideModal = false;
@@ -468,7 +481,7 @@
 					.css('pointer-events', 'none')
 					.end()
 					.end()
-					.fadeOut(130 * window.globalSetting.speedMultiplier, function () {
+					.fadeOut(100 * window.globalSetting.speedMultiplier, function () {
 						self.remove();
 
 						resolve(self);

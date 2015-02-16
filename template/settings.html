@@ -205,21 +205,25 @@
 		
 		<div class="setting-section-setting-left">
 			<p class="jsb-info"><b><%=(self.attributes.get('meta') || { name: '' }).name._escapeHTML()%></b></p>
-			<% if (self.attributes.get('canBeUpdated')) { %>
-				<ul class="generic-menu-options generic-menu-menu">
+			<ul class="generic-menu-options generic-menu-menu">
+				<li>
+					<input type="checkbox" id="<%=self.id%>-enable" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="enabled" /> <label for="<%=self.id%>-enable"><%=_('user_script.enable_script')%></label>
+				</li>
+				<% if (self.attributes.get('canBeUpdated')) { %>
 					<li>
-						<input type="checkbox" id="<%=self.id%>-auto-update" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="autoUpdate" /> <label for="<%=self.id%>-auto-update">Enable automatic updating</label>
+						<input type="checkbox" id="<%=self.id%>-auto-update" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="autoUpdate" /> <label for="<%=self.id%>-auto-update"><%=_('user_script.enable_auto_update')%></label>
 					</li>
 					<li>
-						<input type="checkbox" id="<%=self.id%>-developer" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="developerMode" /> <label for="<%=self.id%>-developer">Enable developer mode</label>
+						<input type="checkbox" id="<%=self.id%>-developer" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="developerMode" /> <label for="<%=self.id%>-developer"><%=_('user_script.enable_developer_mode')%></label>
 					</li>
 					<li>
-						<p class="user-script-updated jsb-info jsb-label"><%=_('setting.userScripts.updated', [(new Date(self.attributes.get('lastUpdate'))).toLocaleString()])%></p>
+						<p class="user-script-updated jsb-info jsb-label jsb-smaller"><%=_('setting.userScripts.updated', [(new Date(self.attributes.get('lastUpdate'))).toLocaleString()])%></p>
 					</li>
 				</ul><%
-			} else { %>
-				<p class="jsb-info jsb-label jsb-smaller"><%=_('setting.userScript.cannotUpdate')%></p><%
-			} %>
+				} else { %>
+					<li><p class="user-script-updated jsb-info jsb-label jsb-smaller"><%=_('setting.userScript.cannotUpdate')%></p></li><%
+				} %>
+			</ul>
 		</div>
 		<div class="setting-section-setting-right">
 			<input type="button" class="user-script-edit" value="<%=_('view.page.host.edit')%>" data-userScript="<%=self.key._entityQuotes()%>" />&nbsp;

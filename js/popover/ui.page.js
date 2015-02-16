@@ -131,11 +131,7 @@ UI.Page = {
 						imageContainer.removeClass('loading');
 					});
 
-					$('#main-views-resource-content', UI.view.views).empty().append(imageContainer);
-
-					Poppy.closeAll();
-
-					UI.view.switchTo('#main-views-resource-content');
+					UI.Page.showResource(imageContainer);
 
 					return;
 				}
@@ -238,7 +234,7 @@ UI.Page = {
 
 	section: {
 		toggleEditMode: function (section, force, quick) {
-			if (globalPage.Rules.snapshotInUse())
+			if (globalPage.Rules.isLocked())
 				return;
 
 			var pageHostEditor = section.find('.page-host-editor').stop(true, true),
@@ -422,8 +418,6 @@ UI.Page = {
 			UI.Page.clear();
 
 			globalPage.Page.requestPageFromActive();
-
-			UI.event.trigger('popoverOpened');
 		},
 
 		viewAlreadyActive: function (event) {
@@ -686,10 +680,10 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {
-					if (globalPage.Rules.snapshotInUse())
+					if (globalPage.Rules.isLocked())
 						return (new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true))
 							.setContent(Template.create('main', 'jsb-readable', {
-								string: _('view.page.host.snapshot_in_use_no_rules')
+								string: _('view.page.host.rules_locked')
 							}))
 							.show();
 
@@ -766,7 +760,6 @@ UI.event.addCustomEventListener('popoverDidResize', UI.Page.events.popoverDidRes
 UI.event.addCustomEventListener('sectionSwitchedOutOfEditMode', UI.Page.events.sectionSwitchedOutOfEditMode);
 UI.event.addCustomEventListener('selectCustomOptionChanged', UI.Page.events.selectCustomOptionChanged);
 UI.event.addCustomEventListener('disabled', UI.Page.events.disabled);
-
-Events.addApplicationListener('popover', UI.Page.events.openedPopover);
+UI.event.addCustomEventListener('popoverOpened', UI.Page.events.openedPopover);
 
 document.addEventListener('DOMContentLoaded', UI.Page.init, true);

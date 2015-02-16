@@ -37,10 +37,10 @@
 	}
 
 	&-open {
-		-webkit-animation: openPoppy 0.36s 1 normal linear;
+		-webkit-animation: openPoppy unit(0.36 * @speedMultiplier, s) 1 normal linear;
 
 		&-quick {
-			-webkit-animation-duration: 0.16s;
+			-webkit-animation-duration: unit(0.15 * @speedMultiplier, s);
 		}
 
 		&-instant {

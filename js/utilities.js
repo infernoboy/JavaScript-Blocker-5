@@ -256,7 +256,7 @@ var Utilities = {
 			this.__stopped = false;
 			this.__started = true;
 
-			if (this.delay === 0)
+			if (this.delay === false || this.delay === 0)
 				return this.next();
 
 			for (var b = this.queue.length; this.index < b; this.index++) {
@@ -559,6 +559,7 @@ var Utilities = {
 
 				return text;
 			},
+
 			create: function (value, keep) {
 				var token = this.generate();
 
@@ -572,6 +573,7 @@ var Utilities = {
 
 				return token;
 			},
+
 			valid: function (token, value, expire) {
 				if (typeof token !== 'string' || !(token in tokens))
 					return false;
@@ -583,6 +585,7 @@ var Utilities = {
 
 				return isValid;
 			},
+
 			expire: function (token, expireKept) {
 				if ((token in tokens) && (!expireKept || !tokens[token].keep))
 					delete tokens[token];
@@ -1338,7 +1341,10 @@ var Extension = {
 
 		_isEmpty: {
 			value: function () {
-				return Object.keys(this).length === 0;
+				for (var key in this)
+					return false;
+
+				return true;
 			}
 		},
 
@@ -1531,6 +1537,7 @@ Utilities.Page.isWebpage = !!GlobalPage.tab && !window.location.href._startsWith
 Utilities.Page.isUserScript = window.location.href._endsWith('.user.js');
 
 Utilities.Group.NOT._createReverseMap();
+
 Utilities.Group.TYPES = {
 	string: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.STARTS_WITH, Utilities.Group.NOT.STARTS_WITH, Utilities.Group.ENDS_WITH, Utilities.Group.NOT.ENDS_WITH, Utilities.Group.MATCHES, Utilities.Group.NOT.MATCHES, Utilities.Group.CONTAINS, Utilities.Group.NOT.CONTAINS],
 	number: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.MATCHES, Utilities.Group.NOT.MATCHES],

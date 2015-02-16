@@ -205,9 +205,9 @@ Update.versions[150108] = {
 	blocking: false,
 
 	update: function () {
-		SettingStore.removeItem('Storage-EasyRules-$list');
-		SettingStore.removeItem('Storage-EasyRules-$malware');
-		SettingStore.removeItem('Storage-EasyRules-$privacy');
+		SettingStore.removeItem('Storage-FilterRules-$list');
+		SettingStore.removeItem('Storage-FilterRules-$malware');
+		SettingStore.removeItem('Storage-FilterRules-$privacy');
 
 		return true;
 	}
@@ -218,12 +218,18 @@ Update.versions['150108.1'] = {
 	blocking: false,
 
 	update: function () {
-		EasyList.fetch();
+		FilterList.fetch();
 
 		return true;
 	}
 };
 
+Update.versions[150215] = {
+	blocking: false,
 
+	update: function () {
+		SettingStore.removeItem('Storage-EasyRules');
+	}
+};
 
 Update.init();

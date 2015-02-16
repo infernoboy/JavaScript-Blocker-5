@@ -102,9 +102,7 @@
 
 <noscript id="view-switcher">
 	<div id="<%=self.id || ''%>" class="view-switcher-container <%=self.mini ? 'mini' : ''%>">
-		<ul class="view-switcher" data-container="<%=self.container%>">
-		<% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container poppy-menu-target"><span class="view-switcher-item-name"><%=self.views[viewID].value%></span><span class="view-switcher-item-notification"></span></span></li><% } %>
-		</ul>
+		<ul class="view-switcher" data-container="<%=self.container%>"><% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container poppy-menu-target"><span class="view-switcher-item-name"><%=self.views[viewID].value%></span><span class="view-switcher-item-notification"></span></span></li><% } %></ul>
 	</div>
 </noscript>
 

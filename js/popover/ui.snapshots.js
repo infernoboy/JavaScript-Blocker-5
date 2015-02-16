@@ -1,7 +1,7 @@
 "use strict";
 
 UI.Snapshots = {
-	__queue: new Utilities.Queue(false),
+	__compareQueue: new Utilities.Queue(50),
 
 	event: new EventListener,
 	current: globalPage.Rules.list.user.rules,
@@ -84,31 +84,37 @@ UI.Snapshots = {
 	},
 
 	buildList: function (listContainer, list) {
-		list.findLast(function (date, snapshot) {
-			UI.Snapshots.__queue.push(function (listContainer, date, list, snapshot) {
-				var name = UI.Snapshots.getName(date, list);
+		var name,
+				snapshotItem;
 
-				snapshot.snapshot.name = 'Snapshot-' + date;
+		var snapshotIDs = list.keys().sort();
 
-				var snapshotStore = Store.promote(snapshot.snapshot),
+		for (var i = snapshotIDs.length; i--;) {
+			name = UI.Snapshots.getName(snapshotIDs[i], list);
+
+			snapshotItem = Template.create('snapshots', 'snapshot-list-item', {
+				id: snapshotIDs[i],
+				name: name,
+				equal: false,
+				active: (globalPage.Rules.list.active.snapshot && globalPage.Rules.list.active.snapshot.id === snapshotIDs[i])
+			});
+
+			listContainer.append(snapshotItem);
+
+			UI.Snapshots.__compareQueue.push(function (list, snapshotID, snapshotItem) {
+				var snapshot = list.get(snapshotID),
+						snapshotStore = Store.promote(snapshot.snapshot),
 						compare = Store.compare(UI.Snapshots.current, snapshotStore);
 
 				snapshotStore.destroy();
 				compare.store.destroy();
 
-				listContainer.append(Template.create('snapshots', 'snapshot-list-item', {
-					id: date,
-					name: name,
-					equal: compare.equal,
-					active: (globalPage.Rules.list.active.snapshot && globalPage.Rules.list.active.snapshot.id === date)
-				}));
-			}, [listContainer, date, list, snapshot]);
-		});
+				$('.snapshot-item-name', snapshotItem).toggleClass('current', compare.equal);
+			}.bind(null, list, snapshotIDs[i], snapshotItem));
+		}
 	},
 
 	buildSnapshots: function () {
-		UI.Snapshots.__queue.clear();
-
 		var keptList = $('#snapshot-kept-list', UI.Snapshots.container).empty(),
 				unkeptList = $('#snapshot-unkept-list', UI.Snapshots.container).empty(),
 				kept = UI.Snapshots.snapshot.kept,
@@ -117,18 +123,15 @@ UI.Snapshots = {
 		keptList.data('snapshots', kept);
 		unkeptList.data('snapshots', unkept);
 
-		setTimeout(function (keptList, kept, unkeptList, unkept) {
-			UI.Snapshots.buildList(keptList, kept);
-			UI.Snapshots.buildList(unkeptList, unkept);
+		UI.Snapshots.__compareQueue.clear();
 
-			UI.Snapshots.__queue.push(function () {
-				Store.compareCache.destroy(true);
-			});
+		UI.Snapshots.buildList(keptList, kept);
+		UI.Snapshots.buildList(unkeptList, unkept);
 
-			UI.Snapshots.__queue.start();
-		}, 225, keptList, kept, unkeptList, unkept);
+		setTimeout(function () {
+			UI.Snapshots.__compareQueue.start();
+		}, 300);
 	},
-
 
 	events: {
 		viewWillSwitch: function (event) {
@@ -137,7 +140,7 @@ UI.Snapshots = {
 			if (id === '#main-views-snapshot')
 				UI.Snapshots.buildSnapshots();
 			else
-				UI.Snapshots.__queue.stop();
+				UI.Snapshots.__compareQueue.clear();
 		},
 
 		viewDidSwitch: function (event) {

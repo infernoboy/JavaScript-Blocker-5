@@ -11,7 +11,7 @@
 			margin-left: 13px;
 
 			li {
-				padding: 8px 0;
+				padding: 7px 0 6px;
 				clear: both;
 
 				&:not(:last-child) {
@@ -26,35 +26,38 @@
 					font-weight: bold;
 				}
 
-				.snapshot-item-name {
-					display: inline-block;
-					text-decoration: none;
-					max-width: 300px;
-					overflow: hidden;
-
-					&.current:after {
+				.snapshot-item- {
+					&name {
 						display: inline-block;
-						margin-left: 7px;
-						padding: 1px 5px;
-						content: attr(data-i18n-current);
-						color: #fff;
-						font-size: 0.9em;
-						background: @baseColor;
-						border-radius: 3px;
+						text-decoration: none;
+						max-width: 330px;
+						overflow: hidden;
 
 						&:after {
-							content: 'test';
+							display: inline-block;
+							margin-left: 7px;
+							padding: 1px 5px;
+							content: attr(data-i18n-current);
+							color: #fff;
+							font-size: 0.9em;
+							background: @baseColor;
+							border-radius: 3px;
+							opacity: 0;
+						}
+
+						&.current:after {
+							opacity: 1;
 						}
 					}
-				}
 
-				.snapshot-item-delete,
-				.snapshot-item-close,
-				.snapshot-item-preview, {
-					float: right;
-					margin-top: -3px;
-					margin-left: 4px;
-					margin-right: 1px;
+					&delete,
+					&close,
+					&preview, {
+						float: right;
+						margin-top: -3px;
+						margin-left: 4px;
+						margin-right: 1px;
+					}
 				}
 			}
 		}

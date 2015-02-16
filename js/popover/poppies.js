@@ -1,6 +1,67 @@
 "use strict";
 
 Object._extend(Poppy.scripts, {
+	'set-lock-password': function (poppy) {
+		var previousPassword = $('#lock-password-previous', poppy.content),
+				newPassword = $('#lock-password', poppy.content),
+				verifyPassword = $('#lock-password-verify', poppy.content);
+
+		if (previousPassword.length)
+			previousPassword.focus();
+		else
+			newPassword.focus();
+
+		poppy.content
+			.on('click', '#lock-password-cancel', function () {
+				poppy.close();
+			})
+
+			.on('click', '#lock-password-save', function () {
+				var previousPasswordVal = previousPassword.val(),
+						newPasswordVal = newPassword.val(),
+						verifyPasswordVal = verifyPassword.val();
+
+				if (newPasswordVal !== verifyPasswordVal) {
+					verifyPassword.val('');
+
+					return newPassword.focus().selectAll().shake();
+				}
+
+				var passwordSet = Settings.setPassword(newPasswordVal, previousPasswordVal);
+
+				if (passwordSet === 0)
+					poppy.close();
+				else if (passwordSet === -2)
+					previousPassword.focus().selectAll().shake();
+				else if (passwordSet === -1)
+					newPassword.focus().selectAll().shake();
+			});
+	},
+
+	'toggle-lock': function (poppy) {
+		var password = $('#lock-password', poppy.content).focus();
+
+		poppy.content
+			.on('click', '#lock-password-cancel', function () {
+				poppy.close();
+			})
+
+			.on('click', '#lock-password-toggle', function () {
+				var currentPassword = Settings.getPassword();
+
+				if (password.val() !== currentPassword)
+					return password.focus().selectAll().shake();
+
+				if (poppy.toggleLock === 'rules')
+					globalPage.Rules.lock(!poppy.locked);
+
+				else if (poppy.toggleLock === 'settings')
+					Settings.lock(!poppy.locked);
+
+				poppy.close();
+			});
+	},
+
 	'disable-menu': function (poppy) {
 		poppy.content
 			.on('change', '#disable-menu-for', function () {
@@ -56,6 +117,19 @@ Object._extend(Poppy.scripts, {
 
 	'rule-menu': function (poppy) {
 		poppy.content
+			.on('click', '#rule-menu-lock', function () {
+				var poppy = new Poppy(0.5, 0, true, 'toggle-lock');
+
+				poppy.toggleLock = 'rules';
+				poppy.locked = globalPage.Rules.__locked;
+
+				poppy.setContent(Template.create('poppy', 'toggle-lock', {
+					value: this.value
+				}));
+
+				poppy.modal().show();
+			})
+
 			.on('click', '#rule-menu-open-snapshots', function () {
 				Poppy.closeAll();
 				
@@ -79,8 +153,28 @@ Object._extend(Poppy.scripts, {
 
 	'setting-menu': function (poppy) {
 		poppy.content
+			.on('click', '#setting-menu-lock', function () {
+				var poppy = new Poppy(0.5, 0, true, 'toggle-lock');
+
+				poppy.toggleLock = 'settings';
+				poppy.locked = Settings.isLocked();
+
+				poppy.setContent(Template.create('poppy', 'toggle-lock', {
+					value: this.value
+				}));
+
+				poppy.modal().show();
+			})
+
 			.on('click', '#setting-menu-backup-export', function (event) {
-				Tabs.create(Utilities.URL.createFromContent(Settings.export(), 'application/zip', true));
+				var options = {
+					exportFirstVisit: $('#setting-menu-backup-export-first-visit', poppy.content).is(':checked'),
+					exportRules: $('#setting-menu-backup-export-rules', poppy.content).is(':checked'),
+					exportSnapshots: $('#setting-menu-backup-export-snapshots', poppy.content).is(':checked'),
+					exportUserScripts: $('#setting-menu-backup-export-user-scripts', poppy.content).is(':checked')
+				};
+
+				Tabs.create(Utilities.URL.createFromContent(Settings.export(options), 'application/zip', true));
 			})
 
 			.on('drop', '#setting-menu-backup-import', function (event) {
@@ -103,10 +197,28 @@ Object._extend(Poppy.scripts, {
 				}, 0, event);
 			})
 
+			.on('click', '#setting-menu-backup-import-alternative', function (event) {
+				var alternativePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'backup-import-alternative');
+
+				alternativePoppy.setContent(Template.create('poppy', 'backup-import-alternative')).show();
+			})
+
 			.on('click', '#setting-menu-restore-defaults', function (event) {
 				Settings.import({});
 
 				poppy.close();
+			});
+	},
+
+	'backup-import-alternative': function (poppy) {
+		poppy.content
+			.on('click', '#backup-import-alternative-import', function () {
+				var backupContents = $.trim($('#backup-import-alternative', poppy.content).val());
+
+				poppy.close();
+
+				if (backupContents.length)
+					Settings.import(backupContents);
 			});
 	},
 
@@ -195,14 +307,14 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
-	'easy-rules-menu': function (poppy) {
+	'filter-rules-menu': function (poppy) {
 		poppy.content
 			.on('click', 'a', function (event) {
-				var easyList = this.parentNode.getAttribute('data-easyList');
+				var filterList = this.parentNode.getAttribute('data-filterList');
 
 				poppy.close();
 
-				UI.Rules.setEasyRulesList(easyList);
+				UI.Rules.setFilterRulesList(filterList);
 			});
 	},
 
@@ -382,7 +494,7 @@ Object._extend(Poppy.scripts, {
 				poppy.setContent(template);
 			})
 
-			.on('click', '#create-rule-save', function () {
+			.on('click', '#create-rule-save', function (event) {
 				var self = $(this),
 						container = $('#create-rule', poppy.content),
 						editing = container.attr('data-editing') === '1';

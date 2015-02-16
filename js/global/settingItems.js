@@ -6,10 +6,17 @@ Settings.settings = {
 		setting: 'donationVerified',
 		props: {
 			type: 'boolean',
+			onChange: function () {
+				SettingStore.__cache = {};
+			}
+		}
+	}, {
+		setting: 'extrasActive',
+		props: {
+			type: 'boolean',
+			readOnly: true,
 			default: function () {
-				return true; // Make sure I change this to false before general release..
-
-				return Trial.isActive();
+				return Extras.isActive();
 			}
 		}
 	}, {
@@ -37,13 +44,7 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		setting: 'settingsPageTab',
-		props: {
-			type: 'string',
-			default: 'for-welcome'
-		}
-	}, {
-		setting: 'EasyListLastUpdate',
+		setting: 'FilterListLastUpdate',
 		props: {
 			type: 'number',
 			default: 0
@@ -146,11 +147,38 @@ Settings.settings = {
 			default: false
 		}
 	}, {
+		setting: 'showUnblockedScripts',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
 		setting: 'showItemDescription',
 		props: {
 			type: 'boolean',
 			default: true
 		}
+	}, {
+			setting: 'showResourceURLs',
+			props: {
+				type: 'boolean',
+				default: false,
+				onChange: function () {
+					var showResourceURLs = Settings.getItem('showResourceURLs');
+
+					Popover.window.document.documentElement.classList.toggle('popover-expanded', showResourceURLs);
+
+					UI.__popoverWidthSetting = 'popoverWidth' + (showResourceURLs ? 'Expanded' : '');
+					UI.__popoverHeightSetting = 'popoverHeight' + (showResourceURLs ? 'Expanded' : '');
+
+					UI.resizePopover(Settings.getItem(UI.__popoverWidthSetting), Settings.getItem(UI.__popoverHeightSetting));
+
+					if (Popover.visible())
+						setTimeout(function () {
+							Page.requestPageFromActive();
+						}, 300);
+				}
+			}
 	}, {
 		setting: 'newUserScriptStorageItem',
 		props: {
@@ -165,6 +193,23 @@ Settings.settings = {
 					.show();
 			}
 		}
+	}, {
+		store: 'locked',
+		props: {
+			type: 'boolean'
+		},
+	}, {
+		setting: 'locked',
+		props: {
+			storeKey: 'rules',
+			default: false
+		}
+	}, {
+		setting: 'locked',
+		props: {
+			storeKey: 'settings',
+			default: false
+		}
 	}],
 
 	// General Settings
@@ -174,12 +219,38 @@ Settings.settings = {
 			type: 'boolean',
 			default: true,
 			onChange: function () {
-				var useAnimations = Settings.getItem('useAnimations');
+				var useAnimations = Settings.getItem('useAnimations'),
+						useFastAnimations = Settings.getItem('useFastAnimations');
 
-				window.globalSetting.speedMultiplier = useAnimations ? 1 : 0.001;
+				window.globalSetting.speedMultiplier = useAnimations ? (useFastAnimations ? 0.7 : 1) : 0.001;
 
 				Popover.window.document.body.classList.toggle('jsb-no-animations', !useAnimations);
-			}
+
+				UI.setLessVariables();
+			},
+			subSettings: [{
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'useAnimations',
+							needle: true
+						}]
+					}
+				},
+				settings: [{
+					setting: 'useFastAnimations',
+					props: {
+						type: 'boolean',
+						default: false,
+						onChange: function () {
+							Settings.map.useAnimations.props.onChange();
+						}
+					}
+				}]
+			}]
 		}
 	}, {
 		setting: 'largeFont',
@@ -187,9 +258,7 @@ Settings.settings = {
 			type: 'boolean',
 			default: false,
 			onChange: function () {
-				var useLargeFont = Settings.getItem('largeFont');
-
-				Popover.window.document.documentElement.classList.toggle('jsb-large-font', useLargeFont);
+				Popover.window.document.documentElement.classList.toggle('jsb-large-font', Settings.getItem('largeFont'));
 			}
 		}
 	}, {
@@ -202,32 +271,24 @@ Settings.settings = {
 			}
 		}
 	}, {
-		setting: 'showUnblockedScripts',
-		props: {
-			type: 'boolean',
-			helpText: 'showUnblocked help',
-			default: false,
-			subSettings: [{
-				when: {
-					hide: true,
-					settings: {
-						group: 'all',
-						items: [{
-							method: Utilities.Group.IS,
-							key: 'showUnblockedScripts',
-							needle: true
-						}]
-					}
-				},
-				settings: [{
-					setting: 'hideInjected',
-					props: {
-						type: 'boolean',
-						default: true
-					}
+		when: {
+			hide: true,
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'showUnblockedScripts',
+					needle: true
 				}]
-			}]
-		}
+			}
+		},
+		settings: [{
+			setting: 'hideInjected',
+			props: {
+				type: 'boolean',
+				default: true
+			}
+		}]
 	}, {
 		setting: 'createRulesOnClose',
 		props: {
@@ -247,7 +308,7 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		setting: 'autoHideEasyList',
+		setting: 'autoHideFilterList',
 		props: {
 			type: 'boolean',
 			default: false
@@ -335,7 +396,7 @@ Settings.settings = {
 				group: 'all',
 				items: [{
 					method: Utilities.Group.IS,
-					key: 'donationVerified',
+					key: 'extrasActive',
 					needle: true
 				}]
 			}
@@ -344,28 +405,23 @@ Settings.settings = {
 			setting: 'updateNotify',
 			props: {
 				type: 'boolean',
+				isExtra: true,
 				default: true
 			}
 		}, {
-			setting: 'showResourceURLs',
+			divider: true
+		}, {
+			setting: 'setLockPassword',
 			props: {
-				type: 'boolean',
-				helpText: 'simpleMode help',
-				default: false,
-				onChange: function () {
-					var showResourceURLs = Settings.getItem('showResourceURLs');
+				type: 'button',
+				onClick: function (input, preventCancel) {
+					var poppy = new Popover.window.Poppy(0.5, 0, true, 'set-lock-password');
 
-					Popover.window.document.documentElement.classList.toggle('popover-expanded', showResourceURLs);
+					poppy.setContent(Template.create('poppy', 'set-lock-password', {
+						preventCancel: preventCancel
+					}));
 
-					UI.__popoverWidthSetting = 'popoverWidth' + (showResourceURLs ? 'Expanded' : '');
-					UI.__popoverHeightSetting = 'popoverHeight' + (showResourceURLs ? 'Expanded' : '');
-
-					UI.resizePopover(Settings.getItem(UI.__popoverWidthSetting), Settings.getItem(UI.__popoverHeightSetting));
-
-					if (Popover.visible())
-						setTimeout(function () {
-							Page.requestPageFromActive();
-						}, 300);
+					poppy.modal().show();
 				}
 			}
 		}]
@@ -441,7 +497,7 @@ Settings.settings = {
 				['host', 'Different hosts &amp; subdomains'],
 				['domain', 'Different hostnames'],
 			],
-			default: 'host',
+			default: 'nowhere',
 			confirm: {
 				when: {
 					group: 'all',
@@ -453,7 +509,13 @@ Settings.settings = {
 				}
 			},
 			onChange: function () {
-				Rules.list.firstVisit.rules.clear();
+				var locked = !!Rules.__locked;
+
+				Rules.lock(false);
+
+				Rules.list.firstVisit.clear();
+
+				Rules.lock(locked);
 			}
 		}
 	}, {
@@ -543,7 +605,7 @@ Settings.settings = {
 				group: 'all',
 				items: [{
 					method: Utilities.Group.IS,
-					key: 'donationVerified',
+					key: 'extrasActive',
 					needle: true
 				}]
 			}
@@ -552,7 +614,10 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'frame',
-				default: true
+				isExtra: true,
+				default: function () {
+					return Extras.isActive();
+				}
 			}
 		}, {
 			when: {
@@ -611,7 +676,10 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'xhr',
-				default: true
+				isExtra: true,
+				default: function () {
+					return Extras.isActive();
+				}
 			}
 		}, {
 			when: {
@@ -654,7 +722,7 @@ Settings.settings = {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'xhr',
-					extendOptions: [['ask', 'Ask when neccessary']],
+					extendOptions: [['ask', 'Rules and ask when neccessary']],
 					help: 'alwaysBlock help',
 					default: 'blacklist',
 					onChange: function () {
@@ -686,6 +754,12 @@ Settings.settings = {
 						type: 'option-radio',
 						options: [[0, 'Allow'], [1, 'Block'], [2, 'Invasively ask']],
 						default: 0,
+						confirm: {
+							toValues: ['2'],
+							prompt: function () {
+								return confirm(_('setting.synchronousXHRMethod.confirm'));
+							}
+						},
 						onChange: function () {
 							Special.__enabled = null;
 						},
@@ -721,7 +795,10 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'embed',
-				default: true
+				isExtra: true,
+				default: function () {
+					return Extras.isActive();
+				}
 			}
 		}, {
 			when: {
@@ -752,7 +829,6 @@ Settings.settings = {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'embed',
-					help: 'alwaysBlock help',
 					default: 'blacklist'
 				}
 			}]
@@ -762,6 +838,7 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'video',
+				isExtra: true,
 				default: false
 			}
 		}, {
@@ -803,6 +880,7 @@ Settings.settings = {
 			setting: 'enabledKinds',
 			props: {
 				storeKey: 'image',
+				isExtra: true,
 				default: false
 			}
 		}, {
@@ -843,11 +921,11 @@ Settings.settings = {
 	}, {
 		divider: true
 	}, {
-		header: 'easyLists',
+		header: 'filterLists',
 	}, {
-		description: 'easyLists.description',
+		description: 'filterLists.description',
 	}, {
-		store: 'easyLists',
+		store: 'filterLists',
 		props: {
 			type: 'dynamic-array',
 			isSetting: true,
@@ -863,10 +941,18 @@ Settings.settings = {
 				$malware: {
 					enabled: true,
 					value: ['https://easylist-downloads.adblockplus.org/malwaredomains_full.txt', 'EasyMalware']
+				},
+				$fanboyAnnoy: {
+					enabled: false,
+					value: ['https://easylist-downloads.adblockplus.org/fanboy-annoyance.txt', 'Fanboy\'s Annoyances']
+				},
+				$fanboySocial: {
+					enabled: false,
+					value: ['https://easylist-downloads.adblockplus.org/fanboy-social.txt', 'Fanboy\'s Anti-social']
 				}
 			},
 			validate: {
-				onFail: 'easyLists.validate.fail',
+				onFail: 'filterLists.validate.fail',
 				test: function (type, value) {
 					var url = $.trim(value.value[0]).toLowerCase();
 
@@ -874,41 +960,41 @@ Settings.settings = {
 				}
 			},
 			onChange: function () {
-				Utilities.Timer.timeout('easyListsChanged', function () {
-					Rules.attachEasyLists(true);
+				Utilities.Timer.timeout('filterListsChanged', function () {
+					Rules.attachFilterLists(true);
 
-					EasyList.fetch();
+					FilterList.fetch();
 				}, 5000);
 			}
 		}
 	}, {
 		divider: true,
 	}, {
-		description: 'easyListLastUpdate.description',
+		description: 'filterListLastUpdate.description',
 		fill: function () {
-			var lastUpdate = Settings.getItem('EasyListLastUpdate'),
-					nextUpdate = lastUpdate + EasyList.__updateInterval - Date.now(),
+			var lastUpdate = Settings.getItem('FilterListLastUpdate'),
+					nextUpdate = lastUpdate + FilterList.__updateInterval - Date.now(),
 					nextUpdateHuman = Utilities.humanTime(nextUpdate);
 
 			return [(new Date(lastUpdate || Date.now())).toLocaleString(), nextUpdateHuman.days, nextUpdateHuman.hours, nextUpdateHuman.minutes];
 		}
 	}, {
-		setting: 'updateEasyLists',
+		setting: 'updateFilterLists',
 		props: {
 			type: 'button',
 			validate: {
-				onFail: 'updateEasyLists.validate.fail',
+				onFail: 'updateFilterLists.validate.fail',
 				test: function () {
-					var lastUpdate = Settings.getItem('EasyListLastUpdate'),
+					var lastUpdate = Settings.getItem('FilterListLastUpdate'),
 							fiveMinutes = TIME.ONE.MINUTE * 5;
 
 					return Date.now() > lastUpdate + fiveMinutes;
 				}
 			},
 			onClick: function (button) {
-				EasyList.cancelUpdate();
+				FilterList.cancelUpdate();
 
-				EasyList.fetch();
+				FilterList.fetch();
 
 				button.disabled = true;
 			}
@@ -924,7 +1010,7 @@ Settings.settings = {
 				group: 'all',
 				items: [{
 					method: Utilities.Group.IS,
-					key: 'donationVerified',
+					key: 'extrasActive',
 					needle: true
 				}]
 			}
@@ -935,7 +1021,10 @@ Settings.settings = {
 			setting: 'autoSnapshots',
 			props: {
 				type: 'boolean',
-				default: true,
+				isExtra: true,
+				default: function () {
+					return Extras.isActive();
+				},
 				onChange: function () {
 					Rules.list.user.rules.snapshot.autoSnapshots(Settings.getItem('autoSnapshots'));
 				}
@@ -946,7 +1035,10 @@ Settings.settings = {
 				type: 'range',
 				label: ['Store only', 'unkept snapshots'],
 				options: [1, 999],
-				default: 15
+				default: 5,
+				onChange: function () {
+					Rules.list.user.rules.snapshot.maxUnkept = Settings.getItem('snapshotsLimit');
+				}
 			}
 		}, {
 			divider: true //===================================================================================
@@ -971,7 +1063,7 @@ Settings.settings = {
 				group: 'all',
 				items: [{
 					method: Utilities.Group.IS,
-					key: 'donationVerified',
+					key: 'extrasActive',
 					needle: true
 				}]
 			}
@@ -1048,20 +1140,12 @@ Settings.settings = {
 
 	// Other Features settings
 	other: [{
-		setting: 'confirmShortURL',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		divider: true //===================================================================================
-	}, {
 		when: {
 			settings: {
 				group: 'all',
 				items: [{
 					method: Utilities.Group.IS,
-					key: 'donationVerified',
+					key: 'extrasActive',
 					needle: true
 				}]
 			}
@@ -1087,7 +1171,6 @@ Settings.settings = {
 			setting: 'blockReferrer',
 			props: {
 				type: 'boolean',
-				help: 'blockReferrer help',
 				default: false,
 				confirm: [{
 					when: true,
@@ -1124,6 +1207,7 @@ Settings.settings = {
 				type: 'boolean',
 				storeKey: 'xhr_intercept',
 				readOnly: true,
+				isExtra: true,
 				default: function () {
 					return Settings.getItem('enabledKinds', 'xhr') && {
 						alwaysBlock: Settings.getItem('alwaysBlock', 'xhr'),
@@ -1137,49 +1221,37 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'simple_referrer',
-				help: 'simpleReferrer help',
-				default: true,
-				confirm: [{
-					when: true,
-					prompt: function () {
-						var result;
-
-						var longurl = 'http://api.longurl.org/v2/expand?format=json&url=http%3A%2F%2Fis.gd%2Fw';
-
-						$.ajax({
-							async: false,
-							url: longurl,
-							dataType: 'json'
-						}).done(function (res) {
-							result = res['long-url'] ? confirm(_('confirmShortURL confirm')) : alert(_('You cannot enable confirmShortURL'));
-						}).fail(function (error) {
-							result = alert(_('You cannot enable confirmShortURL'));
-						});
-
-						return result;
-					}
-				}]
+				isExtra: true,
+				default: function () {
+					return Extras.isActive();
+				},
 			}
 		}, {
 			setting: 'enabledSpecials',
 			props: {
 				type: 'boolean',
 				storeKey: 'alert_dialogs',
-				default: true
+				isExtra: true,
+				default: function () {
+					return Extras.isActive();
+				},
 			}
 		}, {
 			setting: 'enabledSpecials',
 			props: {
 				type: 'boolean',
 				storeKey: 'anchor_titles',
-				default: true
+				isExtra: true,
+				default: function () {
+					return Extras.isActive();
+				},
 			}
 		}, {
 			setting: 'enabledSpecials',
 			props: {
 				type: 'boolean',
 				storeKey: 'contextmenu_overrides',
-				help: 'contextmenu_overrides help',
+				isExtra: true,
 				default: false
 			}
 		}, {
@@ -1187,6 +1259,7 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'window_resize',
+				isExtra: true,
 				default: false
 			}
 		}, {
@@ -1194,13 +1267,17 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'autocomplete_disabler',
-				default: true
+				isExtra: true,
+				default: function () {
+					return Extras.isActive();
+				},
 			}
 		}, {
 			setting: 'enabledSpecials',
 			props: {
 				type: 'boolean',
 				storeKey: 'inline_script_execution',
+				isExtra: true,
 				default: false
 			}
 		}, {
@@ -1208,6 +1285,7 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				storeKey: 'environmental_information',
+				isExtra: true,
 				default: false
 			}
 		}, {
@@ -1216,7 +1294,10 @@ Settings.settings = {
 				type: 'option',
 				storeKey: 'canvas_data_url',
 				options: [[false, 'Off'], [1, 'Always ask'], [2, 'Ask once per host'], [3, 'Ask once per host for session'], [4, 'Always protect']],
-				default: 3
+				isExtra: true,
+				default: function () {
+					return Extras.isActive() ? 3 : false;
+				},
 			}
 		}, {
 			setting: 'enabledSpecials',
@@ -1224,6 +1305,7 @@ Settings.settings = {
 				type: 'option',
 				storeKey: 'font',
 				options: [[false, 'Default'], ['Helvetica', 'Helvetica'], ['Arial', 'Arial'], ['Times', 'Times'], ['Comic Sans MS', 'Comic Sans MS']],
+				isExtra: true,
 				default: false,
 				otherOption: {
 					prompt: 'Enter a custom font name to use.',
@@ -1238,6 +1320,7 @@ Settings.settings = {
 				type: 'option',
 				storeKey: 'zoom',
 				options: [[false, 'Default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%']],
+				isExtra: true,
 				default: false,
 				otherOption: {
 					prompt: 'Enter a custom zoom level to use.',
@@ -1252,3 +1335,6 @@ Settings.settings = {
 
 for (var section in Settings.settings)
 	Settings.createMap(Settings.settings[section]);
+
+if (Settings.passwordIsSet())
+	Settings.lock(Settings.getItem('locked', 'settings'), true);

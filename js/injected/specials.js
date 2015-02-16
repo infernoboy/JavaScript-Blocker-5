@@ -299,11 +299,14 @@ Special.specials = {
 							paramName = splitParam[0];
 						}
 
-						try {
-							paramValue = typeof splitParam[1] === 'string' ? decodeURIComponent(splitParam[1]) : null;
-						} catch (error) {
-							paramValue = splitParam[1];
-						}
+						if (/pass(word)?/gi.test(paramName))
+							paramValue = '******';
+						else
+							try {
+								paramValue = typeof splitParam[1] === 'string' ? decodeURIComponent(splitParam[1]) : null;
+							} catch (error) {
+								paramValue = splitParam[1];
+							}
 
 						meta.data[paramName] = paramValue;
 					}

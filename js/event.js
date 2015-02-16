@@ -20,6 +20,8 @@ function EventListener () {
 		return this;
 	};
 
+	this.fnWrapper.prototype.stopPropagation = function () {};
+
 	this.fnWrapper.prototype.preventDefault = function () {
 		this.defaultPrevented = true;
 	};
@@ -37,12 +39,12 @@ function EventListener () {
 
 EventListener.eventInfo = {};
 
-EventListener.onMouseMove =  function (event) {
+EventListener.onMouseMove = function (event) {
 	EventListener.eventInfo.pageX = event.pageX;
 	EventListener.eventInfo.pageY = event.pageY;
 };
 
-EventListener.onClick =  function (event) {
+EventListener.onClick = function (event) {
 	EventListener.eventInfo.target = event.target;
 };
 

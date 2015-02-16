@@ -16,7 +16,7 @@ globalPage.Template = Template;
 
 // Allow direct access to required variables contained within the global page.
 (function () {
-	var required = ['jQuery', 'console', 'globalSetting', 'Settings', 'Promise', 'Store', 'EffectiveTLDs', 'SimpleTLDs'];
+	var required = ['jQuery', 'console', 'globalSetting', 'Settings', 'Extras', 'Promise', 'Store', 'EffectiveTLDs', 'SimpleTLDs'];
 
 	for (var i = 0; i < required.length; i++)
 		window[required[i]] = globalPage[required[i]];
@@ -31,6 +31,17 @@ globalPage.Template = Template;
 	for (var key in jQuery)
 		if (jQuery.hasOwnProperty(key))
 			$[key] = jQuery[key];
+
+	$.fn.selectAll = function () {
+		if (this.length) {
+			this.each(function () {
+				this.selectionStart = 0;
+				this.selectionEnd = 1e10;
+			});
+		}
+
+		return this;
+	};
 
 	$.fn.transitionEnd = function () {
 		var nextSibling,

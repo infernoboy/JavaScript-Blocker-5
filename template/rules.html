@@ -1,9 +1,13 @@
 <noscript id="rule-container">
 	<div id="rule-toolbar">
 		<div id="rule-domain-search-container">
-			<label for="rule-domain-search" class="jsb-label"><%=_('rules.filter')%>:&nbsp;</label>
-			<input type="search" id="rule-domain-search" incremental="incremental" placeholder="<%=_('rules.domain_or_page')%>"/>
+			<label for="rule-domain-search" class="jsb-label"><%=_('rules.filter_domain')%>:&nbsp;</label>
+			<input type="search" id="rule-domain-search" incremental="incremental" placeholder="<%=_('rules.domain_or_page')%>"/>&nbsp;
+			<label for="rule-domain-hide-show" class="jsb-label"><%=_('rules.domains_pages')%>:&nbsp;
+			<a href="javascript:void(0);" id="rule-domain-hide-all" class="no-underline"><%=_('rules.hide_all')%></a> - 
+			<a href="javascript:void(0);" id="rule-domain-show-all" class="no-underline"><%=_('rules.show_all')%></a>
 		</div>
+		<div class="horizontal-divider horizontal-divider-short"></div>
 	</div>
 	<div id="rule-views-container" class="ui-view-container">
 		<p id="rule-views-no-rules" class="jsb-info jsb-centered jsb-embossed"><%=_('rules.no_rules')%></p>
@@ -19,7 +23,7 @@
 	<li class="multi-list-item">
 		<div class="multi-list-item-wrapper" data-listName="<%=self.listName%>" data-editable="<%=self.editable%>">
 			<header data-expander="<%=self.expander%>" class="jsb-light-scrollbars">
-				<h4 class="multi-list-item-header"><%=self.listName._startsWith('$') ? UI.Rules.getEasyListName(self.listName) : _('rules.' + (self.listName === 'active' && globalPage.Rules.snapshotInUse() ? 'snapshot' : self.listName))%></h4>
+				<h4 class="multi-list-item-header"><%=self.listName._startsWith('$') ? UI.Rules.getFilterListName(self.listName) : _('rules.' + (self.listName === 'active' && globalPage.Rules.snapshotInUse() ? 'snapshot' : self.listName))%></h4>
 			</header>
 			<div class="rule-group-list"></div>
 		</div>

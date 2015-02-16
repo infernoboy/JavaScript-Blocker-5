@@ -69,7 +69,9 @@ var Store = (function () {
 			this.load(defaultValue);
 
 		if (this.useSnapshot)
-			this.snapshot = new Snapshot(this);
+			this.snapshot = new Snapshot(this, {
+				maxUnkept: props.maxUnkeptSnapshots
+			});
 
 		if (this.maxLife < Infinity) {
 			this.cleanupName = 'StoreCleanup' + this.id;
@@ -144,16 +146,14 @@ var Store = (function () {
 			right: right
 		};
 
-		if (!Store.compareCache || Store.compareCache.destroyed)
-			Store.compareCache = new Store('Compare', {
-				maxLife: TIME.ONE.MINUTE * 1,
-				destroyChildren: true,
-				private: true
-			});
+		var store = new Store(left.id + '|' + right.id, null, {
+			maxLife: TIME.ONE.MINUTE * 1,
+			destroyChildren: true,
+			private: true
+		});
 
-		var store = Store.compareCache.getStore(left.id + '|' + right.id, null, parent);
-
-		store.remove();
+		if (parent)
+			store.parent = parent;
 
 		var sides = {
 			left: store.getStore('left'),
@@ -325,7 +325,7 @@ var Store = (function () {
 
 	Store.prototype.triggerEvent = function (name) {
 		Utilities.Timer.timeout('StoreTrigger' + this.id + name, function (store, name) {
-			store.trigger(name);
+			store.trigger(name, store);
 		}, 500, [this, name]);
 	};
 
@@ -757,15 +757,16 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.clear = function (ignoreSave) {
+	Store.prototype.clear = function (ignoreSave, selfOnly) {
 		if (this.lock)
 			return;
 
-		for (var child in this.children) {
-			this.children[child].destroy(true, false, true);
+		if (!selfOnly)
+			for (var child in this.children) {
+				this.children[child].destroy(true, false, true);
 
-			delete this.children[child];
-		}
+				delete this.children[child];
+			}
 
 		this.data = {};
 

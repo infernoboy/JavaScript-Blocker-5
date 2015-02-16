@@ -1,7 +1,19 @@
 <noscript id="setup-container">
 	<div id="setup-container">
 		<h1 class="jsb-bold"><%=_('JSB')%></h1>
-		<input id="setup-auto-hide" type="checkbox" data-inlineSetting="autoHideNoRule" /> <label for="setup-auto-hide"><%=_('setting.autoHideNoRule.label')%></label>
+		<ul class="generic-menu-options">
+			<li>
+			<%
+				var blockFirstVisitSetting = UI.Settings.createElementForSetting(Settings.map.blockFirstVisit, null, true).addClass('double-column-flex');
+
+				$('.setting-radio-list', blockFirstVisitSetting).addClass('no-indent');
+				$('.setting-section-setting-left', blockFirstVisitSetting).addClass('double-column-flex-left');
+				$('.setting-section-setting-right', blockFirstVisitSetting).addClass('double-column-flex-right');
+
+				$('.more-info', blockFirstVisitSetting).remove();
+			%><%=blockFirstVisitSetting[0].outerHTML%>
+			</li>
+		</ul>
 		<div class="horizontal-divider"></div>
 		<div class="jsb-align-right">
 			<input type="button" id="mark-setup-complete" value="<%=_('view.page.host.done')%>" />

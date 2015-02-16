@@ -79,6 +79,15 @@ var UserScript = {
 		var scripts = Special.__forLocation(this.scripts.data, 'user_script', location, isFrame);
 
 		for (var namespace in scripts) {
+			script = this.scripts.get(namespace);
+			attributes = script.getStore('attributes').all();
+
+			if (!attributes.enabled) {
+				delete scripts[namespace];
+
+				continue;
+			}
+
 			if (!(scripts[namespace].action % 2)) {
 				scripts[namespace] = {
 					action: scripts[namespace].action
@@ -86,18 +95,12 @@ var UserScript = {
 
 				continue;
 			}
-
-			script = this.scripts.get(namespace);
-			attributes = script.getStore('attributes').all();
-
-			if (!attributes.enabled)
-				continue;
-
+			
 			this.update(namespace);
 
 			scripts[namespace] = {
 				action: scripts[namespace].action,
-				attributes: script.getStore('attributes').all(),
+				attributes: attributes,
 				requirements: script.getStore('requirements').all(),
 			};
 		}

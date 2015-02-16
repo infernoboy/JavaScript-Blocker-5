@@ -94,7 +94,7 @@ var Upgrade = {
 			showUnblocked: 'showUnblockedScripts',
 			hideJSBInjected: 'hideInjected',
 			simplifyDomainNames: 'showItemDescription',
-			hideWhitelistBlacklistItems: 'autoHideEasyList',
+			hideWhitelistBlacklistItems: 'autoHideFilterList',
 			
 			simpleMode: function (value) {
 				return {

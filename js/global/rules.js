@@ -84,6 +84,9 @@ Rule.withLocationRules = function (allRules, callback) {
 }
 
 Rule.prototype.__add = function (type, kind, domain, rule) {
+	if (Rules.__locked)
+		return;
+
 	if (!Object._isPlainObject(rule))
 		throw new TypeError(rule + ' is not an instance of Object');
 
@@ -160,6 +163,9 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 };
 
 Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) {
+	if (Rules.__locked)
+		return;
+
 	if (kind === undefined) {
 		var self = this;
 
@@ -205,6 +211,9 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 };
 
 Rule.prototype.clear = function () {
+	if (Rules.__locked)
+		return;
+
 	this.rules.clear();
 
 	Resource.canLoadCache.clear().saveNow();
@@ -421,9 +430,10 @@ Rule.prototype.forLocation = function (params) {
 };
 
 var Rules = {
+	__locked: false,
 	__regExpCache: {},
 	__partsCache: new Store('RuleParts'),
-	__EasyRules: new Store('EasyRules', {
+	__FilterRules: new Store('FilterRules', {
 		save: true,
 		private: true
 	}),
@@ -482,8 +492,19 @@ var Rules = {
 		return 0;
 	},
 
-	attachEasyLists: function (clearCache) {
-		var easyLists = Settings.getItem('easyLists'),
+	lock: function (lock, doNotSwitch) {
+		Rules.__locked = lock;
+
+		Settings.setItem('locked', lock, 'rules');
+
+		if (!doNotSwitch) {
+			UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+			UI.view.switchTo(UI.view.views.attr('data-activeView'));
+		}
+	},
+
+	attachFilterLists: function (clearCache) {
+		var filterLists = Settings.getItem('filterLists'),
 				currentLists = Object.keys(Rules.list).filter(function (value) {
 					return value._startsWith('$');
 				});
@@ -491,9 +512,9 @@ var Rules = {
 		for (var i = currentLists.length; i--;)
 			delete Rules.list[currentLists[i]];
 
-		for (var easyList in easyLists)
-			if (easyLists[easyList].enabled)
-				Rules.list[easyList] = new Rule(Rules.__EasyRules.getStore(easyList), null, {
+		for (var filterList in filterLists)
+			if (filterLists[filterList].enabled)
+				Rules.list[filterList] = new Rule(Rules.__FilterRules.getStore(filterList), null, {
 					longRuleAllowed: true
 				});
 
@@ -626,6 +647,10 @@ var Rules = {
 		return '^' + url + endCapture.join('') + '$';
 	},
 
+	isLocked: function () {
+		return this.snapshotInUse() || Rules.__locked;
+	},
+
 	snapshotInUse: function () {
 		return Rules.list.active !== Rules.list.user;
 	}
@@ -662,7 +687,7 @@ Object.defineProperty(Rules, 'list', {
 					throw new TypeError(rules + ' is not an instance of Rule.');
 
 				var exclude = Special.__excludeLists.map(function (name) {
-					return 'EasyRules,' + name;
+					return 'FilterRules,' + name;
 				});
 
 				exclude.push('Predefined', 'TemporaryRules');
@@ -682,7 +707,8 @@ Object.defineProperty(Rules, 'list', {
 
 			value: new Rule('Rules', {
 				save: true,
-				snapshot: true
+				snapshot: true,
+				maxUnkeptSnapshots: Settings.getItem('snapshotsLimit')
 			})
 		},
 
@@ -707,11 +733,11 @@ Object.defineProperty(Rules, 'list', {
 	})
 });
 
-Rules.attachEasyLists();
+Rules.attachFilterLists();
 
 Rules.list.active = Rules.list.user;
 
-Rules.__EasyRules.addCustomEventListener('storeDidSave', function (event) {
+Rules.__FilterRules.addCustomEventListener('storeDidSave', function (event) {
 	Resource.canLoadCache.clear();
 });
 
@@ -722,7 +748,7 @@ Rules.__EasyRules.addCustomEventListener('storeDidSave', function (event) {
 
 		Rules.list[list].rules.all();
 
-		Rules.list[list].rules.addCustomEventListener(['storeDidSave', 'storeWouldHaveSaved'], function () {
+		Rules.list[list].rules.addCustomEventListener(['storeDidSave', 'storeWouldHaveSaved'], function (event) {
 			Resource.canLoadCache.saveNow();
 		});
 	}
@@ -740,3 +766,6 @@ Rule.event.addCustomEventListener('ruleWasAdded', function (event) {
 Rule.event.addCustomEventListener('ruleWasRemoved', function (event) {
 	Rule.listCache.getStore(event.detail.self.rules.name || event.detail.self.rules.id).clear();
 });
+
+if (Settings.passwordIsSet())
+	Rules.lock(Settings.getItem('locked', 'rules'), true);

@@ -198,8 +198,9 @@ var GlobalPage = {
 var SettingStore = {
 	__locked: false,
 	__cache: {},
+	__badKeys: ['setItem', 'getItem', 'removeItem', 'clear', 'addEventListener', 'removeEventListener'],
 
-	available:  !!(window.safari && safari.extension && safari.extension.settings),
+	available: !!(window.safari && safari.extension && safari.extension.settings),
 
 	__setCache: function (key, value) {
 		if (key._startsWith(Store.STORE_STRING) || value === undefined || typeof value === 'object')
@@ -256,7 +257,7 @@ var SettingStore = {
 		if (this.__locked)
 			return;
 
-		if (['setItem', 'getItem', 'removeItem', 'clear', 'addEventListener', 'removeEventListener']._contains(key))
+		if (SettingStore.__badKeys._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
 
 		delete this.__cache[key];
@@ -295,6 +296,8 @@ var SettingStore = {
 		try {
 			var settings = Object._isPlainObject(settings) ? settings : JSON.parse(settings);
 		} catch (e) {
+			LogError(e);
+			
 			return false;
 		}
 
@@ -305,6 +308,32 @@ var SettingStore = {
 		this.__cache = {};
 
 		safari.extension.settings.clear();
+	}
+};
+
+var SecureSettings = {
+	getItem: function (key, defaultValue) {
+		var value = safari.extension.secureSettings.getItem(key);
+
+		if (value === null)
+			return defaultValue === undefined ? value : defaultValue;
+
+		return value;
+	},
+
+	setItem: function (key, value) {
+		if (SettingStore.__badKeys._contains(key))
+			throw new Error(key + ' cannot be used as a setting key.');
+
+		safari.extension.secureSettings.setItem(key, value);
+	},
+
+	removeItem: function (key) {
+		safari.extension.secureSettings.removeItem(key);
+	},
+
+	clear: function () {
+		safari.extension.secureSettings.clear();
 	}
 };
 

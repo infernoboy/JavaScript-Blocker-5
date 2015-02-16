@@ -2,6 +2,8 @@
 
 UI.Setup = {
 	init: function () {
+		UI.event.addCustomEventListener('popoverOpened', UI.Setup.popoverOpened);
+
 		if (Settings.getItem('setupComplete'))
 			return;
 
@@ -39,6 +41,11 @@ UI.Setup = {
 			else
 				event.unbind();
 		}
+	},
+
+	popoverOpened: function () {
+		if (!Settings.passwordIsSet() && !Poppy.poppyWithScriptNameExist('set-lock-password'))		
+			Settings.map.setLockPassword.props.onClick(null, true);
 	}
 };
 

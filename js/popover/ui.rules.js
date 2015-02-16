@@ -2,7 +2,7 @@
 
 UI.Rules = {
 	__domainFilter: '',
-	__lists: ['page', 'temporary', 'active', 'easy'],
+	__lists: ['page', 'temporary', 'active', 'filter'],
 
 	event: new EventListener,
 
@@ -54,17 +54,17 @@ UI.Rules = {
 
 		$('.active-view', UI.Rules.views).removeClass('active-view');
 
-		UI.Rules.setEasyRulesList(null, true);
+		UI.Rules.setFilterRulesList(null, true);
 	},
 
-	getEasyLists: function () {
+	getFilterLists: function () {
 		return Object.keys(globalPage.Rules.list).filter(function (listName) {
 			return listName._startsWith('$');
 		});
 	},
 
-	getEasyListName: function (listName) {
-		var listReference = Settings.getItem('easyLists')[listName];
+	getFilterListName: function (listName) {
+		var listReference = Settings.getItem('filterLists')[listName];
 
 		if (listReference)
 			return listReference.value[1];
@@ -72,20 +72,20 @@ UI.Rules = {
 		return null;
 	},
 
-	setEasyRulesList: function (listName, doNotSwitch) {
-		var easyViewSwitcher = $('li[data-view="#rule-views-easy"]', UI.Rules.viewSwitcher),
-				easyRules = UI.Rules.getEasyLists();
+	setFilterRulesList: function (listName, doNotSwitch) {
+		var filterViewSwitcher = $('li[data-view="#rule-views-filter"]', UI.Rules.viewSwitcher),
+				filterRules = UI.Rules.getFilterLists();
 
-		if (easyRules._contains(listName)) {
-			easyViewSwitcher
-				.attr('data-easyList', listName)
+		if (filterRules._contains(listName)) {
+			filterViewSwitcher
+				.attr('data-filterList', listName)
 				.find('.view-switcher-item-name')
-				.text(_('rules.easy') + ' − ' + UI.Rules.getEasyListName(listName));
+				.text(_('rules.filter') + ' − ' + UI.Rules.getFilterListName(listName));
 
 				if (!doNotSwitch)
-					UI.view.switchTo('#rule-views-easy');
-		} else if (easyRules.length)
-			this.setEasyRulesList(easyRules[0], doNotSwitch);
+					UI.view.switchTo('#rule-views-filter');
+		} else if (filterRules.length)
+			this.setFilterRulesList(filterRules[0], doNotSwitch);
 	},
 
 	groupRulesByDomain: function (rules) {
@@ -120,13 +120,13 @@ UI.Rules = {
 
 	buildRuleList: function (view, ruleList, useTheseRules, keepExpanded) {
 		if (view.is('.ui-view')) {
-			var buildQueue = UI.Rules.views.data('buildQueue') || new Utilities.Queue(0.05);
+			var buildQueue = UI.Rules.views.data('buildQueue') || new Utilities.Queue(0.001);
 
 			buildQueue.clear();
 
 			UI.Rules.views.data('buildQueue', buildQueue);
 		} else
-			var buildQueue = new Utilities.Queue(0.05);
+			var buildQueue = new Utilities.Queue(0.001);
 
 		if (Object._isPlainObject(ruleList)) {
 			var ruleListItem,
@@ -198,10 +198,12 @@ UI.Rules = {
 				editable = 0,
 				hasRules = false;
 
-		if (ruleList === globalPage.Rules.list.temporary)
-			editable = 1;
-		else if (ruleList == globalPage.Rules.list.active)
-			editable = globalPage.Rules.snapshotInUse() ? 2 : 1;
+		if (!globalPage.Rules.__locked) {
+			if (ruleList === globalPage.Rules.list.temporary)
+				editable = 1;
+			else if (ruleList == globalPage.Rules.list.active)
+				editable = globalPage.Rules.snapshotInUse() ? 2 : 1;
+		}
 
 		view
 			.attr('data-ruleListItems', '1')
@@ -217,7 +219,7 @@ UI.Rules = {
 			if (!(type in domainGrouped))
 				continue;
 
-			typeExpander = 'ruleGroupType-' + type;
+			typeExpander = 'ruleGroupType,' + type;
 
 			ruleGroupType = Template.create('rules', 'rule-group-type', {
 				type: type,
@@ -227,13 +229,15 @@ UI.Rules = {
 			
 			typeUL = ruleGroupType.find('.rule-group-type');
 
-			ruleGroupType.appendTo(container);
+			// buildQueue.push(function (ruleGroupType, container) {
+				ruleGroupType.appendTo(container);
+			// }, [ruleGroupType, container]);
 
 			for (domain in domainGrouped[type]) {
 				if (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter))
 					continue;
 
-				domainExpander = typeExpander + '-ruleGroupDomain-' + domain;
+				domainExpander = typeExpander + ',ruleGroupDomain,' + domain;
 
 				domainListItem = Template.create('rules', 'domain-list-item', {
 					expander: keepExpanded ? 0 : domainExpander,
@@ -243,12 +247,12 @@ UI.Rules = {
 
 				domainUL = $('.rule-group-domain', domainListItem);
 
-				buildQueue.push(function (typeUL, domainListItem) {
+				// buildQueue.push(function (typeUL, domainListItem) {
 					typeUL.append(domainListItem);
-				}, [typeUL, domainListItem]);
+				// }, [typeUL, domainListItem]);
 
 				for (kind in domainGrouped[type][domain]) {
-					kindExpander = domainExpander + '-ruleGroupKind-' + kind;
+					kindExpander = domainExpander + ',ruleGroupKind,' + kind;
 
 					kindListItem = Template.create('rules', 'kind-list-item', {
 						expander: keepExpanded ? 0 : kindExpander,
@@ -258,9 +262,9 @@ UI.Rules = {
 
 					kindUL = $('.rule-group-kind', kindListItem);
 
-					buildQueue.push(function (domainUL, kindListItem) {
+					// buildQueue.push(function (domainUL, kindListItem) {
 						domainUL.append(kindListItem);
-					}, [domainUL, kindListItem]);
+					// }, [domainUL, kindListItem]);
 
 					var ruleKeyChunks = Object.keys(domainGrouped[type][domain][kind])._chunk(100);
 
@@ -292,21 +296,20 @@ UI.Rules = {
 		}
 
 		buildQueue.push(function (view, container) {			
+			UI.Rules.noRules.toggleClass('jsb-hidden', hasRules);
+
 			UI.Rules.event.trigger('rulesFinishedBuilding', {
 				view: view,
 				hasRules: hasRules
 			});
 		}, [view, container]);
 
-		UI.Rules.noRules.toggleClass('jsb-hidden', buildQueue.queue.length > 4);
-
 		buildQueue.start();
 	},
 
 	processRules: function (rules) {
-		var input = $('<input>');
-
-		var editable = rules.attr('data-editable'),
+		var input = $('<input>'),
+				editable = rules.attr('data-editable'),
 				isEditable = rules.attr('data-editable') !== '0';
 
 		if (!isEditable)
@@ -337,6 +340,17 @@ UI.Rules = {
 
 					if ($('.active-view', UI.views).is('#main-views-rule'))
 						UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+				})
+
+				.on('click', '#rule-domain-hide-all, #rule-domain-show-all', function () {
+					var isHide = this.id === 'rule-domain-hide-all',
+							domainExpanders = $('.rule-group-domain-wrapper > header', UI.Rules.view);
+
+					domainExpanders.each(function () {
+						Settings.setItem('expander', isHide, this.getAttribute('data-expander'));
+					});
+
+					UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
 				})
 
 				.on('click', '.rule-item-delete', function (event) {
@@ -402,12 +416,7 @@ UI.Rules = {
 						return;
 
 					var ruleList = globalPage.Rules.list[this.parentNode.parentNode.getAttribute('data-listName')],
-							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]];
-
-					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
-
-					if (originPoppy)
-						poppy.linkTo(originPoppy);
+							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy', 'create-rule', {
 						editing: false,
@@ -419,7 +428,7 @@ UI.Rules = {
 						action: 0
 					}));
 
-					poppy.show();
+					poppy.linkToOpenPoppy().show();
 				})
 
 				.on('click', '.rule-group-type-wrapper[data-editable="1"] .rule-group-type-header', function (event) {
@@ -427,15 +436,10 @@ UI.Rules = {
 						return;
 
 					var self = $(this),
-							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]],
 							view = self.parents('*[data-ruleListItems]'),
 							ruleList = view.data('ruleList'),
-							type = this.parentNode.parentNode.getAttribute('data-type');
-
-					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
-
-					if (originPoppy)
-						poppy.linkTo(originPoppy);
+							type = this.parentNode.parentNode.getAttribute('data-type'),
+							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy', 'create-rule', {
 						editing: false,
@@ -447,7 +451,7 @@ UI.Rules = {
 						action: 0
 					}));
 
-					poppy.show();
+					poppy.linkToOpenPoppy().show();
 				})
 
 				.on('click', '.rule-group-domain-wrapper[data-editable="1"] .rule-group-domain-header', function (event) {
@@ -455,16 +459,11 @@ UI.Rules = {
 						return;
 
 					var self = $(this),
-							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]],
 							view = self.parents('*[data-ruleListItems]'),
 							ruleList = view.data('ruleList'),
 							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
-							domain = this.parentNode.parentNode.getAttribute('data-domain');
-
-					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
-
-					if (originPoppy)
-						poppy.linkTo(originPoppy);
+							domain = this.parentNode.parentNode.getAttribute('data-domain'),
+							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy', 'create-rule', {
 						editing: false,
@@ -476,7 +475,7 @@ UI.Rules = {
 						action: 0
 					}));
 
-					poppy.show();
+					poppy.linkToOpenPoppy().show();
 				})
 
 				.on('click', '.rule-group-kind-wrapper[data-editable="1"] .rule-group-kind-header', function (event) {
@@ -484,17 +483,12 @@ UI.Rules = {
 						return;
 
 					var self = $(this),
-							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]],
 							view = self.parents('*[data-ruleListItems]'),
 							ruleList = view.data('ruleList'),
 							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
 							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
-							kind = this.parentNode.parentNode.getAttribute('data-kind');
-
-					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
-
-					if (originPoppy)
-						poppy.linkTo(originPoppy);
+							kind = this.parentNode.parentNode.getAttribute('data-kind'),
+							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy', 'create-rule', {
 						editing: false,
@@ -506,21 +500,19 @@ UI.Rules = {
 						action: 0
 					}));
 
-					poppy.show();
+					poppy.linkToOpenPoppy().show();
 				})
 
 				.on('click', '.rule-item-container[data-editable="1"] .rule-item-rule', function (event) {
 					var self = $(this),
-							originPoppy = Poppy.poppies[Object.keys(Poppy.poppies)[0]],
 							view = self.parents('*[data-ruleListItems]'),
 							ruleList = view.data('ruleList'),
 							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
 							kind = self.parents('.rule-group-kind-wrapper').attr('data-kind'),
 							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
 							rule = self.parents('.rule-item-container').attr('data-rule'),
-							action = parseInt(self.prev().attr('data-action'), 10);
-
-					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+							action = parseInt(self.prev().attr('data-action'), 10),
+							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
 
 					var templateArgs = {
 						editing: true,
@@ -534,17 +526,16 @@ UI.Rules = {
 
 					poppy.templateArgs = templateArgs;
 
-					if (originPoppy)
-						poppy.linkTo(originPoppy);
-
 					poppy
+						.linkToOpenPoppy()
 						.setContent(Template.create('poppy', 'create-rule', templateArgs))
 						.show();
 				});
 		},
 
 		poppyDidShow: function (event) {
-			UI.Rules.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
+			if (UI.Rules.viewContainer)
+				UI.Rules.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
 		},
 
 		viewAlreadyActive: function (event) {
@@ -556,7 +547,7 @@ UI.Rules = {
 			if (event.detail.to.id._startsWith('#main-views'))
 				$('#rule-domain-search', UI.Rules.view).val('').trigger('search');
 
-			if (event.detail.to.id === '#main-views-rule' && $('.active-view', UI.Rules.views).is('#rule-views-easy'))
+			if (event.detail.to.id === '#main-views-rule' && $('.active-view', UI.Rules.views).is('#rule-views-filter'))
 				UI.view.switchTo('#rule-views-temporary');
 		},
 
@@ -620,10 +611,10 @@ UI.Rules = {
 					ruleList = globalPage.Rules.list.active;
 				break;
 
-				case '#rule-views-easy':
-					var easyList = $('li[data-view="#rule-views-easy"]', UI.Rules.viewSwitcher).attr('data-easyList');
+				case '#rule-views-filter':
+					var filterList = $('li[data-view="#rule-views-filter"]', UI.Rules.viewSwitcher).attr('data-filterList');
 
-					ruleList = globalPage.Rules.list[easyList];
+					ruleList = globalPage.Rules.list[filterList];
 
 					if (!ruleList)
 						UI.Rules.noRules.show();

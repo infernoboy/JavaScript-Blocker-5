@@ -212,10 +212,10 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 };
 
 Resource.prototype.shouldHide = function () {
-	var easyHide = (this.action === ACTION.BLACKLIST || this.action === ACTION.WHITELIST) && Settings.getItem('autoHideEasyList'),
+	var filterHide = (this.action === ACTION.BLACKLIST || this.action === ACTION.WHITELIST) && Settings.getItem('autoHideFilterList'),
 			noRuleHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action < 0 && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideNoRule'));
 
-	return (!this.unblockable && (easyHide || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
+	return (!this.unblockable && (filterHide || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
 };
 
 Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {

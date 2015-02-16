@@ -91,14 +91,14 @@
 			-webkit-flex-direction: column;
 			-webkit-transform: translateZ(0px);
 			-webkit-filter: blur(0px) contrast(100%) brightness(100%);
-			-webkit-transition: -webkit-filter 0.12s ease-out;
+			-webkit-transition: -webkit-filter unit(0.12 * @speedMultiplier, s) ease-out;
 
 			.yosemite& {
 				padding: 0 2px;
 			}
 
 			.transition() {
-				-webkit-transition: background 0.15s ease-out, width 0.25s ease-out, padding 0.25s ease-out;
+				-webkit-transition: background unit(0.15 * @speedMultiplier, s) ease-out, width unit(0.25 * @speedMultiplier, s) ease-out, padding unit(0.25 * @speedMultiplier, s) ease-out;
 			}
 
 			&.modal-blur {
@@ -143,7 +143,11 @@
 
 					&[data-poppy] {
 						.poppy-menu-target:after {
-							text-shadow: 0 0 0 rgba(0, 0, 0, 0.4);
+							color: #ccc;
+
+							& when (@darkMode) {
+								color: #555;
+							}
 						}
 					}
 
@@ -175,10 +179,12 @@
 					}
 
 					&.is-disabled {
-						background: desaturate(darken(@baseColor, 14%), 15%);
+						background: desaturate(darken(@baseColor, 14%), 20%);
+						background: -webkit-linear-gradient(top, rgb(108, 108, 108), rgb(103, 103, 103));
 
 						&:active {
 							background: darken(@baseColor, 22%);
+							background: -webkit-linear-gradient(top, rgb(86, 86, 86), rgb(81, 81, 81));
 						}
 
 						&[data-poppy] .poppy-menu-target:after {
@@ -217,7 +223,6 @@
 					height: 20px;
 					list-style: none;
 					border-radius: 4px;
-					overflow-y: visible;
 					overflow: hidden;
 					box-shadow: 0 1px 0 darken(#cacaca, @darknessLevel);
 
@@ -256,10 +261,19 @@
 							+ li.view-switcher-hidden + li.view-switcher-hidden + li:not(.view-switcher-hidden),
 							+ li.view-switcher-hidden + li.view-switcher-hidden + li.view-switcher-hidden + li:not(.view-switcher-hidden) {
 								border-left-color: darken(@baseColor, 24%);
+								border-left-color: rgb(86, 86, 86);
 							}
 
-							background: -webkit-linear-gradient(top, desaturate(darken(@baseColor, 14%), 15%), desaturate(darken(@baseColor, 16%), 15%));
-							border-top-color: desaturate(darken(@baseColor, 15%), 15%);
+							background: -webkit-linear-gradient(top, desaturate(darken(@baseColor, 14%), 20%), desaturate(darken(@baseColor, 16%), 20%));
+							background: -webkit-linear-gradient(top, rgb(108, 108, 108), rgb(103, 103, 103));
+
+							border-top-color: desaturate(darken(@baseColor, 15%), 20%);
+							border-top-color: rgb(108, 108, 108);
+
+							& when (@darkMode) {
+								background: -webkit-linear-gradient(top, rgb(88, 88, 88), rgb(83, 83, 83));
+								border-top-color: rgb(88, 88, 88);
+							}
 
 							&,
 							.view-switcher-item-container .view-switcher-item-name {
@@ -273,21 +287,21 @@
 
 							&.active-view {
 								background: -webkit-linear-gradient(top, darken(@baseColor, 22%), darken(@baseColor, 24%));
+								background: -webkit-linear-gradient(top, rgb(86, 86, 86), rgb(81, 81, 81));
 								border-top-color: darken(@baseColor, 22%);
+								border-top-color: rgb(86, 86, 86);
+
+								& when (@darkMode) {
+									background: -webkit-linear-gradient(top, rgb(81, 81, 81), rgb(76, 76, 76));
+									border-top-color: rgb(81, 81, 81);
+								}
 							}
 						}
 
 						&.view-switcher-hidden:not(.active-view) {
 							border-left: none;
 							width: 0;
-
-							.view-switcher-item-container {
-								width: 0;
-								min-width: 0;
-								padding: 0;
-								margin: 0;
-								overflow: hidden;
-							}
+							overflow: hidden;
 						}
 
 						.view-switcher-item-container {
@@ -295,7 +309,6 @@
 							position: relative;
 							line-height: 18px;
 							text-align: center;
-							padding: 0;
 							white-space: nowrap;
 
 							.view-switcher-item-name {
@@ -396,21 +409,18 @@
 				.poppy-menu-target:after {
 					display: inline-block;
 					position: relative;
-					top: -2px;
+					top: -6px;
 					content: ' ⌄';
-					margin-left: 6px;
-					padding-left: 0;
+					margin-left: 3px;
 					color: #d2d2d2;
-					-webkit-transform: scale(2.4, 2);
-					text-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
+					-webkit-transform: scale(1.3, 1);
 					-webkit-font-smoothing: antialiased;
+					font-weight: bold;
+					font-size: 21px;
+					line-height: 0;
 
 					& when (@darkMode) {
 						color: #555;
-					}
-
-					.jsb-large-font& {
-						top: -3px;
 					}
 				}
 

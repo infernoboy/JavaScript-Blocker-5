@@ -12,7 +12,7 @@ function Snapshot (store, props) {
 		props = {};
 	
 	this.store = store;
-	this.maxUnkept = (typeof props.maxUnkept === 'number') ? props.maxUnkept : 15;
+	this.maxUnkept = props.maxUnkept ? parseInt(props.maxUnkept, 10) || 15 : 15;
 
 	this.snapshots = Snapshots.getStore(this.store.name, {
 		private: true
@@ -135,13 +135,13 @@ Snapshot.prototype.setName = function (id, name) {
 
 	name = $.trim(name);
 
-	if (!name.length)
-		return false;
-
 	var snapshot = this.unkept.get(id) || this.kept.get(id);
 
 	if (!snapshot)
 		return false;
+
+	if (!name.length)
+		snapshot.name = undefined;
 
 	snapshot.name = name;
 
@@ -174,6 +174,6 @@ Snapshot.prototype.add = function (keep, name) {
 		snapshot: cloned
 	});
 
-	if (this.unkept.keys().length > this.maxUnkept)
+	while (this.unkept.keys().length > this.maxUnkept)
 		this.unkept.remove(this.firstUnkept(true));
 };

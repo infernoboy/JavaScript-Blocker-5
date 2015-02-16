@@ -7,6 +7,7 @@
 @background: rgb(239, 239, 244);
 @easeOutQuad: cubic-bezier(0.250, 0.460, 0.450, 0.940);
 @darkMode: false;
+@speedMultiplier: 1;
 @darknessLevel: 0%;
 
 .shared-before(@important) {
@@ -58,7 +59,7 @@
 
 	.darkness-color () when (@darkMode) {
 		color: #cacaca @important;
-		text-shadow: 0 1px 0 #000;
+		text-shadow: 0 1px 0 #000 @important;
 	}
 
 	.jsb-element,
@@ -100,15 +101,15 @@
 
 		&::selection,
 		*::selection {
-			background: desaturate(@yosemiteBlue, 20%);
-			color: #fff;
-			text-shadow: none;
+			background: desaturate(@yosemiteBlue, 20%) @important;
+			color: #fff @important;
+			text-shadow: none @important;
 		}
 
 		& when (@darkMode) {
 			&::selection,
 			*::selection {
-				color: #eee;
+				color: #eee @important;
 			}
 		}
 
@@ -132,7 +133,7 @@
 			clear: none @important;
 			text-rendering: optimizeLegibility @important;
 			text-align: left @important;
-			white-space: normal;
+			white-space: normal @important;
 			border: none @important;
 			background: none @important;
 			-webkit-transition-property: none @important;
@@ -149,11 +150,11 @@
 			}
 
 			&.shake {
-				-webkit-animation: shake 0.4s linear 0 1;
+				-webkit-animation: shake unit(0.4 * @speedMultiplier, s) linear 0 1 @important;
 			}
 
 			&.unshake {
-				-webkit-animation: unshake 0.4s linear 0 1;
+				-webkit-animation: unshake unit(0.4 * @speedMultiplier, s) linear 0 1 @important;
 			}
 
 			.color-allow;
@@ -224,30 +225,31 @@
 
 
 			&[type="text"],
+			&[type="password"],
 			&[type="search"] {
 				padding: 2px @important;
 			}
 		}
 
 		textarea {
-			position: relative;
+			position: relative @important;
 			padding: 2px 3px @important;
 
 			&.render-as-input {
 				height: 15px @important;
-				overflow-x: scroll;
-				overflow-y: hidden;
-				vertical-align: bottom;
-				resize: none;
-				word-wrap: normal;
-				white-space: pre;
+				overflow-x: scroll @important;
+				overflow-y: hidden @important;
+				vertical-align: bottom @important;
+				resize: none @important;
+				word-wrap: normal @important;
+				white-space: pre @important;
 
 				.jsb-large-font& {
 					height: 17px @important;
 				}
 
 				&::-webkit-scrollbar {
-					height: 3px;
+					height: 3px @important;
 				}
 			}
 		}
@@ -255,7 +257,7 @@
 		input[type="button"],
 		button {
 			.jsb-large-font& {
-				padding: 2px 8px 4px;
+				padding: 2px 8px 4px @important;
 			}
 
 			&:active {
@@ -292,6 +294,7 @@
 		}
 
 		input[type="text"],
+		input[type="password"],
 		input[type="search"],
 		input[type="number"],
 		textarea {
@@ -338,10 +341,9 @@
 					font-size: 10pt @important;
 					color: #fafafa @important;
 					background: rgba(0, 0, 0, 0.4) @important;
-					background: fade(desaturate(darken(@baseColor, 15%), 15%), 70%) @important;
 					border-radius: 12px @important;
 					line-height: 0.7 @important;
-					text-shadow: 0 0 2px rgba(0, 0, 0, 0.4) @important;
+					text-shadow: 0 0 2px rgba(0, 0, 0, 0.3) @important;
 				}
 			}
 		}
@@ -351,6 +353,7 @@
 			border-color: darken(rgb(235, 235, 235), @darknessLevel) @important;
 			box-shadow: none @important;
 			padding-left: 3px @important;
+			width: 200px @important;
 		}
 
 		input[type="checkbox"],
@@ -366,7 +369,7 @@
 			margin-bottom: -2px @important;
 			border-bottom-color: darken(rgb(190, 190, 190), @darknessLevel) @important;
 			box-shadow: inset 0 0 2px rgba(0, 0, 0, 0) @important;
-			-webkit-transition: background 0.15s ease-out, border-color 0.15s ease-out @important;
+			-webkit-transition: background unit(0.15 * @speedMultiplier, s) ease-out, border-color unit(0.15 * @speedMultiplier, s) ease-out @important;
 			overflow: hidden @important;
 			font-family: "Menlo-Regular" @important;
 
@@ -385,7 +388,7 @@
 				content: '⸀' @important;
 				-webkit-transform: translate(5px, -11px) scaleX(1.1) scaleY(1.5) rotate(220deg) @important;
 				-webkit-font-smoothing: antialiased @important;
-				-webkit-transition: color 0.15s ease-out, text-shadow 0.15s ease-out, -webkit-transform 0.15s ease-out @important;
+				-webkit-transition: color unit(0.15 * @speedMultiplier, s) ease-out, text-shadow unit(0.15 * @speedMultiplier, s) ease-out, -webkit-transform unit(0.15 * @speedMultiplier, s) ease-out @important;
 				text-shadow: -1px -1px 0 rgba(0, 0, 0, 0), 0 0 0 rgba(255, 255, 255, 0) @important;
 				font-size: 20px @important;
 
@@ -425,7 +428,7 @@
 			&:after {
 				content: '•';
 				-webkit-transform: translate(-1px, -5px) scale(2) @important;
-				-webkit-transition: text-shadow 0.15s ease-out @important;
+				-webkit-transition: text-shadow unit(0.15 * @speedMultiplier, s) ease-out @important;
 
 				.lion& {
 					-webkit-transform: translate(1px, -3px) scale(2) @important;
@@ -433,12 +436,16 @@
 			}
 
 			&:checked:after {
-				-webkit-transform: translate(1px, -2px) scale(1) @important;
-				text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 rgba(255, 255, 255, 0.9) @important;
-				font-size: 14px;
+				-webkit-transform: translate(1px, -1px) scale(1.3) @important;
+				text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 2px @baseColor @important;
+				font-size: 13px @important;
 
-				.lion& {
-					-webkit-transform: translate(1px, -3px) scale(0.7) @important;
+				.jsb-large-font& {
+					-webkit-transform: translate(1px, -2px) scale(1.3) @important;
+
+					.lion& {
+						-webkit-transform: translate(1px, -3px) scale(1.3) @important;
+					}
 				}
 			}
 		}
@@ -472,7 +479,7 @@
 				pointer-events: none @important;
 				color: #fff @important;
 				font-weight: bold @important;
-				background: -webkit-linear-gradient(top, lighten(@baseColor, 15%), lighten(@baseColor, 2%));
+				background: lighten(@baseColor, 7%) @important;
 				height: 18px @important;
 				position: relative @important;
 				top: -1px @important;
@@ -498,9 +505,9 @@
 				}
 
 				& when (@darkMode) {
-					border-top-color: darken(@baseColor, 20%);
-					border-right-color: darken(@baseColor, 25%);
-					border-bottom-color: darken(@baseColor, 29%);
+					border-top-color: darken(@baseColor, 20%) @important;
+					border-right-color: darken(@baseColor, 25%) @important;
+					border-bottom-color: darken(@baseColor, 29%) @important;
 				}
 
 				&,
@@ -514,6 +521,7 @@
 				&:before {
 					content: '⌃' @important;
 					-webkit-transform: translate(-1px, 0) scale(0.85) @important;
+					text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22), 0 0 0 rgba(255, 255, 255, 0.7) @important;
 
 					.jsb-large-font& {
 						-webkit-transform: translate(-1px, 1px) scale(0.85) @important;
@@ -524,10 +532,19 @@
 					content: '⌃' @important;
 					margin-left: -15px @important;
 					-webkit-transform: translate(2px, 3px) scale(0.85) rotate(180deg) @important;
+					text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.22), 0 0 0 rgba(255, 255, 255, 0.7) @important;
+
+					.lion& {
+						-webkit-transform: translate(2px, 4px) scale(0.85) rotate(180deg) @important;
+					}
 
 					.jsb-large-font& {
 						-webkit-transform: translate(2px, 5px) scale(0.85) rotate(180deg) @important;
-					}
+
+						.lion& {
+							-webkit-transform: translate(2px, 6px) scale(0.85) rotate(180deg) @important;							
+						}
+					}					
 				}
 			}
 
@@ -535,7 +552,7 @@
 				background: darken(#f0f0f0, @darknessLevel);
 				
 				+ label {
-					background: -webkit-linear-gradient(top, lighten(@baseColor, 7%), darken(@baseColor, 6%));
+					background: @baseColor;
 				}
 			}
 
@@ -589,7 +606,7 @@
 				0 -1px 2px @focusShadow,
 				0 -1px 2px @focusShadow,
 				1px 0 0 darken(@focusShadow, 10%),
-				2px 0 1px @focusShadow;
+				2px 0 1px @focusShadow @important;
 		}
 
 		.select-custom-wrapper {
@@ -628,8 +645,16 @@
 								&:after {
 									-webkit-transform: translate(2px, 1px) scale(0.85) rotate(180deg) @important;
 
+									.lion& {
+										-webkit-transform: translate(2px, 2px) scale(0.85) rotate(180deg) @important;
+									}
+
 									.jsb-large-font& {
 										-webkit-transform: translate(2px, 2px) scale(0.85) rotate(180deg) @important;
+
+										.lion& {
+											-webkit-transform: translate(2px, 3px) scale(0.85) rotate(180deg) @important;											
+										}
 									}
 								}
 							}
@@ -658,8 +683,12 @@
 						}
 
 						.jsb-large-font& {
-							top: -7px @important;
+							top: -6px @important;
 							height: 21px @important;
+
+							.yosemite& {
+								top: -7px @important;
+							}
 						}
 					}
 				}
@@ -667,7 +696,7 @@
 		}
 
 		.select-custom-options {
-			min-width: 100px;
+			min-width: 100px @important;
 
 			li {
 				white-space: nowrap @important;
@@ -676,7 +705,7 @@
 				padding: 4px 0 @important;
 
 				& when (@darkMode) {
-					border-bottom-color: rgba(0, 0, 0, 0.45);
+					border-bottom-color: rgba(0, 0, 0, 0.45) @important;
 				}
 
 				&:last-child {
@@ -704,7 +733,7 @@
 			}
 
 			& when (@darkMode) {
-				background: rgba(0, 0, 0, 0.45);
+				background: rgba(0, 0, 0, 0.45) @important;
 			}
 
 			&-transparent {
@@ -739,12 +768,12 @@
 			cursor: default @important;
 			-webkit-user-select: none @important;
 			font-family: Helvetica @important;
-			font-weight: 500;
+			font-weight: 500 @important;
 			box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) @important;
 			font-size: 1.2em @important;
 
 			& when (@darkMode) {
-				color: lighten(@baseColor, 12%);
+				color: lighten(@baseColor, 12%) @important;
 			}
 
 			&:active {
@@ -753,10 +782,6 @@
 
 			&:before {
 				content: '?' @important;
-			}
-
-			.jsb-large-font& {
-
 			}
 		}
 	}

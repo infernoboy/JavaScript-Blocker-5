@@ -4,7 +4,7 @@ var Special = {
 	__enabled: null,
 
 	get __excludeLists() {
-		return ['predefined'].concat(Object.keys(Settings.getItem('easyLists')));
+		return ['predefined'].concat(Object.keys(Settings.getItem('filterLists')));
 	},
 
 	__forLocation: function (specials, kind, location, isFrame) {

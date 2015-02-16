@@ -642,19 +642,6 @@ var Element = {
 							anchor.setAttribute('rel', 'noreferrer');
 				}
 
-				if (globalSetting.confirmShortURL)
-					anchor.addEventListener('click', function (event) {
-						var target = this.getAttribute('target');
-
-						if (target !== '_blank' && target !== '_top' && !GlobalCommand('confirmShortURL', {
-							shortURL: this.href,
-							pageLocation: Page.info.location
-						})) {
-							event.preventDefault();
-							event.stopPropagation();
-						}
-					});
-
 				if (globalSetting.blockReferrer)
 					if (href && href[0] === '#')
 						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));

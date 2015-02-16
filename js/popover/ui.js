@@ -3,14 +3,9 @@
 var UI = {
 	__popoverWidthSetting: 'popoverWidth',
 	__popoverHeightSetting: 'popoverHeight',
-	drag: false,
 
-	readyState: {
-		Page: false
-	},
-	show: ToolbarItems.showPopover,
+	drag: false,
 	event: new EventListener,
-	document: document,
 
 	onReady: function (fn) {
 		UI.event.addCustomEventListener('UIReady', fn, true);
@@ -48,7 +43,6 @@ var UI = {
 		document.documentElement.classList.toggle('mavericks', userAgent._contains('10_9'));
 		document.documentElement.classList.toggle('mountain-lion', userAgent._contains('10_8'));
 		document.documentElement.classList.toggle('lion', userAgent._contains('10_7'));
-		document.documentElement.classList.toggle('snow-leopard', userAgent._contains('10_6'));
 		
 		UI.container = Template.create('main', 'container');
 
@@ -132,10 +126,12 @@ var UI = {
 			})
 
 			.on('mousemove mouseup click dblclick', Utilities.throttle(function (event) {
-				var timerExisted = Utilities.Timer.remove('timeout', 'showPoppyMenu');
+				Utilities.setImmediateTimeout(function () {
+					var timerExisted = Utilities.Timer.remove('timeout', 'showPoppyMenu');
 
-				if (timerExisted)
-					$('*[data-poppyMenuWillShow]', UI.container).removeAttr('data-poppyMenuWillShow')
+					if (timerExisted)
+						$('*[data-poppyMenuWillShow]', UI.container).removeAttr('data-poppyMenuWillShow')
+				});
 			}, 0, true));
 
 		$(document)
@@ -281,7 +277,7 @@ var UI = {
 			});
 
 		UI.event
-			.addCustomEventListener('viewWillSwitch', function (event) {	
+			.addCustomEventListener('viewWillSwitch', function (event) {
 				event.afterwards(function (event) {
 					if (!event.defaultPrevented && event.detail.from.id === '#main-views-resource-content') 
 						$(event.detail.from.id, UI.view.views).empty();					
@@ -327,6 +323,7 @@ var UI = {
 						// 	customSelects[i].selectedIndex = -1;
 					}
 
+
 					// ===== Double-click Buttons =====
 
 					var doubleClickButtons = event.detail.querySelectorAll('.double-click:not(.double-click-ready)');
@@ -352,6 +349,7 @@ var UI = {
 							this.classList.remove('one-more-time');
 						}, true);
 					}
+
 
 					// ===== Expanders =====
 
@@ -427,6 +425,7 @@ var UI = {
 		variables = variables || {};
 
 		(window.less || Popover.window.less).modifyVars({
+			speedMultiplier: variables.speedMultiplier || window.globalSetting.speedMultiplier,
 			darkMode: variables.darkMode || Settings.getItem('darkMode'),
 			darknessLevel: variables.darknessLevel || Settings.getItem('darkMode') ? 83 : 0,
 			baseColor: variables.baseColor || Settings.getItem('baseColor')
@@ -441,6 +440,12 @@ var UI = {
 			RIGHT: 39,
 			SHIFT: 16,
 			ESCAPE: 27
+		},
+
+		openedPopover: function () {
+			Utilities.setImmediateTimeout(function () {
+				UI.event.trigger('popoverOpened');
+			});
 		},
 
 		keyboardShortcut: function (event) {
@@ -512,6 +517,7 @@ var UI = {
 					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false);
 
 					poppy
+						.linkToOpenPoppy()
 						.setContent(Template.create('main', 'jsb-readable', {
 							string: this.getAttribute('data-moreInfo')
 						}))
@@ -688,9 +694,13 @@ var UI = {
 			var self = $(tab),
 					menuHolder = self.parents('*[data-poppy]'),
 					width = self.outerWidth(),
+					poppyName = self.parent().attr('data-poppy'),
 					offset = self.offset().left,
 					rightOffset = offset + width,
-					inRange = (event.pageX > rightOffset - 9 && event.pageX < rightOffset + 3);
+					inRange = (event.pageX > rightOffset - 11 && event.pageX < rightOffset);
+
+			if (inRange && force)
+				return;
 
 			if (inRange || force) {
 				event.stopPropagation();
@@ -700,8 +710,7 @@ var UI = {
 						event.preventDefault();
 					}, true);
 
-				var poppyName = self.parent().attr('data-poppy'),
-						poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
+				var poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
 
 				poppy.setContent(Template.create('poppy', poppyName)).stayOpenOnScroll();
 
@@ -854,3 +863,5 @@ UI.events.__keys._createReverseMap();
 globalPage.UI = UI;
 
 document.addEventListener('DOMContentLoaded', UI.init, true);
+
+Events.addApplicationListener('popover', UI.events.openedPopover);
