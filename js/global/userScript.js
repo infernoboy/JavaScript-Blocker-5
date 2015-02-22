@@ -240,12 +240,15 @@ var UserScript = {
 					if (parsed.hasOwnProperty(key) && value.length) {
 						if (typeof parsed[key] === 'string' || parsed[key] === null)
 							parsed[key] = value;
+
 						else if (key === 'resource') {
 							resource = value.split(' ');
 
 							parsed[key][resource[0]] = resource[1];
+
 						} else if (key === 'require') {
 							parsed[key][value] = value;
+
 						} else {
 							if (['exclude', 'include', 'match']._contains(key)) {
 								localKey = key + 'JSB';

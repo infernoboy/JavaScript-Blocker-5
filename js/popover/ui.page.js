@@ -75,6 +75,8 @@ UI.Page = {
 			Utilities.setImmediateTimeout(function () {
 				if (hiddenCount)
 					hiddenCountText.text(_('view.page.header.' + (hiddenCount === 1 ? 'hidden_item' : 'hidden_items'), [hiddenCount]));
+				else
+					hiddenCountText.addClass('jsb-hidden');
 			});
 		});
 
@@ -144,7 +146,7 @@ UI.Page = {
 					return;
 				}
 
-				var loadingPoppy = Poppy.createLoadingPoppy(event.originalEvent.pageX, event.originalEvent.pageY, false, function (loadingPoppy) {
+				var loadingPoppy = Poppy.createLoadingPoppy(event.pageX, event.pageY, false, function (loadingPoppy) {
 					var xhr = $.ajax({
 						dataType: 'text',
 						url: url
@@ -162,9 +164,6 @@ UI.Page = {
 
 				loadingPoppy.setContent(_('view.page.item.info.loading')).show(true);
 			});
-
-		UI.event.trigger('UIReady', null, true);
-		globalPage.Command.event.trigger('UIReady', null, true);
 	},
 
 	showResource: function (resource) {
@@ -314,95 +313,99 @@ UI.Page = {
 				ruleDomain = ruleWhereValue;
 			}
 
-			if (ruleType === 'disable' || ruleType === 'enable') {
-				ruleAction = ruleType === 'disable' ? 0 : 1;
+			Locker
+				.showLockerPrompt('disable', ruleType !== 'disable' && ruleType !== 'enable')
+				.then(function () {
+					if (ruleType === 'disable' || ruleType === 'enable') {
+						ruleAction = ruleType === 'disable' ? 0 : 1;
 
-				addRule(ruleKindPrefix + 'disable', ruleDomain, {
-					rule: '*',
-					action: ruleAction
-				});
-
-				ruleWasCreated = true;
-
-				setTimeout(function () {
-					globalPage.Page.requestPageFromActive();
-				}, 1000);
-			} else if (ruleWhichItems === 'items-all') {
-				addRule(ruleKindPrefix + '*', ruleDomain, {
-					rule: '*',
-					action: (ruleType === 'block' || ruleType === 'hide') ? 0 : 1
-				});
-
-				ruleWasCreated = true;
-			} else if (ruleWhichItems === 'items-of-kind') {
-				var checked = $('.page-host-editor-kinds input:checked', section),
-						ruleAction = (ruleType === 'block' || ruleType === 'hide') ? 0 : 1;
-
-				checked.each(function () {
-					addRule(ruleKindPrefix + this.getAttribute('data-kind'), ruleDomain, {
-						rule: '*',
-						action: ruleAction
-					});
-
-					ruleWasCreated = true;
-				});
-			} else {
-				items.each(function () {
-					var item = $(this),
-							isBlocked = item.parents('.page-host-column').is('.page-host-column-blocked'),
-							ruleAction = isBlocked ? 1 : 0,
-							checked = item.find('.page-host-item-edit-check');
-
-					if (!checked.is(':checked'))
-						return;
-
-					var itemSource = item.find('.select-custom-input, .page-host-item-edit-select'),
-							itemSourceVal = itemSource.val(),
-							kind = item.parents('.page-host-items').attr('data-kind'),
-							protocol = item.attr('data-protocol'),
-							resources = item.data('resources');
-
-					if (['block/allow', 'block', 'allow', 'hide', 'show']._contains(ruleType)) {
-						var hasAffect;
-
-						if (ruleType === 'block' || ruleType === 'hide')
-							ruleAction = 0
-						else if (ruleType === 'allow' || ruleType === 'show')
-							ruleAction = 1;
-
-						var rule = addRule(ruleKindPrefix + kind, ruleDomain, {
-							rule: (protocol === 'none:' || itemSource.is('.select-custom-input')) ? itemSourceVal : protocol + '|' + itemSourceVal,
+						addRule(ruleKindPrefix + 'disable', ruleDomain, {
+							rule: '*',
 							action: ruleAction
 						});
 
-						for (var resourceID in resources)
-							do {
-								hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID], ['hide', 'show'._contains(ruleType)]);
+						ruleWasCreated = true;
 
-								if (hasAffect.hasAffect || !hasAffect.detail)
-									break;
-
-								hasAffect.detail.ruleList.__remove(false, hasAffect.detail.ruleType, hasAffect.detail.ruleKind, hasAffect.detail.domain, hasAffect.detail.rule);
-							} while (true);
+						setTimeout(function () {
+							globalPage.Page.requestPageFromActive();
+						}, 1000);
+					} else if (ruleWhichItems === 'items-all') {
+						addRule(ruleKindPrefix + '*', ruleDomain, {
+							rule: '*',
+							action: (ruleType === 'block' || ruleType === 'hide') ? 0 : 1
+						});
 
 						ruleWasCreated = true;
-					} else
-						throw new Error('not yet supported');
+					} else if (ruleWhichItems === 'items-of-kind') {
+						var checked = $('.page-host-editor-kinds input:checked', section),
+								ruleAction = (ruleType === 'block' || ruleType === 'hide') ? 0 : 1;
+
+						checked.each(function () {
+							addRule(ruleKindPrefix + this.getAttribute('data-kind'), ruleDomain, {
+								rule: '*',
+								action: ruleAction
+							});
+
+							ruleWasCreated = true;
+						});
+					} else {
+						items.each(function () {
+							var item = $(this),
+									isBlocked = item.parents('.page-host-column').is('.page-host-column-blocked'),
+									ruleAction = isBlocked ? 1 : 0,
+									checked = item.find('.page-host-item-edit-check');
+
+							if (!checked.is(':checked'))
+								return;
+
+							var itemSource = item.find('.select-custom-input, .page-host-item-edit-select'),
+									itemSourceVal = itemSource.val(),
+									kind = item.parents('.page-host-items').attr('data-kind'),
+									protocol = item.attr('data-protocol'),
+									resources = item.data('resources');
+
+							if (['block/allow', 'block', 'allow', 'hide', 'show']._contains(ruleType)) {
+								var hasAffect;
+
+								if (ruleType === 'block' || ruleType === 'hide')
+									ruleAction = 0
+								else if (ruleType === 'allow' || ruleType === 'show')
+									ruleAction = 1;
+
+								var rule = addRule(ruleKindPrefix + kind, ruleDomain, {
+									rule: (protocol === 'none:' || itemSource.is('.select-custom-input')) ? itemSourceVal : protocol + '|' + itemSourceVal,
+									action: ruleAction
+								});
+
+								for (var resourceID in resources)
+									do {
+										hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID], ['hide', 'show'._contains(ruleType)]);
+
+										if (hasAffect.hasAffect || !hasAffect.detail)
+											break;
+
+										hasAffect.detail.ruleList.__remove(false, hasAffect.detail.ruleType, hasAffect.detail.ruleKind, hasAffect.detail.domain, hasAffect.detail.rule);
+									} while (true);
+
+								ruleWasCreated = true;
+							} else
+								throw new Error('not yet supported');
+						});
+					}
+
+					UI.Page.section.toggleEditMode(section, false);
+
+					var tab = UI.Page.stateContainer.data('page').tab;
+
+					if (ruleWasCreated)
+						Utilities.Timer.timeout(tab, function (tab) {
+							MessageTarget({
+								target: tab
+							}, 'reload');
+						}, 225, [tab]);
+					else
+						globalPage.Page.requestPageFromActive();
 				});
-			}
-
-			UI.Page.section.toggleEditMode(section, false);
-
-			var tab = UI.Page.stateContainer.data('page').tab;
-
-			if (ruleWasCreated)
-				Utilities.Timer.timeout(tab, function (tab) {
-					MessageTarget({
-						target: tab
-					}, 'reload');
-				}, 225, [tab]);
-			else
-				globalPage.Page.requestPageFromActive();
 		}
 	},
 
@@ -517,7 +520,7 @@ UI.Page = {
 
 				.on('mousemove', '.page-host-columns', function (event) {
 					if (UI.drag && UI.drag.classList.contains('page-host-columns-resize'))
-						UI.Page.resizeColumns(event.originalEvent.pageX / $(this).outerWidth());
+						UI.Page.resizeColumns(event.pageX / $(this).outerWidth());
 				})
 
 				.on('click', '.page-host-first-visit-keep-blocked, .page-host-first-visit-unblock', function (event) {
@@ -545,7 +548,7 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-first-visit .more-info', function (event) {
-					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true);
+					var poppy = new Poppy(event.pageX, event.pageY, true);
 
 					poppy.setContent(Template.create('main', 'jsb-readable', {
 						string: _('first_visit.unblock_more_info')
@@ -553,7 +556,7 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-header', function (event) {
-					if (event.originalEvent.target.classList.contains('page-host-edit'))
+					if (event.target.classList.contains('page-host-edit'))
 						return;
 
 					var section = $(this).parents('.page-host-section');
@@ -632,7 +635,7 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-editor-create', function (event) {
-					this.disabled = true;
+					// this.disabled = true;
 
 					UI.Page.section.createRules($(this).parents('.page-host-section'));
 				})
@@ -640,7 +643,7 @@ UI.Page = {
 				.on('click', '.page-host-host-count', function (event) {
 					var item = $(this).parents('.page-host-item'),
 							resources = item.data('resources'),
-							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
+							poppy = new Poppy(event.pageX, event.pageY, true),
 							items = [];
 
 					for (var resourceID in resources)
@@ -661,7 +664,7 @@ UI.Page = {
 				.on('click', '.page-host-item-info', function (event) {
 					var item = $(this).parents('.page-host-item');
 
-					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true, 'item-info');
+					var poppy = new Poppy(event.pageX, event.pageY, true, 'item-info');
 
 					poppy.isAllowed = item.parents('.page-host-column').is('.page-host-column-allowed');
 					poppy.resources = item.data('resources');
@@ -681,7 +684,7 @@ UI.Page = {
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {
 					if (globalPage.Rules.isLocked())
-						return (new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true))
+						return (new Poppy(event.pageX, event.pageY, true))
 							.setContent(Template.create('main', 'jsb-readable', {
 								string: _('view.page.host.rules_locked')
 							}))
@@ -700,7 +703,7 @@ UI.Page = {
 					var item = $(this).parents('.page-host-item'),
 							resources = item.data('resources');
 					
-					var loadingPoppy = Poppy.createLoadingPoppy(event.originalEvent.pageX, event.originalEvent.pageY, true, function (loadingPoppy) {
+					var loadingPoppy = Poppy.createLoadingPoppy(event.pageX, event.pageY, true, function (loadingPoppy) {
 						for (var resourceID in resources) {
 							$('#main-views-resource-content', UI.view.views).empty().append(Utilities.beautifyScript(resources[resourceID].fullSource));
 

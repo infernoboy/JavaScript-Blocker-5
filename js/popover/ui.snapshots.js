@@ -15,12 +15,18 @@ UI.Snapshots = {
 		UI.Snapshots.container = $('#snapshot-container', UI.Snapshots.view);
 
 		UI.Snapshots.container
+			.on('click', '#snapshot-create-snapshot', function () {
+				globalPage.Rules.list.user.rules.snapshot.add(true);
+
+				UI.view.switchTo('#main-views-snapshot');
+			})
+
 			.on('click', '.snapshot-item-name', function (event) {
 				var self = $(this),
 						kept = self.parents('.snapshot-list').is('#snapshot-kept-list'),
 						snapshotID = self.parents('li').attr('data-snapshotID'),
 						snapshots = self.parents('.snapshot-list').data('snapshots'),
-						poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true, 'snapshot-item');
+						poppy = new Poppy(event.pageX, event.pageY, true, 'snapshot-item');
 
 				poppy.snapshotID = snapshotID;
 				poppy.snapshots = snapshots;
@@ -58,7 +64,7 @@ UI.Snapshots = {
 			})
 	},
 
-	useSnapshot: function (snapshotID, snapshots) {
+	useSnapshot: function (snapshotID, snapshots, comparison) {
 		var snapshot = snapshots.get(snapshotID);
 
 		if (snapshot) {
@@ -66,7 +72,9 @@ UI.Snapshots = {
 
 			globalPage.Rules.list.active.snapshot = {
 				id: snapshotID,
-				snapshots: snapshots
+				snapshots: snapshots,
+				name: UI.Snapshots.getName(snapshotID, snapshots),
+				comparison: comparison
 			};
 
 			UI.Rules.buildViewSwitcher();
@@ -101,7 +109,7 @@ UI.Snapshots = {
 
 			listContainer.append(snapshotItem);
 
-			UI.Snapshots.__compareQueue.push(function (list, snapshotID, snapshotItem) {
+			UI.Snapshots.__compareQueue.push(function (name, list, snapshotID, snapshotItem) {
 				var snapshot = list.get(snapshotID),
 						snapshotStore = Store.promote(snapshot.snapshot),
 						compare = Store.compare(UI.Snapshots.current, snapshotStore);
@@ -110,15 +118,19 @@ UI.Snapshots = {
 				compare.store.destroy();
 
 				$('.snapshot-item-name', snapshotItem).toggleClass('current', compare.equal);
-			}.bind(null, list, snapshotIDs[i], snapshotItem));
+			}.bind(null, name, list, snapshotIDs[i], snapshotItem));
 		}
 	},
 
 	buildSnapshots: function () {
-		var keptList = $('#snapshot-kept-list', UI.Snapshots.container).empty(),
+		var storageInfo = $('#snapshot-storage-info', UI.Snapshots.container),
+				keptList = $('#snapshot-kept-list', UI.Snapshots.container).empty(),
 				unkeptList = $('#snapshot-unkept-list', UI.Snapshots.container).empty(),
+				snapshotInfo = globalPage.Snapshot.storageInfo(),
 				kept = UI.Snapshots.snapshot.kept,
 				unkept = UI.Snapshots.snapshot.unkept;
+
+		storageInfo.text(_('snapshots.count_size'._pluralize(snapshotInfo.count), [snapshotInfo.count, Utilities.byteSize(snapshotInfo.size)]));
 
 		keptList.data('snapshots', kept);
 		unkeptList.data('snapshots', unkept);

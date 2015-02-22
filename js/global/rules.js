@@ -84,7 +84,7 @@ Rule.withLocationRules = function (allRules, callback) {
 }
 
 Rule.prototype.__add = function (type, kind, domain, rule) {
-	if (Rules.__locked)
+	if (Rules.isLockerLocked())
 		return;
 
 	if (!Object._isPlainObject(rule))
@@ -163,7 +163,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 };
 
 Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) {
-	if (Rules.__locked)
+	if (Rules.isLockerLocked())
 		return;
 
 	if (kind === undefined) {
@@ -211,7 +211,7 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 };
 
 Rule.prototype.clear = function () {
-	if (Rules.__locked)
+	if (Rules.isLockerLocked())
 		return;
 
 	this.rules.clear();
@@ -492,12 +492,8 @@ var Rules = {
 		return 0;
 	},
 
-	lock: function (lock, doNotSwitch) {
-		Rules.__locked = lock;
-
-		Settings.setItem('locked', lock, 'rules');
-
-		if (!doNotSwitch) {
+	onToggleLock: function (event) {
+		if (event.detail.key === 'rules') {
 			UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
 			UI.view.switchTo(UI.view.views.attr('data-activeView'));
 		}
@@ -517,6 +513,8 @@ var Rules = {
 				Rules.list[filterList] = new Rule(Rules.__FilterRules.getStore(filterList), null, {
 					longRuleAllowed: true
 				});
+			else if (Rules.__FilterRules.keyExist(filterList))
+				Rules.__FilterRules.remove(filterList);
 
 		if (clearCache)
 			Resource.canLoadCache.clear().saveNow();
@@ -648,7 +646,11 @@ var Rules = {
 	},
 
 	isLocked: function () {
-		return this.snapshotInUse() || Rules.__locked;
+		return this.snapshotInUse() || Locker.isLocked('rules');
+	},
+
+	isLockerLocked: function () {
+		return Locker.isLocked('rules');
 	},
 
 	snapshotInUse: function () {
@@ -767,5 +769,4 @@ Rule.event.addCustomEventListener('ruleWasRemoved', function (event) {
 	Rule.listCache.getStore(event.detail.self.rules.name || event.detail.self.rules.id).clear();
 });
 
-if (Settings.passwordIsSet())
-	Rules.lock(Settings.getItem('locked', 'rules'), true);
+Locker.event.addCustomEventListener(['locked', 'unlocked'], Rules.onToggleLock);

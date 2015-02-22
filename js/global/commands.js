@@ -260,6 +260,9 @@ function Command (command, data, event) {
 		},
 
 		willBlockFirstVisit: function (host) {
+			if (host === 'blank')
+				host = Utilities.URL.extractHost(this.event.target.url);
+
 			var	shouldBlockFirstVisit = Page.shouldBlockFirstVisit(host);
 
 			if (shouldBlockFirstVisit) {
@@ -548,33 +551,37 @@ Command.toggleDisabled = function (force, doNotReload) {
 	if (Command.event.trigger('willDisable', window.globalSetting.disabled))
 		return;
 
-	window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
+	Locker
+		.showLockerPrompt('disable', typeof force === 'boolean')
+		.then(function () {
+			window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
 
-	Utilities.Timer.remove('timeout', 'autoEnableJSB');
+			Utilities.Timer.remove('timeout', 'autoEnableJSB');
 
-	if (window.globalSetting.disabled && Settings.getItem('alwaysUseTimedDisable'))
-		Utilities.Timer.timeout('autoEnableJSB', function () {
-			Command.toggleDisabled(false, true);
-		}, Settings.getItem('disableTime'));
+			if (window.globalSetting.disabled && Settings.getItem('alwaysUseTimedDisable'))
+				Utilities.Timer.timeout('autoEnableJSB', function () {
+					Command.toggleDisabled(false, true);
+				}, Settings.getItem('disableTime'));
 
-	Command.setToolbarImage();
+			Command.setToolbarImage();
 
-	Settings.setItem('isDisabled', window.globalSetting.disabled);
+			Settings.setItem('isDisabled', window.globalSetting.disabled);
 
-	Command.event.addCustomEventListener('UIReady', function () {
-		UI.event.trigger('disabled', window.globalSetting.disabled);
+			Command.event.addCustomEventListener('UIReady', function () {
+				UI.event.trigger('disabled', window.globalSetting.disabled);
 
-		if (!window.globalSetting.disabled && Popover.visible())
-			Page.requestPageFromActive();
-	}, true);
+				if (!window.globalSetting.disabled && Popover.visible())
+					Page.requestPageFromActive();
+			}, true);
 
-	if (window.UI && !doNotReload)
-		if (Settings.getItem('disablingReloadsAll'))
-			setTimeout(function () {
-				Tabs.messageAll('reload');
-			}, 150);
-		else
-			Tabs.messageActive('reload');
+			if (window.UI && !doNotReload)
+				if (Settings.getItem('disablingReloadsAll'))
+					setTimeout(function () {
+						Tabs.messageAll('reload');
+					}, 150);
+				else
+					Tabs.messageActive('reload');
+		});
 };
 
 Command.setToolbarImage = function (event) {

@@ -35,7 +35,9 @@
 			id: this.id
 		});
 
-		this.poppy.css('z-index', window.Poppy.__zIndex++);
+		this.zIndex = window.Poppy.__zIndex++;
+
+		this.poppy.css('z-index', this.zIndex);
 
 		this.content = $('.poppy-content', this.poppy);
 		this.arrow = $('.poppy-arrow', this.poppy);
@@ -98,9 +100,12 @@
 		if (Poppy.modalOpen) {
 			Poppy.modalOpen = false;
 
-			Poppy.__modal.stop(true).fadeOut(130 * window.globalSetting.speedMultiplier, function () {
-				UI.event.trigger('poppyModalClosed');
-			});
+			Poppy.__modal.stop(true).fadeOut(130 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+
+			UI.event.trigger('poppyModalClosed');
+
+			for (var poppyID in poppies)
+				poppies[poppyID].poppy.removeClass('poppy-blur');
 		}
 	};
 
@@ -368,7 +373,11 @@
 
 		this.isModal = true;
 
-		Poppy.__modal.stop().fadeIn(200 * window.globalSetting.speedMultiplier);
+		for (var poppyID in poppies)
+			if (poppies[poppyID] !== this)
+				poppies[poppyID].poppy.addClass('poppy-blur');
+
+		Poppy.__modal.stop().fadeIn(200 * window.globalSetting.speedMultiplier, 'easeOutQuad').css('z-index', this.zIndex - 1);
 
 		UI.event.trigger('poppyModalOpened');
 
@@ -398,8 +407,10 @@
 	};
 
 	Poppy.prototype.show = function (quick, instant) {
-		if (this.closed || UI.event.trigger('poppyWillShow', this))
+		if (UI.event.trigger('poppyWillShow', this))
 			return this;
+
+		this.closed = false;
 
 		Poppy.__creating = true;
 
@@ -476,12 +487,8 @@
 				resolve(this);
 			} else {
 				this.poppy
-					.find('*')
-					.addBack()
-					.css('pointer-events', 'none')
-					.end()
-					.end()
-					.fadeOut(100 * window.globalSetting.speedMultiplier, function () {
+					.addClass('poppy-closed')
+					.fadeOut(100 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
 						self.remove();
 
 						resolve(self);
@@ -512,10 +519,11 @@
 
 				var poppyID = poppyElement.attr('data-id'),
 						poppy = poppies[poppyID],
+						zIndex = poppy ? poppy.zIndex : 0,
 						linkTree = poppy ? poppy.linkTree() : [];
 
 				for (var otherPoppyID in poppies)
-					if (otherPoppyID !== poppyID && (!poppy.linkedTo || !linkTree._contains(otherPoppyID)))
+					if (otherPoppyID !== poppyID && poppies[otherPoppyID].zIndex > zIndex && (!poppy.linkedTo || !linkTree._contains(otherPoppyID)))
 						poppies[otherPoppyID].close();
 			});
 	}, true);

@@ -12,6 +12,12 @@ Object._extend(Poppy.scripts, {
 			newPassword.focus();
 
 		poppy.content
+			.on('click', '#lock-password-forgot', function (event) {
+				var poppy = new Poppy(event.pageX, event.pageY);
+
+				poppy.setContent(Template.create('poppy', 'forgot-locker-password')).show();
+			})
+
 			.on('click', '#lock-password-cancel', function () {
 				poppy.close();
 			})
@@ -27,7 +33,7 @@ Object._extend(Poppy.scripts, {
 					return newPassword.focus().selectAll().shake();
 				}
 
-				var passwordSet = Settings.setPassword(newPasswordVal, previousPasswordVal);
+				var passwordSet = Locker.setPassword(newPasswordVal, previousPasswordVal);
 
 				if (passwordSet === 0)
 					poppy.close();
@@ -42,23 +48,29 @@ Object._extend(Poppy.scripts, {
 		var password = $('#lock-password', poppy.content).focus();
 
 		poppy.content
+			.on('click', '#lock-password-forgot', function (event) {
+				var poppy = new Poppy(event.pageX, event.pageY, false);
+
+				poppy.setContent(Template.create('poppy', 'forgot-locker-password')).show();
+			})
+
 			.on('click', '#lock-password-cancel', function () {
 				poppy.close();
+
+				poppy.reject();
 			})
 
 			.on('click', '#lock-password-toggle', function () {
-				var currentPassword = Settings.getPassword();
+				var validated = Locker.validatePassword(password.val());
 
-				if (password.val() !== currentPassword)
+				if (!validated)
 					return password.focus().selectAll().shake();
 
-				if (poppy.toggleLock === 'rules')
-					globalPage.Rules.lock(!poppy.locked);
-
-				else if (poppy.toggleLock === 'settings')
-					Settings.lock(!poppy.locked);
+				Locker.lock(poppy.lockerKey, !poppy.locked);
 
 				poppy.close();
+
+				poppy.resolve();
 			});
 	},
 
@@ -69,11 +81,15 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#disable-menu-for-disable', function () {
-				globalPage.Command.toggleDisabled(true);
+				Locker
+					.showLockerPrompt('disable')
+					.then(function () {
+						globalPage.Command.toggleDisabled(true);
 
-				globalPage.Utilities.Timer.timeout('autoEnableJSB', function () {
-					globalPage.Command.toggleDisabled(false, true);
-				}, Settings.getItem('disableTime'));
+						globalPage.Utilities.Timer.timeout('autoEnableJSB', function () {
+							globalPage.Command.toggleDisabled(false, true);
+						}, Settings.getItem('disableTime'));
+					});
 
 				poppy.close();
 			});
@@ -92,15 +108,19 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#main-menu-console', function (event) {
-				Poppy.closeLinksTo(poppy);
+				Locker
+					.showLockerPrompt('console', false, true)
+					.then(function () {
+						Poppy.closeLinksTo(poppy);
 
-				var consolePoppy = new Poppy(event.pageX, event.pageY, false, 'console');
+						var consolePoppy = new Poppy(event.pageX, event.pageY, false, 'console');
 
-				consolePoppy
-					.setContent(Template.create('poppy', 'console'))
-					.linkTo(poppy)
-					.stayOpenOnScroll()
-					.show();
+						consolePoppy
+							.setContent(Template.create('poppy', 'console'))
+							.linkTo(poppy)
+							.stayOpenOnScroll()
+							.show();
+					});
 			});
 	},
 
@@ -118,34 +138,27 @@ Object._extend(Poppy.scripts, {
 	'rule-menu': function (poppy) {
 		poppy.content
 			.on('click', '#rule-menu-lock', function () {
-				var poppy = new Poppy(0.5, 0, true, 'toggle-lock');
-
-				poppy.toggleLock = 'rules';
-				poppy.locked = globalPage.Rules.__locked;
-
-				poppy.setContent(Template.create('poppy', 'toggle-lock', {
-					value: this.value
-				}));
-
-				poppy.modal().show();
+				Locker.showLockerPrompt('rules');
 			})
 
 			.on('click', '#rule-menu-open-snapshots', function () {
-				Poppy.closeAll();
+				poppy.close();
 				
 				UI.view.switchTo('#main-views-snapshot');
 			})
 
-			.on('click', '#rule-menu-import-rules-from-four', function () {
-				var rules = prompt('Paste the exported rule backup below. This is obtained by clicking Rules > Backup > Export from JSB 4. You must have made a donation or unlocked features without contributing.');
+			.on('click', '#rule-menu-close-snapshot', function () {
+				poppy.close();
 
-				globalPage.Upgrade.importRulesFromJSB4(rules);
+				globalPage.Rules.useCurrent();
+
+				globalPage.Page.requestPageFromActive();
 			})
 
 			.on('click', '#rule-menu-delete-temporary', function () {
 				globalPage.Rules.list.temporary.clear();
 
-				Poppy.closeAll();
+				poppy.close();
 
 				Tabs.messageAll('reload');
 			});
@@ -154,18 +167,24 @@ Object._extend(Poppy.scripts, {
 	'setting-menu': function (poppy) {
 		poppy.content
 			.on('click', '#setting-menu-lock', function () {
-				var poppy = new Poppy(0.5, 0, true, 'toggle-lock');
-
-				poppy.toggleLock = 'settings';
-				poppy.locked = Settings.isLocked();
-
-				poppy.setContent(Template.create('poppy', 'toggle-lock', {
-					value: this.value
-				}));
-
-				poppy.modal().show();
+				Locker.showLockerPrompt('settings');
 			})
 
+			.on('click', '#setting-menu-backup', function () {
+				var alternativePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'setting-menu-backup');
+
+				alternativePoppy.setContent(Template.create('poppy', 'setting-menu-backup')).show();
+			})
+
+			.on('click', '#setting-menu-restore-defaults', function (event) {
+				Settings.import({});
+
+				poppy.close();
+			});
+	},
+
+	'setting-menu-backup': function (poppy) {
+		poppy.content
 			.on('click', '#setting-menu-backup-export', function (event) {
 				var options = {
 					exportFirstVisit: $('#setting-menu-backup-export-first-visit', poppy.content).is(':checked'),
@@ -201,12 +220,6 @@ Object._extend(Poppy.scripts, {
 				var alternativePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'backup-import-alternative');
 
 				alternativePoppy.setContent(Template.create('poppy', 'backup-import-alternative')).show();
-			})
-
-			.on('click', '#setting-menu-restore-defaults', function (event) {
-				Settings.import({});
-
-				poppy.close();
 			});
 	},
 
@@ -277,9 +290,13 @@ Object._extend(Poppy.scripts, {
 
 			.on('click', '#active-menu-clear', function (event) {
 				UI.event.addCustomEventListener('poppyDidClose', function () {
-					globalPage.Rules.list.user.clear();
+					Locker
+						.showLockerPrompt('clearRules')
+						.then(function () {
+							globalPage.Rules.list.user.clear();
 
-					UI.view.switchTo('#rule-views-active', true);
+							UI.view.switchTo('#rule-views-active', true);
+						});
 				}, true);
 
 				poppy.close();
@@ -379,18 +396,13 @@ Object._extend(Poppy.scripts, {
 				var keyValue = $.trim(key.val()),
 						valueValue = $.trim(value.val());
 
-				if (!keyValue.length || !valueValue.length) {
-					poppy.shake();
-
-					return keyValue.length ? value.focus() : key.focus();
-				}
+				if (!keyValue.length || !valueValue.length)
+					return keyValue.length ? value.shake().focus() : key.shake().focus();
 
 				try {
 					valueValue = JSON.parse(valueValue);
 				} catch (e) {
-					poppy.shake();
-
-					return value.focus();
+					return value.shake().focus();
 				}
 
 				var userScriptNS = UI.Settings.userScriptEdit.attr('data-userScriptNS');
@@ -407,6 +419,10 @@ Object._extend(Poppy.scripts, {
 
 				if (result) {
 					storage.set(keyValue, valueValue);
+
+					UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
+						event.preventDefault();
+					}, true)
 
 					UI.Settings.editUserScript(userScriptNS);
 
@@ -507,9 +523,6 @@ Object._extend(Poppy.scripts, {
 							originalRule = container.attr('data-rule'),
 							originalAction = parseInt(container.attr('data-action'), 10),
 							originalList = globalPage.Rules.list[originalListName];
-
-					if (originalList)
-						originalList.__remove(false, originalType, originalKind, originalDomain, originalRule);
 				}
 
 				var newListName = list.val(),
@@ -554,39 +567,48 @@ Object._extend(Poppy.scripts, {
 						newKinds.push(newKindPrefix + this.getAttribute('data-kind'));
 					});
 
-				try {
-					if (newKinds.length === 0) {
-						$('#create-rule-kinds', poppy.content).shake();
+				Locker
+					.showLockerPrompt('disable', !newKinds._contains('disable'), true)
+					.then(function () {
+						try {
+							if (newKinds.length === 0) {
+								$('#create-rule-kinds', poppy.content).shake();
 
-						throw new Error(_('rules.no_kinds_selected'));
-					}
+								throw new Error(_('rules.no_kinds_selected'));
+							}
 
-					for (var i = newKinds.length; i--;)
-						globalPage.Rules.list[newListName].__add(newType, newKinds[i], newDomain, {
-							rule: newRule,
-							action: newAction
-						});
+							if (editing && originalList)
+								originalList.__remove(false, originalType, originalKind, originalDomain, originalRule);
 
-					Poppy.closeAll();
+							for (var i = newKinds.length; i--;)
+								globalPage.Rules.list[newListName].__add(newType, newKinds[i], newDomain, {
+									rule: newRule,
+									action: newAction
+								});
 
-					if (UI.Rules.view.is('.active-view'))
-						UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
-				} catch (error) {
-					var offset = self.offset(),
-							errorPoppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
+							Poppy.closeAll();
 
-					errorPoppy.setContent(Template.create('main', 'jsb-readable', {
-						string: error.message
-					}));
+							if (UI.Rules.view.is('.active-view'))
+								UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+						} catch (error) {
+							var offset = self.offset(),
+									errorPoppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
 
-					errorPoppy.linkTo(poppy).show();
+							errorPoppy.setContent(Template.create('main', 'jsb-readable', {
+								string: error.message
+							}));
 
-					if (editing)
-						originalList.__add(originalType, originalKind, originalDomain, {
-							rule: originalRule,
-							action: originalAction
-						});
-				}
+							errorPoppy.linkTo(poppy).show();
+
+							if (editing)
+								originalList.__add(originalType, originalKind, originalDomain, {
+									rule: originalRule,
+									action: originalAction
+								});
+						}
+					}, function () {
+						// Cancelled
+					});
 			});
 
 		type.change();
@@ -598,12 +620,36 @@ Object._extend(Poppy.scripts, {
 		whichItem.change();
 	},
 
+	'confirm-setting-change': function (poppy) {
+		poppy.content
+			.on('click', '#setting-confirm-cancel', function () {
+				poppy.close();
+
+				UI.Settings.repopulateActiveSection();
+			})
+
+			.on('click', '#setting-confirm-change', function () {
+				poppy.close();
+
+				Settings.setItem(poppy.setting.key, poppy.setting.value, poppy.setting.storeKey, true, poppy.setting.unlocked);
+			});
+	},
+
 	'snapshot-item': function (poppy) {
 		poppy.content
 			.on('click', '#snapshot-item-name-set', function () {
 				poppy.setContent(Template.create('poppy', 'snapshot-item-name'));
 
 				$('#snapshot-item-name', poppy.content).focus();
+			})
+
+			.on('click', '#snapshot-item-compare', function () {
+				var comparePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'snapshot-item-compare');
+
+				comparePoppy.snapshots = poppy.snapshots;
+				comparePoppy.snapshotID = poppy.snapshotID;
+
+				comparePoppy.setContent(Template.create('poppy', 'snapshot-item-compare')).show();
 			})
 
 			.on('click', '#snapshot-item-name-save', function () {
@@ -637,10 +683,42 @@ Object._extend(Poppy.scripts, {
 			})
 	},
 
+	'snapshot-item-compare': function (poppy) {
+		poppy.content
+			.on('click', '#snapshot-item-compare-left, #snapshot-item-compare-right, #snapshot-item-compare-both', function () {
+				var side;
+
+				var snapshot = poppy.snapshots.get(poppy.snapshotID),
+						snapshotStore = Store.promote(snapshot.snapshot),
+						compare = Store.compare(UI.Snapshots.current, snapshotStore);
+
+				if (this.id._contains('left'))
+					side = 'left';
+				else if (this.id._contains('right'))
+					side = 'right';
+				else if (this.id._contains('both'))
+					side = 'both';
+
+				var comparisonID = globalPage.Rules.list.user.rules.snapshot.add(false, UI.Snapshots.getName(poppy.snapshotID, poppy.snapshots), compare.sides[side]);
+
+				poppy.close();
+
+				UI.Snapshots.useSnapshot(comparisonID, globalPage.Rules.list.user.rules.snapshot.comparisons, side);
+			});
+	},
+
 	console: function (poppy) {
 		poppy.content
 			.on('change', '#console-debug-mode', function () {
-				window.globalSetting.debugMode = this.checked;
+				var self = this;
+
+				Locker
+					.showLockerPrompt('setting', false, true)
+					.then(function () {
+						window.globalSetting.debugMode = self.checked;
+					}, function () {
+						self.checked = !self.checked;
+					});
 			})
 
 			.on('click', '#console-clear', function () {

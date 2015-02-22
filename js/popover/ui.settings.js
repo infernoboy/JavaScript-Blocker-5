@@ -55,7 +55,7 @@ UI.Settings = {
 
 				if (setting.props.onClick) {
 					if (setting.props.validate && !setting.props.validate.test()) {
-						var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true);
+						var poppy = new Poppy(event.pageX, event.pageY, true);
 
 						poppy
 							.setContent(Template.create('main', 'jsb-readable', {
@@ -137,6 +137,7 @@ UI.Settings = {
 						});
 				break;
 
+				case 'many-boolean':
 				case 'boolean':
 					element
 						.prop('checked', currentValue)
@@ -237,6 +238,10 @@ UI.Settings = {
 							var storageItem = $(this).parents('.user-script-storage-item');
 
 							storageItem.collapse(225 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
+								UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
+									event.preventDefault();
+								}, true);
+								
 								UI.Settings.editUserScript(userScriptNS);
 							});
 						}
@@ -358,7 +363,9 @@ UI.Settings = {
 				setting.customView(container);
 
 			else if (setting.divider)
-				container.append(Template.create('settings', 'setting-section-divider'));
+				container.append(Template.create('settings', 'setting-section-divider', {
+					classes: setting.classes
+				}));
 
 			else if (setting.header)
 				container.append(Template.create('settings', 'setting-section-header', {
@@ -369,7 +376,8 @@ UI.Settings = {
 			else if (setting.description)
 				container.append(Template.create('settings', 'setting-section-description', {
 					id: setting.id || ('description-' + Utilities.Token.generate()),
-					description: _('setting.' + setting.description, setting.fill ? setting.fill() : [])
+					description: _('setting.' + setting.description, setting.fill ? setting.fill() : []),
+					classes: setting.classes
 				}));
 
 			else if (setting.when) {

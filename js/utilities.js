@@ -669,6 +669,7 @@ var Utilities = {
 		isPopover: Popover.window === window,
 		isTop: window === window.top,
 		isAbout: document.location.protocol === 'about:',
+		isSrcDoc: document.location.href === 'about:srcdoc',
 
 		getCurrentLocation: function () {
 			if (['http:', 'https:', 'file:']._contains(document.location.protocol)) {
@@ -724,6 +725,9 @@ var Utilities = {
 
 		getAbsolutePath: function (url) {
 			this.__anchor.href = url;
+
+			if (this.__anchor.protocol === ':')
+				return 'about:blank';
 
 			return this.__anchor.href;
 		},
@@ -845,7 +849,7 @@ var Utilities = {
 		protocol: function (url) {
 			this.__anchor.href = url;
 
-			return this.__anchor.protocol;
+			return this.__anchor.protocol === ':' ? 'about:' : this.__anchor.protocol;
 		},
 
 		href: function (url) {

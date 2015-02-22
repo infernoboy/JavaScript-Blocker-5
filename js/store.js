@@ -9,28 +9,10 @@ var Store = (function () {
 		if (!(props instanceof Object))
 			props = {};
 
+		this.setProperties(name, props);
+
 		this.destructionTimer = null;
-		this.maxLife = (typeof props.maxLife === 'number') ? props.maxLife : Infinity;
-		this.selfDestruct = (typeof props.selfDestruct === 'number') ? props.selfDestruct : 0;
-		this.saveDelay = (typeof props.saveDelay === 'number') ? props.saveDelay : 2000;
-		this.destroyChildren = !!props.destroyChildren;
-		this.lock = !!props.lock;
-		this.save = !!props.save;
-		this.useSnapshot = !!props.snapshot;
-		this.ignoreSave = !!props.ignoreSave;
-
-		if (typeof name === 'string' && name.length) {
-			this.id = (props.save ? Store.STORE_STRING : Store.CACHE_STRING) + name;
-			this.private = !!props.private;
-		} else {
-			this.id = Utilities.Token.generate();
-			this.private = true;
-		}
-
 		this.isNew = this.private || !data[this.id];
-
-		this.name = name;
-		this.props = props;
 
 		if (this.private)
 			this.__children[this.id] = {};
@@ -56,28 +38,13 @@ var Store = (function () {
 
 		this.prolongDestruction();
 
-		var defaultValue = {};
-
-		if (props.defaultValue instanceof Object)
-			for (var key in props.defaultValue)
-				defaultValue[key] = {
-					accessed: Date.now(),
-					value: props.defaultValue[key]
-				}
-
 		if (!this.data)
-			this.load(defaultValue);
+			this.load();
 
 		if (this.useSnapshot)
 			this.snapshot = new Snapshot(this, {
 				maxUnkept: props.maxUnkeptSnapshots
 			});
-
-		if (this.maxLife < Infinity) {
-			this.cleanupName = 'StoreCleanup' + this.id;
-
-			Utilities.Timer.interval(this.cleanupName, this.removeExpired.bind(this), this.maxLife * .85);
-		}
 
 		if (this.save)
 			this.addCustomEventListener('storeDidSave', function () {
@@ -280,6 +247,35 @@ var Store = (function () {
 			}, [this]);
 	};
 
+	Store.prototype.setProperties = function (name, props) {
+		this.maxLife = (typeof props.maxLife === 'number') ? props.maxLife : Infinity;
+		this.selfDestruct = (typeof props.selfDestruct === 'number') ? props.selfDestruct : 0;
+		this.saveDelay = (typeof props.saveDelay === 'number') ? props.saveDelay : 2000;
+		this.destroyChildren = !!props.destroyChildren;
+		this.lock = !!props.lock;
+		this.save = !!props.save;
+		this.useSnapshot = !!props.snapshot;
+		this.ignoreSave = !!props.ignoreSave;
+
+		if (!this.id)
+			if (typeof name === 'string' && name.length) {
+				this.id = (props.save ? Store.STORE_STRING : Store.CACHE_STRING) + name;
+				this.private = !!props.private;
+			} else {
+				this.id = Utilities.Token.generate();
+				this.private = true;
+			}
+
+		this.name = name;
+		this.props = props;
+
+		if (this.maxLife < Infinity) {
+			this.cleanupName = 'StoreCleanup' + this.id;
+
+			Utilities.Timer.interval(this.cleanupName, this.removeExpired.bind(this), this.maxLife * .85);
+		}
+	};
+
 	Store.prototype.savedByteSize = function () {
 		return this.save ? JSON.stringify(Settings.__method('getItem', this.id)).length : -1;
 	};
@@ -302,10 +298,10 @@ var Store = (function () {
 		this.__save(bypassIgnore, true);
 	};
 
-	Store.prototype.load = function (defaultValue) {
+	Store.prototype.load = function () {
 		if (this.save) {
 			var stored = Settings.__method('getItem', this.id, {
-				STORE: defaultValue
+				STORE: {}
 			});
 
 			if (stored.lock)
@@ -313,14 +309,14 @@ var Store = (function () {
 
 			this.data = stored.STORE || stored.data || {};
 		} else
-			this.data = defaultValue;
+			this.data = {};
 	};
 
-	Store.prototype.reload = function (defaultValue) {
+	Store.prototype.reload = function () {
 		if (!this.save)
 			throw new Error('cannot reload a store that is not saved.');
 
-		this.load(defaultValue);
+		this.load();
 	};
 
 	Store.prototype.triggerEvent = function (name) {
@@ -396,7 +392,7 @@ var Store = (function () {
 		var value;
 
 		for (var key in this.data) {
-			value = this.get(key);
+			value = this.get(key, null, null, true);
 
 			if (fn(key, value, this))
 				break;
@@ -415,7 +411,7 @@ var Store = (function () {
 				found = false;
 
 		for (var i = keys.length; i--;) {
-			value = this.get(keys[i]);
+			value = this.get(keys[i], null, null, true);
 
 			if (fn(keys[i], value, this)) {
 				found = true;
@@ -437,7 +433,7 @@ var Store = (function () {
 		var value;
 
 		for (var key in this.data) {
-			value = this.get(key);
+			value = this.get(key, null, null, true);
 
 			if (value instanceof Store)
 				info = value.deepFindKey(findKey);
@@ -460,7 +456,7 @@ var Store = (function () {
 		var results = [];
 
 		for (var key in this.data) {
-			value = this.get(key);
+			value = this.get(key, null, null, true);
 			result = fn(key, value, this);
 
 			if (result === Store.BREAK)
@@ -557,7 +553,7 @@ var Store = (function () {
 		}
 
 		this.data[key] = {
-			accessed: this.data[key] ? this.data[key].accessed : Date.now(),
+			accessed: this.data[key] ? this.data[key].accessed : (this.maxLife < Infinity ? Date.now() : -1),
 			value: value,
 		};
 
@@ -616,7 +612,7 @@ var Store = (function () {
 						promoted.parent = this;
 
 						this.data[key] = {
-							accessed: Date.now(),
+							accessed: this.maxLife < Infinity ? Date.now() : -1,
 							value: promoted
 						};
 
@@ -642,18 +638,26 @@ var Store = (function () {
 
 	Store.prototype.getStore = function (key, defaultProps, parent) {
 		var store = this.get(key),
+				hasDefaultProps = !!defaultProps,
 				requiredName = (this.name || this.id) + ',' + key;
 
-		if (!(store instanceof Store) || !store.data || store.destroyed) {
-			if (!(defaultProps instanceof Object))
-				defaultProps = {};
+		if (!(defaultProps instanceof Object)) 
+			defaultProps = {};
 
-			defaultProps.private = true;
+		Store.inherit(defaultProps, this);
 
-			Store.inherit(defaultProps, this);
+		defaultProps.private = true;
 
+		if (!(store instanceof Store) || !store.data || store.destroyed)
 			store = this.set(key, new Store(requiredName, defaultProps), null, parent);
-		}
+		else if (hasDefaultProps)
+			for (var i = Store.__inheritable.length; i--;) {
+				if (defaultProps[Store.__inheritable[i]] !== store.props[Store.__inheritable[i]]) {
+					store.setProperties(requiredName, defaultProps);
+
+					break;
+				}
+			}
 
 		return store;
 	};
@@ -787,12 +791,12 @@ var Store = (function () {
 		if (this.cleanupName)
 			Utilities.Timer.remove('interval', this.cleanupName);
 
-		var key;
+		var child;
 
 		var self = this;
 
 		if (this.destroyChildren || deep) {
-			for (var child in this.children) {
+			for (child in this.children) {
 				this.children[child].destroy(true);
 
 				delete this.children[child];

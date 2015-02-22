@@ -142,6 +142,10 @@
 			float: none @important;
 			text-indent: 0 @important;
 			letter-spacing: normal @important;
+			top: auto;
+			left: auto;
+			right: auto;
+			bottom: auto;
 
 			.darkness-color();
 
@@ -269,14 +273,13 @@
 
 			&.on-enter {
 				color: #fff @important;
-				background: -webkit-linear-gradient(top, lighten(@baseColor, 15%), lighten(@baseColor, 2%)) @important;
-				border-top-color: lighten(@baseColor, 7%) @important;
-				border-left-color: @baseColor @important;
-				border-right-color: @baseColor @important;
-				border-bottom-color: darken(@baseColor, 8%) @important;
+				background: lighten(@baseColor, 4%) @important;
+				border-color: lighten(@baseColor, 2%) @important;
+				border-bottom-color: darken(@baseColor, 6%) @important;
+				text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22), 0 0 0 rgba(255, 255, 255, 0.7) @important;
 
 				&:active {
-					background: -webkit-linear-gradient(top, lighten(@baseColor, 7%), darken(@baseColor, 6%)) @important;
+					background: @baseColor @important;
 				}
 			}
 
@@ -386,14 +389,14 @@
 				color: rgba(255, 255, 255, 0) @important;
 				font-weight: bold @important;
 				content: '⸀' @important;
-				-webkit-transform: translate(5px, -11px) scaleX(1.1) scaleY(1.5) rotate(220deg) @important;
+				-webkit-transform: translate(5px, -11px) scale(1.1, 1.5) rotate(220deg) @important;
 				-webkit-font-smoothing: antialiased @important;
 				-webkit-transition: color unit(0.15 * @speedMultiplier, s) ease-out, text-shadow unit(0.15 * @speedMultiplier, s) ease-out, -webkit-transform unit(0.15 * @speedMultiplier, s) ease-out @important;
 				text-shadow: -1px -1px 0 rgba(0, 0, 0, 0), 0 0 0 rgba(255, 255, 255, 0) @important;
 				font-size: 20px @important;
 
 				.lion& {
-					-webkit-transform: translate(4px, -8px) scaleX(1.1) scaleY(1.5) rotate(220deg) @important;
+					-webkit-transform: translate(4px, -8px) scale(1.1, 1.5) rotate(220deg) @important;
 					font-size: 15px @important;
 				}
 			}
@@ -404,7 +407,7 @@
 
 				&:after {
 					color: rgba(255, 255, 255, 1) @important;
-					text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.18), 0 0 0 rgba(255, 255, 255, 0.6) @important;
+					text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.19), 0 0 0 rgba(255, 255, 255, 0.6) @important;
 				}
 
 				&:active:after {
@@ -727,13 +730,17 @@
 			background: rgba(0, 0, 0, 0.08) @important;
 			margin: 7px 0 @important;
 
+			& when (@darkMode) {
+				background: rgba(0, 0, 0, 0.45) @important;
+			}
+
 			&-short {
 				margin: 5px 0 @important;
 				background: rgba(0, 0, 0, 0.06) @important;
-			}
 
-			& when (@darkMode) {
-				background: rgba(0, 0, 0, 0.45) @important;
+				& when (@darkMode) {
+					background: rgba(0, 0, 0, 0.35) @important;
+				}
 			}
 
 			&-transparent {

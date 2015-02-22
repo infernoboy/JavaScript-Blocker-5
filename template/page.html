@@ -123,7 +123,21 @@
 
 		<% if (snapshotInUse) { %>
 			<div class="page-host-snapshot-in-use">
-				<p class="jsb-info jsb-embossed jsb-centered"><%=_('snapshots.snapshot', [UI.Snapshots.getName(globalPage.Rules.list.active.snapshot.id, globalPage.Rules.list.active.snapshot.snapshots)])._escapeHTML()%></p>
+			<%
+				var header;
+
+				var snapshotInfo = globalPage.Rules.list.active.snapshot;
+
+				if (snapshotInfo.comparison === 'left')
+					header = 'snapshots.only_always';
+				else if (snapshotInfo.comparison === 'right')
+					header = 'snapshots.only_snapshot';
+				else if (snapshotInfo.comparison === 'both')
+					header = 'snapshots.in_both';
+				else
+					header = 'snapshots.snapshot';
+			%>
+				<p class="jsb-info jsb-embossed jsb-centered"><%=_(header, [snapshotInfo.name._escapeHTML()])%></p>
 			</div><%
 		}
 

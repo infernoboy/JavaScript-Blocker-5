@@ -27,6 +27,7 @@
 	padding: 2px;
 	background: -webkit-linear-gradient(top, darken(#ffffff, @darknessLevel + 0.7%), darken(#fafafa, @darknessLevel + 0.7%));
 	box-shadow: 0 1px 10px rgba(1, 0, 1, 0.3);
+	-webkit-transition: -webkit-filter unit(0.13 * @speedMultiplier, s) ease-out;
 
 	& when (@darkMode) {
 		box-shadow: 0 1px 10px rgba(5, 4, 5, 0.9);
@@ -34,6 +35,17 @@
 
 	&.poppy-up .poppy-arrow {
 		background: -webkit-canvas(poppy-arrow-up);
+	}
+
+	&.poppy-closed {
+		&,
+		* {
+			pointer-events: none;
+		}
+	}
+
+	&.poppy-blur {
+		-webkit-filter: blur(12px) contrast(109%) brightness(105%);
 	}
 
 	&-open {

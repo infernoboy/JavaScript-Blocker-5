@@ -17,12 +17,19 @@ if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
 
 var BLOCKED_ELEMENTS = [],
+		PLACEHOLDER_ELEMENTS = {},
 		FRAMED_PAGES = {},
 		STYLESHEET_INJECTED = false,
 		PARENT = {},
 		RECOMMEND_PAGE_RELOAD = false,
 		SHOWED_UPDATE_PROMPT = false,
-		BROKEN = false;
+		BROKEN = false,
+		FRAME_ELEMENT = null;
+
+if (!Utilities.Page.isTop) {
+	if (window.location.protocol === 'about:')
+		FRAME_ELEMENT = window.frameElement;
+}
 
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
@@ -144,15 +151,25 @@ var Handler = {
 	event: new EventListener,
 
 	checkPageType: function () {
-		if (BLOCKED_ELEMENTS.length === 1 && ['VIDEO', 'EMBED']._contains(BLOCKED_ELEMENTS[0].nodeName.toUpperCase()))
+		if (BLOCKED_ELEMENTS.length === 1 && ['VIDEO', 'EMBED']._contains(BLOCKED_ELEMENTS[0].nodeName.toUpperCase())) {
 			Handler.injectStylesheet();
+
+			Element.restorePlaceholderElement(BLOCKED_ELEMENTS[0].getAttribute('data-jsbPlaceholder'));
+		}
 	},
 
 	setPageLocation: function () {
-		Page.info.location = Utilities.Page.getCurrentLocation();
+		if (Utilities.Page.isAbout && FRAME_ELEMENT) {
+			Page.info.location = FRAME_ELEMENT.getAttribute('data-jsbParentLocation');
+			Page.info.host = FRAME_ELEMENT.getAttribute('data-jsbParentHost');
+			Page.info.protocol = FRAME_ELEMENT.getAttribute('data-jsbParentProtocol');
+		} else {
+			Page.info.location = Utilities.Page.getCurrentLocation();
+			Page.info.host = Utilities.Page.isAbout ? document.location.href.substr(document.location.protocol.length) : (document.location.host || 'blank'),
+			Page.info.protocol = document.location.protocol;
+		}
+
 		Page.info.locations = [Page.info.location];
-		Page.info.host = Utilities.Page.isAbout ? document.location.href.substr(document.location.protocol.length) : (document.location.host || 'blank'),
-		Page.info.protocol = document.location.protocol;
 	},
 
 	unloadedFrame: function () {
@@ -204,8 +221,7 @@ var Handler = {
 	},
 
 	DOMContentLoaded: function () {
-		var i,
-				b;
+		var i;
 
 		var scripts = document.getElementsByTagName('script'),
 				anchors = document.getElementsByTagName('a'),
@@ -213,25 +229,25 @@ var Handler = {
 				iframes = document.getElementsByTagName('iframe'),
 				frames = document.getElementsByTagName('frame');
 
-		for (i = 0, b = scripts.length; i < b; i++)
+		for (i = scripts.length; i--;)
 			if (!Element.triggersBeforeLoad(scripts[i]) && globalSetting.showUnblockedScripts)
 				setTimeout(function (script) {
 					Element.processUnblockable('script', script, true);
 				}, 10 * i, scripts[i]);
 
-		for (i = 0, b = anchors.length; i < b; i++)
+		for (i = anchors.length; i--;)
 			Element.handle.anchor(anchors[i]);
 
-		for (i = 0, b = iframes.length; i < b; i++)
+		for (i = iframes.length; i--;)
 			Element.handle.frame(iframes[i]);
 
-		for (i = 0, b = frames.length; i < b; i++)
+		for (i = frames.length; i--;)
 			Element.handle.frame(frames[i]);
 
 		if (globalSetting.blockReferrer) {
 			var method;
 
-			for (var i = 0, b = forms.length; i < b; i++) {
+			for (var i = forms.length; i--;) {
 				method = forms[y].getAttribute('method');
 
 				if (method && method.toLowerCase() === 'post')
@@ -312,14 +328,15 @@ var Handler = {
 		if (!Utilities.Page.isTop || Utilities.Page.isXML)
 			return;
 
-		var hostDisplay = viaFrame ? _('via_frame') + ' - ' + host : host;
+		var hostDisplay = host._startsWith('.') ? host.substr(1) : host,
+				hostTitle = viaFrame ? _('via_frame') + ' - ' + hostDisplay : hostDisplay;
 
 		var notification = new PageNotification({
-			id: Utilities.encode(hostDisplay),
+			id: Utilities.encode(hostTitle),
 			closeAllID: 'first-visit',
 			highPriority: true,
 			title: _('first_visit.title'),
-			subTitle: hostDisplay,
+			subTitle: hostTitle,
 			body: GlobalCommand('template.create', {
 				template: 'injected',
 				section: 'first-visit',
@@ -410,7 +427,14 @@ var Element = {
 				height = element.offsetHeight - 1,
 				width = element.offsetWidth,
 				elementStyle = window.getComputedStyle(element, null),
-				placeholder = Utilities.Element.createFromHTML(placeholderTemplate)[0];
+				placeholder = Utilities.Element.createFromHTML(placeholderTemplate)[0],
+				placeholderToken = Utilities.Token.create('ElementPlaceholder');
+
+		PLACEHOLDER_ELEMENTS[placeholderToken] = {
+			element: element,
+			elementParent: elementParent,
+			placeholder: placeholder
+		};
 
 		for (var i = 0; i < Element.__placeholderProperties.length; i++) {
 			cssValue = elementStyle.getPropertyValue(Element.__placeholderProperties[i]);
@@ -439,13 +463,14 @@ var Element = {
 
 		placeholder.title = kind + ' - ' + source;
 
+		element.setAttribute('data-jsbPlaceholder', placeholderToken);
+		placeholder.setAttribute('data-jsbPlaceholder', placeholderToken);
+
 		placeholder.addEventListener('click', function (event) {
-			if (event.isTrigger)
-				return;
+			if (event.offsetX === 0 && event.offsetY === 0)
+				return Log('Potential fake click detected.');
 
-			element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
-
-			elementParent.replaceChild(element, placeholder);
+			Element.restorePlaceholderElement(this.getAttribute('data-jsbPlaceholder'));
 		}, true);
 
 		var collapsedElement = Element.collapse(element);
@@ -461,6 +486,19 @@ var Element = {
 
 			Utilities.Element.repaint(placeholder);
 		}.bind(null, placeholder), true);
+	},
+
+	restorePlaceholderElement: function (placeholderID) {
+		var placeholder = PLACEHOLDER_ELEMENTS[placeholderID];
+
+		if (!placeholder)
+			return;
+
+		placeholder.element.setAttribute('data-jsbAllowLoad', Utilities.Token.create('AllowLoad'));
+
+		placeholder.elementParent.replaceChild(placeholder.element, placeholder.placeholder);
+
+		delete PLACEHOLDER_ELEMENTS[placeholderID];
 	},
 
 	collapse: function (element) {
@@ -585,6 +623,7 @@ var Element = {
 			command: 'requestFrameURL',
 			data: {
 				id: frame.id,
+				host: Page.info.host,
 				pageID: TOKEN.PAGE,
 				reason: reason,
 				token: Utilities.Token.create(frame.id)
@@ -593,19 +632,23 @@ var Element = {
 	},
 
 	handle: {
-		node: function (node) {			
+		node: function (node, i) {
 			var nodeName = node.nodeName.toUpperCase();
 
 			if (nodeName === 'A')
-				Element.handle.anchor(node);
+				setTimeout(function (node) {
+					Element.handle.anchor(node);
+				}, 10 * (i || 1), node);
 			else if (BLOCKABLE[nodeName]) {
 				if (nodeName._endsWith('FRAME'))
 					Element.handle.frame(node);
 
-				var kind = BLOCKABLE[nodeName][0];
+				setTimeout(function (node) {
+					var kind = BLOCKABLE[nodeName][0];
 
-				if (globalSetting.enabledKinds[kind] && !Element.triggersBeforeLoad(node))
-					Element.processUnblockable(kind, node, true);
+					if (globalSetting.enabledKinds[kind] && !Element.triggersBeforeLoad(node))
+						Element.processUnblockable(kind, node, true);
+				}, 10 * (i || 1), node);
 			}
 		},
 
@@ -724,6 +767,12 @@ var Resource = {
 
 		var kind = BLOCKABLE[nodeName][0];
 
+		if (kind === 'frame') {
+			element.setAttribute('data-jsbParentLocation', Page.info.location);
+			element.setAttribute('data-jsbParentHost', Page.info.host);
+			element.setAttribute('data-jsbParentProtocol', Page.info.protocol);
+		}
+
 		if (!globalSetting.enabledKinds[kind])
 			return true;
 
@@ -837,7 +886,8 @@ if (!globalSetting.disabled) {
 		// 	Page.send(true);
 		// }, 0);
 	} else {
-		var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
+		var useHost = Utilities.Page.isAbout ? (PARENT.host || Page.info.host) : Page.info.host,
+				willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', useHost);
 
 		setTimeout(function (willBlockFirstVisit) {
 			if (willBlockFirstVisit) {
@@ -858,15 +908,16 @@ if (!globalSetting.disabled) {
 		}, 500, willBlockFirstVisit);
 
 		var observer = new MutationObserver(function (mutations) {
-			for (var i = 0; i < mutations.length; i++)
-				if (mutations[i].type === 'childList')
-					for (var j = 0; j < mutations[i].addedNodes.length; j++)
-						setTimeout(function (node) {
-							Element.handle.node(node);
-						}, 10 * (i + j), mutations[i].addedNodes[j]);
+			var i,
+					j;
+
+			for (i = mutations.length; i--;) {
+				for (j = mutations[i].addedNodes.length; j--;)
+					Element.handle.node(mutations[i].addedNodes[j], i + j);
+			}
 		});
 
-		observer.observe(document, {
+		observer.observe(document.documentElement, {
 			childList: true,
 			subtree: true
 		});

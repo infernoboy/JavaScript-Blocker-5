@@ -184,7 +184,7 @@ Page.unblockFirstVisit = function (host) {
 Page.shouldBlockFirstVisit = function (host) {
 	var blockFirstVisit = Settings.getItem('blockFirstVisit');
 
-	if (blockFirstVisit === 'nowhere')
+	if (blockFirstVisit === 'nowhere' || host === 'srcdoc')
 		return false;
 
 	if (blockFirstVisit === 'domain')

@@ -750,9 +750,15 @@ var Command = function (type, event) {
 
 				if (detail.meta.closeButtons)
 					for (var i = 0; i < detail.meta.closeButtons.length; i++) {
-						notification.addCloseButton(detail.meta.closeButtons[i].title, function (callbackID, notification) {
-							Command.sendCallback(detail.sourceID, callbackID, true);
-						}.bind(null, detail.meta.closeButtons[i].callbackID));
+						notification.addCloseButton(detail.meta.closeButtons[i].title, function (sourceID, callbackID, notification) {
+							Commands.injected.executeCommanderCallback({
+								meta: {
+									sourceID: sourceID,
+									callbackID: callbackID,
+									result: true
+								}
+							});
+						}.bind(null, detail.originSourceID, detail.meta.closeButtons[i].callbackID));
 					}
 
 				Handler.event.addCustomEventListener('stylesheetLoaded', function () {

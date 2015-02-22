@@ -1,8 +1,6 @@
 "use strict";
 
 var Settings = {
-	__locked: false,
-
 	__method: function (method, setting, value) {
 		if (SettingStore.available)
 			return SettingStore[method](setting, value);
@@ -76,13 +74,9 @@ var Settings = {
 
 	map: {},
 
-	lock: function (lock, doNotSwitch) {
-		Settings.__locked = lock;
-
-		Settings.setItem('locked', lock, 'settings');
-
-		if (!doNotSwitch) {
-			if (lock)
+	onToggleLock: function (event, doNotSwitch) {
+		if (event.detail.key === 'settings') {
+			if (event.detail.locked)
 				UI.view.switchTo('#main-views-page');
 			else
 				UI.view.switchTo('#main-views-setting');
@@ -90,31 +84,7 @@ var Settings = {
 	},
 
 	isLocked: function () {
-		return !!Settings.__locked;
-	},
-
-	passwordIsSet: function () {
-		return typeof SecureSettings.getItem('lockPassword') === 'string';
-	},
-
-	getPassword: function () {
-		return SecureSettings.getItem('lockPassword');
-	},
-
-	setPassword: function (newPassword, previousPassword) {
-		if (Settings.passwordIsSet()) {
-			var currentPassword = Settings.getPassword();
-
-			if (currentPassword !== previousPassword)
-				return -2;
-		}
-
-		if (!newPassword.length)
-			return -1;
-
-		SecureSettings.setItem('lockPassword', newPassword);
-
-		return 0;
+		return Locker.isLocked('settings');
 	},
 
 	onChange: function (event) {
@@ -206,7 +176,57 @@ var Settings = {
 		return value;
 	},
 
-	setItem: function (settingKey, value, storeKey, changeConfirmed) {
+	confirmSettingSet: function (confirmChange, settingKey, value, storeKey, unlocked) {
+		var shouldConfirm = false;
+
+		if (confirmChange.when)
+			shouldConfirm = Utilities.Group.eval(confirmChange.when, Settings.all());
+		else if (confirmChange.toValues)
+			shouldConfirm = confirmChange.toValues._contains(value);
+
+		if (shouldConfirm) {
+			if (confirmChange.prompt) {
+				var confirmed = confirmChange.prompt();
+
+				if (!confirmed)
+					UI.Settings.repopulateActiveSection();
+				else
+					Settings.setItem(settingKey, value, storeKey, true, unlocked);
+
+				return;
+			}
+
+			var poppy = new Popover.window.Poppy(0.5, 0, true, 'confirm-setting-change');
+
+			poppy.setting = {
+				key: settingKey,
+				storeKey: storeKey,
+				value: value,
+				unlocked: unlocked
+			};
+
+			poppy.setContent(Template.create('poppy', 'confirm-setting-change', {
+				string: _('setting.' + settingKey + '.confirm')
+			}));
+
+			poppy.modal().show();
+			
+			return false;
+		} else
+			Settings.setItem(settingKey, value, storeKey, true, unlocked);
+	},
+
+	unlockSettingSet: function (settingKey, value, storeKey) {
+		Locker
+			.showLockerPrompt('setting')
+			.then(function () {
+				Settings.setItem(settingKey, value, storeKey, false, true);
+			}, function () {
+				UI.Settings.repopulateActiveSection();
+			});
+	},
+
+	setItem: function (settingKey, value, storeKey, changeConfirmed, unlocked) {
 		var setting = Settings.map[settingKey];
 
 		if (!setting)
@@ -215,7 +235,8 @@ var Settings = {
 		var type = setting.props.type,
 				options = setting.props.options,
 				otherOption = setting.props.otherOption,
-				confirmChange = setting.props.confirm;
+				confirmChange = setting.props.confirm,
+				locked = setting.props.locked;
 
 		if (setting.storeKeySettings) {
 			var storeSetting = setting.storeKeySettings[storeKey];
@@ -235,17 +256,24 @@ var Settings = {
 					throw new Error(Settings.ERROR.STORE_KEY_NOT_FOUND._format([settingKey, storeKey]));
 			}
 
-			var type = storeSetting.props.type || setting.props.type,
-					options = storeSetting.props.options || setting.props.options,
-					otherOption = storeSetting.props.otherOption || setting.props.otherOption,
+			var type = type || storeSetting.props.type,
+					options = options || storeSetting.props.options,
+					otherOption = otherOption || storeSetting.props.otherOption,
 					customValidate = setting.props.validate || storeSetting.props.validate,
-					confirmChange = setting.props.confirm || storeSetting.props.confirm;
+					confirmChange = confirmChange || storeSetting.props.confirm,
+					locked = locked || storeSetting.props.locked;
+
+			if (locked && !unlocked)
+				return Settings.unlockSettingSet(settingKey, value, storeKey);
 
 			if (customValidate && !customValidate.test(type, value, options, otherOption, storeSetting.props.extendOptions))
 				return 'setting.' + customValidate.onFail;
 
 			if (!this.__validate(type, value, options, otherOption, storeSetting.props.extendOptions))
 				throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, storeKey, value]));
+
+			if (confirmChange && !changeConfirmed)
+				return Settings.confirmSettingSet(confirmChange, settingKey, value, storeKey, unlocked);
 
 			this.__stores.getStore(settingKey).set(storeKey, value);
 
@@ -259,50 +287,11 @@ var Settings = {
 				key: settingKey
 			});
 		} else if (this.__validate(type, value, options, otherOption, setting.props.extendOptions)) {			
-			if (confirmChange && !changeConfirmed) {
-				var shouldConfirm = false;
+			if (locked && !unlocked)
+				return Settings.unlockSettingSet(settingKey, value, storeKey);
 
-				if (confirmChange.when)
-					shouldConfirm = Utilities.Group.eval(confirmChange.when, Settings.all());
-				else if (confirmChange.toValues)
-					shouldConfirm = confirmChange.toValues._contains(value);
-
-				if (shouldConfirm) {
-					if (confirmChange.prompt) {
-						var confirmed = confirmChange.prompt();
-
-						if (!confirmed)
-							UI.Settings.repopulateActiveSection();
-						else
-							Settings.setItem(settingKey, value, storeKey, true);
-
-						return;
-					}
-
-					var poppy = new Popover.window.Poppy(0.5, 0, true);
-
-					poppy.setContent(Template.create('poppy', 'confirm-setting-change', {
-						string: _('setting.' + settingKey + '.confirm')
-					}));
-
-					poppy.modal().show();
-
-					poppy.content
-						.on('click', '#setting-confirm-cancel', function () {
-							poppy.close();
-
-							UI.Settings.repopulateActiveSection();
-						})
-
-						.on('click', '#setting-confirm-change', function () {
-							poppy.close();
-
-							Settings.setItem(settingKey, value, storeKey, true);
-						});
-					
-					return false;
-				}
-			}
+			if (confirmChange && !changeConfirmed)
+				return Settings.confirmSettingSet(confirmChange, settingKey, value, storeKey, unlocked);
 
 			this.__method('setItem', settingKey, value);
 
@@ -402,34 +391,38 @@ var Settings = {
 	},
 
 	import: function (settings) {
-		var settings = SettingStore.import(settings);
+		Locker
+			.showLockerPrompt('importBackupSettings')
+			.then(function (settings) {
+				var settings = SettingStore.import(settings);
 
-		if (!settings)
-			return LogError('failed to import settings');
+				if (!settings)
+					return LogError('failed to import settings');
 
-		SettingStore.clear();
+				SettingStore.clear();
 
-		for (var setting in settings)
-			try {
-				if (settings[setting] && settings[setting].STORE)
-					SettingStore.setItem(setting, settings[setting]);
-				else
-					Settings.setItem(setting, settings[setting], null, true);
-			} catch (e) {
-				LogError('failed to import setting - ' + setting, e);
-			}
+				for (var setting in settings)
+					try {
+						if (settings[setting] && settings[setting].STORE)
+							SettingStore.setItem(setting, settings[setting]);
+						else
+							Settings.setItem(setting, settings[setting], null, true);
+					} catch (e) {
+						LogError('failed to import setting - ' + setting, e);
+					}
 
-		SettingStore.lock(true);
+				SettingStore.lock(true);
 
-		UI.view.switchTo('#main-views-page');
+				UI.view.switchTo('#main-views-page');
 
-		UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch'], function (event) {
-			event.preventDefault();
+				UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch'], function (event) {
+					event.preventDefault();
 
-			UI.Page.showModalInfo(_('settings.safari_restart'));
-		});
+					UI.Page.showModalInfo(_('settings.safari_restart'));
+				});
 
-		SecureSettings.clear();
+				SecureSettings.clear();
+			}.bind(null, settings));
 	}
 };
 
@@ -439,3 +432,5 @@ Settings.__stores = new Store('StoreSettings', {
 
 if (Utilities.Page.isGlobal)
 	Events.addSettingsListener(Settings.anySettingChanged);
+
+Locker.event.addCustomEventListener(['locked', 'unlocked'], Settings.onToggleLock);

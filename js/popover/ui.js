@@ -92,7 +92,7 @@ var UI = {
 					if (UI.drag.classList.contains('popover-resize-bottom')) {
 						var resizeStartY = parseInt(UI.drag.getAttribute('data-resizeStartY'), 10),
 								resizeStartHeight = parseInt(UI.drag.getAttribute('data-resizeStartHeight'), 10),
-								height = (event.originalEvent.screenY > resizeStartY) ? resizeStartHeight + (event.originalEvent.screenY - resizeStartY) : resizeStartHeight - (resizeStartY - event.originalEvent.screenY);
+								height = (event.screenY > resizeStartY) ? resizeStartHeight + (event.screenY - resizeStartY) : resizeStartHeight - (resizeStartY - event.screenY);
 
 						UI.resizePopover(Popover.popover.width, height);
 					} else {
@@ -100,9 +100,9 @@ var UI = {
 								resizeStartWidth = parseInt(UI.drag.getAttribute('data-resizeStartWidth'), 10);
 
 						if (UI.drag.classList.contains('popover-resize-left'))
-							var width = (event.originalEvent.screenX < resizeStartX) ? resizeStartWidth - (event.originalEvent.screenX - resizeStartX) : resizeStartWidth + (resizeStartX - event.originalEvent.screenX);
+							var width = (event.screenX < resizeStartX) ? resizeStartWidth - (event.screenX - resizeStartX) : resizeStartWidth + (resizeStartX - event.screenX);
 						else
-							var width = (event.originalEvent.screenX < resizeStartX) ? resizeStartWidth + (event.originalEvent.screenX - resizeStartX) : resizeStartWidth - (resizeStartX - event.originalEvent.screenX);
+							var width = (event.screenX < resizeStartX) ? resizeStartWidth + (event.screenX - resizeStartX) : resizeStartWidth - (resizeStartX - event.screenX);
 
 						var widthDifference = Popover.popover.width - width;
 
@@ -140,8 +140,8 @@ var UI = {
 
 				UI.drag = this;
 
-				this.setAttribute('data-resizeStartX', event.originalEvent.screenX);
-				this.setAttribute('data-resizeStartY', event.originalEvent.screenY);
+				this.setAttribute('data-resizeStartX', event.screenX);
+				this.setAttribute('data-resizeStartY', event.screenY);
 				this.setAttribute('data-resizeStartWidth', Popover.popover.width);
 				this.setAttribute('data-resizeStartHeight', Popover.popover.height);
 			})
@@ -160,7 +160,7 @@ var UI = {
 			.on('click', '.select-custom-input + .select-wrapper select:not(.select-cycle)', function (event) {
 				var self = $(this),
 						input = $(this.parentNode).prev(),
-						poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, true),
+						poppy = new Poppy(event.pageX, event.pageY, true),
 						options = $('option:not(.select-custom-option)', this);
 
 				var optionsTemplate = Template.create('poppy', 'select-custom-options', {
@@ -195,7 +195,7 @@ var UI = {
 
 					var clickContainer = this.parentNode;
 
-					for (var i = 0; i < 3; i++) {
+					for (var i = 0; i < 10; i++) {
 
 						clickElement = $('.on-enter', clickContainer);
 
@@ -215,7 +215,7 @@ var UI = {
 			})
 
 			.on('click', '*[data-expander]:not(.keep-expanded) > *', function (event) {
-				if (event.originalEvent.offsetX > this.offsetWidth) {
+				if (event.offsetX > this.offsetWidth) {
 					var header = $(this.parentNode),
 							groupWrapper = header.next(),
 							group = $('> *:first-child', groupWrapper);
@@ -388,6 +388,9 @@ var UI = {
 
 		setTimeout(function () {
 			UI.setLessVariables();
+
+			UI.event.trigger('UIReady', null, true);
+			globalPage.Command.event.trigger('UIReady', null, true);
 		}, 500);
 
 		Settings.map.showResourceURLs.props.onChange();
@@ -427,7 +430,7 @@ var UI = {
 		(window.less || Popover.window.less).modifyVars({
 			speedMultiplier: variables.speedMultiplier || window.globalSetting.speedMultiplier,
 			darkMode: variables.darkMode || Settings.getItem('darkMode'),
-			darknessLevel: variables.darknessLevel || Settings.getItem('darkMode') ? 83 : 0,
+			darknessLevel: variables.darknessLevel || Settings.getItem('darkMode') ? 84 : 0,
 			baseColor: variables.baseColor || Settings.getItem('baseColor')
 		});
 	},
@@ -459,12 +462,16 @@ var UI = {
 					if (key ==='c') {
 						event.preventDefault();
 
-						var consolePoppy = new Poppy(.999, 0, true, 'console');
+						Locker
+							.showLockerPrompt('console')
+							.then(function () {
+								var consolePoppy = new Poppy(0.5, 0, true, 'console');
 
-						consolePoppy
-							.setContent(Template.create('poppy', 'console'))
-							.stayOpenOnScroll()
-							.show();
+								consolePoppy
+									.setContent(Template.create('poppy', 'console'))
+									.stayOpenOnScroll()
+									.show();
+							});
 					}
 				}
 			} else {
@@ -514,7 +521,7 @@ var UI = {
 
 			UI.container
 				.on('click', '.more-info[data-moreInfo]', function (event) {
-					var poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false);
+					var poppy = new Poppy(event.pageX, event.pageY, false);
 
 					poppy
 						.linkToOpenPoppy()
@@ -540,22 +547,34 @@ var UI = {
 				})
 
 				.on('click', '#open-menu', function (event) {
+					var openMenu = function () {
+						var poppy = new Poppy(event.pageX, event.pageY, true, 'main-menu');
+
+						poppy.setContent(Template.create('poppy', 'main-menu')).stayOpenOnScroll().show();
+					};
+
 					if (this.classList.contains('unread-error')) {
+						var self = this;
+
 						this.classList.remove('unread-error');
 
-						var consolePoppy = new Poppy(event.pageX, event.pageY, true, 'console');
+						Locker
+							.showLockerPrompt('console')
+							.then(function () {
+								var consolePoppy = new Poppy(event.pageX, event.pageY, true, 'console');
 
-						consolePoppy
-							.setContent(Template.create('poppy', 'console'))
-							.stayOpenOnScroll()
-							.show();
+								consolePoppy
+									.setContent(Template.create('poppy', 'console'))
+									.stayOpenOnScroll()
+									.show();
+							}, function () {
+								openMenu();
+							});
 
 						return;
 					}
 
-					var poppy = new Poppy(event.pageX, event.pageY, true, 'main-menu');
-
-					poppy.setContent(Template.create('poppy', 'main-menu')).stayOpenOnScroll().show();
+					openMenu();
 				})
 
 				.on('click', '.view-switcher li', function () {
@@ -705,9 +724,16 @@ var UI = {
 			if (inRange || force) {
 				event.stopPropagation();
 
+				var pageX = event.pageX,
+						pageY = event.pageY;
+
 				if (force)
 					UI.event.addCustomEventListener(self.parent().hasClass('active-view') ? 'viewWillScrollToTop' : 'viewWillSwitch', function (event) {
-						event.preventDefault();
+						var moveX = Math.abs(event.pageX - pageX),
+								moveY = Math.abs(event.pageY - pageY);
+
+						if (moveX < 5 && moveY < 5)
+							event.preventDefault();
 					}, true);
 
 				var poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
@@ -718,7 +744,12 @@ var UI = {
 					UI.event.addCustomEventListener('poppyWillClose', function (event) {
 						if (event.detail === poppy) {
 							event.unbind();
-							event.preventDefault();
+
+							var moveX = Math.abs(event.pageX - pageX),
+									moveY = Math.abs(event.pageY - pageY);
+
+							if (moveX < 5 && moveY < 5)
+								event.preventDefault();
 						}
 					});
 
@@ -732,8 +763,14 @@ var UI = {
 
 					if (!inRange)
 						UI.event.addCustomEventListener('willDisable', function (event) {
-							event.preventDefault();
-						}, true);
+							event.unbind();
+
+							var moveX = Math.abs(event.pageX - pageX),
+									moveY = Math.abs(event.pageY - pageY);
+
+							if (moveX < 5 && moveY < 5)
+								event.preventDefault();
+						});
 
 					UI.event.addCustomEventListener('poppyDidShow', function () {
 						menuHolder.removeAttr('data-poppyMenuWillShow', 1);

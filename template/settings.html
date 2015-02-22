@@ -18,7 +18,7 @@
 </noscript>
 
 <noscript id="setting-section-divider">
-	<li class="setting-section-divider"></li>
+	<li class="setting-section-divider <%=self.classes || ''%>"></li>
 </noscript>
 
 <noscript id="setting-section-header">
@@ -67,6 +67,7 @@
 				<%=wrapper.close%><%
 			break;
 
+			case 'many-boolean':
 			case 'boolean': %>
 				<%=wrapper.full%>
 					<input id="<%=self.id%>" type="checkbox" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id%>"><%=mainLabel%></label>
@@ -93,7 +94,6 @@
 						} %>
 					</select><label></label>
 					<% if (subLabel) { %>
-						<br />
 						<label class="setting-sub-label"><%=subLabel%></label><%
 					} %>
 					<%=helpHTML%>

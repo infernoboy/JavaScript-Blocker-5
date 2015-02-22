@@ -115,12 +115,6 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		setting: 'showPageEditorImmediately',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
 		setting: 'alwaysUseTimedDisable',
 		props: {
 			type: 'boolean',
@@ -194,22 +188,10 @@ Settings.settings = {
 			}
 		}
 	}, {
-		store: 'locked',
+		store: 'locker',
 		props: {
-			type: 'boolean'
+			type: 'many-boolean'
 		},
-	}, {
-		setting: 'locked',
-		props: {
-			storeKey: 'rules',
-			default: false
-		}
-	}, {
-		setting: 'locked',
-		props: {
-			storeKey: 'settings',
-			default: false
-		}
 	}],
 
 	// General Settings
@@ -269,6 +251,12 @@ Settings.settings = {
 			onChange: function () {
 				UI.setLessVariables();
 			}
+		}
+	}, {
+		setting: 'showPageEditorImmediately',
+		props: {
+			type: 'boolean',
+			default: false
 		}
 	}, {
 		when: {
@@ -389,6 +377,63 @@ Settings.settings = {
 	}, {
 		divider: true //===================================================================================
 	}, {
+		header: 'locker'
+	}, {
+		description: 'setLockerPassword.description'
+	}, {
+		setting: 'setLockerPassword',
+		props: {
+			type: 'button',
+			onClick: function () {
+				Locker.showSetPasswordPrompt();
+			}
+		}
+	}, {
+		divider: true,
+		classes: 'transparent short'
+	}, {
+		description: 'lockerAlwaysLocked.description',
+		classes: 'short'
+	}, {
+		store: 'lockerAlwaysLocked',
+		props: {
+			type: 'many-boolean',
+			locked: true
+		}
+	}, {
+		setting: 'lockerAlwaysLocked',
+		props: {
+			readOnly: true,
+			storeKey: 'setting',
+			default: true
+		}
+	}, {
+		setting: 'lockerAlwaysLocked',
+		props: {
+			storeKey: 'clearRules',
+			default: true
+		}
+	}, {
+		setting: 'lockerAlwaysLocked',
+		props: {
+			storeKey: 'importBackupSettings',
+			default: true
+		}
+	}, {
+		setting: 'lockerAlwaysLocked',
+		props: {
+			storeKey: 'console',
+			default: false
+		}
+	}, {
+		setting: 'lockerAlwaysLocked',
+		props: {
+			storeKey: 'disable',
+			default: false
+		}
+	}, {
+		divider: true
+	}, {
 		header: 'extraFeatures'
 	}, {
 		when: {
@@ -407,22 +452,6 @@ Settings.settings = {
 				type: 'boolean',
 				isExtra: true,
 				default: true
-			}
-		}, {
-			divider: true
-		}, {
-			setting: 'setLockPassword',
-			props: {
-				type: 'button',
-				onClick: function (input, preventCancel) {
-					var poppy = new Popover.window.Poppy(0.5, 0, true, 'set-lock-password');
-
-					poppy.setContent(Template.create('poppy', 'set-lock-password', {
-						preventCancel: preventCancel
-					}));
-
-					poppy.modal().show();
-				}
 			}
 		}]
 	}],
@@ -509,13 +538,13 @@ Settings.settings = {
 				}
 			},
 			onChange: function () {
-				var locked = !!Rules.__locked;
+				var locked = !!Rules.isLockerLocked();
 
-				Rules.lock(false);
+				Locker.lock('rules', false);
 
 				Rules.list.firstVisit.clear();
 
-				Rules.lock(locked);
+				Locker.lock('rules', locked);
 			}
 		}
 	}, {
@@ -722,7 +751,7 @@ Settings.settings = {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'xhr',
-					extendOptions: [['ask', 'Rules and ask when neccessary']],
+					extendOptions: [['ask', 'Rules and ask when needed']],
 					help: 'alwaysBlock help',
 					default: 'blacklist',
 					onChange: function () {
@@ -969,6 +998,7 @@ Settings.settings = {
 		}
 	}, {
 		divider: true,
+		classes: 'transparent short'
 	}, {
 		description: 'filterListLastUpdate.description',
 		fill: function () {
@@ -999,6 +1029,18 @@ Settings.settings = {
 				button.disabled = true;
 			}
 		},
+	}, {
+		divider: true
+	}, {
+		setting: 'importRulesFromFour',
+		props: {
+			type: 'button',
+			onClick: function () {
+				var rules = prompt('Paste the exported rule backup below. This is obtained by clicking Rules > Backup > Export from JSB 4. You must have made a donation or unlocked features without contributing.');
+
+				Upgrade.importRulesFromJSB4(rules);
+			}
+		}
 	}],
 
 	// Snapshot settings
@@ -1041,7 +1083,8 @@ Settings.settings = {
 				}
 			}
 		}, {
-			divider: true //===================================================================================
+			divider: true,
+			classes: 'transparent short'
 		}, {
 			setting: 'clearSnapshots',
 			props: {
@@ -1335,6 +1378,3 @@ Settings.settings = {
 
 for (var section in Settings.settings)
 	Settings.createMap(Settings.settings[section]);
-
-if (Settings.passwordIsSet())
-	Settings.lock(Settings.getItem('locked', 'settings'), true);

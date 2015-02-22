@@ -165,6 +165,7 @@ var Update = {
 					else
 						reject(request.status);
 				})
+				
 				.fail(function (request) {
 					reject(request.status);
 				});
@@ -184,45 +185,6 @@ var OKPoppyUpdate = function (poppy) {
 		});
 };
 
-
-
-// Alpha 3
-Update.versions[150106] = {
-	blocking: false,
-
-	poppy: OKPoppyUpdate
-};
-
-// Alpha 4
-Update.versions[150107] = {
-	blocking: false,
-
-	poppy: OKPoppyUpdate
-};
-
-// Alpha 5
-Update.versions[150108] = {
-	blocking: false,
-
-	update: function () {
-		SettingStore.removeItem('Storage-FilterRules-$list');
-		SettingStore.removeItem('Storage-FilterRules-$malware');
-		SettingStore.removeItem('Storage-FilterRules-$privacy');
-
-		return true;
-	}
-};
-
-// Alpha 6
-Update.versions['150108.1'] = {
-	blocking: false,
-
-	update: function () {
-		FilterList.fetch();
-
-		return true;
-	}
-};
 
 Update.versions[150215] = {
 	blocking: false,

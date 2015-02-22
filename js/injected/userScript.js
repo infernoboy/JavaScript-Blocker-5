@@ -230,7 +230,9 @@ var UserScript = {
 			messageExtension('registerMenuCommand', caption, fn, true);
 		},
 
-		GM_setClipboard: function () { },
+		GM_setClipboard: function () {
+			// Do nothing
+		},
 
 		GM_xmlhttpRequest: function (details) {
 			var events,

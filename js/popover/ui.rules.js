@@ -23,7 +23,13 @@ UI.Rules = {
 
 		UI.Rules.events.rules();
 
-		UI.view.switchTo('#rule-views-temporary');
+		UI.event.addCustomEventListener('viewDidSwitch', function (event) {
+			if (event.detail.id === '#main-views-rule') {
+				event.unbind();
+
+				UI.view.switchTo('#rule-views-active');
+			}
+		});
 	},
 
 	buildViewSwitcher: function () {
@@ -198,12 +204,18 @@ UI.Rules = {
 				editable = 0,
 				hasRules = false;
 
-		if (!globalPage.Rules.__locked) {
+		if (!globalPage.Rules.isLockerLocked()) {
 			if (ruleList === globalPage.Rules.list.temporary)
 				editable = 1;
-			else if (ruleList == globalPage.Rules.list.active)
-				editable = globalPage.Rules.snapshotInUse() ? 2 : 1;
+			else if (ruleList == globalPage.Rules.list.active) {
+				if (globalPage.Rules.snapshotInUse())
+					editable = (!globalPage.Rules.list.active.snapshot.comparison || globalPage.Rules.list.active.snapshot.comparison === 'right') ? 2 : 0;
+				else
+					editable = 1;
+			}
 		}
+
+		UI.Rules.noRules.addClass('jsb-hidden');
 
 		view
 			.attr('data-ruleListItems', '1')
@@ -348,9 +360,9 @@ UI.Rules = {
 
 					domainExpanders.each(function () {
 						Settings.setItem('expander', isHide, this.getAttribute('data-expander'));
-					});
 
-					UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+						this.classList.toggle('group-collapsed', isHide);
+					});
 				})
 
 				.on('click', '.rule-item-delete', function (event) {
@@ -412,11 +424,11 @@ UI.Rules = {
 				})
 
 				.on('click', '.multi-list-item-wrapper[data-editable="1"] .multi-list-item-header', function (event) {
-					if (event.originalEvent.offsetX > this.offsetWidth)
+					if (event.offsetX > this.offsetWidth)
 						return;
 
 					var ruleList = globalPage.Rules.list[this.parentNode.parentNode.getAttribute('data-listName')],
-							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy', 'create-rule', {
 						editing: false,
@@ -432,14 +444,14 @@ UI.Rules = {
 				})
 
 				.on('click', '.rule-group-type-wrapper[data-editable="1"] .rule-group-type-header', function (event) {
-					if (event.originalEvent.offsetX > this.offsetWidth)
+					if (event.offsetX > this.offsetWidth)
 						return;
 
 					var self = $(this),
 							view = self.parents('*[data-ruleListItems]'),
 							ruleList = view.data('ruleList'),
 							type = this.parentNode.parentNode.getAttribute('data-type'),
-							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy', 'create-rule', {
 						editing: false,
@@ -455,7 +467,7 @@ UI.Rules = {
 				})
 
 				.on('click', '.rule-group-domain-wrapper[data-editable="1"] .rule-group-domain-header', function (event) {
-					if (event.originalEvent.offsetX > this.offsetWidth)
+					if (event.offsetX > this.offsetWidth)
 						return;
 
 					var self = $(this),
@@ -463,7 +475,7 @@ UI.Rules = {
 							ruleList = view.data('ruleList'),
 							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
 							domain = this.parentNode.parentNode.getAttribute('data-domain'),
-							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy', 'create-rule', {
 						editing: false,
@@ -479,7 +491,7 @@ UI.Rules = {
 				})
 
 				.on('click', '.rule-group-kind-wrapper[data-editable="1"] .rule-group-kind-header', function (event) {
-					if (event.originalEvent.offsetX > this.offsetWidth)
+					if (event.offsetX > this.offsetWidth)
 						return;
 
 					var self = $(this),
@@ -488,7 +500,7 @@ UI.Rules = {
 							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
 							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
 							kind = this.parentNode.parentNode.getAttribute('data-kind'),
-							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy', 'create-rule', {
 						editing: false,
@@ -512,7 +524,7 @@ UI.Rules = {
 							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
 							rule = self.parents('.rule-item-container').attr('data-rule'),
 							action = parseInt(self.prev().attr('data-action'), 10),
-							poppy = new Poppy(event.originalEvent.pageX, event.originalEvent.pageY, false, 'create-rule');
+							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					var templateArgs = {
 						editing: true,
@@ -544,8 +556,10 @@ UI.Rules = {
 		},
 
 		viewWillSwitch: function (event) {
-			if (event.detail.to.id._startsWith('#main-views'))
-				$('#rule-domain-search', UI.Rules.view).val('').trigger('search');
+			event.afterwards(function (event) {
+				if (!event.defaultPrevented && (event.detail.to.id === '#main-views-rule' || event.detail.to.id === '#main-views-page'))
+					$('#rule-domain-search', UI.Rules.view).val('').trigger('search');
+			});
 
 			if (event.detail.to.id === '#main-views-rule' && $('.active-view', UI.Rules.views).is('#rule-views-filter'))
 				UI.view.switchTo('#rule-views-temporary');
