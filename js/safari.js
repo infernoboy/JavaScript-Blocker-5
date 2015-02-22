@@ -9,7 +9,7 @@ var beforeLoad = {
 
 var Version = {
 	display: safari.extension.displayVersion,
-	bundle: safari.extension.bundleVersion
+	bundle: parseFloat(safari.extension.bundleVersion)
 };
 
 try {

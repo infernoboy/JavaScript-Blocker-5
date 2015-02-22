@@ -19,10 +19,15 @@ var Update = {
 	versions: {},
 
 	init: function () {
-		if (this.isNewInstall())
-			this.installedBundle = Version.bundle;
+		if (Update.isNewInstall())
+			Update.installedBundle = Version.bundle;
 		else
-			this.performUpdate();
+			Command.event.addCustomEventListener('UIReady', function () {
+				if (Update.installedBundle === NaN)
+					Update.installedBundle = 1;
+				
+				Update.performUpdate();
+			}, true);
 	},
 
 	showRequiredPopover: function () {
@@ -51,80 +56,77 @@ var Update = {
 				});
 		}, true, true);
 
-		this.showRequiredPopover();
+		Update.showRequiredPopover();
 	},
 
 	performUpdate: function () {
-		Command.event.addCustomEventListener('UIReady', function () {
-			var update;
+		var update;
 
-			var didReEnable = false,
-					isDisabled = window.globalSetting.disabled,
-					availableUpdates = Update.versionUpdatesAvailable();
+		var didReEnable = false,
+				isDisabled = window.globalSetting.disabled,
+				availableUpdates = Update.versionUpdatesAvailable();
 
-			if (!availableUpdates.length && Update.wasJustUpdated) {
+		if (!availableUpdates.length){
+			if (Update.wasJustUpdated) {
 				Update.wasJustUpdated = false;
 
 				Update.allUpdatesCompleted();
+			}
+
+			return;
+		}
+
+		var updateToVersion = availableUpdates[0],
+				update = Update.versions[updateToVersion];
+
+		if (update && update.blocking) {
+			Command.toggleDisabled(true, true);
+
+			Command.event.addMissingCustomEventListener('willDisable', Update.__keepDisabled);
+		}
+
+		if (update) {
+			if (update.poppy) {
+				Popover.window.Poppy.scripts[updateToVersion] = update.poppy;
+
+				UI.event.addCustomEventListener('popoverOpened', function (updateVersion) {
+					var poppy = new Popover.window.Poppy(0.5, 0, null, updateVersion);
+
+					poppy.updateVersion = updateVersion;
+
+					poppy.modal().setContent(Template.create('poppy', 'update-' + updateVersion));
+
+					poppy.show();
+				}.bind(null, updateToVersion), true, true);
+
+				if (Settings.getItem('updateNotify') || Popover.visible() || update.blocking)
+					Update.showRequiredPopover();
 
 				return;
 			}
 
-			for (var i = 0; i < availableUpdates.length; i++) {
-				if (Update.versions[availableUpdates[i]] && Update.versions[availableUpdates[i]].blocking) {
-					Command.toggleDisabled(true, true);
+			if (update.update(updateToVersion) === true)
+				Update.updatedToVersion(updateToVersion);
+			else
+				return;
 
-					Command.event.addMissingCustomEventListener('willDisable', Update.__keepDisabled);
-				}
+			if (!didReEnable) {
+				didReEnable = true;
+				
+				Command.event.removeCustomEventListener('willDisable', Update.__keepDisabled);
+
+				Command.toggleDisabled(isDisabled, true);
 			}
-
-			for (var i = 0; i < availableUpdates.length; i++) {
-				update = Update.versions[availableUpdates[i]];
-
-				if (update) {
-					if (update.poppy) {
-						Popover.window.Poppy.scripts[availableUpdates[i]] = update.poppy;
-
-						UI.event.addCustomEventListener('popoverOpened', function (updateVersion) {
-							var poppy = new Popover.window.Poppy(0.5, 0, null, updateVersion);
-
-							poppy.updateVersion = updateVersion;
-
-							poppy.modal().setContent(Template.create('poppy', 'update-' + updateVersion));
-
-							poppy.show();
-						}.bind(null, availableUpdates[i]), true, true);
-
-						if (Settings.getItem('updateNotify') || Popover.visible() || update.blocking)
-							Update.showRequiredPopover();
-
-						break;
-					}
-
-					if (update.update(availableUpdates[i]) === true)
-						Update.updatedToVersion(availableUpdates[i]);
-					else
-						break;
-
-					if (!didReEnable) {
-						didReEnable = true;
-						
-						Command.event.removeCustomEventListener('willDisable', Update.__keepDisabled);
-
-						Command.toggleDisabled(isDisabled, true);
-					}
-				} else
-					Update.updatedToVersion(availableUpdates[i]);
-			}
-		}, true);
+		} else
+			Update.updatedToVersion(updateToVersion);
 	},
 
 	isNewInstall: function () {
-		return this.installedBundle === 0;
+		return Update.installedBundle === 0;
 	},
 
 	versionUpdatesAvailable: function () {
-		if (this.isNewInstall())
+		if (Update.isNewInstall())
 			return [];
 
 		var versions =
@@ -132,12 +134,14 @@ var Update = {
 				.map(function (version) {
 					return parseFloat(version);
 				})
+
 				.filter(function (version) {
 					return Update.installedBundle < version && version <= Version.bundle;
 				})
+
 				.sort();
 
-		if (!versions._contains(Version.bundle) && this.installedBundle < parseFloat(Version.bundle))
+		if (!versions._contains(Version.bundle) && Update.installedBundle < Version.bundle)
 			versions.push(Version.bundle);
 
 		return versions;
@@ -146,14 +150,14 @@ var Update = {
 	updatedToVersion: function (version) {
  		version = parseFloat(version);
 
- 		if (version <= this.installedBundle)
- 			throw new Error('cannot update to less or same version - ' + (version + '<=' + this.installedBundle));
+ 		if (version <= Update.installedBundle)
+ 			throw new Error('cannot update to less or same version - ' + (version + '<=' + Update.installedBundle));
 
- 		this.wasJustUpdated = true;
+ 		Update.wasJustUpdated = true;
 
-		this.installedBundle = version;
+		Update.installedBundle = version;
 
-		this.performUpdate();
+		Update.performUpdate();
 	},
 
 	fetchChangeLog: function (displayVersion) {
@@ -174,23 +178,13 @@ var Update = {
 };
 
 
-
-
-var OKPoppyUpdate = function (poppy) {
-	poppy.content
-		.on('click', 'input', function () {
-			poppy.close();
-
-			Update.updatedToVersion(poppy.updateVersion);
-		});
-};
-
-
 Update.versions[150215] = {
 	blocking: false,
 
 	update: function () {
 		SettingStore.removeItem('Storage-EasyRules');
+
+		return true;
 	}
 };
 
