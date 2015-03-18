@@ -142,6 +142,7 @@
 			float: none @important;
 			text-indent: 0 @important;
 			letter-spacing: normal @important;
+			-webkit-margin-collapse: collapse collapse;
 			top: auto;
 			left: auto;
 			right: auto;
@@ -201,9 +202,9 @@
 			.color-block;
 
 			&.blend-in {
-				background: darken(rgba(255, 255, 255, 0.5), @darknessLevel);
-				border-color: darken(rgba(200, 200, 200, 0.5), @darknessLevel);
-				box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02) @important;
+				background: darken(rgba(255, 255, 255, 0.55), @darknessLevel);
+				border-color: darken(rgba(200, 200, 200, 0.55), @darknessLevel);
+				box-shadow: 0 1px 0 rgba(0, 0, 0, 0.01) @important;
 			}
 
 			&[disabled] {
@@ -285,12 +286,12 @@
 
 			&.double-click {
 				&.one-more-time {
-					background: -webkit-linear-gradient(top, darken(red, 5%), darken(red, 10%)) @important;
-					border-color: darken(red, 13%) @important;
+					background: darken(red, 7%) @important;
+					border-color: darken(red, 10%) @important;
 					color: #fff @important;
 
 					&:active {
-						background: -webkit-linear-gradient(top, darken(red, 13%), darken(red, 18%)) @important;
+						background: darken(red, 10%) @important;
 					}
 				}
 			}
@@ -613,7 +614,7 @@
 		}
 
 		.select-custom-wrapper {
-			display: -webkit-flex @important;
+			display: -webkit-inline-flex @important;
 			-webkit-align-items: flex-start @important;
 
 			.select-custom-input {

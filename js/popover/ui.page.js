@@ -11,7 +11,7 @@ UI.Page = {
 
 		UI.Page.modalInfo.hide();
 
-		UI.Page.notification.hide();
+		UI.Page.hideSwitcherBadge();
 
 		var pageInfo = page.tree(),
 				showHiddenItems = Settings.getItem('showHiddenItems'),
@@ -103,7 +103,7 @@ UI.Page = {
 	init: function () {
 		UI.Page.view = $('#main-views-page', UI.view.views);
 		UI.Page.toolbarItem = $('*[data-view="#main-views-page"]', UI.view.viewSwitcher);
-		UI.Page.notification = $('.view-switcher-item-notification', UI.Page.toolbarItem);
+		UI.Page.badge = $('.view-switcher-item-badge', UI.Page.toolbarItem);
 		UI.Page.modalInfo = $('#page-modal-info', UI.Page.view);
 		UI.Page.stateContainer = $('#page-state-container', UI.Page.view);
 
@@ -166,6 +166,14 @@ UI.Page = {
 			});
 	},
 
+	showSwitcherBadge: function (text) {
+		UI.Page.badge.text(text).css('display', 'inline-block');
+	},
+
+	hideSwitcherBadge: function () {
+		UI.Page.badge.hide();
+	},
+
 	showResource: function (resource) {
 		$('#main-views-resource-content', UI.view.views).empty().append(resource);
 
@@ -179,7 +187,7 @@ UI.Page = {
 	},
 
 	canRender: function () {
-		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyDisplayed() && $('.page-host-editing', UI.Page.view).length === 0);
+		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyDisplayed() && $('.page-host-editing', UI.Page.view).length === 0 && $('.advanced-rule-created', UI.Page.view).length === 0);
 	},
 
 	showModalInfo: function (info) {
@@ -192,7 +200,7 @@ UI.Page = {
 			}))
 			.show();
 
-		UI.Page.notification.hide();
+		UI.Page.hideSwitcherBadge();
 	},
 
 	throttledRequestFromActive: Utilities.throttle(function (event) {
@@ -206,7 +214,7 @@ UI.Page = {
 		if (UI.Page.canRender())
 			UI.onReady(UI.Page.__renderPage.bind(UI.Page, page));
 		else {
-			UI.Page.notification.text('...').show();
+			UI.Page.showSwitcherBadge('...');
 
 			UI.view.views.unbind('scroll', UI.Page.throttledRequestFromActive).one('scroll', UI.Page.throttledRequestFromActive);
 
@@ -441,7 +449,7 @@ UI.Page = {
 		viewDidSwitch: function (event) {
 			UI.event.addCustomEventListener('UIReady', function () {
 				if (event.detail.view[0] !== UI.Page.view[0])
-					UI.Page.notification.hide();
+					UI.Page.hideSwitcherBadge();
 			}, true);
 		},
 

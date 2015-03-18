@@ -71,13 +71,13 @@ Settings.settings = {
 		setting: 'popoverHeight',
 		props: {
 			type: 'number',
-			default: 391
+			default: 401
 		}
 	}, {
 		setting: 'popoverHeightExpanded',
 		props: {
 			type: 'number',
-			default: 441
+			default: 451
 		}
 	}, {
 		setting: 'pageHostColumnAllowedWidth',
@@ -322,7 +322,7 @@ Settings.settings = {
 			options: [
 				['#177efb', 'Blue'],
 				['#336699', 'Slate blue'],
-				['#787778', 'Gray'],
+				['#787878', 'Gray'],
 				['#5d5d5d', 'Dark gray'],
 				['#99999f', 'Graphite'],
 				['#ff1fed', 'Pink	'],
@@ -355,8 +355,7 @@ Settings.settings = {
 			type: 'option',
 			options: [
 				['auto', 'Automatic'],
-				['en-us', 'US English'],
-				['de-de', 'Deutsch']
+				['en-us', 'US English']
 			],
 			default: 'auto'
 		}
@@ -1215,10 +1214,16 @@ Settings.settings = {
 			props: {
 				type: 'boolean',
 				default: false,
-				confirm: [{
-					when: true,
-					prompt: 'blockReferrer help'
-				}],
+				confirm: {
+					when: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'blockReferrer',
+							needle: false
+						}]
+					}
+				},
 				subSettings: [{
 					when: {
 						hide: true,
@@ -1336,7 +1341,13 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'canvas_data_url',
-				options: [[false, 'Off'], [1, 'Always ask'], [2, 'Ask once per host'], [3, 'Ask once per host for session'], [4, 'Always protect']],
+				options: [
+					[false, 'Off'],
+					[1, 'Always ask'],
+					[2, 'Ask once per host'],
+					[3, 'Ask once per host for session'],
+					[4, 'Always protect']
+				],
 				isExtra: true,
 				default: function () {
 					return Extras.isActive() ? 3 : false;
@@ -1347,7 +1358,13 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'font',
-				options: [[false, 'Default'], ['Helvetica', 'Helvetica'], ['Arial', 'Arial'], ['Times', 'Times'], ['Comic Sans MS', 'Comic Sans MS']],
+				options: [
+					[false, 'Default'],
+					['Helvetica', 'Helvetica'],
+					['Arial', 'Arial'],
+					['Times', 'Times'],
+					['Comic Sans MS', 'Comic Sans MS']
+				],
 				isExtra: true,
 				default: false,
 				otherOption: {
@@ -1362,7 +1379,17 @@ Settings.settings = {
 			props: {
 				type: 'option',
 				storeKey: 'zoom',
-				options: [[false, 'Default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%']],
+				options: [
+					[false, 'Default'],
+					[60, '60%'],
+					[80, '80%'],
+					[100, '100%'],
+					[120, '120%'],
+					[140, '140%'],
+					[160, '160%'],
+					[180, '180%'],
+					[200, '200%']
+				],
 				isExtra: true,
 				default: false,
 				otherOption: {

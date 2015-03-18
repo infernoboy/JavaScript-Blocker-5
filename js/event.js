@@ -106,7 +106,7 @@ EventListener.prototype.removeCustomEventListener = function (name, fn) {
 			listeners = this.listeners(name);
 
 	for (var i = listeners.fns.length; i--;)
-		if (listeners.fns[i].fn !== fn)
+		if (listeners.fns[i].fn !== fn && fn !== undefined)
 			newListeners.push(listeners.fns[i]);
 
 	this.__listeners[name].fns = newListeners;

@@ -225,6 +225,11 @@ var Command = function (type, event) {
 			}
 		},
 
+		restorePlaceholderElements: function (detail) {
+			if (detail.data.pageID === Page.info.id)
+				Element.restorePlaceholderElements();
+		},
+
 		rerequestFrameURL: function (detail) {
 			if (detail.data.parent.pageID === Page.info.id)
 				Element.requestFrameURL(document.getElementById(detail.data.parent.frameID), detail.data.reason);
@@ -722,17 +727,15 @@ var Command = function (type, event) {
 			});
 
 			notification.addEventListener('click', '.jsb-xhr-create-rule', function (notification) {
-				GlobalPage.message('showPopover');
-
-				var originalValue = this.value;
+				GlobalPage.message('editResourceIDs', {
+					resourceIDs: [meta.awaitPromptResourceID]
+				});
 
 				this.disabled = true;
-				this.value = 'Popover Opened';
 
 				setTimeout(function (self) {
 					self.disabled = false;
-					self.value = originalValue;
-				}, 2000, this);
+				}, 500, this);
 			});
 		},
 
@@ -793,6 +796,10 @@ var Command = function (type, event) {
 		},
 
 		showPopover: function (detail) {
+			Command.globalRelay(detail);
+		},
+
+		editResourceIDs: function (detail) {
 			Command.globalRelay(detail);
 		},
 

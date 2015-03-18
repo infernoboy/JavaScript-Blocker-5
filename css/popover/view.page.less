@@ -139,6 +139,7 @@
 
 				&.floated-header {
 					position: absolute;
+					z-index: 2;
 				}
 
 				select + label {
@@ -433,6 +434,16 @@
 							}
 						}
 
+						&.advanced-rule-created {
+							@backgroundColor: lighten(purple, 72%);
+
+							background: @backgroundColor;
+
+							& when (@darkMode) {
+								background: darken(@backgroundColor, 80%);
+							}
+						}
+
 						&[data-protocol="https:"] {
 							.page-host-item-edit-select,
 							.page-host-item-source-container > * {
@@ -537,7 +548,8 @@
 								-webkit-flex: 1 1 auto;
 								padding-right: 1px;
 
-								select:not(.select-custom-ready) {
+								select:not(.select-custom-ready),
+								.select-custom-wrapper {
 									width: 100%;
 								}
 

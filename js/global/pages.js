@@ -4,12 +4,7 @@ function Page (page, tab) {
 	if (!Page.isPage(page))
 		throw new TypeError('page state is not an instance of Object');
 
-	page.state.props = {
-		destroyChildren: true
-	};
-
 	page.state = Store.promote(page.state);
-
 
 	var state,
 			kinds,
@@ -236,7 +231,7 @@ Page.prototype.addFrame = function (frame) {
 		});
 	}
 
-	if (mergeInto && (!mergeInto.info.disabled || protoMerge)) {
+	if (mergeInto && ((!mergeInto.info.disabled && !frame.info.disabled) || (mergeInto.info.disabled && frame.info.disabled))) {
 		frame.merged = true;
 
 		var myState,

@@ -586,6 +586,8 @@ Object._extend(Poppy.scripts, {
 									action: newAction
 								});
 
+							globalPage.Rule.event.trigger('advancedRuleWasCreated');
+
 							Poppy.closeAll();
 
 							if (UI.Rules.view.is('.active-view'))

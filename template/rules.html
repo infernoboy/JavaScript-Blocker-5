@@ -4,14 +4,14 @@
 			<label for="rule-domain-search" class="jsb-label"><%=_('rules.filter_domain')%>:&nbsp;</label>
 			<input type="search" id="rule-domain-search" incremental="incremental" placeholder="<%=_('rules.domain_or_page')%>"/>&nbsp;
 			<label for="rule-domain-hide-show" class="jsb-label"><%=_('rules.domains_pages')%>:&nbsp;
-			<a href="javascript:void(0);" id="rule-domain-hide-all" class="no-underline"><%=_('rules.hide_all')%></a> - 
-			<a href="javascript:void(0);" id="rule-domain-show-all" class="no-underline"><%=_('rules.show_all')%></a>
+			<input type="button" id="rule-domain-hide-all" class="blend-in" value="<%=_('rules.hide_all')%>" />&nbsp;
+			<input type="button" id="rule-domain-show-all" class="blend-in" value="<%=_('rules.show_all')%>" />
 		</div>
 		<div class="horizontal-divider horizontal-divider-short"></div>
 	</div>
 	<div id="rule-views-container" class="ui-view-container">
-		<p id="rule-views-no-rules" class="jsb-info jsb-centered jsb-embossed"><%=_('rules.no_rules')%></p>
 		<div id="rule-views"></div>
+		<p id="rule-views-no-rules" class="jsb-info jsb-centered jsb-embossed"><%=_('rules.no_rules')%></p>
 	</div>
 </noscript>
 

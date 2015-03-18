@@ -108,6 +108,9 @@ var Utilities = {
 		};
 
 		return function () {
+			if (delay === 0)
+				return Utilities.setImmediateTimeout(execute.bind(this, arguments));
+			
 			var elapsed = Date.now() - last;
 
 			clearTimeout(timeout);
@@ -881,6 +884,8 @@ function Log () {
 	var args = Utilities.makeArray(arguments),
 			logMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
 
+	logMessages.unshift((new Date).toLocaleTimeString(), '-');
+
 	Log.history.unshift(logMessages.join(' '));
 
 	Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
@@ -896,7 +901,9 @@ Log.history = [];
 function LogDebug () {
 	if (globalSetting.debugMode) {
 		var args = Utilities.makeArray(arguments),
-			debugMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
+				debugMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
+
+		debugMessages.unshift((new Date).toLocaleTimeString(), '-');
 
 		LogDebug.history.unshift(debugMessages.join(' '));
 
@@ -940,6 +947,8 @@ function LogError () {
 		} else
 			errorMessage = [error];
 
+		errorMessage.unshift((new Date).toLocaleTimeString(), '-');
+
 		LogError.history.unshift({
 			message: errorMessage,
 			stack: errorStack || ''
@@ -974,8 +983,11 @@ function LogError () {
 		}
 	}
 
-	if (window.UI)
+	if (window.UI) {
 		$('#open-menu', UI.view.viewToolbar).addClass('unread-error');
+
+		// Update.showRequiredPopover();
+	}
 };
 
 LogError.history = [];

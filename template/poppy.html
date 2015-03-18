@@ -548,7 +548,7 @@
 	<% for (var i = 0; i < self.items.length; i++) { %>
 		<li>
 			<% if (self.items[i].kind === 'script' || self.items[i].kind === 'image') { %>
-				<input type="button" class="show-resource-source" value="<%=_('expander.show')%>" data-kind="<%=self.items[i].kind%>" data-url="<%=self.items[i].fullSource._entityQuotes()%>" />&nbsp;<%
+				<input type="button" class="show-resource-source blend-in" value="<%=_('expander.show')%>" data-kind="<%=self.items[i].kind%>" data-url="<%=self.items[i].fullSource._entityQuotes()%>" />&nbsp;<%
 			} %><p class="jsb-nowrap jsb-light-scrollbars"><span class="jsb-nowrap"><%=(self.items[i].kind._startsWith('xhr_') ? self.items[i].baseSource : self.items[i].fullSource)._escapeHTML()%></span>
 			</p>
 			<% if (self.items[i].meta) { %>

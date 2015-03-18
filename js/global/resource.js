@@ -25,8 +25,12 @@ function Resource (resource) {
 
 	if (this.strict)
 		this.searchKinds = [this.kind];
-	else
+	else {
 		this.searchKinds = this.isFrame ? [this.framedKind, 'framed:*', this.kind, '*'] : [this.kind, '*'];
+
+		if (this.kind === 'special')
+			this.searchKinds.pop();
+	}
 
 	this.hideKinds = this.searchKinds.map(function (kind, i) {
 		return 'hide:' + kind;
@@ -47,12 +51,14 @@ function Resource (resource) {
 	this.lowerSource = this.source.toLowerCase();
 };
 
+Resource.USE_CACHE = true;
+
 Resource.longRegExps = new Store('LongRegExps');
 Resource.canLoadCache = new Store('ResourceCanLoad', {
 	save: true,
 	private: true,
 	maxLife: TIME.ONE.HOUR * 36,
-	saveDelay: TIME.ONE.SECOND * 30
+	saveDelay: TIME.ONE.MINUTE
 });
 
 Resource.canLoadCache.addCustomEventListener('storeDidClear', function () {
@@ -242,18 +248,22 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	}
 
 	var searchKinds = useHideKinds ? this.hideKinds : this.searchKinds,
-			store = Resource.canLoadCache.getStore(searchKinds.concat(excludeLists).join('-')),
-			pageSources = store.getStore(this.pageLocation),
-			pageCached = pageSources.get(this.lowerSource);
+			domainCached = false;
 
-	if (pageCached && !detailed && Rules.list.active === Rules.list.user)
-		return pageCached;
+	if (Resource.USE_CACHE) {
+		var store = Resource.canLoadCache.getStore(searchKinds.concat(excludeLists).join('-')),
+				pageSources = store.getStore(this.pageLocation),
+				pageCached = pageSources.get(this.lowerSource);
 
-	var hostSources = store.getStore(this.pageHost),
-			domainCached = hostSources.get(this.lowerSource);
+		if (pageCached && !detailed && Rules.list.active === Rules.list.user)
+			return pageCached;
 
-	if (domainCached && domainCached.action >= 0 && !detailed && Rules.list.active === Rules.list.user)
-		return domainCached;
+		var hostSources = store.getStore(this.pageHost),
+				domainCached = hostSources.get(this.lowerSource);
+
+		if (domainCached && domainCached.action >= 0 && !detailed && Rules.list.active === Rules.list.user)
+			return domainCached;
+	}
 
 	var pageRule,
 			longAllowed,
@@ -359,11 +369,11 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	self = undefined;
 
 	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE || canLoad.action === ACTION.ALLOW_AFTER_FIRST_VISIT)
-		canLoad = domainCached ? domainCached : this.allowedBySettings(useHideKinds);
+		canLoad = (Resource.USE_CACHE && domainCached) ? domainCached : this.allowedBySettings(useHideKinds);
 
 	canLoad.isAllowed = !!(canLoad.action % 2);
 
-	if (!detailed && canLoad.list !== 'temporary' && Rules.list.active === Rules.list.user)
+	if (Resource.USE_CACHE && !detailed && canLoad.list !== 'temporary' && Rules.list.active === Rules.list.user)
 		Utilities.setImmediateTimeout(function (canLoad, store, source) {
 			store.set(source, canLoad);
 		}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.lowerSource]);

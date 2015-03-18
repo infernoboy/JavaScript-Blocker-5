@@ -160,7 +160,7 @@ var UI = {
 			.on('click', '.select-custom-input + .select-wrapper select:not(.select-cycle)', function (event) {
 				var self = $(this),
 						input = $(this.parentNode).prev(),
-						poppy = new Poppy(event.pageX, event.pageY, true),
+						poppy = new Poppy(event.pageX, event.pageY, false),
 						options = $('option:not(.select-custom-option)', this);
 
 				var optionsTemplate = Template.create('poppy', 'select-custom-options', {
@@ -316,8 +316,9 @@ var UI = {
 							.wrapAll('<div class="select-wrapper"></div>')
 							.end()
 							.parent()
-							.parent()
-							.wrapInner('<div class="select-custom-wrapper"></div>');
+							.prev()
+							.addBack()
+							.wrapAll('<div class="select-custom-wrapper"></div>');
 
 						// if (!customSelects[i].classList.contains('select-cycle'))
 						// 	customSelects[i].selectedIndex = -1;
@@ -452,6 +453,13 @@ var UI = {
 		},
 
 		keyboardShortcut: function (event) {
+			if (document.activeElement) {
+				var nodeName = document.activeElement.nodeName.toUpperCase();
+
+				if (nodeName === 'TEXTAREA' || ((nodeName === 'INPUT' && ['text', 'search', 'password']._contains(document.activeElement.type))))
+					return;
+			}
+
 			var metaKey = Utilities.OSXVersion ? event.metaKey : event.ctrlKey,
 					metaShift = metaKey && event.shiftKey;
 
@@ -799,7 +807,7 @@ var UI = {
 					related = headersInView[headerSelector].related;
 
 					if (typeof offset === 'function')
-						offset = offset(viewContainer, headerSelector, offset);
+						offset = offset(viewContainer, headerSelector);
 
 					var top = viewContainerOffsetTop + offset,
 							allHeaders = $(headerSelector, viewContainer),
@@ -888,7 +896,7 @@ var UI = {
 					if (viewContainer.data('floatingHeaders'))
 						return;
 			
-					viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 40, [viewContainerSelector]));
+					viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 30, [viewContainerSelector]));
 				}.bind(null, viewContainerSelector, headerSelector, related, offset));
 			}
 		}

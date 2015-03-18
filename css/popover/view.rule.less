@@ -18,8 +18,8 @@
 
 		#rule-toolbar {
 			position: relative;
-			-webkit-flex: 0 0 56px;
-			padding-top: 3px;
+			-webkit-flex: 0 0 57px;
+			padding-top: 2px;
 			margin-top: -2px;
 			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 			background: darken(rgb(245, 245, 245), @darknessLevel);
@@ -29,7 +29,7 @@
 			}
 
 			.jsb-large-font& {
-				-webkit-flex: 0 0 57px;
+				-webkit-flex: 0 0 61px;
 			}
 
 			.view-switcher-container {
@@ -58,10 +58,14 @@
 		 	#rule-domain-search-container {
 		 		padding: 3px 0 0 3px;
 
-		 		input {
+		 		#rule-domain-search {
 		 			position: relative;
 		 			top: -1px;
 		 			width: 150px;
+		 		}
+
+		 		label[for="rule-domain-hide-show"] {
+		 			margin-left: 10px;
 		 		}
 		 	}
 
@@ -77,7 +81,7 @@
 			margin-top: 1px;
 
 			#rule-views-no-rules {
-				margin-top: 20px;
+				margin-top: 10px;
 				font-size: 15pt;
 			}
 
@@ -258,7 +262,7 @@
 		}
 
 		&kind {
-			padding-left: 13px;
+			padding-left: 15px;
 
 			.rule-item-container {
 				padding: 4px 0 4px 0;
@@ -379,11 +383,18 @@
 	}
 
 	&-domain,
-	&-rule {
+	.select-custom-wrapper {
 		width: 270px;
 	}
 
 	&-save {
 		margin-top: 5px;
+	}
+
+	#create-rule-rule-container {
+		.more-info {
+			position: relative;
+			top: 1px;
+		}
 	}
 }

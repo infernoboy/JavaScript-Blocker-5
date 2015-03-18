@@ -215,7 +215,7 @@ UI.Rules = {
 			}
 		}
 
-		UI.Rules.noRules.addClass('jsb-hidden');
+		UI.Rules.noRules.hide();
 
 		view
 			.attr('data-ruleListItems', '1')
@@ -228,7 +228,7 @@ UI.Rules = {
 		for (var i = 0; i < types.length; i++) {
 			type = types[i];
 
-			if (!(type in domainGrouped))
+			if (!(type in domainGrouped) || domainGrouped[type]._isEmpty())
 				continue;
 
 			typeExpander = 'ruleGroupType,' + type;
@@ -246,7 +246,7 @@ UI.Rules = {
 			// }, [ruleGroupType, container]);
 
 			for (domain in domainGrouped[type]) {
-				if (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter))
+				if (domainGrouped[type][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
 					continue;
 
 				domainExpander = typeExpander + ',ruleGroupDomain,' + domain;
@@ -264,6 +264,9 @@ UI.Rules = {
 				// }, [typeUL, domainListItem]);
 
 				for (kind in domainGrouped[type][domain]) {
+					if (domainGrouped[type][domain][kind]._isEmpty())
+						continue;
+
 					kindExpander = domainExpander + ',ruleGroupKind,' + kind;
 
 					kindListItem = Template.create('rules', 'kind-list-item', {
@@ -300,15 +303,10 @@ UI.Rules = {
 					}
 				}
 			}
-
-			buildQueue.push(function (ruleGroupType) {
-				if (ruleGroupType.find('.rule-group-type').is(':empty'))
-					ruleGroupType.remove();
-			}, [ruleGroupType]);
 		}
 
 		buildQueue.push(function (view, container) {			
-			UI.Rules.noRules.toggleClass('jsb-hidden', hasRules);
+			UI.Rules.noRules.toggle(!hasRules);
 
 			UI.Rules.event.trigger('rulesFinishedBuilding', {
 				view: view,

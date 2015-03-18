@@ -2,8 +2,7 @@
 
 var Store = (function () {
 	var data = {},
-			parent = {},
-			children = {};
+			parent = {};
 
 	function Store (name, props) {
 		if (!(props instanceof Object))
@@ -14,12 +13,7 @@ var Store = (function () {
 		this.destructionTimer = null;
 		this.isNew = this.private || !data[this.id];
 
-		if (this.private)
-			this.__children[this.id] = {};
-		else {
-			if (!children[this.id])
-				children[this.id] = {};
-
+		if (!this.private)
 			Object.defineProperty(this, 'data', {
 				enumerable: true,
 
@@ -34,7 +28,6 @@ var Store = (function () {
 						data[this.id] = value;
 				}
 			});
-		}
 
 		this.prolongDestruction();
 
@@ -115,7 +108,6 @@ var Store = (function () {
 
 		var store = new Store(left.id + '|' + right.id, null, {
 			maxLife: TIME.ONE.MINUTE * 1,
-			destroyChildren: true,
 			private: true
 		});
 
@@ -176,6 +168,7 @@ var Store = (function () {
 		get: function () {
 			return this.private ? this.__parent : parent[this.id];
 		},
+
 		set: function (newParent) {
 			var hasParent = (this.private ? this.__parent : parent[this.id]) instanceof Store;
 
@@ -183,8 +176,6 @@ var Store = (function () {
 				this.parent = null;
 
 			if (newParent instanceof Store) {
-				newParent.children[this.id] = this;
-
 				if (this.private)
 					this.__parent = newParent;
 				else
@@ -194,25 +185,8 @@ var Store = (function () {
 					this.__parent = undefined;
 				else
 					delete parent[this.id];
-
-				var childrenReference = this.private ? this.__children : children;
-
-				for (var key in childrenReference)
-					delete childrenReference[key][this.id];
 			} else
 				throw new Error('parent is not null or an instance of Store');
-		}
-	});
-
-	Object.defineProperty(Store.prototype, 'children', {
-		get: function () {
-			return this.private ? this.__children[this.id] : children[this.id];
-		},
-		set: function (v) {
-			if (this.private)
-				this.__children[this.id] = {};
-			else
-				children[this.id] = {};
 		}
 	});
 
@@ -220,7 +194,6 @@ var Store = (function () {
 
 	Store.prototype.__parent = undefined;
 	Store.prototype.__data = {};
-	Store.prototype.__children = {};
 
 	Store.prototype.__save = function (bypassIgnore, now, notModified) {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
@@ -228,13 +201,16 @@ var Store = (function () {
 
 		if (this.save)
 			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
-				if (window.globalSetting.debugMode)
-					console.time('SAVED ' + store.id);
+				if (window.globalSetting.debugMode) {
+					var now = new Date;
+
+					console.time(now.toLocaleTimeString() + ' - SAVED ' + store.id);
+				}
 
 				Settings.__method('setItem', store.id, store.readyJSON());
 
 				if (window.globalSetting.debugMode)
-					console.timeEnd('SAVED ' + store.id);
+					console.timeEnd(now.toLocaleTimeString() + ' - SAVED ' + store.id);
 
 				store.triggerEvent('storeDidSave');
 			}, now ? 0 : this.saveDelay, [this]);
@@ -251,7 +227,6 @@ var Store = (function () {
 		this.maxLife = (typeof props.maxLife === 'number') ? props.maxLife : Infinity;
 		this.selfDestruct = (typeof props.selfDestruct === 'number') ? props.selfDestruct : 0;
 		this.saveDelay = (typeof props.saveDelay === 'number') ? props.saveDelay : 2000;
-		this.destroyChildren = !!props.destroyChildren;
 		this.lock = !!props.lock;
 		this.save = !!props.save;
 		this.useSnapshot = !!props.snapshot;
@@ -549,12 +524,12 @@ var Store = (function () {
 			if ((typeof key !== 'string' && typeof key !== 'number') || this.data._hasPrototypeKey(key))
 				throw new Error(key + ' cannot be used as key.');
 		} catch (e) {
-			return LogError(['ERROR IN SET', this.lock, this.destroyed, this.data, this], e);
+			return LogError(['ERROR IN SET locked:', this.lock, 'destroyed:', this.destroyed, 'data:', this.data, 'key:', key, 'value:', value, 'store:', this], e);
 		}
 
 		this.data[key] = {
 			accessed: this.data[key] ? this.data[key].accessed : (this.maxLife < Infinity ? Date.now() : -1),
-			value: value,
+			value: value
 		};
 
 		if (value instanceof Store)
@@ -765,13 +740,6 @@ var Store = (function () {
 		if (this.lock)
 			return;
 
-		if (!selfOnly)
-			for (var child in this.children) {
-				this.children[child].destroy(true, false, true);
-
-				delete this.children[child];
-			}
-
 		this.data = {};
 
 		if (!ignoreSave)
@@ -794,17 +762,6 @@ var Store = (function () {
 		var child;
 
 		var self = this;
-
-		if (this.destroyChildren || deep) {
-			for (child in this.children) {
-				this.children[child].destroy(true);
-
-				delete this.children[child];
-			}
-
-			if (!this.private)
-				delete children[this.id];
-		}
 
 		if (!ignoreParent && this.parent)
 			this.parent.only(function (key, value) {

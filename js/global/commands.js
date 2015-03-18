@@ -105,8 +105,34 @@ function Command (command, data, event) {
 			this.message = confirm(string);
 		},
 
-		showPopover: function () {
+		showPopover: function (detail) {
 			ToolbarItems.showPopover();
+
+			if (detail.switchTo)
+				for (var i = detail.switchTo.length; i--;)
+					UI.view.switchTo(detail.switchTo[i]);
+		},
+
+		editResourceIDs: function (detail) {
+			UI.event.addCustomEventListener('pageDidRender', function () {
+				var item,
+						section;
+
+				for (var i = detail.resourceIDs.length; i--;) {
+					item = $('.page-host-item[data-resourceids*="' + detail.resourceIDs[i] + '"]', UI.Page.view);
+					section = item.parents('.page-host-section');
+
+					UI.Page.section.toggleEditMode(section, true, true);
+
+					$('.page-host-item-edit-check', item).prop('checked', true);
+
+					item.scrollIntoView(UI.view.views, 0, 0);
+				}
+			}, true);
+
+			ToolbarItems.showPopover();
+
+			UI.view.switchTo('#main-views-page');
 		},
 
 		activeTabIndex: function () {
@@ -589,6 +615,21 @@ Command.setToolbarImage = function (event) {
 		ToolbarItems.image(window.globalSetting.disabled ? 'image/toolbar-disabled.png' : 'image/toolbar.png');
 };
 
+Command.onContextMenu = function (event) {
+	if (event.userInfo && event.userInfo.placeholderCount)
+		event.contextMenu.appendContextMenuItem('restorePlaceholderElements:' + event.userInfo.pageID, _('restore_placeholder'._pluralize(event.userInfo.placeholderCount), [event.userInfo.placeholderCount]));
+};
+
+Command.onExecuteMenuCommand = function (event) {
+	if (event.command._startsWith('restorePlaceholderElements:')) {
+		var splitCommand = event.command.split(':');
+
+		Tabs.messageAll('restorePlaceholderElements', {
+			pageID: splitCommand[1]
+		});
+	}
+};
+
 window.globalSetting = {
 	disabled: false,
 	debugMode: true,
@@ -610,3 +651,5 @@ window.addEventListener('error', function (event) {
 
 Events.addApplicationListener('message', Command.messageReceived);
 Events.addApplicationListener('open', Command.setToolbarImage);
+Events.addApplicationListener('contextmenu', Command.onContextMenu);
+Events.addApplicationListener('command', Command.onExecuteMenuCommand);

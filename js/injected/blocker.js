@@ -244,7 +244,7 @@ var Handler = {
 		for (i = frames.length; i--;)
 			Element.handle.frame(frames[i]);
 
-		if (globalSetting.blockReferrer) {
+		if (globalSetting.blockReferrer && false) {
 			var method;
 
 			for (var i = forms.length; i--;) {
@@ -304,7 +304,7 @@ var Handler = {
 		Events.setContextMenuEventUserInfo(event, {
 			pageID: Page.info.id,
 			menuCommand: UserScript.menuCommand,
-			placeholders: document.querySelectorAll('.jsblocker-placeholder').length,
+			placeholderCount: document.querySelectorAll('.jsb-element-placeholder').length,
 			contextMenuTarget: contextMenuTarget
 		});
 	},
@@ -501,6 +501,11 @@ var Element = {
 		delete PLACEHOLDER_ELEMENTS[placeholderID];
 	},
 
+	restorePlaceholderElements: function () {
+		for (var placeholderID in PLACEHOLDER_ELEMENTS)
+			Element.restorePlaceholderElement(placeholderID);
+	},
+
 	collapse: function (element) {
 		var div = document.createElement('div');
 
@@ -685,7 +690,7 @@ var Element = {
 							anchor.setAttribute('rel', 'noreferrer');
 				}
 
-				if (globalSetting.blockReferrer)
+				if (globalSetting.blockReferrer && false)
 					if (href && href[0] === '#')
 						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
 					else
@@ -773,7 +778,7 @@ var Resource = {
 			element.setAttribute('data-jsbParentProtocol', Page.info.protocol);
 		}
 
-		if (!globalSetting.enabledKinds[kind])
+		if (!globalSetting.enabledKinds[kind] || globalSetting.disabled)
 			return true;
 
 		var sourceHost;
@@ -922,14 +927,12 @@ if (!globalSetting.disabled) {
 			subtree: true
 		});
 
-		document.addEventListener('contextmenu', Handler.contextMenu, false);
-		document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
+		document.addEventListener('contextmenu', Handler.contextMenu, true);
 		document.addEventListener('keyup', Handler.keyUp, true);
 		document.addEventListener('beforeload', Resource.canLoad, true);
+		document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
 
 		window.addEventListener('load', Handler.injectStylesheet, true)
-		window.addEventListener('hashchange', Handler.hashChange, true);
-		window.addEventListener('popstate', Handler.resetLocation, true);
 
 		window.addEventListener('error', function (event) {
 			if (typeof event.filename === 'string' && event.filename._contains('JavaScriptBlocker')) {
@@ -952,3 +955,8 @@ if (!globalSetting.disabled) {
 	if (Utilities.Page.isTop)
 		Page.send();
 }
+
+document.addEventListener('beforeload', Resource.canLoad, true);
+
+window.addEventListener('hashchange', Handler.hashChange, true);
+window.addEventListener('popstate', Handler.resetLocation, true);

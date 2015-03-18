@@ -31,6 +31,7 @@ Object.freeze(ACTION);
 function Rule (store, storeProps, ruleProps) {
 	this.action = (ruleProps && typeof ruleProps.action === 'number') ? ruleProps.action : null;
 	this.longRuleAllowed = (ruleProps && typeof ruleProps.longRuleAllowed === 'boolean') ? ruleProps.longRuleAllowed : null;
+	this.ignoreLock = (ruleProps && !!ruleProps.ignoreLock);
 
 	if (typeof store === 'string')
 		this.rules = new Store(store, storeProps);
@@ -84,7 +85,7 @@ Rule.withLocationRules = function (allRules, callback) {
 }
 
 Rule.prototype.__add = function (type, kind, domain, rule) {
-	if (Rules.isLockerLocked())
+	if (!this.ignoreLock && Rules.isLockerLocked())
 		return;
 
 	if (!Object._isPlainObject(rule))
@@ -163,7 +164,7 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 };
 
 Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) {
-	if (Rules.isLockerLocked())
+	if (!this.ignoreLock && Rules.isLockerLocked())
 		return;
 
 	if (kind === undefined) {
@@ -211,7 +212,7 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 };
 
 Rule.prototype.clear = function () {
-	if (Rules.isLockerLocked())
+	if (!this.ignoreLock && Rules.isLockerLocked())
 		return;
 
 	this.rules.clear();
@@ -494,7 +495,12 @@ var Rules = {
 
 	onToggleLock: function (event) {
 		if (event.detail.key === 'rules') {
-			UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+			try {
+				UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+			} catch (error) {
+				// View not set yet.
+			}
+
 			UI.view.switchTo(UI.view.views.attr('data-activeView'));
 		}
 	},
@@ -511,7 +517,8 @@ var Rules = {
 		for (var filterList in filterLists)
 			if (filterLists[filterList].enabled)
 				Rules.list[filterList] = new Rule(Rules.__FilterRules.getStore(filterList), null, {
-					longRuleAllowed: true
+					longRuleAllowed: true,
+					ignoreLock: true
 				});
 			else if (Rules.__FilterRules.keyExist(filterList))
 				Rules.__FilterRules.remove(filterList);
@@ -718,7 +725,10 @@ Object.defineProperty(Rules, 'list', {
 			enumerable: true,
 
 			value: new Rule('FirstVisit', {
-				save: true
+				save: true,
+				saveDelay: TIME.ONE.MINUTE
+			}, {
+				ignoreLock: true
 			})
 		},
 
@@ -729,7 +739,8 @@ Object.defineProperty(Rules, 'list', {
 				save: true,
 				private: true
 			}, {
-				longRuleAllowed: true
+				longRuleAllowed: true,
+				ignoreLock: true
 			})
 		}
 	})

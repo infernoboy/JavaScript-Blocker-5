@@ -246,13 +246,12 @@ Special.specials = {
 				}
 			}
 
-			if (info.canLoad.isAllowed)
-				setTimeout(function (pageAction, info, detail, postParams) {
-					if (info.meta === undefined)
-						info.meta = createMetaData(detail, postParams);
+			setTimeout(function (pageAction, info, detail, postParams) {
+				if (info.meta === undefined)
+					info.meta = createMetaData(detail, postParams);
 
-					messageExtension('page.' + pageAction, info);
-				}.bind(null, pageAction, info, detail, postParams));
+				messageExtension('page.' + pageAction, info);
+			}.bind(null, pageAction, info, detail, postParams));
 
 			if (awaitPromptResourceID)
 				messageExtension('page.modifyBlockedItem', {
@@ -404,14 +403,15 @@ Special.specials = {
 
 						awaitPromptResourceID = messageExtensionSync('page.addBlockedItem', info);
 
-						setTimeout(function (onXHRPromptInput, info, detail, postParams) {
+						setTimeout(function (onXHRPromptInput, info, detail, postParams, awaitPromptResourceID) {
 							info.meta = createMetaData(detail, postParams);
+							info.awaitPromptResourceID = awaitPromptResourceID;
 
 							messageTopExtension('showXHRPrompt', {
 								onXHRPromptInput: onXHRPromptInput,
 								meta: info
 							});
-						}.bind(null, onXHRPromptInput, info, detail, postParams));
+						}.bind(null, onXHRPromptInput, info, detail, postParams, awaitPromptResourceID));
 
 						return false;
 					} else {
