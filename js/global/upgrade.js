@@ -15,6 +15,13 @@ var Upgrade = {
 			return false;
 		}
 
+		if (rules.rules || rules.simpleRules) {
+			Upgrade.importRulesFromJSB4(rules.rules);
+			Upgrade.importRulesFromJSB4(rules.simpleRules);
+
+			return;
+		}
+
 		var kind,
 				newKind,
 				domain,
@@ -58,7 +65,7 @@ var Upgrade = {
 
 					addRule(newKind, newDomain, {
 						rule: newRule,
-						action: rules[kind][domain][rule][0]
+						action: (parseInt(rules[kind][domain][rule][0], 10) % 2) ? 1 : 0
 					});
 				}				
 			}

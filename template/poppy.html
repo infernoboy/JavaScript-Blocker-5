@@ -248,7 +248,13 @@
 <noscript id="set-lock-password">
 	<h3 class="jsb-centered"><%=_('settings.set_locker_password')%></h3>
 	<div class="generic-menu">
-		<ul class="generic-menu-menu generic-menu-options">
+		<ul id="lock-password-set" class="generic-menu-menu generic-menu-options">
+			<% if (!Locker.passwordIsSet()) { %>
+				<li>
+					<p class="jsb-info jsb-readable"><%=_('setting.setLockerPassword.description')%></p>
+					<div class="horizontal-divider"></div>
+				</li><%
+			} %>
 			<li>
 				<table class="generic-menu-options">
 					<tbody>
@@ -270,7 +276,9 @@
 				</table>
 			</li>
 			<li class="jsb-align-right">
-				<input type="button" id="lock-password-forgot" value="<%=_('setting.setLockerPassword.iforgot')%>" />
+				<% if (Locker.passwordIsSet()) { %>
+					<input type="button" id="lock-password-forgot" value="<%=_('setting.setLockerPassword.iforgot')%>" /><%
+				} %>
 				<% if (!self.preventCancel) { %>
 					<input type="button" id="lock-password-cancel" value="<%=_('Cancel')%>" /><%
 				} %>

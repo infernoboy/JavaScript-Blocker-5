@@ -42,26 +42,6 @@
 			var ToyStore = new Store('ToyStore', {
 				save: true
 			});
-
-			var TestForLocationSpeed = function () {
-				var tokens = [];
-
-				for (var i = 0; i < 200; i++)
-					tokens.push(Utilities.Token.generate());
-
-				for (var i = tokens.length; i--;) {
-					var lists = ['active', '$list', '$malware', '$privacy', 'predefined'];
-
-					var host = Utilities.URL.hostParts(tokens[i] + '.com');
-
-					console.time('forLocation');
-
-					for (var b = lists.length; b--;)
-						Rules.list[lists[b]].kind('*').notDomain(host);
-
-					console.timeEnd('forLocation');
-				}
-			};
 		</script>
 	</head>
 	<body>

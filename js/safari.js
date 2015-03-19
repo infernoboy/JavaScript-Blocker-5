@@ -149,14 +149,25 @@ var Tabs = {
 		else
 			return activeWindow ? activeWindow.activeTab : null;
 	},
-	create: function (url) {
-		var activeWindow = BrowserWindows.active();
+	create: function (url, autoClose) {
+		var activeWindow = BrowserWindows.active(),
+				activeTabIndex = Tabs.array().indexOf(Tabs.active());
 
 		var tab = activeWindow ? activeWindow.openTab() : BrowserWindows.open().activeTab;
 
 		tab.url = url;
 
-		tab.activate()
+		tab.activate();
+
+		if (autoClose)
+			setTimeout(function (activeTabIndex, newTab) {
+				newTab.close();
+
+				var tabs = Tabs.array();
+
+				if (tabs[activeTabIndex])
+					tabs[activeTabIndex].activate();
+			}, 1000, activeTabIndex, tab);
 
 		return tab;
 	},

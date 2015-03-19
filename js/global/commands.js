@@ -136,21 +136,13 @@ function Command (command, data, event) {
 		},
 
 		activeTabIndex: function () {
-			var activeTab = Tabs.active(),
-					tabs = Tabs.array();
-
-			for (var i = 0; i < tabs.length; i++)
-				if (tabs[i] === activeTab)
-					this.message = i;
+			this.message = Tabs.array().indexOf(Tabs.active());
 		},
 
 		openTabWithURL: function (url) {
-			var tab = Tabs.create(url),
-					tabs = Tabs.array();
-
-			for (var i = 0; i < tabs.length; i++)
-				if (tabs[i] === tab)
-					this.message = i;
+			var tab = Tabs.create(url);
+			
+			this.message = Tabs.array(tab);
 		},
 
 		closeTabAtIndex: function (index) {

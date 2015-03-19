@@ -104,7 +104,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#main-menu-submit-feedback', function () {
-				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5 Feedback');
+				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5%20Feedback', true);
 			})
 
 			.on('click', '#main-menu-console', function (event) {
@@ -745,11 +745,7 @@ Object._extend(Poppy.scripts, {
 
 				var messages = ['Error Messages', '', errors.join("\n"), "\n", 'Debug Messages', '', messageHistory.debug.join("\n")];
 
-				var tab = Tabs.create('mailto:jsbconsole@toggleable.com?subject=JSB5 Console&body=' + encodeURIComponent(messages.join("\n")));
-
-				setTimeout(function (tab) {
-					tab.close();
-				}, 200, tab);
+				Tabs.create('mailto:jsbconsole@toggleable.com?subject=JSB5%20Console&body=' + encodeURIComponent(messages.join("\n")), true);
 			});
 	}
 });

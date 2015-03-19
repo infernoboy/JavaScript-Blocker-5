@@ -5,6 +5,9 @@ var Locker = {
 
 	init: function () {
 		UI.event.addCustomEventListener('popoverOpened', Locker.events.popoverOpened);
+
+		if (!Locker.passwordIsSet() && Popover.visible())
+			Locker.events.popoverOpened();
 	},
 
 	isAlwaysLocked: function (key) {

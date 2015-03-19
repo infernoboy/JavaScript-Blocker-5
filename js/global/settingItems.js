@@ -1035,7 +1035,7 @@ Settings.settings = {
 		props: {
 			type: 'button',
 			onClick: function () {
-				var rules = prompt('Paste the exported rule backup below. This is obtained by clicking Rules > Backup > Export from JSB 4. You must have made a donation or unlocked features without contributing.');
+				var rules = prompt('Paste the exported backup below. This can be either a full backup or just the backup containing your rules. You must have made a donation or unlocked features without contributing.');
 
 				Upgrade.importRulesFromJSB4(rules);
 			}
