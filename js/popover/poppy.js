@@ -213,7 +213,7 @@
 		this.poppy.css(position.poppy);
 		this.arrow.css(position.arrow);
 
-		this.content.width(this.content.width() + 1); // Prevents annoying Safari rounding
+		this.content.width(this.content.width() + 3); // Prevents annoying Safari rounding
 
 		var poppyAndContent = this.poppy.find(this.content).addBack();
 

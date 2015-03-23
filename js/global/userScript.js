@@ -4,7 +4,6 @@ var UserScript = {
 	__updateInterval: TIME.ONE.DAY * 5,
 
 	scripts: new Store('UserScripts', {
-		private: true,
 		save: true
 	}),
 

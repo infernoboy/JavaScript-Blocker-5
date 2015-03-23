@@ -14,9 +14,7 @@ function Snapshot (store, props) {
 	this.store = store;
 	this.maxUnkept = props.maxUnkept ? parseInt(props.maxUnkept, 10) || 15 : 15;
 
-	this.snapshots = Snapshots.getStore(this.store.name, {
-		private: true
-	});
+	this.snapshots = Snapshots.getStore(this.store.name);
 
 	this.kept = this.snapshots.getStore('kept');
 	this.unkept = this.snapshots.getStore('unkept');
@@ -181,8 +179,7 @@ Snapshot.prototype.add = function (keep, name, comparisonData) {
 		var cloned = comparisonData;
 	else
 		var cloned = this.store.clone(null, {
-			lock: true,
-			private: true
+			lock: true
 		}).readyJSON();
 
 	if (!comparisonData && cloned.STORE._isEmpty())

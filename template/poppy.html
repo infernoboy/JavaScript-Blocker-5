@@ -188,13 +188,14 @@
 				<%
 					var header;
 
-					var snapshotInfo = globalPage.Rules.list.active.snapshot;
+					var snapshotInfo = globalPage.Rules.list.active.snapshot,
+							comparison = snapshotInfo.comparison;
 
-					if (snapshotInfo.comparison === 'left')
+					if (comparison && comparison.side === 'left')
 						header = 'snapshots.only_always';
-					else if (snapshotInfo.comparison === 'right')
+					else if (comparison && comparison.side === 'right')
 						header = 'snapshots.only_snapshot';
-					else if (snapshotInfo.comparison === 'both')
+					else if (comparison && comparison.side === 'both')
 						header = 'snapshots.in_both';
 					else
 						header = 'snapshots.snapshot';
@@ -210,6 +211,8 @@
 			</ul>
 		</div><%
 	} %>
+	<div class="horizontal-divider"></div>
+	<%=Template.create('poppy', 'snapshot-item-compare', true, null, true)%>
 </noscript>
 
 <noscript id="temporary-rules-menu">
@@ -534,7 +537,7 @@
 	<h3 class="jsb-centered"><%=_('snapshots.compare')%></h3>
 	<div class="generic-menu">
 		<div class="generic-menu-menu">
-			<label>Show rules only in:</label>&nbsp;
+			<label><%=_('snapshots.show_rules_only_in')%>:</label>&nbsp;
 			<input type="button" id="snapshot-item-compare-left" value="<%=_('rules.active')%>" />
 			<input type="button" id="snapshot-item-compare-right" value="<%=_('rules.snapshot')%>" />
 			<input type="button" id="snapshot-item-compare-both" value="<%=_('snapshots.both')%>" />

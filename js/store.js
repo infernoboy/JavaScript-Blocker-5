@@ -1,9 +1,6 @@
 "use strict";
 
 var Store = (function () {
-	var data = {},
-			parent = {};
-
 	function Store (name, props) {
 		if (!(props instanceof Object))
 			props = {};
@@ -11,23 +8,6 @@ var Store = (function () {
 		this.setProperties(name, props);
 
 		this.destructionTimer = null;
-		this.isNew = this.private || !data[this.id];
-
-		if (!this.private)
-			Object.defineProperty(this, 'data', {
-				enumerable: true,
-
-				get: function () {
-					return this.private ? this.__data : data[this.id];
-				},
-
-				set: function (value) {
-					if (this.private)
-						this.__data = value;
-					else
-						data[this.id] = value;
-				}
-			});
 
 		this.prolongDestruction();
 
@@ -47,7 +27,7 @@ var Store = (function () {
 
 	Store = Store._extendClass(EventListener);
 
-	Store.__inheritable = ['private', 'ignoreSave', 'maxLife', 'selfDestruct'];
+	Store.__inheritable = ['ignoreSave', 'maxLife', 'selfDestruct'];
 
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
@@ -66,12 +46,7 @@ var Store = (function () {
 		if (!object.props)
 			object.props = {};
 
-		object.props.private = true;
-
 		var store = new Store(object.name, object.props);
-
-		if (!store.isNew)
-			store.prolongDestruction();
 
 		store.data = object.data || object.STORE;
 
@@ -107,8 +82,7 @@ var Store = (function () {
 		};
 
 		var store = new Store(left.id + '|' + right.id, null, {
-			maxLife: TIME.ONE.MINUTE * 1,
-			private: true
+			maxLife: TIME.ONE.MINUTE * 1
 		});
 
 		if (parent)
@@ -166,25 +140,19 @@ var Store = (function () {
 
 	Object.defineProperty(Store.prototype, 'parent', {
 		get: function () {
-			return this.private ? this.__parent : parent[this.id];
+			return this.__parent;
 		},
 
 		set: function (newParent) {
-			var hasParent = (this.private ? this.__parent : parent[this.id]) instanceof Store;
+			var hasParent = this.__parent instanceof Store;
 
 			if (hasParent && newParent !== null)
 				this.parent = null;
 
 			if (newParent instanceof Store) {
-				if (this.private)
-					this.__parent = newParent;
-				else
-					parent[this.id] = newParent;
+				this.__parent = newParent;
 			} else if (newParent === null) {
-				if (this.private)
-					this.__parent = undefined;
-				else
-					delete parent[this.id];
+				this.__parent = undefined;
 			} else
 				throw new Error('parent is not null or an instance of Store');
 		}
@@ -193,7 +161,6 @@ var Store = (function () {
 	Store.BREAK = Utilities.Token.generate();
 
 	Store.prototype.__parent = undefined;
-	Store.prototype.__data = {};
 
 	Store.prototype.__save = function (bypassIgnore, now, notModified) {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
@@ -233,13 +200,10 @@ var Store = (function () {
 		this.ignoreSave = !!props.ignoreSave;
 
 		if (!this.id)
-			if (typeof name === 'string' && name.length) {
+			if (typeof name === 'string' && name.length)
 				this.id = (props.save ? Store.STORE_STRING : Store.CACHE_STRING) + name;
-				this.private = !!props.private;
-			} else {
+			else
 				this.id = Utilities.Token.generate();
-				this.private = true;
-			}
 
 		this.name = name;
 		this.props = props;
@@ -621,8 +585,6 @@ var Store = (function () {
 
 		Store.inherit(defaultProps, this);
 
-		defaultProps.private = true;
-
 		if (!(store instanceof Store) || !store.data || store.destroyed)
 			store = this.set(key, new Store(requiredName, defaultProps), null, parent);
 		else if (hasDefaultProps)
@@ -770,8 +732,6 @@ var Store = (function () {
 
 		this.lock = this.lock || !unlock;
 		this.data = undefined;
-
-		delete data[this.id];
 	};
 
 	Store.prototype.prolongDestruction = function () {

@@ -322,6 +322,13 @@ Object._extend(Poppy.scripts, {
 
 				poppy.close();
 			});
+
+		var snapshotInfo = globalPage.Rules.list.active.snapshot.comparison || globalPage.Rules.list.active.snapshot;
+
+		poppy.snapshotID = snapshotInfo.id;
+		poppy.snapshots = snapshotInfo.snapshots;
+
+		Poppy.scripts['snapshot-item-compare'](poppy);
 	},
 
 	'filter-rules-menu': function (poppy) {
@@ -705,7 +712,11 @@ Object._extend(Poppy.scripts, {
 
 				poppy.close();
 
-				UI.Snapshots.useSnapshot(comparisonID, globalPage.Rules.list.user.rules.snapshot.comparisons, side);
+				UI.Snapshots.useSnapshot(comparisonID, globalPage.Rules.list.user.rules.snapshot.comparisons, {
+					id: poppy.snapshotID,
+					snapshots: poppy.snapshots,
+					side: side
+				});
 			});
 	},
 

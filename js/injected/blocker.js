@@ -63,7 +63,10 @@ var Page = {
 		function requestFrameInfo () {
 			GlobalPage.message('bounce', {
 				command: 'getFrameInfoWithID',
-				detail: Page.info.id
+				detail: {
+					targetPageID: PARENT.parentPageID,
+					id: Page.info.id
+				}
 			});
 		};
 
@@ -94,8 +97,7 @@ var Page = {
 	info: {
 		id: TOKEN.PAGE,
 		state: new Store(TOKEN.PAGE, {
-			ignoreSave: true,
-			private: true
+			ignoreSave: true
 		}),
 		isFrame: !Utilities.Page.isTop
 	}
@@ -324,11 +326,12 @@ var Handler = {
 		return ['http:', 'https:', 'safari-extension:']._contains(Page.info.protocol);
 	},
 
-	showBlockedAllFirstVisitNotification: function (host, viaFrame) {
-		if (!Utilities.Page.isTop || Utilities.Page.isXML)
+	showBlockedAllFirstVisitNotification: function (detail, viaFrame) {
+		if (!Utilities.Page.isTop || Utilities.Page.isXML || (detail.targetPageID && detail.targetPageID !== Page.info.id))
 			return;
 
-		var hostDisplay = host._startsWith('.') ? host.substr(1) : host,
+		var host = detail.host,
+				hostDisplay = host._startsWith('.') ? host.substr(1) : host,
 				hostTitle = viaFrame ? _('via_frame') + ' - ' + hostDisplay : hostDisplay;
 
 		var notification = new PageNotification({
@@ -361,6 +364,16 @@ var Handler = {
 		});
 
 		unblockButton.classList.add('jsb-color-allowed');
+
+		notification.addEventListener('click', 'a.show-more', function () {
+			var p = document.createElement('p');
+
+			p.innerHTML = _('first_visit.unblock_more_info');
+
+			this.parentNode.parentNode.appendChild(p);
+
+			this.parentNode.removeChild(this);
+		}, true);
 	}
 };
 
@@ -628,8 +641,10 @@ var Element = {
 			command: 'requestFrameURL',
 			data: {
 				id: frame.id,
+				parentID: PARENT.frameID,
 				host: Page.info.host,
-				pageID: TOKEN.PAGE,
+				pageID: Page.info.id,
+				parentPageID: PARENT.pageID,
 				reason: reason,
 				token: Utilities.Token.create(frame.id)
 			}
@@ -903,10 +918,16 @@ if (!globalSetting.disabled) {
 						if (Page.info.isFrame)
 							GlobalPage.message('bounce', {
 								command: 'showBlockedAllFirstVisitNotification',
-								detail: willBlockFirstVisit.host
+								detail: {
+									targetPageID: PARENT.parentPageID,
+									host: willBlockFirstVisit.host
+								}
 							});
 						else
-							Handler.showBlockedAllFirstVisitNotification(willBlockFirstVisit.host);
+							Handler.showBlockedAllFirstVisitNotification({
+								targetPageID: Page.info.id,
+								host: willBlockFirstVisit.host
+							});
 					}, true);
 				}
 			}

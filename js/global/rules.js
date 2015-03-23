@@ -57,8 +57,7 @@ function Rule (store, storeProps, ruleProps) {
 Rule.event = new EventListener;
 
 Rule.listCache = new Store('RuleListCache', {
-	ignoreSave: true,
-	private: true
+	ignoreSave: true
 });
 
 Rule.withLocationRules = function (allRules, callback) {
@@ -219,7 +218,9 @@ Rule.prototype.clear = function () {
 
 	Resource.canLoadCache.clear().saveNow();
 
-	Rule.event.trigger('rulesWereCleared', this);
+	Rule.event.trigger('rulesWereCleared', {
+		self: this
+	});
 };
 
 Rule.prototype.hasAffectOnResource = function (rule, resource, useHideKinds) {
@@ -435,8 +436,7 @@ var Rules = {
 	__regExpCache: {},
 	__partsCache: new Store('RuleParts'),
 	__FilterRules: new Store('FilterRules', {
-		save: true,
-		private: true
+		save: true
 	}),
 
 	ERROR: {
@@ -736,8 +736,7 @@ Object.defineProperty(Rules, 'list', {
 			enumerable: true,
 
 			value: new Rule('Predefined', {
-				save: true,
-				private: true
+				save: true
 			}, {
 				longRuleAllowed: true,
 				ignoreLock: true
@@ -776,7 +775,7 @@ Rule.event.addCustomEventListener('ruleWasAdded', function (event) {
 		}, 100, [event.detail.self]);
 });
 
-Rule.event.addCustomEventListener('ruleWasRemoved', function (event) {
+Rule.event.addCustomEventListener(['ruleWasRemoved', 'rulesWereCleared'], function (event) {
 	Rule.listCache.getStore(event.detail.self.rules.name || event.detail.self.rules.id).clear();
 });
 

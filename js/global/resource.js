@@ -24,7 +24,7 @@ function Resource (resource) {
 	this.meta = resource.meta;
 
 	if (this.strict)
-		this.searchKinds = [this.kind];
+		this.searchKinds = this.isFrame ? [this.framedKind, this.kind] : [this.kind];
 	else {
 		this.searchKinds = this.isFrame ? [this.framedKind, 'framed:*', this.kind, '*'] : [this.kind, '*'];
 
@@ -56,7 +56,6 @@ Resource.USE_CACHE = true;
 Resource.longRegExps = new Store('LongRegExps');
 Resource.canLoadCache = new Store('ResourceCanLoad', {
 	save: true,
-	private: true,
 	maxLife: TIME.ONE.HOUR * 36,
 	saveDelay: TIME.ONE.MINUTE
 });

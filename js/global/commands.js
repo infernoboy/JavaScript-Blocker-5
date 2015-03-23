@@ -43,12 +43,16 @@ function Command (command, data, event) {
 			return this.__message;
 		},
 		set: function (message) {
-			if (this.isEvent)
-				this.event.message = message;
-			else if (typeof this.event === 'function')
-				this.event(message);
-			else
-				this.__message = message;
+			try {
+				if (this.isEvent)
+					this.event.message = message;
+				else if (typeof this.event === 'function')
+					this.event(message);
+				else
+					this.__message = message;
+			} catch (error) {
+				LogError(error, message);
+			}
 		}
 	});
 
@@ -142,7 +146,7 @@ function Command (command, data, event) {
 		openTabWithURL: function (url) {
 			var tab = Tabs.create(url);
 			
-			this.message = Tabs.array(tab);
+			this.message = Tabs.array().indexOf(tab);
 		},
 
 		closeTabAtIndex: function (index) {
@@ -624,8 +628,15 @@ Command.onExecuteMenuCommand = function (event) {
 
 window.globalSetting = {
 	disabled: false,
-	debugMode: true,
-	speedMultiplier: 1
+	speedMultiplier: 1,
+
+	get debugMode () {
+		return Settings.getItem('debugMode');
+	},
+
+	set debugMode (value) {
+		Settings.setItem('debugMode', value);
+	}
 };
 
 Object._extend(window.globalSetting, Command('globalSetting', null, {}));

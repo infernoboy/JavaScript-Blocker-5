@@ -15,9 +15,15 @@ var Upgrade = {
 			return false;
 		}
 
+		if (!Object._isPlainObject(rules))
+			return false;
+
 		if (rules.rules || rules.simpleRules) {
-			Upgrade.importRulesFromJSB4(rules.rules);
-			Upgrade.importRulesFromJSB4(rules.simpleRules);
+			if (rules.rules)
+				Upgrade.importRulesFromJSB4(rules.rules);
+
+			if (rules.simpleRules)
+				Upgrade.importRulesFromJSB4(rules.simpleRules);
 
 			return;
 		}

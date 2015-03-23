@@ -405,14 +405,11 @@ UI.Page = {
 
 					var tab = UI.Page.stateContainer.data('page').tab;
 
-					if (ruleWasCreated)
-						Utilities.Timer.timeout(tab, function (tab) {
-							MessageTarget({
-								target: tab
-							}, 'reload');
-						}, 225, [tab]);
-					else
-						globalPage.Page.requestPageFromActive();
+					Utilities.Timer.timeout(tab, function (tab, ruleWasCreated) {
+						MessageTarget({
+							target: tab
+						}, ruleWasCreated ? 'reload' : 'sendPage');
+					}, 310, [tab, ruleWasCreated]);
 				});
 		}
 	},
@@ -642,8 +639,10 @@ UI.Page = {
 						items.removeClass('page-host-item-disabled');
 				})
 
-				.on('click', '.page-host-editor-create', function (event) {
+				.on('click', '.page-host-create-rules', function (event) {
 					// this.disabled = true;
+
+					event.stopImmediatePropagation();
 
 					UI.Page.section.createRules($(this).parents('.page-host-section'));
 				})

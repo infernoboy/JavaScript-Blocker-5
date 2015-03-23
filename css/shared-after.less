@@ -18,6 +18,12 @@
 		}
 
 		.jsb- {
+			&clear-float {
+				clear: both @important;
+				line-height: 0 @important;
+				height: 0 @important;
+			}
+
 			&hidden {
 				display: none @important;
 			}
@@ -231,28 +237,32 @@
 			}
 		}
 
+		a {
+			text-decoration: underline @important;
+		}
+
 		a,
 		.select-custom-options li {
-			color: darken(@baseColor, 7%);
+			color: darken(@baseColor, 7%) @important;
 
 			& when (@darkMode) {
-				color: lighten(@baseColor, 12%);
+				color: lighten(@baseColor, 12%) @important;
 			}
 
 			&:active {
-				color: darken(@baseColor, 15%);
+				color: darken(@baseColor, 15%) @important;
 
 				& when (@darkMode) {
-					color: lighten(@baseColor, 7%);
+					color: lighten(@baseColor, 7%) @important;
 				}
 			}
 
 			&.no-underline {
-				text-decoration: none;
+				text-decoration: none @important;
 			}
 
 			&.select-custom-selected:before {
-				opacity: 1;
+				opacity: 1 @important;
 			}
 		}
 

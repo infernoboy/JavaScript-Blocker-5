@@ -95,7 +95,8 @@ var Settings = {
 	anySettingChanged: function (event) {
 		if (Utilities.Page.isGlobal && window.globalSetting && event.key in window.globalSetting)
 			setTimeout(function () {
-				window.globalSetting[event.key] = Settings.getItem(event.key);
+				if (event.key !== 'debugMode')
+					window.globalSetting[event.key] = Settings.getItem(event.key);
 			});
 
 		if (!event.key || !event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')

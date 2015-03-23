@@ -209,7 +209,7 @@ UI.Rules = {
 				editable = 1;
 			else if (ruleList == globalPage.Rules.list.active) {
 				if (globalPage.Rules.snapshotInUse())
-					editable = (!globalPage.Rules.list.active.snapshot.comparison || globalPage.Rules.list.active.snapshot.comparison === 'right') ? 2 : 0;
+					editable = (!globalPage.Rules.list.active.snapshot.comparison || globalPage.Rules.list.active.snapshot.comparison.side === 'right') ? 2 : 0;
 				else
 					editable = 1;
 			}
@@ -318,14 +318,14 @@ UI.Rules = {
 	},
 
 	processRules: function (rules) {
-		var input = $('<input>'),
-				editable = rules.attr('data-editable'),
-				isEditable = rules.attr('data-editable') !== '0';
+		var isEditable = rules.attr('data-editable') !== '0';
 
 		if (!isEditable)
 			return;
 
-		var isSnapshot = editable === '2';
+		var input = $('<input>'),
+				editable = rules.attr('data-editable'),
+				isSnapshot = editable === '2';
 
 		input
 			.attr({

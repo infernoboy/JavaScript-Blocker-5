@@ -7,7 +7,10 @@
 		<div class="page-host-header">
 			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
 			<input type="button" class="page-host-edit" value="<%=_('view.page.host.edit')%>" />
+			<input type="button" class="page-host-create-rules" value="<%=_('view.page.host.editor.create_rules')%>" />
 		</div>
+
+		<div class="jsb-clear-float"></div>
 
 		<%
 			if (self.blockedByFirstVisit) { %>
@@ -37,7 +40,7 @@
 			<div class="jsb-info">
 				<select class="page-host-editor-list" title="<%=_('view.page.editor.list.title')%>">
 					<option value="user"><%=_('view.page.host.editor.always')%></option>
-					<option value="temporary" <%=Settings.getItem('lastRuleWasTemporary') ? 'selected="selected"' : ''%>><%=_('view.page.host.editor.temporarily')%></option>
+					<option value="temporary" <%=(Settings.getItem('defaultRuleList') !== 'always' && (Settings.getItem('lastRuleWasTemporary') || Settings.getItem('defaultRuleList') === 'temporary')) ? 'selected="selected"' : ''%>><%=_('view.page.host.editor.temporarily')%></option>
 				</select><label></label>
 
 				<select class="page-host-editor-kind" title="<%=_('view.page.editor.kind.title')%>">
@@ -88,13 +91,18 @@
 				<div class="page-host-editor-where-wrapper">
 					<input type="checkbox" id="page-host-editor-where-not-<%=self.id%>" class="page-host-editor-where-not" /> <label for="page-host-editor-where-not-<%=self.id%>"><%=_('view.page.editor.not')%></label>
 					<select class="page-host-editor-where" title="<%=_('view.page.editor.where.title')%>">
-						<option value="domain-all"><%=_('view.page.editor.on_all_domains')%></option>
-						<option value="domain-0" data-domain="<%=self.host%>" selected="selected"><%=_('view.page.editor.on_domain', [self.host])%></option>
+						<%
+							var defaultDomain = Settings.getItem('defaultRuleDomain'),
+									selected = 'selected="selected"';
+						%>
+
+						<option value="domain-all" <%=defaultDomain === 'all' ? selected : ''%>><%=_('view.page.editor.on_all_domains')%></option>
+						<option value="domain-0" data-domain="<%=self.host%>" <%=defaultDomain === 'host' ? selected : ''%>><%=_('view.page.editor.on_domain', [self.host])%></option>
 						<%
 							var hostParts = Utilities.URL.hostParts(self.host);
 
 							for (var i = 0; i < hostParts.length; i++) { %>
-								<option value="domain-<%=i + 1%>" data-domain=".<%=hostParts[i]%>"><%=_('view.page.editor.within_domain', [hostParts[i]])%></option><%
+								<option value="domain-<%=i + 1%>" data-domain=".<%=hostParts[i]%>" <%=(defaultDomain === 'domain' && i === hostParts.length - 1) ? selected : ''%>><%=_('view.page.editor.within_domain', [hostParts[i]])%></option><%
 							} %>
 					<%
 						for (var i = 0; i < self.locations.length; i++) {
@@ -114,10 +122,6 @@
 						} %>
 					</select><label></label>
 				</div>
-
-				<div class="page-host-editor-create-wrapper">
-					<input type="button" class="page-host-editor-create" value="<%=_('view.page.host.editor.create_rules')%>" />
-				</div>
 			</div>
 		</div>
 
@@ -126,13 +130,14 @@
 			<%
 				var header;
 
-				var snapshotInfo = globalPage.Rules.list.active.snapshot;
+				var snapshotInfo = globalPage.Rules.list.active.snapshot,
+						comparison = snapshotInfo.comparison;
 
-				if (snapshotInfo.comparison === 'left')
+				if (comparison && comparison.side === 'left')
 					header = 'snapshots.only_always';
-				else if (snapshotInfo.comparison === 'right')
+				else if (comparison && comparison.side === 'right')
 					header = 'snapshots.only_snapshot';
-				else if (snapshotInfo.comparison === 'both')
+				else if (comparison && comparison.side === 'both')
 					header = 'snapshots.in_both';
 				else
 					header = 'snapshots.snapshot';

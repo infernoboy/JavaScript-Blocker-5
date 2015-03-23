@@ -31,7 +31,7 @@
 
 	"select.options": "Options",
 	"select.custom_options": "Custom Options",
-	"select.add_option_option": "Other...",
+	"select.add_option_option": "Other…",
 	"select.add_custom_option": "Add Option",
 
 	"view.page.full_disable": "JavaScript Blocker is disabled.",
@@ -155,7 +155,7 @@
 	"view.page.item.info.no_info": "No information is available for this item.",
 	"view.page.item.info.show_rules": "Show Rules",
 	"view.page.item.info.show_user_script": "Show User Script",
-	"view.page.item.info.loading": "Loading...",
+	"view.page.item.info.loading": "Loading…",
 	
 	"view_toolbar.disable": "Disable",
 	"view_toolbar.menu": "Menu",
@@ -178,7 +178,7 @@
 
 	"setting_menu.backup": "Backup",
 	"setting_menu.include": "Include",
-	"setting_menu.export_first_visit": "Visited webpages",
+	"setting_menu.export_first_visit": "Trusted website designations",
 	"setting_menu.export_rules": "Rules",
 	"setting_menu.export_snapshots": "Snapshots",
 	"setting_menu.export_user_scripts": "User scripts",
@@ -243,7 +243,7 @@
 	"setting.setLockerPassword.subLabel": "Set Password",
 	"setting.setLockerPassword.description": "The locker can be used to prevent unauthorized changes to your rules, settings, and other items. A password must be set in order to use the locker.",
 	"setting.setLockerPassword.iforgot": "iForgot",
-	"setting.setLockerPassword.iforgot.instructions": "Your user account password is required to perform these steps.<br><br>Open your <b>Applications</b> folder and then <b>Utilities</b>.<br><br>In here, open the application <b>Keychain Access</b>.<br><br>In the application, ensure that <b>login</b> is the selected keychain and then select the <b>Passwords</b> category.<br><br>Enter <b>JavaScriptBlocker5</b> in the search box at the top. There should be a result that starts with <b>Safari Extension</b>.<br><br>Double-click the appropriate result, verify that the account is <b>lockerPassword</b>, and then click <b>Show password</b>.<br><br>Your locker password is the text within the quotes.",
+	"setting.setLockerPassword.iforgot.instructions": "Your computer's user account password is required to perform these steps.<br><br>Open your <b>Applications</b> folder and then <b>Utilities</b>.<br><br>In here, open the application <b>Keychain Access</b>.<br><br>In the application, ensure that <b>login</b> is the selected keychain and then select the <b>Passwords</b> category.<br><br>Enter <b>JavaScriptBlocker5</b> in the search box at the top. There should be a result that starts with <b>Safari Extension</b>.<br><br>Double-click the appropriate result, verify that the account is <b>lockerPassword</b>, and then click <b>Show password</b>.<br><br>Your locker password is the text within the quotes.",
 	"setting.requireLockerPasswordLength.label": "Require password",
 	"setting.requireLockerPasswordLength.subLabel": "after unlock",
 	"setting.lockerAlwaysLocked.description": "Require locker password to:",
@@ -256,9 +256,15 @@
 	"setting.ignoreBlacklist.label": "Ignore blacklist rules",
 	"setting.secureOnly.label": "Resources on secure sites must also be secure",
 	"setting.allowExtensions.label": "Allow resources from other extensions",
-	"setting.blockFirstVisit.label": "Block all resources on first visit to",
-	"setting.blockFirstVisit.confirm": "All webpages will act as if they were visited for the first time if you change this setting. Are you sure you want to change it?",
-	"setting.blockFirstVisit.help": "If enabled, visiting a webpage for the first time will cause all of its resources to be blocked. When choosing to unblock them, this setting determines if it should apply to just that one host or all subdomains within the domain.<br/><br/><b>Changing this setting will cause all webpages to act as if visited for the first time.</b>",
+	"setting.blockFirstVisit.description": "When visiting an unknown hostname or domain, you can choose to have all of its resources blocked until you deem it trustworthy. Once you do, the resource blocking settings will take control over what gets blocked.",
+	"setting.blockFirstVisit.label": "Block all resources on unknown",
+	"setting.blockFirstVisit.subLabel": "Poop",
+	"setting.blockFirstVisit.confirm": "Your trusted website designations will be reset. Are you sure you want to change this setting?",
+	"setting.blockFirstVisit.help": "If enabled, all website resources will be blocked until trusted. This setting determines if you'll be trusting hostnames or domains.<br/><br/><b>Changing this setting will reset your trusted website designations.</b>",
+	"setting.defaultRuleList.label": "Create rules that last",
+	"setting.defaultRuleDomain.label": "Create rules that apply to",
+	"setting.defaultRuleDomain.help": "When visiting <strong>www.example.com</strong>…<br><br><b>Website host</b>: Apply rules only to <strong>www.example.com</strong><br><br><b>Website domain</b>: Apply rules to <strong>example.com</strong> and all subdomains within it.",
+	"setting.defaultRuleDomain.description": "When editing a page…",
 	"setting.enabledKinds.script.label": "Enable script blocker",
 	"setting.enabledKinds.frame.label": "Enable frame blocker",
 	"setting.enabledKinds.xhr.label": "Enable XHR blocker",
@@ -281,7 +287,7 @@
 	"setting.synchronousXHRMethod.confirm": "A JavaScript confirmation dialog (like this one) will appear whenever a synchronous XHR that does not match a rule occurs. Are you sure you want this to happen?",
 	"setting.showSynchronousXHRNotification.label": "Show a notification when a synchronous XHR occurs",
 	"setting.filterLists.validate.fail": "Enter a valid URL starting with http:, https:, or ftp:.",
-	"setting.filterLists.description": "Filter lists act as JavaScript Blocker's blacklist and whitelist. They block all of the unwanted content on webpages you visit. You can view the rules contained in them from the <b>Rules</b> tab, but you won't be able to edit them.",
+	"setting.filterLists.description": "Filter lists act as JavaScript Blocker's blacklist and whitelist. They block all of the unwanted content on websites you visit. You can view the rules contained in them from the <b>Rules</b> tab, but you won't be able to edit them.",
 	"setting.filterListLastUpdate.description": "Filter lists were last updated {0}.<br>The next update will occur in {1} days-{2} hours-{3} minutes.",
 	"setting.updateFilterLists.label": "Update filter lists now",
 	"setting.updateFilterLists.subLabel": "Update Now",
@@ -297,7 +303,7 @@
 	"setting.clearSnapshots.subLabel": "Delete Snapshots",
 
 	"setting.blockReferrer.label": "EXPERIMENTAL: Enable full referer blocking",
-	"setting.blockReferrer.confirm": "This setting has no effect yet. If this feature is ever implemented in the future, it will suddenly begin to work if enabled. Are you sure you want to turn it on now?",
+	"setting.blockReferrer.confirm": "This setting has no effect yet. If this feature is ever implemented in the future, it will suddenly begin to work if enabled. Are you sure you want to change this to enabled now?",
 	"setting.focusNewTab.label": "When a new tab opens, make it active",
 
 	"setting.enabledSpecials.description": "These features will appear as a blocked item under the header <b>Other Features</b>. You can create rules for them just as you would any other item.",
@@ -337,14 +343,16 @@
 	"recommend_reload.title": "Page Reload Recommended",
 	"recommend_reload.body": "Some resources were forcibly blocked because the page was hidden while it loaded. Reload the page if it isn't functioning as expected.",
 
-	"first_visit.title": "First Visit",
-	"first_visit.body": "All resources are blocked because this is the first time you've visited this {0}.",
-	"first_visit.blocked.body": "All resources were kept blocked when this {0} was first visited.",
-	"first_visit.body.host": "host",
+	"first_visit.title": "All Resources Blocked",
+	"first_visit.body": "All resources will be kept blocked until you decide to trust this {0}.",
+	"first_visit.blocked.body": "All resources on this {0} are blocked because you deemed it untrustworthy.",
+	"first_visit.blocked.helpLink": "More…",
+	"first_visit.blocked.help": "Clicking <b>Trust</b> will let your settings take over and decide what should be blocked.",
+	"first_visit.body.host": "hostname",
 	"first_visit.body.domain": "domain",
-	"first_visit.keep_blocked": "Keep Blocked",
-	"first_visit.unblock": "Unblock",
-	"first_visit.unblock_more_info": "Unblocking resources will let your settings determine which items should be blocked; it doesn't necessarily mean everything will be allowed.",
+	"first_visit.keep_blocked": "Don't Trust",
+	"first_visit.unblock": "Trust",
+	"first_visit.unblock_more_info": "Trusting will let the <strong>\"Block [resource type] from\"</strong> settings take control over of what gets blocked. You can still create rules for resources on untrusted websites.",
 
 	"settings.locked": "Settings cannot be modified at this time.",
 	"settings.enter_locker_password": "Enter Locker Password",
@@ -450,6 +458,7 @@
 	"snapshots.keep": "Keep",
 	"snapshots.unkeep": "Unkeep",
 	"snapshots.both": "Both",
+	"snapshots.show_rules_only_in": "Show rules only in",
 
 	"special.all domains.allowed": "No other features",
 	"special.all domains.blocked": "All other features",
@@ -503,7 +512,7 @@
 	"user_script.updated_to_version": "Updated to version {0}.",
 	"user_script.add_script": "Add Script",
 	"user_script.add_prompt": "Do you want to add this user script to JavaScript Blocker?",
-	"user_script.adding": "Adding...",
+	"user_script.adding": "Adding…",
 	"user_script.add_success": "User script successfully added to JavaScript Blocker.",
 	"user_script.enable_script": "Enable this script",
 	"user_script.enable_auto_update": "Enable automatic updating",
@@ -523,5 +532,5 @@
 	"xhr.block_once_all": "Block All Once",
 	"xhr.create_rule": "Create Rule&hellip;",
 
-	"poppy.beautifying_script": "Beautifying script..."
+	"poppy.beautifying_script": "Beautifying script…"
 }

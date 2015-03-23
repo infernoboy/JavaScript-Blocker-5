@@ -1,7 +1,11 @@
 "use strict";
 
 function Template (template, file) {
-	this.cache = {};
+	this.cache = {
+		'true': {},
+		'false': {}
+	};
+
 	this.name = file;
 	this.template = $(template);
 
@@ -56,8 +60,10 @@ Template.prototype.create = function (section, data, isHTML, returnString) {
 	if (data !== false && typeof data !== 'object')
 		data = {};
 
-	if (section in this.cache)
-		fn = this.cache[section];
+	var cache = this.cache[!!returnString];
+
+	if (section in cache)
+		fn = cache[section];
 	else if (!isHTML) {
 		var template = this.get(section);
 
@@ -66,9 +72,9 @@ Template.prototype.create = function (section, data, isHTML, returnString) {
 
 		fn = this.create(template.text(), false, true, returnString);
 
-		this.cache[section] = fn;
+		cache[section] = fn;
 	} else
-		fn = this.cache[section] = new Function('self', "var p=[];p.push('" +
+		fn = cache[section] = new Function('self', "var p=[];p.push('" +
 			section
 				.replace(/[\r\t\n]/g, " ")
 				.replace(/'(?=[^%]*%>)/g, "\t")

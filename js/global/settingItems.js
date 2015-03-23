@@ -192,6 +192,12 @@ Settings.settings = {
 		props: {
 			type: 'many-boolean'
 		},
+	}, {
+		setting: 'debugMode',
+		props: {
+			type: 'boolean',
+			default: true
+		}
 	}],
 
 	// General Settings
@@ -473,7 +479,7 @@ Settings.settings = {
 				['blacklist', 'Blacklist only'],
 				['everywhere', 'Anywhere'],
 				['host', 'Different hostnames'],
-				['domain', 'Different hosts &amp; subdomains'],
+				['domain', 'Different domains'],
 			],
 			onChange: function () {
 				Resource.canLoadCache.clear().saveNow();
@@ -515,15 +521,43 @@ Settings.settings = {
 			default: true
 		}
 	}, {
+		divider: true,
+	}, {
+		description: 'defaultRuleDomain.description'
+	}, {
+		setting: 'defaultRuleDomain',
+		props: {
+			type: 'option-radio',
+			options: [
+				['host', 'Website hostname'],
+				['domain', 'Website domain'],
+				['all', 'All domains']
+			],
+			default: 'host'
+		}
+	}, {
+		setting: 'defaultRuleList',
+		props: {
+			type: 'option-radio',
+			options: [
+				['last', 'Remember last choice'],
+				['always', 'Always'],
+				['temporary', 'Temporarily']
+			],
+			default: 'last'
+		}
+	}, {
 		divider: true //===================================================================================
+	}, {
+		description: 'blockFirstVisit.description'
 	}, {
 		setting: 'blockFirstVisit',
 		props: {
 			type: 'option-radio',
 			options: [
-				['nowhere', 'Nowhere'],
-				['host', 'Different hosts &amp; subdomains'],
-				['domain', 'Different hostnames'],
+				['nowhere', 'Off'],
+				['host', 'Hostnames'],
+				['domain', 'Domains'],
 			],
 			default: 'nowhere',
 			confirm: {
@@ -547,7 +581,7 @@ Settings.settings = {
 			}
 		}
 	}, {
-		divider: true,
+		divider: true
 	}, {
 		setting: 'enabledKinds',
 		props: {

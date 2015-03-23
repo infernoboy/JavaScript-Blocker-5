@@ -7,7 +7,7 @@ var UserScript = {
 		}.bind(null, script), false);
 	},
 
-	inject: function (script, parentUserScript) {
+	inject: function (script, parentUserScript, parentUserScriptName) {
 		var isSafe = false,
 				attributes = script.attributes;
 
@@ -71,6 +71,7 @@ var UserScript = {
 			usedURL: DeepInject.useURL,
 			isUserScript: true,
 			parentUserScript: parentUserScript,
+			parentUserScriptName: parentUserScriptName,
 			private: script.private
 		};
 
@@ -127,7 +128,7 @@ var UserScript = {
 									trueNamespace: requirementName
 								}
 							}
-						}, userScript);
+						}, userScript, enabledUserScripts[userScript].attributes.meta.name);
 					}
 				}
 

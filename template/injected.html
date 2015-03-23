@@ -31,7 +31,10 @@
 </noscript>
 
 <noscript id="first-visit">
-	<p class="jsb-info"><%=_('first_visit.body', [_(self.isDomain ? 'first_visit.body.domain' : 'first_visit.body.host')])%></p>
+	<p class="jsb-info">
+		<%=_('first_visit.body', [_(self.isDomain ? 'first_visit.body.domain' : 'first_visit.body.host')])%>
+		<a href="javascript:void(0);" class="show-more"><%=_('first_visit.blocked.helpLink')%></a>
+	</p>
 </noscript>
 
 <noscript id="install-user-script-prompt">

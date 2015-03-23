@@ -123,13 +123,13 @@ var Command = function (type, event) {
 	var Commands = {};
 
 	Commands.global = {
-		getFrameInfoWithID: function (detail, event) {	
-			if (Utilities.Page.isTop)
+		getFrameInfoWithID: function (detail, event) {
+			if (Utilities.Page.isTop && (!detail.data.targetPageID || detail.data.targetPageID === Page.info.id))
 				GlobalPage.message('bounce', {
 					command: 'getFrameInfo',
 					detail: {
 						attachTo: Page.info.id,
-						frameID: detail.data
+						frameID: detail.data.id
 					}
 				});
 		},
@@ -170,6 +170,7 @@ var Command = function (type, event) {
 
 				detail: {
 					originSourceID: data.originSourceID,
+					targetPageID: PARENT.parentPageID,
 					commandToken: Command.requestToken(data.command, data.preserve),
 					command: data.command,
 					viaFrame: detail.data.viaFrame,
@@ -392,10 +393,10 @@ var Command = function (type, event) {
 		},
 
 		notification: function (detail) {
-			if (!Utilities.Page.isTop)
+			if (!Utilities.Page.isTop || (detail.targetPageID && detail.targetPageID !== Page.info.id))
 				return;
 
-			var notification = new PageNotification(detail.data);
+			new PageNotification(detail.data);
 		},
 
 		showBlockedAllFirstVisitNotification: function (detail) {
@@ -407,6 +408,7 @@ var Command = function (type, event) {
 		requestFrameURL: function (detail, event) {
 			PARENT.frameID = detail.data.id;
 			PARENT.pageID = detail.data.pageID;
+			PARENT.parentPageID = detail.data.parentPageID || PARENT.pageID;
 
 			GlobalPage.message('bounce', {
 				command: 'receiveFrameURL',
@@ -561,7 +563,10 @@ var Command = function (type, event) {
 			if (typeof detail.meta !== 'string' || !detail.meta.length)
 				return LogError(['caption is not a valid string', detail.meta]);
 
-			detail.meta = TOKEN.INJECTED[detail.sourceID].name + ' - ' + detail.meta;
+			var ref = TOKEN.INJECTED[detail.sourceID],
+					name = ref.parentUserScript ? ref.parentUserScriptName : ref.name;
+
+			detail.meta = name + ' - ' + detail.meta;
 
 			if (UserScript.menuCommand[detail.meta])
 				return LogDebug('menu item with caption already exist - ' + detail.meta);

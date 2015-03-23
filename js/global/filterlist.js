@@ -8,9 +8,7 @@ function FilterList (listName, listURL) {
 
 	this.name = listName;
 	this.url = listURL;
-	this.temporaryRules = FilterList.__temporary.get(this.name, new Rule('FilterTemporary', {
-		private: true
-	}));
+	this.temporaryRules = FilterList.__temporary.get(this.name, new Rule('FilterTemporary'));
 
 	this.valid = true;
 

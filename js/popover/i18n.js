@@ -2,16 +2,16 @@
 
 var Strings = {
 	__currentLanguage: null,
+	__defaultLanguage: 'en-us',
 
 	strings: {},
-	defaultLanguage: 'en-us',
 
 	loadLanguage: function (language) {
 		if (this.strings[language])
 			return Log(language, 'is already loaded.');
 
-		if (!this.strings[this.defaultLanguage] && language !== this.defaultLanguage)
-			this.loadLanguage(this.defaultLanguage);
+		if (!this.strings[this.__defaultLanguage] && language !== this.__defaultLanguage)
+			this.loadLanguage(this.__defaultLanguage);
 
 		language = language.replace(/\./g, '_');
 
@@ -24,7 +24,9 @@ var Strings = {
 
 			$('#language-style').attr('href', ExtensionURL('i18n/' + language + '/style.css'));
 		}).fail(function (error) {
-			LogError('failed to load language - ' + language, error);
+			LogError('failed to load language - ' + language, error.status);
+
+			Strings.__currentLanguage = Strings.__defaultLanguage;
 		});
 	},
 
@@ -59,7 +61,7 @@ var Strings = {
 		if (Strings.strings[language] && typeof Strings.strings[language][string] === 'string')
 			return true;
 
-		if (Strings.strings[Strings.defaultLanguage] && typeof Strings.strings[Strings.defaultLanguage][string] === 'string')
+		if (Strings.strings[Strings.__defaultLanguage] && typeof Strings.strings[Strings.__defaultLanguage][string] === 'string')
 			return true;
 
 		return false;
@@ -75,8 +77,8 @@ function _ (string, args, hideNotLocalized) {
 
 	if (Strings.strings[language] && typeof Strings.strings[language][string] === 'string')
 		localized = Strings.strings[language][string];
-	else if (Strings.strings[Strings.defaultLanguage] && typeof Strings.strings[Strings.defaultLanguage][string] === 'string') {
-		localized = Strings.strings[Strings.defaultLanguage][string];
+	else if (Strings.strings[Strings.__defaultLanguage] && typeof Strings.strings[Strings.__defaultLanguage][string] === 'string') {
+		localized = Strings.strings[Strings.__defaultLanguage][string];
 
 		LogDebug('"' + string + '" is not localized in ' + language);
 	}

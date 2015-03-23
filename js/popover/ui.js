@@ -467,19 +467,27 @@ var UI = {
 
 			if (event.type === 'keypress') {
 				if (metaShift) {
-					if (key ==='c') {
-						event.preventDefault();
+					switch (key) {
+						case 'c':
+							event.preventDefault();
 
-						Locker
-							.showLockerPrompt('console')
-							.then(function () {
-								var consolePoppy = new Poppy(0.5, 0, true, 'console');
+							Locker
+								.showLockerPrompt('console')
+								.then(function () {
+									var consolePoppy = new Poppy(0.5, 0, true, 'console');
 
-								consolePoppy
-									.setContent(Template.create('poppy', 'console'))
-									.stayOpenOnScroll()
-									.show();
-							});
+									consolePoppy
+										.setContent(Template.create('poppy', 'console'))
+										.stayOpenOnScroll()
+										.show();
+								});
+						break;
+
+						case 's':
+							event.preventDefault();
+
+							$('.page-host-create-rules', UI.Page.view).click();
+						break;
 					}
 				}
 			} else {

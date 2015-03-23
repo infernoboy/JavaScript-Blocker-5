@@ -17,7 +17,7 @@
 
 		.page-host-section {
 			overflow: hidden;
-			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 
 			&:not(:first-child) {
 				border-top: 1px solid darken(#ddd, @darknessLevel);
@@ -72,9 +72,19 @@
 					}
 
 					&edit {
-						position: absolute;
-						right: 3px;
+						position: relative;
+						float: right;
 						margin-top: -3px;
+						margin-bottom: -3px;
+					}
+
+					&create-rules {
+						display: none;
+						position: relative;
+						float: right;
+						margin-top: -3px;
+						margin-bottom: -3px;
+						margin-right: 5px;
 					}
 
 					&type,
@@ -137,6 +147,10 @@
 				z-index: 0;
 				border-bottom-color: darken(#e0e0e0, @darknessLevel);
 
+				* {
+					text-align: center;
+				}
+
 				&.floated-header {
 					position: absolute;
 					z-index: 2;
@@ -164,21 +178,17 @@
 					margin-top: -1px;
 
 					.page-host-editor-where-wrapper {
-						-webkit-flex: 0 1 auto;
+						text-align: center;
+						-webkit-flex: 1 1 auto;
 						margin-right: 3px;
 
 						select {
-							max-width: 88%;
+							max-width: 90%;
 
 							.jsb-large-font& {
-								max-width: 86%;
+								max-width: 88%;
 							}
 						}
-					}
-
-					.page-host-editor-create-wrapper {
-						-webkit-flex: 1 0 auto;
-						margin-top: 1px;
 					}
 				}
 			}
@@ -601,6 +611,10 @@
 			}
 
 			&.page-host-editing {
+				.page-host-header .page-host-create-rules {
+					display: inline;
+				}
+
 				.page-host-columns .page-host-items-container .page-host-item {
 					padding-top: 3px;
 

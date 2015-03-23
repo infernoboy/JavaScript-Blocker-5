@@ -24,7 +24,7 @@
 	min-height: 20px;
 	max-width: 97%;
 	border-radius: 6px;
-	padding: 2px;
+	padding: 2px 0 2px 2px;
 	background: -webkit-linear-gradient(top, darken(#ffffff, @darknessLevel + 0.7%), darken(#fafafa, @darknessLevel + 0.7%));
 	box-shadow: 0 1px 10px rgba(1, 0, 1, 0.3);
 	-webkit-transition: -webkit-filter unit(0.13 * @speedMultiplier, s) ease-out;
@@ -82,7 +82,7 @@
 
 		&,
 		&:active {
-			border-color: rgba(0, 0, 0, 0.08);
+			border-color: rgba(0, 0, 0, 0.1);
 
 			& when (@darkMode) {
 				border-color: rgba(0, 0, 0, 0.6);
