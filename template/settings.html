@@ -1,8 +1,6 @@
 <noscript id="setting-container">
 	<div id="setting-toolbar"></div>
-	<div id="setting-views-container" class="ui-view-container">
-		<div id="setting-views"></div>
-	</div>
+	<div id="setting-views-container" class="ui-view-container"></div>
 </noscript>
 
 <noscript id="setting-section-container">
@@ -48,9 +46,9 @@
 				help = Strings.localizationExist(localizationKey + '.help') ? _(localizationKey + '.help') : null;
 
 		var wrapper = {
-			left: self.wrap ? '<div class="setting-section-setting-left">' : '',
-			right: self.wrap ? '<div class="setting-section-setting-right">' : '',
-			full: self.wrap ? '<div class="setting-section-setting-full">' : '',
+			left: self.wrap ? '<div class="setting-section-setting-left double-column-flex-left">' : '',
+			right: self.wrap ? '<div class="setting-section-setting-right double-column-flex-right">' : '',
+			full: self.wrap ? '<div class="setting-section-setting-full  double-column-flex-full">' : '',
 			close: self.wrap ? '</div>' : ''
 		};
 
@@ -59,7 +57,7 @@
 		switch (settingType) {
 			case 'button': %>
 				<%=wrapper.left%>
-					<label class="setting-main-label"><%=mainLabel%>:&nbsp;</label>
+					<label class="setting-main-label"><%=mainLabel%>:<q></q></label>
 				<%=wrapper.close%>
 				<%=wrapper.right%>
 					<input type="button" id="<%=self.id%>" class="<%=self.setting.props.classes || ''%>" value="<%=subLabel%>" data-settingButton="<%=self.setting.setting%>" />
@@ -82,7 +80,7 @@
 					options = options.concat(self.setting.props.extendOptions); %>
 
 				<%=wrapper.left%>
-					<label class="setting-main-label" for="<%=self.id%>"><%=mainLabel%>:&nbsp</label>
+					<label class="setting-main-label" for="<%=self.id%>"><%=mainLabel%>:<q></q></label>
 				<%=wrapper.close%>
 				<%=wrapper.right%>
 					<% if (self.props.otherOption || self.setting.props.otherOption) { %>
@@ -90,7 +88,7 @@
 					} %>
 					<select id="<%=self.id%>" <%=inlineSetting%> <%=storeKeySetting%>>
 						<% for (var i = 0; i < options.length; i++) { %>
-							<option value="<%=options[i][0]%>"><%=options[i][1]%></option><% 
+							<option value="<%=options[i][0]%>"><%=_(options[i][1], null, true)%></option><% 
 						} %>
 					</select><label></label>
 					<% if (subLabel) { %>
@@ -102,7 +100,7 @@
 
 			case 'option-radio': %>
 				<%=wrapper.left%>
-					<label class="setting-main-label"><%=mainLabel%>:&nbsp;</label>
+					<label class="setting-main-label"><%=mainLabel%>:<q></q></label>
 				<%=wrapper.close%>
 
 				<%=wrapper.right%>
@@ -115,7 +113,7 @@
 						options = options.concat(self.setting.props.extendOptions);
 
 					for (var i = 0; i < options.length; i++) { %>
-						<li><input id="<%=self.id + i%>" type="radio" name="<%=name%>" value="<%=options[i][0]%>" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id + i%>"><%=options[i][1]%></label></li><%
+						<li><input id="<%=self.id + i%>" type="radio" name="<%=name%>" value="<%=options[i][0]%>" <%=inlineSetting%> <%=storeKeySetting%> /> <label for="<%=self.id + i%>"><%=_(options[i][1], null, true)%></label></li><%
 					}
 
 					%> </ul>
@@ -125,7 +123,7 @@
 
 			case 'range': %>
 				<%=wrapper.left%>
-					<label class="setting-main-label"><%=mainLabel%>:&nbsp;</label>
+					<label class="setting-main-label"><%=mainLabel%>:<q></q></label>
 				<%=wrapper.close%>
 
 				<%=wrapper.right%><%
@@ -226,7 +224,7 @@
 			</ul>
 		</div>
 		<div class="setting-section-setting-right">
-			<input type="button" class="user-script-edit" value="<%=_('view.page.host.edit')%>" data-userScript="<%=self.key._entityQuotes()%>" />&nbsp;
+			<input type="button" class="user-script-edit" value="<%=_('view.page.host.edit')%>" data-userScript="<%=self.key._entityQuotes()%>" /><q></q>
 			<input type="button" class="user-script-delete double-click jsb-color-blocked" value="<%=_('Delete')%>" data-userScript="<%=self.key._entityQuotes()%>" />
 		</div>
 	</li>
@@ -248,10 +246,10 @@
 
 <noscript id="user-script-storage-item">
 	<li class="setting-section-setting user-script-storage-item">
-		<div class="setting-section-setting-left"><%=self.key._escapeHTML()%>:&nbsp;</div>
+		<div class="setting-section-setting-left"><%=self.key._escapeHTML()%>:<q></q></div>
 		<div class="setting-section-setting-right">
-			<input type="text" class="user-script-storage-item-value" data-userScript="<%=self.userScript._entityQuotes()%>" data-storageKey="<%=self.key._entityQuotes()%>" />&nbsp;
-			<input type="button" value="<%=_('Delete')%>" class="user-script-storage-item-delete double-click jsb-color-blocked" data-userScript="<%=self.userScript._entityQuotes()%>" data-storageKey="<%=self.key._entityQuotes()%>" />&nbsp;
+			<input type="text" class="user-script-storage-item-value" data-userScript="<%=self.userScript._entityQuotes()%>" data-storageKey="<%=self.key._entityQuotes()%>" /><q></q>
+			<input type="button" value="<%=_('Delete')%>" class="user-script-storage-item-delete double-click jsb-color-blocked" data-userScript="<%=self.userScript._entityQuotes()%>" data-storageKey="<%=self.key._entityQuotes()%>" /><q></q>
 		</div>
 	</li>
 </noscript>

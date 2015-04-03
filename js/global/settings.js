@@ -68,6 +68,7 @@ var Settings = {
 
 	ERROR: {
 		NOT_FOUND: 'setting not found - {0}',
+		WHEN_GROUP_ERROR: 'cannot set setting at this time - {0}',
 		STORE_KEY_NOT_FOUND: 'setting does not have storeKey - {0} - {1}',
 		INVALID_TYPE: 'value for setting is invalid - {0} - {1} - {2}'
 	},
@@ -206,7 +207,7 @@ var Settings = {
 				unlocked: unlocked
 			};
 
-			poppy.setContent(Template.create('poppy', 'confirm-setting-change', {
+			poppy.setContent(Template.create('poppy.settings', 'confirm-setting-change', {
 				string: _('setting.' + settingKey + '.confirm')
 			}));
 
@@ -333,65 +334,89 @@ var Settings = {
 			this.__method('removeItem', settingKey);
 	},
 
-	createMap: function (settings) {
+	createMap: function (settings, when) {
 		var settingKey;
 
 		for (var i = 0; i < settings.length; i++) {
 			if (settings[i].settings)
-				this.createMap(settings[i].settings);
+				this.createMap(settings[i].settings, settings[i].when);
 			else {
 				settingKey = settings[i].setting ? settings[i].setting : settings[i].store;
 
 				if (settingKey) {
 					if (settings[i].store) {
+						if (when)
+							settings[i].props.when = when;
+
 						if (!Settings.map[settingKey])
 							Settings.map[settingKey] = {
 								store: settingKey,
 								storeKeySettings: {},
-								props: settings[i].props
+								props: settings[i].props,
+								when: when
 							};
 						else
 							LogError(['found store setting more than once', settingKey]);
 					} else if (settings[i].props && settings[i].props.storeKey)
 						Settings.map[settingKey].storeKeySettings[settings[i].props.storeKey] = settings[i];
-					else if (!Settings.map[settingKey])
+					else if (!Settings.map[settingKey]){
+						if (when)
+							settings[i].props.when = when;
+
 						Settings.map[settingKey] = settings[i];
+					}
 				}
 			}
 
 			if (settings[i].props && settings[i].props.subSettings)
-				this.createMap(settings[i].props.subSettings);
+				this.createMap(settings[i].props.subSettings, settings[i].when);
 		}
 
 		return Settings.map;
 	},
 
 	export: function (options) {
-		var exported = SettingStore.all();
+		var allSettings = SettingStore.all(),
+				exported = {};
+
+		if (options.exportSettings)
+			exported = SettingStore.all();
 
 		if (!options.exportFirstVisit)
 			delete exported['Storage-FirstVisit'];
+		else if (!options.exportSettings)
+			exported['Storage-FirstVisit'] = allSettings['Storage-FirstVisit'];
 
 		if (!options.exportRules) {
 			delete exported['Storage-Rules'];
-			delete exported['Storage-StoreSettings'].STORE.expander;
-		}
+
+			if (options.exportSettings)
+				delete exported['Storage-StoreSettings'].STORE.expander;
+		} else if (!options.exportSettings)
+			exported['Storage-Rules'] = allSettings['Storage-Rules'];
 
 		if (!options.exportSnapshots)
 			delete exported['Storage-Snapshots'];
+		else if (!options.exportSettings)
+			exported['Storage-Snapshots'] = allSettings['Storage-Snapshots'];
 
 		if (!options.exportUserScripts)
 			delete exported['Storage-UserScripts'];
+		else if (!options.exportSettings)
+			exported['Storage-UserScripts'] = allSettings['Storage-UserScripts'];
 
 		delete exported['FilterListLastUpdate'];
 		delete exported['Storage-FilterRules'];
 		delete exported['Storage-Predefined'];
 		delete exported['Storage-ResourceCanLoad'];
+		delete exported['donationVerified'];
 
 		return JSON.stringify(exported);
 	},
 
-	import: function (settings) {
+	import: function (settings, clearExisting) {
+		var willNotImport = ['donationVerified', 'trialStart', 'updateNotify'];
+
 		Locker
 			.showLockerPrompt('importBackupSettings')
 			.then(function (settings) {
@@ -400,17 +425,41 @@ var Settings = {
 				if (!settings)
 					return LogError('failed to import settings');
 
-				SettingStore.clear();
+				var temporaryBackup = JSON.stringify(SettingStore.all());
 
-				for (var setting in settings)
+				if (clearExisting) {
+					SettingStore.clear();
+
+					Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
+				}
+
+				if (settings.settings && settings.rules && settings.simpleRules)
 					try {
-						if (settings[setting] && settings[setting].STORE)
-							SettingStore.setItem(setting, settings[setting]);
-						else
-							Settings.setItem(setting, settings[setting], null, true);
-					} catch (e) {
-						LogError('failed to import setting - ' + setting, e);
+						Upgrade.importJSB4Backup(settings);
+					} catch (error) {
+						LogError('failed to import JSB4 backup', error);
+
+						Settings.import(temporaryBackup, true);
+
+						return;
 					}
+				else {
+					for (var setting in settings) {
+						if (willNotImport._contains(setting))
+							continue;
+
+						try {
+							if (settings[setting] && settings[setting].STORE)
+								SettingStore.setItem(setting, settings[setting]);
+							else
+								Settings.setItem(setting, settings[setting], null, true);
+						} catch (e) {
+							LogError('failed to import setting - ' + setting, e);
+						}
+					}
+				}
+
+				Settings.setItem('showPopoverOnLoad', true);
 
 				SettingStore.lock(true);
 

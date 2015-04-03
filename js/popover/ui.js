@@ -229,7 +229,8 @@ var UI = {
 
 					header.addClass(expandingClass);
 
-					Settings.setItem('expander', !isCollapsed, header.attr('data-expander'));
+					if (!header.hasClass('temporary-expand'))
+						Settings.setItem('expander', !isCollapsed, header.attr('data-expander'));
 
 					groupWrapper.show();
 
@@ -443,7 +444,8 @@ var UI = {
 			LEFT: 37,
 			RIGHT: 39,
 			SHIFT: 16,
-			ESCAPE: 27
+			ESCAPE: 27,
+			TAB: 9
 		},
 
 		openedPopover: function () {
@@ -456,8 +458,15 @@ var UI = {
 			if (document.activeElement) {
 				var nodeName = document.activeElement.nodeName.toUpperCase();
 
-				if (nodeName === 'TEXTAREA' || ((nodeName === 'INPUT' && ['text', 'search', 'password']._contains(document.activeElement.type))))
+				if (nodeName === 'TEXTAREA' || ((nodeName === 'INPUT' && ['text', 'search', 'password']._contains(document.activeElement.type)))) {
+					if (nodeName === 'TEXTAREA' && event.which === UI.events.__keys.TAB && !document.activeElement.classList.contains('render-as-input')) {
+						event.preventDefault();
+
+						Utilities.Element.insertText(document.activeElement, "\t");
+					}
+
 					return;
+				}
 			}
 
 			var metaKey = Utilities.OSXVersion ? event.metaKey : event.ctrlKey,
@@ -491,7 +500,11 @@ var UI = {
 					}
 				}
 			} else {
-				if (event.which === UI.events.__keys.ESCAPE) {
+				if (event.which === UI.events.__keys.SHIFT) {
+					// window.globalSetting.speedMultiplier = 20;
+
+					// UI.setLessVariables();
+				} else if (event.which === UI.events.__keys.ESCAPE) {
 					if (Poppy.poppyExist()) {
 						event.preventDefault();
 
@@ -514,7 +527,8 @@ var UI = {
 		},
 
 		keyup: function (event) {
-
+			// if (event.which === UI.events.__keys.SHIFT)
+			// 	Settings.map.useAnimations.props.onChange();
 		},
 
 		anchor: function (event) {

@@ -1,5 +1,5 @@
 <noscript id="injected-element">
-	<div id="<%=self.id || ('jsb-' + Utilities.Token.generate())%>" class="jsb-injected-element"></div>
+	<div id="<%=self.id || ('jsb-' + Utilities.Token.generate())%>" class="jsb-injected-element <%=Settings.getItem('largeFont') ? 'jsb-large-font' : ''%>"></div>
 </noscript>
 
 <noscript id="recommend-reload">
@@ -32,8 +32,8 @@
 
 <noscript id="first-visit">
 	<p class="jsb-info">
-		<%=_('first_visit.body', [_(self.isDomain ? 'first_visit.body.domain' : 'first_visit.body.host')])%>
-		<a href="javascript:void(0);" class="show-more"><%=_('first_visit.blocked.helpLink')%></a>
+		<%=_('first_visit.body', [_(self.isDomain ? 'first_visit.body.domain' : 'first_visit.body.host')])%><q></q>
+		<a href="javascript:void(0);" class="jsb-show-more"><%=_('first_visit.blocked.helpLink')%></a>
 	</p>
 </noscript>
 

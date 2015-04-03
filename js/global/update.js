@@ -99,7 +99,7 @@ var Update = {
 					poppy.show();
 				}.bind(null, updateToVersion), true, true);
 
-				if (Settings.getItem('updateNotify') || Popover.visible() || update.blocking)
+				if (Settings.getItem('updateNotify') || !Extras.isUnlockedByDonating() || Popover.visible() || update.blocking)
 					Update.showRequiredPopover();
 
 				return;

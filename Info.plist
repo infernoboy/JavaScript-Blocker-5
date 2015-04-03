@@ -5,17 +5,17 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>10600.5.15</string>
+	<string>10600.5.17</string>
 	<key>CFBundleDisplayName</key>
-	<string>JavaScript Blocker 5</string>
+	<string>JS Blocker 5</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.toggleable.JavaScriptBlocker5</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5-alpha22</string>
+	<string>5-beta1</string>
 	<key>CFBundleVersion</key>
-	<string>150323</string>
+	<string>150403</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
@@ -28,13 +28,13 @@
 				<key>Image</key>
 				<string>image/toolbar.png</string>
 				<key>Label</key>
-				<string>JavaScript Blocker 5</string>
+				<string>JS Blocker 5</string>
 				<key>Palette Label</key>
-				<string>JavaScript Blocker 5</string>
+				<string>JS Blocker 5</string>
 				<key>Popover</key>
 				<string></string>
 				<key>Tool Tip</key>
-				<string>JavaScript Blocker 5</string>
+				<string>JS Blocker 5</string>
 			</dict>
 		</array>
 	</dict>

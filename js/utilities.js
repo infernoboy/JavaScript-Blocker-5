@@ -26,6 +26,7 @@ var LINE_SEPARATOR = '―――――――――――――――';
 // Primary utilities ====================================================================
 
 var Utilities = {
+	__watchdog: {},
 	__immediateTimeouts: [],
 
 	safariBuildVersion: parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10),
@@ -54,6 +55,33 @@ var Utilities = {
 
 		return version[0] + '.' + version[1];
 	})(),
+
+	watchdog: function (type, tries, timeLimit, callback) {
+		return new Promise(function (resolve, reject) {
+			var first;
+
+			if (typeof callback !== 'function')
+				callback = $.noop;
+
+			if (!Utilities.__watchdog[type])
+				Utilities.__watchdog[type] = [];
+
+			Utilities.__watchdog[type].push(Date.now());
+
+			if (Utilities.__watchdog[type].length > tries) {
+				first = Utilities.__watchdog[type].shift();
+
+				if (Utilities.__watchdog[type][Utilities.__watchdog[type].length - 1] - first >= timeLimit)
+					resolve();
+				else
+					reject();
+			} else
+				resolve();
+
+			if (Utilities.__watchdog[type].length > tries)
+				Utilities.__watchdog[type].splice(0, tries);
+		});
+	},
 
 	makeArray: function (arrayLikeObject, offset) {
 		if (typeof offset !== 'number')
@@ -446,15 +474,11 @@ var Utilities = {
 		},
 
 		interval: function () {
-			Utilities.setImmediateTimeout(function (timer, args) {
-				timer.create.apply(timer, ['interval'].concat(Utilities.makeArray(args)));
-			}, [this, arguments]);
+			this.create.apply(this, ['interval'].concat(Utilities.makeArray(arguments)));
 		},
 
 		timeout: function () {
-			Utilities.setImmediateTimeout(function (timer, args) {
-				timer.create.apply(timer, ['timeout'].concat(Utilities.makeArray(args)));
-			}, [this, arguments]);
+			this.create.apply(this, ['timeout'].concat(Utilities.makeArray(arguments)));
 		},
 
 		timeoutNow: function (reference) {
@@ -598,6 +622,15 @@ var Utilities = {
 
 	Element: {
 		__adjustmentProperties: ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
+
+		insertText: function (element, text) {
+			var value = element.value,
+					selectionStart = element.selectionStart;
+
+			element.value = value.substr(0, selectionStart) + text + value.substr(element.selectionEnd);
+
+			element.selectionStart = element.selectionEnd = selectionStart + 1;
+		},
 		
 		cloneAdjustmentProperties: function (fromElement, toElement) {
 			for (var i = 0; i < this.__adjustmentProperties.length; i++)

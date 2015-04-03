@@ -1,6 +1,68 @@
 "use strict";
 
 Object._extend(Poppy.scripts, {
+	'extras-unlock-prompt': function (poppy) {
+		var errorContainer = $('#extras-unlock-error-container', poppy.content),
+				errorString = $('#extras-unlock-error', errorContainer),
+				unlockEmail = $('#extras-unlock-email', poppy.content);
+
+		unlockEmail.focus();
+
+		poppy.content
+			.on('click', '#extras-unlock-unlock', function () {
+				Utilities
+					.watchdog('unlockExtraFeatures', 1, 1000)
+					.then(function resolved () {
+						var emailAddress = $.trim(unlockEmail.val());
+
+						if (!emailAddress.length) {
+							errorContainer.addClass('jsb-hidden');
+
+							return unlockEmail.shake().focus().selectAll();
+						}
+
+						Extras
+							.unlockUsingEmail(emailAddress)
+							.then(function (success) {
+								var thanksPoppy = new Poppy(0.5, 0, true);
+
+								thanksPoppy.setContent(Template.create('main', 'jsb-readable', {
+									string: _('extras.donation_thanks')
+								}));
+
+								thanksPoppy.show();
+								poppy.close();
+							}, function (error) {
+								errorContainer.removeClass('jsb-hidden');
+
+								errorString.text(Extras.ERROR[error] || error);
+
+								unlockEmail.shake().focus().selectAll();
+							});
+					}, function rejected () {
+						unlockEmail.focus();
+					});
+			})
+
+			.on('click', '#extras-unlock-free', function (event) {
+				var freePoppy = new Poppy(event.pageX, event.pageY, false, 'extras-unlock-free');
+
+				freePoppy
+					.linkTo(poppy)
+					.setContent(Template.create('poppy', 'extras-unlock-free'))
+					.show();
+			});
+	},
+
+	'extras-unlock-free': function (poppy) {
+		poppy.content
+			.on('click', '#extras-unlock-free-now', function () {
+				Extras.unlockWithoutDonating();
+
+				poppy.linkedTo.close();
+			});
+	},
+
 	'set-lock-password': function (poppy) {
 		var previousPassword = $('#lock-password-previous', poppy.content),
 				newPassword = $('#lock-password', poppy.content),
@@ -13,9 +75,9 @@ Object._extend(Poppy.scripts, {
 
 		poppy.content
 			.on('click', '#lock-password-forgot', function (event) {
-				var poppy = new Poppy(event.pageX, event.pageY);
+				Tabs.create(Utilities.URL.createFromContent(Template.create('poppy.settings', 'forgot-locker-password', {}, null, true), 'text/html', true));
 
-				poppy.setContent(Template.create('poppy', 'forgot-locker-password')).show();
+				Popover.hide();
 			})
 
 			.on('click', '#lock-password-cancel', function () {
@@ -49,9 +111,9 @@ Object._extend(Poppy.scripts, {
 
 		poppy.content
 			.on('click', '#lock-password-forgot', function (event) {
-				var poppy = new Poppy(event.pageX, event.pageY, false);
+				Tabs.create(Utilities.URL.createFromContent(Template.create('poppy.settings', 'forgot-locker-password', {}, null, true), 'text/html', true));
 
-				poppy.setContent(Template.create('poppy', 'forgot-locker-password')).show();
+				Popover.hide();
 			})
 
 			.on('click', '#lock-password-cancel', function () {
@@ -105,6 +167,10 @@ Object._extend(Poppy.scripts, {
 
 			.on('click', '#main-menu-submit-feedback', function () {
 				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5%20Feedback', true);
+			})
+
+			.on('click', '#main-menu-unlock', function () {
+				UI.Extras.showUnlockPrompt();
 			})
 
 			.on('click', '#main-menu-console', function (event) {
@@ -173,11 +239,11 @@ Object._extend(Poppy.scripts, {
 			.on('click', '#setting-menu-backup', function () {
 				var alternativePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'setting-menu-backup');
 
-				alternativePoppy.setContent(Template.create('poppy', 'setting-menu-backup')).show();
+				alternativePoppy.setContent(Template.create('poppy.settings', 'setting-menu-backup')).show();
 			})
 
 			.on('click', '#setting-menu-restore-defaults', function (event) {
-				Settings.import({});
+				Settings.import({}, true);
 
 				poppy.close();
 			});
@@ -187,6 +253,7 @@ Object._extend(Poppy.scripts, {
 		poppy.content
 			.on('click', '#setting-menu-backup-export', function (event) {
 				var options = {
+					exportSettings: $('#setting-menu-backup-export-settings', poppy.content).is(':checked'),
 					exportFirstVisit: $('#setting-menu-backup-export-first-visit', poppy.content).is(':checked'),
 					exportRules: $('#setting-menu-backup-export-rules', poppy.content).is(':checked'),
 					exportSnapshots: $('#setting-menu-backup-export-snapshots', poppy.content).is(':checked'),
@@ -205,7 +272,7 @@ Object._extend(Poppy.scripts, {
 
 						reader.addEventListener('load', function (fileEvent) {
 							if (fileEvent.target.result) {
-								Settings.import(fileEvent.target.result);
+								Settings.import(fileEvent.target.result, $('#clear-existing', poppy.content).is(':checked'));
 
 								poppy.close();
 							}
@@ -219,7 +286,7 @@ Object._extend(Poppy.scripts, {
 			.on('click', '#setting-menu-backup-import-alternative', function (event) {
 				var alternativePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'backup-import-alternative');
 
-				alternativePoppy.setContent(Template.create('poppy', 'backup-import-alternative')).show();
+				alternativePoppy.setContent(Template.create('poppy.settings', 'backup-import-alternative')).show();
 			});
 	},
 
@@ -231,7 +298,7 @@ Object._extend(Poppy.scripts, {
 				poppy.close();
 
 				if (backupContents.length)
-					Settings.import(backupContents);
+					Settings.import(backupContents, $('#clear-existing', poppy.content).is(':checked'));
 			});
 	},
 
@@ -240,7 +307,7 @@ Object._extend(Poppy.scripts, {
 			.on('click', '#temporary-menu-new', function (event) {
 				var newPoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'create-rule');
 
-				newPoppy.setContent(Template.create('poppy', 'create-rule', {
+				newPoppy.setContent(Template.create('poppy.rules', 'create-rule', {
 					editing: false,
 					list: 'temporary',
 					type: 'domain',
@@ -275,7 +342,7 @@ Object._extend(Poppy.scripts, {
 			.on('click', '#active-menu-new', function (event) {
 				var newPoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'create-rule');
 
-				newPoppy.setContent(Template.create('poppy', 'create-rule', {
+				newPoppy.setContent(Template.create('poppy.rules', 'create-rule', {
 					editing: false,
 					list: 'user',
 					type: 'domain',
@@ -512,7 +579,7 @@ Object._extend(Poppy.scripts, {
 			.on('click', '#create-rule-duplicate', function () {
 				poppy.templateArgs.editing = false;
 
-				var template = Template.create('poppy', 'create-rule', poppy.templateArgs);
+				var template = Template.create('poppy.rules', 'create-rule', poppy.templateArgs);
 
 				poppy.setContent(template);
 			})
@@ -647,7 +714,7 @@ Object._extend(Poppy.scripts, {
 	'snapshot-item': function (poppy) {
 		poppy.content
 			.on('click', '#snapshot-item-name-set', function () {
-				poppy.setContent(Template.create('poppy', 'snapshot-item-name'));
+				poppy.setContent(Template.create('poppy.snapshots', 'snapshot-item-name'));
 
 				$('#snapshot-item-name', poppy.content).focus();
 			})
@@ -658,7 +725,7 @@ Object._extend(Poppy.scripts, {
 				comparePoppy.snapshots = poppy.snapshots;
 				comparePoppy.snapshotID = poppy.snapshotID;
 
-				comparePoppy.setContent(Template.create('poppy', 'snapshot-item-compare')).show();
+				comparePoppy.setContent(Template.create('poppy.snapshots', 'snapshot-item-compare')).show();
 			})
 
 			.on('click', '#snapshot-item-name-save', function () {

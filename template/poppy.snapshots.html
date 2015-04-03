@@ -1,0 +1,27 @@
+<noscript id="snapshot-item">
+	<% if (globalPage.Rules.isLockerLocked()) { %>
+		<p class="jsb-info jsb-readable"><%=_('view.page.host.rules_locked')%></p><%
+	} else { %>
+		<input type="button" id="snapshot-item-name-set" value="<%=_('snapshots.name')%>" /><q></q>
+		<input type="button" id="snapshot-item-compare" value="<%=_('snapshots.compare')%>" /><q></q>
+		<input type="button" id="snapshot-item-keep" value="<%=_('snapshots.' + (self.kept ? 'unkeep' : 'keep'))%>" /><%
+	} %>
+</noscript>
+
+<noscript id="snapshot-item-name">
+	<input type="text" id="snapshot-item-name" class="trigger-on-enter" /><q></q>
+	<input type="button" id="snapshot-item-name-save" class="on-enter" value="<%=_('Save')%>" />
+</noscript>
+
+<noscript id="snapshot-item-compare">
+	<h3 class="jsb-centered"><%=_('snapshots.compare')%></h3>
+
+	<div class="generic-menu">
+		<div class="generic-menu-menu">
+			<label><%=_('snapshots.show_rules_only_in')%>:</label><q></q>
+			<input type="button" id="snapshot-item-compare-left" value="<%=_('rules.active')%>" />
+			<input type="button" id="snapshot-item-compare-right" value="<%=_('rules.snapshot')%>" />
+			<input type="button" id="snapshot-item-compare-both" value="<%=_('snapshots.both')%>" />
+		</div>
+	</div>
+</noscript>

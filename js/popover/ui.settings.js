@@ -47,6 +47,10 @@ UI.Settings = {
 		UI.Settings.views
 			.on('input', '.user-script-content', function () {
 				this.setAttribute('data-blockViewSwitch', 1);
+
+				$('[data-settingButton="saveUserScript"]', UI.Settings.views)
+					.prop('disabled', false)
+					.val(_('setting.saveUserScript.subLabel'));
 			})
 
 			.on('click', '*[data-settingButton]', function (event) {
@@ -458,11 +462,13 @@ UI.Settings = {
 				userScriptContent = userScript.val(),
 				result = globalPage.UserScript.add(userScriptContent);
 
-		if (result === true) {
+		if (typeof result === 'string') {
 			userScript.removeAttr('data-blockViewSwitch');
 
 			if (!noSwitch)
 				UI.view.switchTo('#setting-views-userScripts');
+			else
+				UI.Settings.editUserScript(result);
 		} else if (button) {
 			var offset = $(button).offset(),
 					poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
@@ -472,7 +478,7 @@ UI.Settings = {
 			})).show();
 		}
 
-		return result === true;
+		return typeof result === 'string';
 	},
 
 	editUserScript: function (userScriptNS) {
@@ -484,7 +490,7 @@ UI.Settings = {
 			var meta = globalPage.UserScript.getAttribute(userScriptNS, 'meta'),
 					script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
 					storage = globalPage.UserScript.getStorageItem(userScriptNS);
-		} catch (e) {
+		} catch (error) {
 			return;
 		}
 
@@ -582,7 +588,7 @@ UI.Settings = {
 
 				poppy
 					.modal()
-					.setContent(Template.create('poppy', 'user-script-confirm-view-switch', {
+					.setContent(Template.create('poppy.settings', 'user-script-confirm-view-switch', {
 						viewID: event.detail.to.id
 					}))
 					.show();
@@ -594,5 +600,3 @@ UI.Settings = {
 };
 
 document.addEventListener('DOMContentLoaded', UI.Settings.init, true);
-
-Template.load('settings');

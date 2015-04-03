@@ -34,6 +34,7 @@ function Predefined () {
 				'api\\.solvemedia\\.com',
 				's1\\.wp\\.com'
 			],
+			'.homedepot.com': ['nexus\\.ensighten\\.com'],
 			'.amazon.com': ['(ssl\\-)?images\\-amazon\\.com'],
 			'.reddit.com': ['www\\.redditstatic\\.com', 'redditstatic.s3.amazonaws.com'],
 			'.paypal.com': ['www\\.paypalobjects\\.com'],

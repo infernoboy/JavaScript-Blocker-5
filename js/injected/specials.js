@@ -48,7 +48,7 @@ Special.specials = {
 								template: 'injected',
 								section: 'javascript-alert',
 								data: {
-									body: result ? _localize('user_script.add_success') : result
+									body: typeof result === 'string' ? _localize('user_script.add_success') : result
 								}
 							})
 						});

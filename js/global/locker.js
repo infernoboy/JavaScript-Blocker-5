@@ -60,7 +60,7 @@ var Locker = {
 	showSetPasswordPrompt: function (preventCancel) {
 		var poppy = new Popover.window.Poppy(0.5, 0, true, 'set-lock-password');
 
-		poppy.setContent(Template.create('poppy', 'set-lock-password', {
+		poppy.setContent(Template.create('poppy.settings', 'set-lock-password', {
 			preventCancel: preventCancel
 		}));
 
@@ -89,7 +89,7 @@ var Locker = {
 			poppy.lockerKey = key;
 			poppy.locked = Locker.isLocked(key);
 
-			poppy.setContent(Template.create('poppy', 'toggle-lock', {
+			poppy.setContent(Template.create('poppy.settings', 'toggle-lock', {
 				locked: poppy.locked,
 				info: _('lockerInfo.' + key)
 			}));

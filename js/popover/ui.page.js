@@ -224,8 +224,8 @@ UI.Page = {
 
 	resizeColumns: function (allowedColumnWidth) {
 		var resizers = $('.page-host-columns-resize'),
-				useLargeFont = Settings.getItem('largeFont'),
-				allowedColumnWidth = Math.min(useLargeFont ? 0.73 : 0.78, Math.max(useLargeFont ? 0.27 : 0.22, allowedColumnWidth)),
+				largeFont = Settings.getItem('largeFont'),
+				allowedColumnWidth = Math.min(largeFont ? 0.73 : 0.78, Math.max(largeFont ? 0.27 : 0.22, allowedColumnWidth)),
 				allowedColumnWidthPercent = (allowedColumnWidth * 100),
 				blockedColumnWidthPercent = 100 - allowedColumnWidthPercent;
 
@@ -661,7 +661,7 @@ UI.Page = {
 							meta: resources[resourceID].meta && resources[resourceID].meta._isEmpty() ? undefined : resources[resourceID].meta
 						});
 
-					poppy.setContent(Template.create('poppy', 'resource-list', {
+					poppy.setContent(Template.create('poppy.page', 'resource-list', {
 						items: items
 					}));
 
@@ -676,7 +676,7 @@ UI.Page = {
 					poppy.isAllowed = item.parents('.page-host-column').is('.page-host-column-allowed');
 					poppy.resources = item.data('resources');
 
-					poppy.setContent(Template.create('poppy', 'item-info', {
+					poppy.setContent(Template.create('poppy.page', 'item-info', {
 						kind: item.parents('.page-host-items').attr('data-kind'),
 						action: parseInt(item.attr('data-action'), 10)
 					}));
@@ -758,8 +758,6 @@ UI.Page = {
 		}
 	}
 };
-
-Template.load('page');
 
 UI.event.addCustomEventListener('pageDidRender', UI.Page.events.pageDidRender);
 UI.event.addCustomEventListener('viewAlreadyActive', UI.Page.events.viewAlreadyActive);

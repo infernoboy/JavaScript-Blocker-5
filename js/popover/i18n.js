@@ -19,15 +19,18 @@ var Strings = {
 			async: false,
 			url: ExtensionURL('i18n/' + language + '/strings.json'),
 			dataType: 'json'
-		}).done(function (strings) {
-			Strings.strings[language] = strings;
+		})
+			.done(function (strings) {
+				Strings.strings[language] = strings;
 
-			$('#language-style').attr('href', ExtensionURL('i18n/' + language + '/style.css'));
-		}).fail(function (error) {
-			LogError('failed to load language - ' + language, error.status);
+				$('#language-style').attr('href', ExtensionURL('i18n/' + language + '/style.less'));
+			})
 
-			Strings.__currentLanguage = Strings.__defaultLanguage;
-		});
+			.fail(function (error) {
+				LogError('failed to load language - ' + language, error.status);
+
+				Strings.__currentLanguage = Strings.__defaultLanguage;
+			});
 	},
 
 	getLanguage: function () {

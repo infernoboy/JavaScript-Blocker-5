@@ -208,6 +208,10 @@ Page.lastPageForTab = function (tab) {
 	});
 };
 
+Page.prototype.clearFrames = function () {
+	this.frames.clear();
+};
+
 Page.prototype.addFrame = function (frame) {
 	if (!(frame instanceof Page))
 		frame = new Page(frame);

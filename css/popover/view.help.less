@@ -1,0 +1,88 @@
+#view-container {
+	#main-views[data-activeview="#main-views-help"] {
+		overflow: hidden;
+		margin-top: 0;
+		position: relative;
+	}
+
+	#main-views-help {
+		width: 100%;
+		-webkit-flex-direction: column;
+		-webkit-align-items: stretch;
+
+		&.active-view {
+			position: absolute;
+			height: 100%;
+			display: -webkit-flex;
+		}
+
+		#help-toolbar {
+			padding-top: 3px;
+			margin-top: -2px;
+			-webkit-flex: 0 0 25px;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+			background: darken(rgb(245, 245, 245), @darknessLevel);
+
+			& when (@darkMode) {
+				border-bottom-color: rgba(0, 0, 0, 0.4);
+			}
+
+			.view-switcher-container {
+				position: absolute;
+
+				.view-switcher {
+					margin-top: 1px;
+
+					li:not(.view-switcher-hidden),
+					li.view-switcher-hidden.active-view {
+						width: 80px;
+					}
+				}
+			}
+		}
+
+		#help-views-container {
+			position: relative;
+			-webkit-flex: 1 1 100%;
+			overflow-y: scroll;
+			overflow-x: auto;
+			margin-top: 1px;
+
+			.help-content {
+				padding: 10px;
+
+				.help-questions {
+					margin-top: 15px;
+
+					li {
+						margin-bottom: 7px;
+						padding-bottom: 5px;
+
+						&:not(:last-child) {
+							border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+							& when (@darkMode) {
+								border-bottom-color: rgba(0, 0, 0, 0.45);
+							}
+						}
+					}
+
+					h4 {
+						margin-left: 0;
+						color: darken(@baseColor, 13%);
+						font-weight: 500;
+
+						& when (@darkMode) {
+							color: lighten(@baseColor, 20%);
+						}
+					}
+
+					.help-question-answer {
+						margin-left: 10px;
+						padding-top: 5px;
+					}
+				}
+			}
+		}
+	}
+}

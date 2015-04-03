@@ -76,6 +76,68 @@ var Upgrade = {
 				}				
 			}
 		}
+
+		Rules.list.user.rules.saveNow();
+	},
+
+	importJSB4Backup: function (settings) {
+		if (settings.rules)
+			Upgrade.importRulesFromJSB4(settings.rules);
+
+		if (settings.simpleRules)
+			Upgrade.importRulesFromJSB4(settings.simpleRules);
+
+		var settingMapRef,
+				settingConversion,
+				settingKey,
+				storeKey,
+				value;
+
+		if (Object._isPlainObject(settings.settings)) {
+			for (var setting in settings.settings) {
+				storeKey = undefined;
+
+				settingMapRef = Upgrade.settings.map[setting];
+
+				if (settingMapRef) {
+					if (typeof settingMapRef === 'function') {
+						settingConversion = settingMapRef(settings.settings[setting]);
+
+						settingKey = settingConversion.key;
+						storeKey = settingConversion.storeKey;
+						value = settingConversion.value;
+					} else {
+						settingKey = settingMapRef === true ? setting : settingMapRef;
+						value = settings.settings[setting];
+					}
+
+					Settings.setItem(settingKey, value, storeKey);
+				}
+			}
+
+			try {
+				var userScriptNS,
+						userScript;
+
+				var userScripts = JSON.parse(Utilities.decode(settings.settings.userScripts));
+
+				for (userScript in userScripts) {
+					userScriptNS = UserScript.add(userScripts[userScript].script);
+
+					if (typeof userScriptNS === 'string') {
+						UserScript.setAttribute(userScriptNS, 'developerMode', userScripts[userScript].developerMode);
+						UserScript.setAttribute(userScriptNS, 'autoUpdate', !!userScripts[userScript].autoUpdate);
+					}
+
+				}
+
+				Settings.__stores.saveNow(false, true);
+
+				UserScript.scripts.saveNow(false, true);
+			} catch (error) {
+				LogError('failed to import user scripts from JSB4 backup');
+			}
+		}
 	},
 
 	settings: {
@@ -94,20 +156,44 @@ var Upgrade = {
 
 		map: {
 			persistDisabled: true,
-			language: true,
 			toolbarDisplay: true,
 			updateNotify: true,
 			ignoreWhitelist: true,
 			ignoreBlacklist: true,
 			secureOnly: true,
 			allowExtensions: true,
+			autoSnapshots: true,
+			snapshotsLimit: true,
 
 			animations: 'useAnimations',
-			largeFont: 'useLargeFont',
+			largeFont: 'largeFont',
 			showUnblocked: 'showUnblockedScripts',
 			hideJSBInjected: 'hideInjected',
 			simplifyDomainNames: 'showItemDescription',
-			hideWhitelistBlacklistItems: 'autoHideFilterList',
+			hideWhitelistBlacklistItems: 'autoHideBlacklist',
+
+			quickAddTemporary: function (value) {
+				return {
+					key: 'defaultRuleList',
+					value: value ? 'temporary' : 'last'
+				}
+			},
+
+			quickAddType: function (value) {
+				value = parseInt(value, 10);
+
+				return {
+					key: 'defaultRuleDomain',
+					value: value === 0 ? 'host' : (value === 1 ? 'domain' : 'all')
+				}
+			},
+
+			language: function (value) {
+				return {
+					key: 'language',
+					value: value === 'Automatic' ? 'auto' : value
+				}
+			},
 			
 			simpleMode: function (value) {
 				return {
@@ -154,8 +240,194 @@ var Upgrade = {
 					storeKey: 'frame',
 					value: value
 				};
-			}
+			},
 
+			enableajax: function (value) {
+				return {
+					key: 'enabledKinds',
+					storeKey: 'xhr',
+					value: value
+				}
+			},
+
+			alwaysBlockajax: function (value) {
+				return {
+					key: 'alwaysBlock',
+					storeKey: 'xhr',
+					value: Upgrade.settings.mapAlwaysBlock(value)
+				}
+			},
+
+			enablevideo: function (value) {
+				return {
+					key: 'enabledKinds',
+					storeKey: 'video',
+					value: value
+				}
+			},
+
+			alwaysBlockvideo: function (value) {
+				return {
+					key: 'alwaysBlock',
+					storeKey: 'video',
+					value: Upgrade.settings.mapAlwaysBlock(value)
+				}
+			},
+
+			showPlaceholdervideo: function (value) {
+				return {
+					key: 'showPlaceholder',
+					storeKey: 'video',
+					value: value
+				};
+			},
+
+			enableimage: function (value) {
+				return {
+					key: 'enabledKinds',
+					storeKey: 'image',
+					value: value
+				}
+			},
+
+			alwaysBlockimage: function (value) {
+				return {
+					key: 'alwaysBlock',
+					storeKey: 'image',
+					value: Upgrade.settings.mapAlwaysBlock(value)
+				}
+			},
+
+			showPlaceholderimage: function (value) {
+				return {
+					key: 'showPlaceholder',
+					storeKey: 'image',
+					value: value
+				};
+			},
+
+			enableembed: function (value) {
+				return {
+					key: 'enabledKinds',
+					storeKey: 'embed',
+					value: value
+				}
+			},
+
+			alwaysBlockembed: function (value) {
+				return {
+					key: 'alwaysBlock',
+					storeKey: 'embed',
+					value: Upgrade.settings.mapAlwaysBlock(value)
+				}
+			},
+
+			showPlaceholderembed: function (value) {
+				return {
+					key: 'showPlaceholder',
+					storeKey: 'embed',
+					value: value
+				};
+			},
+
+			enable_special_simple_referrer: function (value) {
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'simple_referrer',
+					value: value
+				}
+			},
+
+			enable_special_alert_dialogs: function (value) {
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'alert_dialogs',
+					value: value
+				}
+			},
+
+			enable_special_contextmenu_overrides: function (value) {
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'contextmenu_overrides',
+					value: value
+				}
+			},
+
+			enable_special_window_resize: function (value) {
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'window_resize',
+					value: value
+				}
+			},
+
+			enable_special_autocomplete_disabler: function (value) {
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'autocomplete_disabler',
+					value: value
+				}
+			},
+
+			enable_special_inline_scripts: function (value) {
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'inline_script_execution',
+					value: value
+				}
+			},
+
+			enable_special_navigator_override: function (value) {
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'environmental_information',
+					value: value
+				}
+			},
+
+			enable_special_canvas_fingerprinting: function (value) {;
+				value = parseInt(value, 10);
+
+				if (value === 0)
+					value = false;
+				else if (value === 1)
+					value = 2;
+				else
+					value = 4;
+				
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'canvas_data_url',
+					value: value
+				}
+			},
+
+			enable_special_font: function (value) {;
+				value = parseInt(value, 10);
+
+				if (value === 0 || value === '0')
+					value = false;
+
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'font',
+					value: value
+				}
+			},
+
+			enable_special_zoom: function (value) {;
+				value = parseInt(value, 10);
+
+				if (value === 0 || value === '0')
+					value = false;
+
+				return {
+					key: 'enabledSpecials',
+					storeKey: 'zoom',
+					value: value
+				}
+			}
 		}
 	}
 };

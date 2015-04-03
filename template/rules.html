@@ -1,10 +1,10 @@
 <noscript id="rule-container">
 	<div id="rule-toolbar">
 		<div id="rule-domain-search-container">
-			<label for="rule-domain-search" class="jsb-label"><%=_('rules.filter_domain')%>:&nbsp;</label>
-			<input type="search" id="rule-domain-search" incremental="incremental" placeholder="<%=_('rules.domain_or_page')%>"/>&nbsp;
-			<label for="rule-domain-hide-show" class="jsb-label"><%=_('rules.domains_pages')%>:&nbsp;
-			<input type="button" id="rule-domain-hide-all" class="blend-in" value="<%=_('rules.hide_all')%>" />&nbsp;
+			<label for="rule-domain-search" class="jsb-label"><%=_('rules.filter_domain')%>:<q></q></label>
+			<input type="search" id="rule-domain-search" incremental="incremental" placeholder="<%=_('rules.domain_or_page')%>"/><q></q>
+			<label for="rule-domain-hide-show" class="jsb-label"><%=_('rules.domains_pages')%>:<q></q>
+			<input type="button" id="rule-domain-hide-all" class="blend-in" value="<%=_('rules.hide_all')%>" /><q></q>
 			<input type="button" id="rule-domain-show-all" class="blend-in" value="<%=_('rules.show_all')%>" />
 		</div>
 		<div class="horizontal-divider horizontal-divider-short"></div>
@@ -83,9 +83,11 @@
 				<%
 					var protocols = "",
 							humanString = "rules.list.",
+							isHiding = self.kind._contains("hide:"),
 							isAllowing = !!(self.ruleInfo.action % 2),
 							ruleParts = self.ruleInfo.regexp ? { domain: self.rule } : globalPage.Rules.partsForRule(self.rule),
-							domain = ruleParts.domain === '*' ? 'all domains' : ruleParts.domain;
+							domain = ruleParts.domain === '*' ? 'all domains' : ruleParts.domain,
+							originalDomain = domain;
 
 					if (!self.ruleInfo.regexp) {
 						if (ruleParts.protocols) {
@@ -102,10 +104,13 @@
 							}
 						} else if (self.kind._contains('special')) {
 							domain = _('special.' + domain + '.' + (isAllowing ? 'allowed' : 'blocked'), [globalPage.Special.enabled[domain] ? globalPage.Special.enabled[domain].value : '']);
+
+							if (isHiding)
+								domain += '/' + _('special.' + originalDomain + '.' + (!isAllowing ? 'allowed' : 'blocked'), [globalPage.Special.enabled[originalDomain] ? globalPage.Special.enabled[originalDomain].value : '']);
 						}
 					}
 
-					if (self.kind._contains('hide:')) {
+					if (isHiding) {
 						humanString += isAllowing ? 'show' : 'hide';
 					} else if (self.kind._contains('special')) {
 						humanString += 'special';

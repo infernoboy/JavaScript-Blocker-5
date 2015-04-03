@@ -5,9 +5,15 @@ Settings.settings = {
 	__misc: [{
 		setting: 'donationVerified',
 		props: {
-			type: 'boolean',
+			type: 'mixed',
 			onChange: function () {
+				if (window.Special)
+					Special.__enabled = null;
+
 				SettingStore.__cache = {};
+
+				if (window.UI)
+					UI.view.switchTo('#main-views-page');
 			}
 		}
 	}, {
@@ -35,7 +41,10 @@ Settings.settings = {
 		setting: 'trialStart',
 		props: {
 			type: 'number',
-			default: 0
+			default: 0,
+			onChange: function () {
+				Settings.map.donationVerified.props.onChange();
+			}
 		}
 	}, {
 		setting: 'isDisabled',
@@ -125,12 +134,12 @@ Settings.settings = {
 		props: {
 			type: 'option',
 			options: [
-				[5000, '5 seconds'],
-				[60000, '1 minute'],
-				[300000, '5 minutes'],
-				[600000, '10 minutes'],
-				[1800000, '30 minutes'],
-				[3600000, '1 hour']
+				[5000, 'setting.disableTime.option.5_seconds'],
+				[60000, 'setting.disableTime.option.1_minute'],
+				[300000, 'setting.disableTime.option.5_minutes'],
+				[600000, 'setting.disableTime.option.10_minutes'],
+				[1800000, 'setting.disableTime.option.30_minutes'],
+				[3600000, 'setting.disableTime.option.1_hour']
 			],
 			default: 5000
 		}
@@ -183,7 +192,7 @@ Settings.settings = {
 						poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'user-script-storage-add');
 
 				poppy
-					.setContent(Template.create('poppy', 'user-script-storage-add'))
+					.setContent(Template.create('poppy.settings', 'user-script-storage-add'))
 					.show();
 			}
 		}
@@ -197,6 +206,12 @@ Settings.settings = {
 		props: {
 			type: 'boolean',
 			default: true
+		}
+	}, {
+		setting: 'showPopoverOnLoad',
+		props: {
+			type: 'boolean',
+			default: false
 		}
 	}],
 
@@ -259,6 +274,22 @@ Settings.settings = {
 			}
 		}
 	}, {
+		setting: 'showExpanderLabels',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		setting: 'recommendReloadAlways',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		divider: true
+	}, {
+		header: 'pageHeader'
+	}, {
 		setting: 'showPageEditorImmediately',
 		props: {
 			type: 'boolean',
@@ -296,25 +327,19 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		setting: 'showExpanderLabels',
+		setting: 'autoHideWhitelist',
 		props: {
 			type: 'boolean',
 			default: false
 		}
 	}, {
-		setting: 'autoHideFilterList',
+		setting: 'autoHideBlacklist',
 		props: {
 			type: 'boolean',
 			default: false
 		}
 	}, {
 		setting: 'autoHideNoRule',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		setting: 'recommendReloadAlways',
 		props: {
 			type: 'boolean',
 			default: false
@@ -338,6 +363,7 @@ Settings.settings = {
 				['#00afba', 'Turquoise'],
 				['#876846', 'Brown'],
 				['#7512b2', 'Purple'],
+				['#9734e4', 'Lavender'],
 				['#e50000', 'Red'],
 				['#7a0103', 'Dark red'],
 				['#000000', 'Black']
@@ -346,7 +372,6 @@ Settings.settings = {
 				return Settings.getItem('darkMode') ? '#336699' : '#177efb';
 			},
 			otherOption: {
-				prompt: 'Enter a valid 6 digit hex CSS color preceeded by #.',
 				validate: function (value) {
 					return value.match(/^#[a-f0-9]+$/i) && (value.length === 7 || value.length === 4);
 				}
@@ -360,10 +385,16 @@ Settings.settings = {
 		props: {
 			type: 'option',
 			options: [
-				['auto', 'Automatic'],
-				['en-us', 'US English']
+				['auto', 'setting.language.option.automatic'],
+				['en-us', 'US English'],
+				['tilde', 'Tilde'],
 			],
-			default: 'auto'
+			default: 'auto',
+			onChange: function () {
+				setTimeout(function () {
+					Popover.window.location.reload()
+				}, 500);
+			}
 		}
 	}, {
 		setting: 'toolbarDisplay',
@@ -371,9 +402,9 @@ Settings.settings = {
 			type: 'option-radio',
 			default: 'blocked',
 			options: [
-				['blocked', 'Blocked items'],
-				['allowed', 'Allowed items'],
-				[false, 'Neither']
+				['blocked', 'setting.toolbarDisplay.option.blocked'],
+				['allowed', 'setting.toolbarDisplay.option.allowed'],
+				[false, 'setting.toolbarDisplay.option.neither']
 			],
 			onChange: function () {
 				Page.requestPageFromActive();
@@ -394,7 +425,7 @@ Settings.settings = {
 			}
 		}
 	}, {
-		divider: true,
+		divider: true, //===================================================================================
 		classes: 'transparent short'
 	}, {
 		description: 'lockerAlwaysLocked.description',
@@ -437,9 +468,7 @@ Settings.settings = {
 			default: false
 		}
 	}, {
-		divider: true
-	}, {
-		header: 'extraFeatures'
+		divider: true //===================================================================================
 	}, {
 		when: {
 			settings: {
@@ -448,10 +477,16 @@ Settings.settings = {
 					method: Utilities.Group.IS,
 					key: 'extrasActive',
 					needle: true
+				}, {
+					method: Utilities.Group.IS,
+					key: 'donationVerified',
+					needle: true
 				}]
 			}
 		},
 		settings: [{
+			header: 'donatorFeatures'
+		}, {
 			setting: 'updateNotify',
 			props: {
 				type: 'boolean',
@@ -475,11 +510,11 @@ Settings.settings = {
 		props: {
 			type: 'option',
 			options: [
-				['nowhere', 'Nowhere'],
-				['blacklist', 'Blacklist only'],
-				['everywhere', 'Anywhere'],
-				['host', 'Different hostnames'],
-				['domain', 'Different domains'],
+				['nowhere', 'setting.blockFrom.option.nowhere'],
+				['blacklist', 'setting.blockFrom.option.blacklist'],
+				['everywhere', 'setting.blockFrom.option.anywhere'],
+				['host', 'setting.blockFrom.option.hostnames'],
+				['domain', 'setting.blockFrom.option.domains'],
 			],
 			onChange: function () {
 				Resource.canLoadCache.clear().saveNow();
@@ -521,7 +556,7 @@ Settings.settings = {
 			default: true
 		}
 	}, {
-		divider: true,
+		divider: true, //===================================================================================
 	}, {
 		description: 'defaultRuleDomain.description'
 	}, {
@@ -529,9 +564,9 @@ Settings.settings = {
 		props: {
 			type: 'option-radio',
 			options: [
-				['host', 'Website hostname'],
-				['domain', 'Website domain'],
-				['all', 'All domains']
+				['host', 'setting.defaultRuleDomain.option.hostname'],
+				['domain', 'setting.defaultRuleDomain.option.domain'],
+				['all', 'setting.defaultRuleDomain.option.all']
 			],
 			default: 'host'
 		}
@@ -540,9 +575,9 @@ Settings.settings = {
 		props: {
 			type: 'option-radio',
 			options: [
-				['last', 'Remember last choice'],
-				['always', 'Always'],
-				['temporary', 'Temporarily']
+				['last', 'setting.defaultRuleList.option.remember'],
+				['always', 'setting.defaultRuleList.option.always'],
+				['temporary', 'setting.defaultRuleList.option.temporarily']
 			],
 			default: 'last'
 		}
@@ -555,9 +590,9 @@ Settings.settings = {
 		props: {
 			type: 'option-radio',
 			options: [
-				['nowhere', 'Off'],
-				['host', 'Hostnames'],
-				['domain', 'Domains'],
+				['nowhere', 'setting.blockFirstVisit.option.off'],
+				['host', 'setting.blockFirstVisit.option.hostnames'],
+				['domain', 'setting.blockFirstVisit.option.domains'],
 			],
 			default: 'nowhere',
 			confirm: {
@@ -567,6 +602,10 @@ Settings.settings = {
 						method: Utilities.Group.NOT.IS,
 						key: 'blockFirstVisit',
 						needle: 'nowhere'
+					}, {
+						method: Utilities.Group.IS,
+						key: 'setupComplete',
+						needle: true
 					}]
 				}
 			},
@@ -581,7 +620,7 @@ Settings.settings = {
 			}
 		}
 	}, {
-		divider: true
+		divider: true //===================================================================================
 	}, {
 		setting: 'enabledKinds',
 		props: {
@@ -653,7 +692,6 @@ Settings.settings = {
 			setting: 'alwaysBlock',
 			props: {
 				storeKey: 'script',
-				help: 'alwaysBlock help',
 				default: 'blacklist'
 			}
 		}]
@@ -710,7 +748,6 @@ Settings.settings = {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'frame',
-					help: 'alwaysBlock help',
 					default: 'blacklist'
 				}
 			}]
@@ -784,8 +821,7 @@ Settings.settings = {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'xhr',
-					extendOptions: [['ask', 'Rules and ask when needed']],
-					help: 'alwaysBlock help',
+					extendOptions: [['ask', 'setting.blockFrom.option.ask']],
 					default: 'blacklist',
 					onChange: function () {
 						Special.__enabled = null;
@@ -814,7 +850,11 @@ Settings.settings = {
 					setting: 'synchronousXHRMethod',
 					props: {
 						type: 'option-radio',
-						options: [[0, 'Allow'], [1, 'Block'], [2, 'Invasively ask']],
+						options: [
+							[0, 'setting.synchronousXHRMethod.option.allow'],
+							[1, 'setting.synchronousXHRMethod.option.block'],
+							[2, 'setting.synchronousXHRMethod.option.ask']
+						],
 						default: 0,
 						confirm: {
 							toValues: ['2'],
@@ -932,7 +972,6 @@ Settings.settings = {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'video',
-					help: 'alwaysBlock help',
 					default: 'everywhere'
 				}
 			}]
@@ -975,13 +1014,12 @@ Settings.settings = {
 				setting: 'alwaysBlock',
 				props: {
 					storeKey: 'image',
-					help: 'alwaysBlock help',
 					default: 'blacklist'
 				}
 			}]
 		}]
 	}, {
-		divider: true
+		divider: true //===================================================================================
 	}, {
 		header: 'filterLists',
 	}, {
@@ -1030,7 +1068,7 @@ Settings.settings = {
 			}
 		}
 	}, {
-		divider: true,
+		divider: true, //===================================================================================
 		classes: 'transparent short'
 	}, {
 		description: 'filterListLastUpdate.description',
@@ -1063,7 +1101,7 @@ Settings.settings = {
 			}
 		},
 	}, {
-		divider: true
+		divider: true //===================================================================================
 	}, {
 		setting: 'importRulesFromFour',
 		props: {
@@ -1108,7 +1146,6 @@ Settings.settings = {
 			setting: 'snapshotsLimit',
 			props: {
 				type: 'range',
-				label: ['Store only', 'unkept snapshots'],
 				options: [1, 999],
 				default: 5,
 				onChange: function () {
@@ -1116,7 +1153,7 @@ Settings.settings = {
 				}
 			}
 		}, {
-			divider: true,
+			divider: true, //===================================================================================
 			classes: 'transparent short'
 		}, {
 			setting: 'clearSnapshots',
@@ -1165,12 +1202,12 @@ Settings.settings = {
 				}
 			}
 		}, {
-			divider: true
+			divider: true //===================================================================================
 		}, {
 			customView: function (container) {
 				var userScript;
 
-				var userScripts = UserScript.scripts.keys().sort().reverse();
+				var userScripts = Extras.isActive() ? UserScript.scripts.keys().sort().reverse() : [];
 
 				for (var i = userScripts.length; i--;) {
 					userScript = UserScript.scripts.get(userScripts[i]);
@@ -1209,7 +1246,10 @@ Settings.settings = {
 		props: {
 			type: 'button',
 			onClick: function (button) {
-				UI.Settings.saveUserScriptEdit(button);
+				UI.Settings.saveUserScriptEdit(button, true);
+
+				button.disabled = true;
+				button.value = _('setting.saveUserScript.subLabel.saved');
 			}
 		},
 	}],
@@ -1324,9 +1364,7 @@ Settings.settings = {
 				type: 'boolean',
 				storeKey: 'anchor_titles',
 				isExtra: true,
-				default: function () {
-					return Extras.isActive();
-				},
+				default: false
 			}
 		}, {
 			setting: 'enabledSpecials',
@@ -1350,9 +1388,7 @@ Settings.settings = {
 				type: 'boolean',
 				storeKey: 'autocomplete_disabler',
 				isExtra: true,
-				default: function () {
-					return Extras.isActive();
-				},
+				default: false
 			}
 		}, {
 			setting: 'enabledSpecials',
@@ -1376,15 +1412,15 @@ Settings.settings = {
 				type: 'option',
 				storeKey: 'canvas_data_url',
 				options: [
-					[false, 'Off'],
-					[1, 'Always ask'],
-					[2, 'Ask once per host'],
-					[3, 'Ask once per host for session'],
-					[4, 'Always protect']
+					[false, 'setting.enabledSpecials.canvas_data_url.option.off'],
+					[1, 'setting.enabledSpecials.canvas_data_url.option.always_ask'],
+					[2, 'setting.enabledSpecials.canvas_data_url.option.ask_once'],
+					[3, 'setting.enabledSpecials.canvas_data_url.option.ask_once_session'],
+					[4, 'setting.enabledSpecials.canvas_data_url.option.always_protect']
 				],
 				isExtra: true,
 				default: function () {
-					return Extras.isActive() ? 3 : false;
+					return Extras.isActive() ? 2 : false;
 				},
 			}
 		}, {
@@ -1393,7 +1429,7 @@ Settings.settings = {
 				type: 'option',
 				storeKey: 'font',
 				options: [
-					[false, 'Default'],
+					[false, 'setting.enabledSpecials.zoom.option.default'],
 					['Helvetica', 'Helvetica'],
 					['Arial', 'Arial'],
 					['Times', 'Times'],
@@ -1402,7 +1438,6 @@ Settings.settings = {
 				isExtra: true,
 				default: false,
 				otherOption: {
-					prompt: 'Enter a custom font name to use.',
 					validate: function (value) {
 						return /^[ a-z0-9_-]+$/ig.test(value);
 					}
@@ -1414,7 +1449,7 @@ Settings.settings = {
 				type: 'option',
 				storeKey: 'zoom',
 				options: [
-					[false, 'Default'],
+					[false, 'setting.enabledSpecials.zoom.option.default'],
 					[60, '60%'],
 					[80, '80%'],
 					[100, '100%'],
@@ -1427,7 +1462,6 @@ Settings.settings = {
 				isExtra: true,
 				default: false,
 				otherOption: {
-					prompt: 'Enter a custom zoom level to use.',
 					validate: function (value) {
 						return /^[0-9]+$/g.test(value);
 					}

@@ -8,17 +8,44 @@
 	</div>
 </noscript>
 
+<noscript id="main-menu">
+	<h3 class="jsb-centered">JS Blocker <%=Version.display%></h3>
+
+	<div id="main-menu" class="generic-menu">
+		<div class="generic-menu-menu jsb-align-right">
+			<input type="button" id="main-menu-submit-feedback" value="<%=_('main_menu.submit_feedback')%>" />
+			<input type="button" id="main-menu-about" value="<%=_('main_menu.about')%>" />
+			<% if (!Extras.isUnlockedByDonating()) { %>
+				<input type="button" id="main-menu-unlock" class="jsb-color-blocked" value="<%=_(Extras.isUnlockedForFree() ? 'main_menu.donate' : 'main_menu.unlock')%>" /><%
+			} %>
+		</div>
+
+		<div class="horizontal-divider"></div>
+
+		<div id="main-menu-console-info" class="jsb-align-right">
+			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" />
+			<%
+				var messageHistory = Utilities.messageHistory(),
+						messageCount = messageHistory.error.length + messageHistory.debug.length; %>
+			<span id="main-menu-console-message-count"><%=_('main_menu.console.message'._pluralize(messageCount), [messageCount])%></span> 
+		</div>
+	</div>
+</noscript>
+
 <noscript id="disable-menu">
 	<h3 class="jsb-centered"><%=_('view_toolbar.disable')%></h3>
+
 	<% if (Settings.isLocked()) { %>
 		<p class="jsb-readable"><%=_('settings.locked')%></p><%
 	} else { %>
 		<div id="disable-menu" class="generic-menu">
 			<div class="generic-menu-menu">
-				<%=UI.Settings.createElementForSetting(Settings.map.disableTime, 'disable-menu-for').html()%>&nbsp;
+				<%=UI.Settings.createElementForSetting(Settings.map.disableTime, 'disable-menu-for').html()%><q></q>
 				<input type="button" id="disable-menu-for-disable" value="<%=_('view_toolbar.disable')%>" />
 			</div>
+
 			<div class="horizontal-divider"></div>
+
 			<ul class="generic-menu-options">
 				<%
 					var settings = ['disablingReloadsAll', 'persistDisabled', 'alwaysUseTimedDisable'];
@@ -31,27 +58,9 @@
 	} %>
 </noscript>
 
-<noscript id="main-menu">
-	<h3 class="jsb-centered">JavaScript Blocker <%=Version.display%></h3>
-	<div id="main-menu" class="generic-menu">
-		<div class="generic-menu-menu">
-			<input type="button" id="main-menu-submit-feedback" value="<%=_('main_menu.submit_feedback')%>" />
-			<input type="button" id="main-menu-contribute" class="jsb-color-blocked" value="<%=_('main_menu.unlock')%>" />
-			<input type="button" id="main-menu-about" value="<%=_('main_menu.about')%>" />
-			<%
-				var messageHistory = Utilities.messageHistory(),
-						messageCount = messageHistory.error.length + messageHistory.debug.length; %>
-		</div>
-		<div class="horizontal-divider"></div>
-		<div id="main-menu-console-info" class="jsb-align-right">
-			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" />
-			<span id="main-menu-console-message-count"><%=_('main_menu.console.message'._pluralize(messageCount), [messageCount])%></span> 
-		</div>
-	</div>
-</noscript>
-
 <noscript id="page-menu">
 	<h3 class="jsb-centered"><%=_('view_toolbar.page')%></h3>
+
 	<div id="page-menu" class="generic-menu">
 		<ul class="generic-menu-options">
 			<%
@@ -66,6 +75,7 @@
 
 <noscript id="rule-menu">
 	<h3 class="jsb-centered"><%=_('view_toolbar.rules')%></h3>
+
 	<div id="rule-menu" class="generic-menu">
 		<ul class="generic-menu-options generic-menu-menu">
 			<% if (!globalPage.Rules.isLockerLocked() && !globalPage.Rules.list.temporary.rules.isEmpty()) { %>
@@ -74,6 +84,7 @@
 					<div class="horizontal-divider"></div>
 				</li>
 			<% } %>
+
 			<li class="jsb-align-right">
 				<% if (!globalPage.Rules.isLockerLocked()) { %>
 					<input type="button" id="rule-menu-open-snapshots" value="<%=_('view_toolbar.snapshots')%>" /><%
@@ -87,86 +98,9 @@
 	</div>
 </noscript>
 
-<noscript id="setting-menu">
-	<h3 class="jsb-centered"><%=_('view_toolbar.setting')%></h3>
-	<% if (Settings.isLocked()) { %>
-		<div class="jsb-align-right">
-			<input id="setting-menu-lock" type="button" value="<%=_('Unlock')%>" />
-		</div><%
-	} else { %>
-		<div class="generic-menu">
-			<ul class="generic-menu-options generic-menu-menu">
-				<li class="jsb-align-right">
-					<input id="setting-menu-restore-defaults" type="button" value="<%=_('settings.restore_defaults')%>" />
-					<input id="setting-menu-backup" type="button" value="<%=_('setting_menu.backup')%>" />
-					<input id="setting-menu-lock" type="button" value="<%=_('Lock')%>" />
-				</li>
-			</ul>
-		</div><%
-	} %>
-</noscript>
-
-<noscript id="setting-menu-backup">
-	<h3 class="jsb-centered"><%=_('setting_menu.backup')%></h3>
-	<ul class="generic-menu-options">
-		<li class="double-column-flex">
-			<div class="double-column-flex-left"><%=_('setting_menu.include')%>:&nbsp;</div>
-			<div class="double-column-flex-right">
-				<ul class="generic-menu-options no-indent">
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-first-visit" checked="checked" /> <label for="setting-menu-backup-export-first-visit"><%=_('setting_menu.export_first_visit')%></label>
-					</li>
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-rules" checked="checked" /> <label for="setting-menu-backup-export-rules"><%=_('setting_menu.export_rules')%></label>
-					</li>
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-snapshots" checked="checked" /> <label for="setting-menu-backup-export-snapshots"><%=_('setting_menu.export_snapshots')%></label>
-					</li>
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-user-scripts" checked="checked" /> <label for="setting-menu-backup-export-user-scripts"><%=_('setting_menu.export_user_scripts')%></label>
-					</li>
-				</ul>
-			</div>
-		</li>
-		<li>
-			<div class="horizontal-divider horizontal-divider-transparent horizontal-divider-short"></div>
-		</li>
-		<li>
-			<label><%=_('setting_menu.export_backup')%>:</label>&nbsp;
-			<input id="setting-menu-backup-export" type="button" value="<%=_('setting_menu.export')%>" />
-		</li>
-		<li>
-			<span class="jsb-readable"><%=_('setting_menu.export.description')%></span>
-			<div class="horizontal-divider"></div>
-		<li>
-			<label><%=_('setting_menu.import_backup')%>:</label>&nbsp;
-			<input id="setting-menu-backup-import" type="file" value="<%=_('setting_menu.import')%>" />
-		</li>
-		<li>
-			<span class="jsb-readable"><%=_('setting_menu.import.description')%> <a href="javascript:void(0);" id="setting-menu-backup-import-alternative"><%=_('setting_menu.import.alternative')%></a></span>
-		</li>
-	</ul>
-</noscript>
-
-<noscript id="backup-import-alternative">
-	<h3 class="jsb-centered"><%=_('setting_menu.backup')%></h3>
-	<div class="generic-menu">
-		<ul class="generic-menu-options generic-menu-menu">
-			<li>
-				<p class="jsb-readable jsb-info"><%=_('setting_menu.import.alternative.paste')%></p>
-			</li>
-			<li>
-				<textarea id="backup-import-alternative"></textarea>
-			</li>
-			<li class="jsb-align-right">
-				<input type="button" id="backup-import-alternative-import" value="<%=_('setting_menu.import')%>" />
-			</li>
-		</ul>
-	</div>
-</noscript>
-
 <noscript id="active-rules-menu">
 	<h3 class="jsb-centered"><%=_('rules.active_rules')%></h3>
+
 	<% if (globalPage.Rules.isLocked()) { %>
 		<p class="jsb-readable"><%=_('view.page.host.rules_locked')%></p><%
 	} else { %>
@@ -179,6 +113,7 @@
 
 <noscript id="snapshot-rules-menu">
 	<h3 class="jsb-centered"><%=_('rules.snapshot_rules')%></h3>
+
 	<% if (globalPage.Rules.isLockerLocked()) { %>
 		<p class="jsb-readable"><%=_('view.page.host.rules_locked')%></p><%
 	} else { %>
@@ -203,6 +138,7 @@
 					<span><%=_(header, [snapshotInfo.name._escapeHTML()])%></span>
 					<div class="horizontal-divider"></div>
 				</li>
+
 				<li class="jsb-align-right">
 					<input type="button" id="snapshot-menu-merge-always" value="<%=_('snapshot_menu.merge_always')%>" />
 					<input type="button" id="snapshot-menu-make-always" value="<%=_('temporary_menu.make_always')%>" />
@@ -211,12 +147,15 @@
 			</ul>
 		</div><%
 	} %>
+
 	<div class="horizontal-divider"></div>
-	<%=Template.create('poppy', 'snapshot-item-compare', true, null, true)%>
+
+	<%=Template.create('poppy.snapshots', 'snapshot-item-compare', true, null, true)%>
 </noscript>
 
 <noscript id="temporary-rules-menu">
 	<h3 class="jsb-centered"><%=_('rules.temporary_rules')%></h3>
+
 	<% if (globalPage.Rules.isLockerLocked()) { %>
 		<p class="jsb-readable"><%=_('view.page.host.rules_locked')%></p><%
 	} else { %>
@@ -230,6 +169,7 @@
 
 <noscript id="filter-rules-menu">
 	<h3 class="jsb-centered"><%=_('rules.filter_lists')%></h3>
+
 	<div class="generic-menu">
 		<ul class="generic-menu-options">
 			<%
@@ -248,83 +188,36 @@
 	</div>
 </noscript>
 
-<noscript id="set-lock-password">
-	<h3 class="jsb-centered"><%=_('settings.set_locker_password')%></h3>
-	<div class="generic-menu">
-		<ul id="lock-password-set" class="generic-menu-menu generic-menu-options">
-			<% if (!Locker.passwordIsSet()) { %>
-				<li>
-					<p class="jsb-info jsb-readable"><%=_('setting.setLockerPassword.description')%></p>
-					<div class="horizontal-divider"></div>
-				</li><%
-			} %>
-			<li>
-				<table class="generic-menu-options">
-					<tbody>
-						<% if (Locker.passwordIsSet()) { %>
-							<tr>
-								<td class="jsb-align-right"><label for="lock-password-previous"><%=_('settings.current_locker_password')%>:</label>&nbsp;</td>
-								<td><input type="password" id="lock-password-previous" class="trigger-on-enter" /></td>
-							</tr><%
-						} %>
-						<tr>
-							<td class="jsb-align-right"><label for="lock-password"><%=_('settings.new_locker_password')%>:</label>&nbsp;</td>
-							<td><input type="password" id="lock-password" class="trigger-on-enter" /></td>
-						</tr>
-						<tr>
-							<td class="jsb-align-right"><label for="lock-password-verify"><%=_('settings.verify_locker_password')%>:</label>&nbsp;</td>
-							<td><input type="password" id="lock-password-verify" class="trigger-on-enter" /></td>
-						</tr>
-					</tbody>
-				</table>
-			</li>
-			<li class="jsb-align-right">
-				<% if (Locker.passwordIsSet()) { %>
-					<input type="button" id="lock-password-forgot" value="<%=_('setting.setLockerPassword.iforgot')%>" /><%
-				} %>
-				<% if (!self.preventCancel) { %>
-					<input type="button" id="lock-password-cancel" value="<%=_('Cancel')%>" /><%
-				} %>
-				<input type="button" id="lock-password-save" class="on-enter" value="<%=_('Save')%>" />
-			</li>
-		</ul>
-	</div>
-</noscript>
+<noscript id="setting-menu">
+	<h3 class="jsb-centered"><%=_('view_toolbar.setting')%></h3>
 
-<noscript id="toggle-lock">
-	<h3 class="jsb-centered"><%=_('settings.enter_locker_password')%></h3>
-	<div class="generic-menu">
-		<ul class="generic-menu-menu generic-menu-options">
-			<li>
-				<label class="jsb-label"><%=_('locker.' + (self.locked ? 'unlocking' : 'locking'))%>:</label>
-				<span class="jsb-readable"><%=self.info%></span>
-				<div class="horizontal-divider"></div>
-			</li>
-			<li class="jsb-centered">
-				<label for="lock-password"><%=_('settings.locker_password')%>:</label>&nbsp;
-				<input type="password" id="lock-password" class="trigger-on-enter" />
-				<div class="horizontal-divider horizontal-divider-short horizontal-divider-transparent"></div>
-			</li>
-			<li class="jsb-align-right">
-				<input type="button" id="lock-password-forgot" value="<%=_('setting.setLockerPassword.iforgot')%>" />
-				<input type="button" id="lock-password-cancel" value="<%=_('Cancel')%>" />
-				<input type="button" id="lock-password-toggle" class="on-enter" value="<%=_(self.locked ? 'Unlock' : 'Lock')%>" />
-			</li>
-		</ul>
-	</div>
-</noscript>
-
-<noscript id="forgot-locker-password">
-	<p class="jsb-info jsb-readable"><%=_('setting.setLockerPassword.iforgot.instructions')%></p>
+	<% if (Settings.isLocked()) { %>
+		<div class="jsb-align-right">
+			<input id="setting-menu-lock" type="button" value="<%=_('Unlock')%>" />
+		</div><%
+	} else { %>
+		<div class="generic-menu">
+			<ul class="generic-menu-options generic-menu-menu">
+				<li class="jsb-align-right">
+					<input id="setting-menu-restore-defaults" type="button" value="<%=_('settings.restore_defaults')%>" />
+					<input id="setting-menu-backup" type="button" value="<%=_('setting_menu.backup')%>" />
+					<input id="setting-menu-lock" type="button" value="<%=_('Lock')%>" />
+				</li>
+			</ul>
+		</div><%
+	} %>
 </noscript>
 
 <noscript id="console">
 	<div id="console-container">
 		<h3 class="jsb-centered"><%=_('main_menu.console')%></h3>
+
 		<input type="button" id="console-clear" value="<%=_('console.clear')%>" />
 		<input type="button" id="console-report" value="<%=_('console.report')%>" />
 		<input type="checkbox" id="console-debug-mode" <%=window.globalSetting.debugMode ? 'checked="checked"' : ''%> /> <label for="console-debug-mode"><%=_('console.debug_mode')%></label>
+		
 		<div class="horizontal-divider"></div>
+
 		<ul class="console">
 			<li><h4 class="jsb-centered"><%=_('console.error_messages')%></h4></li>
 		<%
@@ -341,13 +234,14 @@
 						</li><%
 					if (messageHistory.error[i].stack.length) { %>
 						<li>
-							<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack%></span>
+							<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')%></span>
 						</li><%
 					}
 				}
 			}
 		%>
 		</ul>
+
 		<ul class="console">
 			<li><h4 class="jsb-centered"><%=_('console.debug_messages')%></h4></li>
 		<%
@@ -369,6 +263,7 @@
 
 <noscript id="select-custom-options">
 	<h3 class="jsb-centered"><%=_('select.options')%></h3>
+
 	<ul class="select-custom-options"><%
 		self.options.each(function () { %>
 			<li class="<%=self.value === this.value ? 'select-custom-selected' : ''%>" data-value="<%=this.value._entityQuotes()%>"><%=this.innerText._escapeHTML()%><%=this.value !== this.innerText ? ('<br><span class="jsb-label jsb-smaller"> ' + this.value._escapeHTML() + '</span>') : ''%></li><%
@@ -376,207 +271,57 @@
 	</ul>
 </noscript>
 
-<noscript id="select-custom-option">
-	<h3 class="jsb-centered"><%=_('select.add_custom_option')%></h3>
-	<input type="text" class="select-custom-option trigger-on-enter" value="<%=self.default ? self.default._entityQuotes() : ''%>" />
-	<div class="jsb-align-right">
-		<input type="button" class="select-custom-option-cancel" value="Cancel" />
-		<input type="button" class="select-custom-option-save on-enter" value="Use Option" />
-	</div>
-</noscript>
-
 <noscript id="change-log">
 	<h3 class="jsb-centered"><%=_('change_log', [self.version])%></h3>
+
 	<div id="change-log" class="jsb-info jsb-readable"><%=self.changeLog.html()%></div>
 </noscript>
 
-<noscript id="user-script-storage-add">
-	<p class="jsb-info"><%=_('setting.newUserScriptStorageItem.json')%></p>
-	<input type="text" class="user-script-storage-add-key trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.key')%>" />
-	<input type="text" class="user-script-storage-add-value trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.value')%>" />&nbsp;
-	<input type="button" class="user-script-storage-add-add on-enter" value="<%=_('setting.newUserScriptStorageItem.subLabel')%>" />
-</noscript>
+<noscript id="extras-unlock-prompt">
+	<h3 class="jsb-centered">Unlock Extra Features</h3>
 
-<noscript id="user-script-confirm-view-switch">
-	<p class="jsb-info"><%=_('setting.saveUserScript.unsaved')%></p>
-	<div class="jsb-align-right">
-		<input type="button" class="user-script-confirm-view-switch-cancel" value="<%=_('Cancel')%>" />&nbsp;
-		<input type="button" class="user-script-confirm-view-switch-switch" value="<%=_('Switch')%>" data-viewID="<%=self.viewID%>" />
-	</div>
-</noscript>
+	<p class="jsb-info jsb-readable">
+		<a class="no-underline" href="http://javascript-blocker.toggleable.com/donation_only"><%=_('extras.what')%></a>
+	</p><div></div>
 
-<noscript id="create-rule">
-	<% if (!Settings.getItem('donationVerified')) { %>
-		<p class="jsb-info"><%=_('extra_features_required')%></p><%
-	} else {
-		var selected = "selected=\"selected\"",
-				checked = "checked=\"checked\"",
-				isAllowed = !!(self.action % 2); %>
-
-		<h3 class="jsb-centered"><%=_('view.page.host.editor.' + (self.editing ? 'edit' : 'new') + '_rule')%></h3>
-		<div id="create-rule" data-editing="<%=self.editing ? 1 : 0%>" data-listName="<%=self.list%>" data-type="<%=self.type%>" data-domain="<%=self.domain._entityQuotes()%>" data-kind="<%=self.kind%>" data-rule="<%=self.rule._entityQuotes()%>" data-action="<%=self.action%>">
-			<input type="checkbox" id="create-rule-when-framed" <%=self.kind._contains('framed:') ? checked : ''%> /> <label for="create-rule-when-framed"><%=_('view.page.host.editor.when_framed')%></label>		
-
-			<div class="horizontal-divider horizontal-divider-transparent"></div>
-
-			<select id="create-rule-list">
-				<option value="user"<%=self.list === 'user' ? selected : ''%>><%=_('view.page.host.editor.always')%></option>
-				<option value="temporary" <%=self.list === 'temporary' ? selected : ''%>><%=_('view.page.host.editor.temporarily')%></option>
-			</select><label></label>&nbsp;
-
-			<select id="create-rule-kind" title="<%=_('view.page.editor.kind.title')%>">
-				<option value="block" <%=!isAllowed ? selected : ''%>>
-					<%=_('view.page.host.editor.block')%>
-				</option>
-
-				<option value="allow" <%=isAllowed ? selected : ''%>>
-					<%=_('view.page.host.editor.allow')%>
-				</option>
-
-				<option value="hide" <%=(!isAllowed && self.kind._contains('hide:')) ? selected : ''%>>
-					<%=_('view.page.host.editor.hide')%>
-				</option>
-
-				<option value="show" <%=(isAllowed && self.kind._contains('hide:')) ? selected : ''%>>
-					<%=_('view.page.host.editor.show')%>
-				</option>
-
-				<option value="enable" <%=(isAllowed && self.kind._contains('disable')) ? selected : ''%>>
-					<%=_('view.page.host.editor.enable')%>
-				</option>
-
-				<option value="disable" <%=(!isAllowed && self.kind._contains('disable')) ? selected : ''%>>
-					<%=_('view.page.host.editor.disable')%>
-				</option>
-			</select><label></label>&nbsp;
-
-			<select id="create-rule-which-item" title="<%=_('view.page.editor.which.title')%>">
-				<option value="items-all" <%=self.kind._contains('*') ? selected : ''%>>
-					<%=_('view.page.host.editor.all_resources')%>
-				</option>
-				<option value="items-of-kind" <%=!self.kind._contains('*') ? selected : ''%>>
-					<%=_('view.page.host.editor.checked_kinds')%>
-				</option>
-				<option value="jsb" disabled="disabled">
-					<%=_('JSB')%>
-				</option>
-			</select><label></label>
-
-			<div class="horizontal-divider horizontal-divider-transparent"></div>
-
-			<div id="create-rule-kinds">
-				<%
-					var kinds = globalPage.Rules.__kinds,
-							divisor = Settings.getItem('largeFont') ? 4 : 5,
-							b = 0;
-
-					for (var i = 0; i < kinds.length; i++) {
-						if (!['*', 'disable']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
-							b++; %>
-							<input type="checkbox" id="create-rule-kinds-<%=kinds[i]%>" data-kind="<%=kinds[i]%>" <%=globalPage.Rules.baseKind(self.kind) === globalPage.Rules.baseKind(kinds[i]) ? checked : ''%> />
-							<label for="create-rule-kinds-<%=kinds[i]%>"><%=_('view.page.host.kind.' + kinds[i])%></label>&nbsp;<%
-
-							if (!(b % divisor)) { %>
-								<br /> <%
-							}
-						}
-					} %>
-				<div class="horizontal-divider horizontal-divider-transparent"></div>
-			</div>
-
-			<label class="jsb-label"><%=_('rule.on')%>:</label>&nbsp;
-			<select id="create-rule-type">
-				<option value="domain-all" <%=self.domain === '*' ? selected : ''%>>all domains</option>
-				<option value="domain" <%=(self.domain !== '*' && self.type === 'domain') ? selected : ''%>>domain</option>
-				<option value="notDomain" <%=(self.domain !== '*' && self.type === 'notDomain') ? selected : ''%>>not domain</option>
-				<option value="page" <%=(self.domain !== '*' && self.type === 'page') ? selected : ''%>>page</option>
-				<option value="notPage" <%=(self.domain !== '*' && self.type === 'notPage') ? selected : ''%>>not page</option>
-			</select><label></label>&nbsp;
-
-			<span id="create-rule-domain-wrapper">
-				<input type="text" id="create-rule-domain" class="trigger-on-enter" value="<%=self.domain._entityQuotes()%>" />&nbsp;
-				<span class="more-info" data-moreInfo="<%=_('create_rule.domain_info')._entityQuotes()%>"></span>
-			</span>
-
-			<div id="create-rule-rule-container">
-				<div class="horizontal-divider horizontal-divider-transparent"></div>
-
-				<label for="create-rule-rule" class="jsb-label"><%=_('rule.rule')%>:</label>&nbsp;
-				<input type="text" id="create-rule-rule" class="trigger-on-enter" value="<%=self.rule._entityQuotes()%>" />&nbsp;
-				<span class="more-info" data-moreInfo="<%=_('create_rule.rule_info')._entityQuotes()%>"></span>
-			</div>
-
-			<div class="horizontal-divider horizontal-divider-transparent"></div>
-
-			<div class="jsb-align-right">
-				<% if (self.editing) { %>
-					<input type="button" id="create-rule-duplicate" value="<%=_('Duplicate')%>" />&nbsp;<%
-				} %>
-				<input type="button" id="create-rule-save" class="on-enter" value="<%=_('Save')%>" />
-			</div>
-		</div><%
-	} %>
-</noscript>
-
-<noscript id="snapshot-item">
-	<% if (globalPage.Rules.isLockerLocked()) { %>
-		<p class="jsb-info jsb-readable"><%=_('view.page.host.rules_locked')%></p><%
-	} else { %>
-		<input type="button" id="snapshot-item-name-set" value="<%=_('snapshots.name')%>" />&nbsp;
-		<input type="button" id="snapshot-item-compare" value="<%=_('snapshots.compare')%>" />&nbsp;
-		<input type="button" id="snapshot-item-keep" value="<%=_('snapshots.' + (self.kept ? 'unkeep' : 'keep'))%>" /><%
-	} %>
-</noscript>
-
-<noscript id="snapshot-item-name">
-	<input type="text" id="snapshot-item-name" class="trigger-on-enter" />&nbsp;
-	<input type="button" id="snapshot-item-name-save" class="on-enter" value="<%=_('Save')%>" />
-</noscript>
-
-<noscript id="snapshot-item-compare">
-	<h3 class="jsb-centered"><%=_('snapshots.compare')%></h3>
-	<div class="generic-menu">
-		<div class="generic-menu-menu">
-			<label><%=_('snapshots.show_rules_only_in')%>:</label>&nbsp;
-			<input type="button" id="snapshot-item-compare-left" value="<%=_('rules.active')%>" />
-			<input type="button" id="snapshot-item-compare-right" value="<%=_('rules.snapshot')%>" />
-			<input type="button" id="snapshot-item-compare-both" value="<%=_('snapshots.both')%>" />
-		</div>
-	</div>
-</noscript>
-
-<noscript id="item-info">
-	<% if (self.kind === 'user_script') { %>
-		<input type="button" id="item-info-show-user-script" value="<%=_('view.page.item.info.show_user_script')%>" />&nbsp;<%
-	} %>
-	<% if (self.action >= 0 && self.action <= 5) { %>
-		<input type="button" id="item-info-show-rules" value="<%=_('view.page.item.info.show_rules')%>" /><%
-	} %>
-</noscript>
-
-<noscript id="resource-list">
-	<ul id="resource-list">
-	<% for (var i = 0; i < self.items.length; i++) { %>
-		<li>
-			<% if (self.items[i].kind === 'script' || self.items[i].kind === 'image') { %>
-				<input type="button" class="show-resource-source blend-in" value="<%=_('expander.show')%>" data-kind="<%=self.items[i].kind%>" data-url="<%=self.items[i].fullSource._entityQuotes()%>" />&nbsp;<%
-			} %><p class="jsb-nowrap jsb-light-scrollbars"><span class="jsb-nowrap"><%=(self.items[i].kind._startsWith('xhr_') ? self.items[i].baseSource : self.items[i].fullSource)._escapeHTML()%></span>
-			</p>
-			<% if (self.items[i].meta) { %>
-				<pre class="jsb-indented"><pre class="jsb-smaller jsb-label"><%=JSON.stringify(self.items[i].meta, null, 2)._escapeHTML()%></pre></pre><%
+	<%
+		if (!Extras.isUnlockedForFree()) {
+			if (self.trialExpired) { %>
+				<p class="jsb-info jsb-readable"><%=_('extras.trial.expired')%></p><div></div><%
 			} %>
-			<% if (i < self.items.length - 1) { %>
-				<div class="horizontal-divider"></div><%
-			} %>
-		</li><%
+			<% if (self.trialRemaining) { %>
+				<p class="jsb-info jsb-readable"><%=_('extras.trial.remaining_time', [self.trialRemaining])%></p><div></div><%
+			}
+		}
+	%>
+
+	<p class="jsb-info jsb-readable"><%=_('extras.unlock.how')%></p>
+
+	<div class="horizontal-divider"></div>
+
+	<div id="extras-unlock-error-container" class="jsb-hidden">
+		<span id="extras-unlock-error" class="jsb-error"></span>
+		<div class="horizontal-divider horizontal-divider-short horizontal-divider-transparent"></div>
+	</div>
+
+	<label for="extras-unlock-email"><%=_('extras.email_address')%>:</label><q></q>
+	<input type="text" id="extras-unlock-email" class="trigger-on-enter" /><q></q>
+	<input type="button" id="extras-unlock-unlock" class="on-enter" value="<%=_('main_menu.unlock')%>" />
+
+	<div class="horizontal-divider"></div>
+
+	<a class="no-underline" href="mailto:iforgot@toggleable.com?subject=iForgot%20JSB%20Donation"><%=_('setting.setLockerPassword.iforgot')%></a> <span class="jsb-label">┊</span>
+	<a class="no-underline" href="http://javascript-blocker.toggleable.com/donate"><%=_('extras.make_donation')%></a>
+	
+	<% if (!Extras.isUnlockedForFree()) { %>
+		<span class="jsb-label jsb-smaller">┊</span>
+		<a class="no-underline jsb-smaller jsb-label" href="javascript:void(0);" id="extras-unlock-free"><%=_('extras.unlock_free')%></a><%
 	} %>
-	</ul>
 </noscript>
 
-<noscript id="confirm-setting-change">
-	<p class="jsb-info jsb-readable"><%=self.string%></p>
+<noscript id="extras-unlock-free">
+	<p class="jsb-info jsb-readable"><%=_('extras.will_unlock_free')%></p>
 	<div class="jsb-align-right">
-		<input type="button" id="setting-confirm-cancel" value="<%=_('Cancel')%>" />&nbsp;
-		<input type="button" id="setting-confirm-change" value="<%=_('Change')%>" />
+		<input type="button" id="extras-unlock-free-now" value="<%=_('extras.unlock_free')%>" />
 	</div>
 </noscript>

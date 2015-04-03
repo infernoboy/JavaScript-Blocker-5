@@ -188,6 +188,7 @@ function Command (command, data, event) {
 				popoverReady: Popover.window.PopoverReady,
 
 				useAnimations: Settings.getItem('useAnimations'),
+				largeFont: Settings.getItem('largeFont'),
 				enabledKinds: Settings.getItem('enabledKinds'),
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
@@ -259,7 +260,8 @@ function Command (command, data, event) {
 						}, 500, [page]);
 					else
 						return LogError(['frame does not seem to have a parent', page.info.id]);
-			}
+			} else
+				page.clearFrames();
 
 			if (!activeTab || !activeTab.url) {
 				ToolbarItems.badge(0, activeTab);
@@ -645,6 +647,14 @@ if (Settings.getItem('persistDisabled'))
 	Command.toggleDisabled(Settings.getItem('isDisabled'));
 
 Command.setupContentURLs();
+
+Command.event.addCustomEventListener('popoverReady', function (event) {
+	if (Settings.getItem('showPopoverOnLoad')) {
+		Settings.setItem('showPopoverOnLoad', false);
+
+		ToolbarItems.showPopover();
+	}
+}, true)
 
 window.addEventListener('error', function (event) {
 	event.preventDefault();

@@ -9,6 +9,8 @@ var Special = {
 
 	__forLocation: function (specials, kind, location, isFrame) {
 		var rule,
+				lowerSpecial,
+				matcher,
 				special;
 
 		var isUserScript = kind === 'user_script',
@@ -26,10 +28,14 @@ var Special = {
 					action: -2
 				};
 
-		for (special in specials)
+		for (special in specials) {
+			lowerSpecial = special.toLowerCase();
+
+			matcher = new Rules.SourceMatcher(lowerSpecial, lowerSpecial);
+
 			Rule.withLocationRules(forLocation, function (list, listName, kind, type, domain, rules) {
 				for (rule in rules.data) {
-					if (Rules.matches(rule.toLowerCase(), rules.data[rule].value.regexp, special.toLowerCase(), location)) {
+					if (matcher.testRule(rule.toLowerCase(), rules.data[rule].value.regexp)) {
 						if (rules.data[rule].value.action % 2) {
 							if (isUserScript)
 								enabled[special] = specials[special];
@@ -43,6 +49,7 @@ var Special = {
 					}
 				}
 			});
+		}
 
 		return enabled;
 	},
@@ -70,7 +77,7 @@ var Special = {
 		return this.enabled;
 	},
 	
-	set enabled () {
+	set enabled (arg) {
 		this.__enabled = null;
 	}
 };

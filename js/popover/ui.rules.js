@@ -144,7 +144,7 @@ UI.Rules = {
 					builtListCount = 0,
 					ruleListContainer = Template.create('rules', 'multi-list-container');
 
-			excludeLists.push('firstVisit');
+			excludeLists.push('description', 'firstVisit');
 
 			UI.Rules.event.addCustomEventListener('rulesFinishedBuilding', function (event) {
 				if (++builtListCount === buildListCount) {
@@ -428,7 +428,7 @@ UI.Rules = {
 					var ruleList = globalPage.Rules.list[this.parentNode.parentNode.getAttribute('data-listName')],
 							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
-					poppy.setContent(Template.create('poppy', 'create-rule', {
+					poppy.setContent(Template.create('poppy.rules', 'create-rule', {
 						editing: false,
 						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
 						type: 'domain',
@@ -451,7 +451,7 @@ UI.Rules = {
 							type = this.parentNode.parentNode.getAttribute('data-type'),
 							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
-					poppy.setContent(Template.create('poppy', 'create-rule', {
+					poppy.setContent(Template.create('poppy.rules', 'create-rule', {
 						editing: false,
 						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
 						type: type,
@@ -475,7 +475,7 @@ UI.Rules = {
 							domain = this.parentNode.parentNode.getAttribute('data-domain'),
 							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
-					poppy.setContent(Template.create('poppy', 'create-rule', {
+					poppy.setContent(Template.create('poppy.rules', 'create-rule', {
 						editing: false,
 						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
 						type: type,
@@ -500,7 +500,7 @@ UI.Rules = {
 							kind = this.parentNode.parentNode.getAttribute('data-kind'),
 							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
-					poppy.setContent(Template.create('poppy', 'create-rule', {
+					poppy.setContent(Template.create('poppy.rules', 'create-rule', {
 						editing: false,
 						list: ruleList === globalPage.Rules.list.user ? 'user' : 'temporary',
 						type: type,
@@ -538,7 +538,7 @@ UI.Rules = {
 
 					poppy
 						.linkToOpenPoppy()
-						.setContent(Template.create('poppy', 'create-rule', templateArgs))
+						.setContent(Template.create('poppy.rules', 'create-rule', templateArgs))
 						.show();
 				});
 		},
@@ -653,5 +653,3 @@ UI.event.addCustomEventListener('viewDidSwitch', UI.Rules.events.viewDidSwitch);
 UI.event.addCustomEventListener('elementWasAdded', UI.Rules.events.elementWasAdded);
 
 document.addEventListener('DOMContentLoaded', UI.Rules.init, true);
-
-Template.load('rules');

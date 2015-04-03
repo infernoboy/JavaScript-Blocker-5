@@ -32,7 +32,7 @@ UI.Snapshots = {
 				poppy.snapshots = snapshots;
 				poppy.oppositeSnapshots = kept ? UI.Snapshots.snapshot.unkept : UI.Snapshots.snapshot.kept;
 
-				poppy.setContent(Template.create('poppy', 'snapshot-item', {
+				poppy.setContent(Template.create('poppy.snapshots', 'snapshot-item', {
 					kept: kept
 				}));
 
@@ -170,5 +170,3 @@ UI.event.addCustomEventListener('viewDidSwitch', UI.Snapshots.events.viewDidSwit
 UI.event.addCustomEventListener('elementWasAdded', UI.Snapshots.events.elementWasAdded);
 
 document.addEventListener('DOMContentLoaded', UI.Snapshots.init, true);
-
-Template.load('snapshots');

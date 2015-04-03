@@ -162,26 +162,29 @@ var Store = (function () {
 
 	Store.prototype.__parent = undefined;
 
-	Store.prototype.__save = function (bypassIgnore, now, notModified) {
+	Store.prototype.__save = function (bypassIgnore, saveNow, notModified) {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
-		if (this.save)
+		if (this.save) {
 			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
 				if (window.globalSetting.debugMode) {
-					var now = new Date;
+					var timeNow = new Date;
 
-					console.time(now.toLocaleTimeString() + ' - SAVED ' + store.id);
+					console.time(timeNow.toLocaleTimeString() + ' - SAVED ' + store.id);
 				}
 
 				Settings.__method('setItem', store.id, store.readyJSON());
 
 				if (window.globalSetting.debugMode)
-					console.timeEnd(now.toLocaleTimeString() + ' - SAVED ' + store.id);
+					console.timeEnd(timeNow.toLocaleTimeString() + ' - SAVED ' + store.id);
 
 				store.triggerEvent('storeDidSave');
-			}, now ? 0 : this.saveDelay, [this]);
-		else
+			}, saveNow ? 0 : this.saveDelay, [this]);
+
+			if (saveNow === 2)
+				Utilities.Timer.timeoutNow('StoreSave' + this.id);
+		} else
 			this.triggerEvent('storeWouldHaveSaved');
 
 		if (this.parent)
@@ -233,8 +236,8 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.saveNow = function (bypassIgnore) {
-		this.__save(bypassIgnore, true);
+	Store.prototype.saveNow = function (bypassIgnore, immediate) {
+		this.__save(bypassIgnore, immediate ? 2 : 1);
 	};
 
 	Store.prototype.load = function () {

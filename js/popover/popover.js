@@ -7,7 +7,9 @@ var globalPage = GlobalPage.window;
 if (!globalPage.GlobalPageReady) {
 	Log('Waiting for global page to be ready...');
 
-	window.location.reload();
+	setTimeout(function () {
+		window.location.reload();
+	}, 1000);
 
 	throw new Error('...');
 }
@@ -152,8 +154,3 @@ window.addEventListener('error', function (event) {
 
 	console.groupEnd();
 });
-
-Template.load('container');
-Template.load('main');
-// Template.load('rules');
-// Template.load('snapshots');

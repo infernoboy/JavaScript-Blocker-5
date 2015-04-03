@@ -10,8 +10,6 @@ UI.Setup = {
 
 		UI.Setup.view = $('#main-views-setup', UI.view.views);
 
-		Template.load('setup');
-
 		UI.Setup.view.append(Template.create('setup', 'setup-container'));
 
 		UI.view.switchTo('#main-views-setup');

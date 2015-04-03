@@ -1,4 +1,6 @@
 @darknessLevel: 0%;
+@speedMultiplier: 1;
+@darkMode: false;
 
 @-webkit-keyframes openPoppy  {
 	0% {
@@ -24,7 +26,7 @@
 	min-height: 20px;
 	max-width: 97%;
 	border-radius: 6px;
-	padding: 2px 0 2px 2px;
+	padding: 2px 2px 2px 2px;
 	background: -webkit-linear-gradient(top, darken(#ffffff, @darknessLevel + 0.7%), darken(#fafafa, @darknessLevel + 0.7%));
 	box-shadow: 0 1px 10px rgba(1, 0, 1, 0.3);
 	-webkit-transition: -webkit-filter unit(0.13 * @speedMultiplier, s) ease-out;
@@ -64,7 +66,7 @@
 		display: none;
 		position: absolute;
 		top: 0;
-		right: 8px;
+		right: 10px;
 		border-top: none;
 		border-radius: 0;
 		border-bottom-left-radius: 6px;
@@ -121,17 +123,36 @@
 		}
 	}
 
-	&.poppy-no-arrow {
+	&.poppy-show-close {
 		input.poppy-close {
 			display: block;
 		}
 
+		.poppy-content > *:first-child {
+			margin-top: 15px;
+		}
+	}
+
+	&.poppy-no-arrow {
 		.poppy-arrow {
 			display: none
 		}
+	}
 
-		.poppy-content > *:first-child {
-			margin-top: 15px;
+	.double-column-flex {
+		width: auto;
+		-webkit-justify-content: flex-start;
+
+		&-left {
+			-webkit-flex: 0 1 auto;
+		}
+
+		&-right {
+			-webkit-flex: 0 1 auto;
+		}
+
+		&-full {
+			-webkit-flex: 0 0 auto;
 		}
 	}
 

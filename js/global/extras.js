@@ -1,9 +1,47 @@
 "use strict";
 
 var Extras = {
+	__verificationURL: 'http://lion.toggleable.com:160/jsblocker/verify.php',
+
 	isActive: function () {
-		return Settings.getItem('donationVerified') || Extras.Trial.isActive();
+		return Extras.isUnlockedByDonating() || Extras.isUnlockedForFree() || Extras.Trial.isActive();
 	},
+
+	isUnlockedByDonating: function () {
+		return Settings.getItem('donationVerified') === true;
+	},
+
+	isUnlockedForFree: function () {
+		return Settings.getItem('donationVerified') === 777;
+	},
+
+	unlockUsingEmail: function (email) {
+		return new Promise(function (resolve, reject) {
+			$.get(Extras.__verificationURL, {
+				id: email,
+				install: Settings.getItem('installID')
+			})
+				.done(function (result) {
+					var result = parseInt(result, 10);
+
+					if (result >= 0) {
+						Settings.setItem('donationVerified', true);
+
+						resolve();
+					} else
+						reject(result);
+				})
+
+				.fail(function (error) {
+					reject(error.status + ': ' + error.statusText);
+				});
+		});
+	},
+
+	unlockWithoutDonating: function () {
+		Settings.setItem('donationVerified', 777);
+	},
+
 
 	Trial: {
 		__length: TIME.ONE.DAY * 10,
@@ -35,21 +73,21 @@ var Extras = {
 
 		endedNotificationRequired: function () {
 			return Settings.getItem('trialStart') === -2;
+		},
+
+		ended: function () {
+			Settings.setItem('trialStart', -1);
 		}
 	}
 };
 
 Maintenance.event.addCustomEventListener('globalPageReady', function () {
-	Command.event.addCustomEventListener('UIReady', function () {
-		UI.event.addCustomEventListener('popoverOpened', function () {
-			var Poppy = Popover.window.Poppy;
-
-			if (Extras.Trial.endedNotificationRequired() && !Poppy.poppyWithScriptNameExist('trial-ended')) {
-				var poppy = new Poppy(0.5, 0, true, 'trial-ended');
-
-				poppy.setContent(Template.create('poppy', 'trial-ended')).modal().show();
-			}
-		});
+	Command.event.addCustomEventListener('popoverReady', function () {
+		Extras.ERROR = {
+			'-3': _('extras.unlock.error.email_missing'),
+			'-2': _('extras.unlock.error.email_not_found'),
+			'-1': _('extras.unlock.error.email_limit_reached'),
+		};
 	}, true);
 }, true);
 

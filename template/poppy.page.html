@@ -1,0 +1,27 @@
+<noscript id="item-info">
+	<% if (self.kind === 'user_script') { %>
+		<input type="button" id="item-info-show-user-script" value="<%=_('view.page.item.info.show_user_script')%>" /><q></q><%
+	} %>
+	<% if (self.action >= 0 && self.action <= 5) { %>
+		<input type="button" id="item-info-show-rules" value="<%=_('view.page.item.info.show_rules')%>" /><%
+	} %>
+</noscript>
+
+<noscript id="resource-list">
+	<ul id="resource-list">
+	<% for (var i = 0; i < self.items.length; i++) { %>
+		<li>
+			<% if (self.items[i].kind === 'script' || self.items[i].kind === 'image') { %>
+				<input type="button" class="show-resource-source blend-in" value="<%=_('expander.show')%>" data-kind="<%=self.items[i].kind%>" data-url="<%=self.items[i].fullSource._entityQuotes()%>" /><q></q><%
+			} %><p class="jsb-nowrap jsb-light-scrollbars"><span class="jsb-nowrap"><%=(self.items[i].kind._startsWith('xhr_') ? self.items[i].baseSource : self.items[i].fullSource)._escapeHTML()%></span>
+			</p>
+			<% if (self.items[i].meta) { %>
+				<pre class="jsb-indented"><pre class="jsb-smaller jsb-label"><%=JSON.stringify(self.items[i].meta, null, 2)._escapeHTML()%></pre></pre><%
+			} %>
+			<% if (i < self.items.length - 1) { %>
+				<div class="horizontal-divider"></div><%
+			} %>
+		</li><%
+	} %>
+	</ul>
+</noscript>

@@ -82,7 +82,7 @@ PageNotification.createContainer = function () {
 	PageNotification.__container = document.getElementById(PageNotification.__containerID);
 
 	if (!PageNotification.__container) {
-		PageNotification.__container = Utilities.Element.createFromHTML('<div id="' + PageNotification.__containerID + '" class="jsb-injected-element" />')[0];
+		PageNotification.__container = Utilities.Element.createFromHTML('<div id="' + PageNotification.__containerID + '" class="jsb-injected-element ' + (globalSetting.largeFont ? 'jsb-large-font' : '') + '" />')[0];
 
 		Element.inject(PageNotification.__container, true);
 	}

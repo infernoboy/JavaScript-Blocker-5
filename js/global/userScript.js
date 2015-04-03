@@ -72,6 +72,9 @@ var UserScript = {
 	},
 
 	forLocation: function (location, isFrame) {
+		if (!Extras.isActive())
+			return {};
+		
 		var script,
 				attributes;
 
@@ -364,7 +367,7 @@ var UserScript = {
 			key: 'userScripts'
 		});
 
-		return true;
+		return namespace;
 	},
 
 	getAttribute: function (userScriptNS, attribute) {

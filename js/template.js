@@ -13,6 +13,7 @@ function Template (template, file) {
 };
 
 Template.__templates = {};
+Template.__autoLoaded = [];
 
 Template.event = new EventListener;
 
@@ -23,11 +24,13 @@ Template.load = function (file) {
 	$.ajax({
 		async: false,
 		url: ExtensionURL('template/' + file + '.html')
-	}).done(function (template) {
+	})
+		.done(function (template) {
 			Template.__templates[file] = new Template(template, file);
 
 			Template.event.trigger('load.' + file, template, true);
 		})
+
 		.fail(function (error) {
 			LogError('failed to load template file - ' + file, error);
 		});
@@ -40,8 +43,18 @@ Template.unload = function (file) {
 };
 
 Template.create = function (template, section, data, shouldBeWrapped, returnString) {
-	if (!Template.__templates.hasOwnProperty(template))
-		throw new Error('template file not loaded - ' + template);
+	if (!Template.__templates.hasOwnProperty(template)) {
+		if (Template.__autoLoaded._contains(template))
+			throw new Error('auto load for template failed - ' + template);
+
+		LogDebug('auto load template - ' + template);
+
+		Template.__autoLoaded.push(template);
+
+		Template.load(template);
+
+		return Template.create.apply(null, arguments);
+	}
 
 	var element = Template.__templates[template].create(section, data, false, returnString);
 

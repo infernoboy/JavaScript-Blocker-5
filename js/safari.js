@@ -1,7 +1,7 @@
 "use strict";
 
 if (!window.safari || !window.safari.extension)
-	throw new Error('JavaScript Blocker cannot run ' + (window === window.top ? 'on' : 'in a frame on' ) + ' this page because the required safari object is unavailable.');
+	throw new Error('JS Blocker cannot run ' + (window === window.top ? 'on' : 'in a frame on' ) + ' this page because the required safari object is unavailable.');
 
 var beforeLoad = { 
 	currentTarget: null
@@ -349,15 +349,70 @@ var SecureSettings = {
 };
 
 var Events = {
+	__references: {
+		application: {},
+		settings: {},
+		tab: {}
+	},
+
+	__addReference: function (kind, type, callback) {
+		return;
+		
+		var ref = Events.__references[kind];
+
+		if (!ref[type])
+			ref[type] = [];
+
+		ref[type].push(callback);
+	},
+
+	__unbindAll: function () {
+		var which,
+				base,
+				type,
+				i;
+
+		for (which in Events.__references) {
+			switch (which) {
+				case 'application':
+					base = safari.application;
+				break;
+
+				case 'settings':
+					base = safari.extension.settings;
+				break;
+
+				case 'tab':
+					base = safari.self;
+				break;
+			}
+
+			for (type in Events.__references[which])
+				for (i = Events.__references[which][type].length; i--;)
+					base.removeEventListener(type, Events.__references[which][type][i]);
+
+			Events.__references[which] = {};
+		}
+	},
+
 	addApplicationListener: function (type, callback) {
+		Events.__addReference('application', type, callback);
+
 		safari.application.addEventListener(type, callback, true);
 	},
+
 	addSettingsListener: function (callback) {
+		Events.__addReference('settings', 'change', callback);
+
 		safari.extension.settings.addEventListener('change', callback);
 	},
+
 	addTabListener: function (type, callback) {
+		Events.__addReference('tab', type, callback);
+
 		safari.self.addEventListener(type, callback, true);
 	},
+
 	setContextMenuEventUserInfo: function (event, data) {
 		GlobalPage.tab.setContextMenuEventUserInfo(event, data);
 	}

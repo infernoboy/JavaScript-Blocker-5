@@ -21,9 +21,9 @@
 					</p>
 					<p class="jsb-info jsb-align-right page-host-first-visit-buttons">
 						<% if (self.blockedByFirstVisit.action !== 8) { %>
-							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" />&nbsp;<%
+							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" /><q></q><%
 						} %>
-						<input type="button" class="page-host-first-visit-unblock jsb-color-allowed" value="<%=_('first_visit.unblock')%>" />&nbsp;
+						<input type="button" class="page-host-first-visit-unblock jsb-color-allowed" value="<%=_('first_visit.unblock')%>" /><q></q>
 					</p>
 				</div><%
 			} %>
@@ -74,10 +74,13 @@
 						b = 0;
 
 				for (var i = 0; i < kinds.length; i++) {
+					if (kinds[i] === 'special' && !Extras.isActive())
+						continue;
+						
 					if (!['*', 'disable', 'user_script']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
 						b++; %>
 						<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i] + self.id%>" data-kind="<%=kinds[i]%>" />
-						<label for="page-host-editor-kinds-<%=kinds[i] + self.id%>"><%=_('view.page.host.kind.' + kinds[i])%></label>&nbsp;<%
+						<label for="page-host-editor-kinds-<%=kinds[i] + self.id%>"><%=_('view.page.host.kind.' + kinds[i])%></label><q></q><%
 
 						if (b > 4 && !didBreak) {
 							didBreak = true; %>
@@ -277,22 +280,26 @@
 						}
 
 						for (var action in actionGroup) {
-							var disableEdit = action === '-11' ? ' disabled="disabled" ' : '';
+							var disableEdit = action === '-11' ? 'disabled="disabled"' : '';
 
 							for (var protocol in actionGroup[action]) {
 								for (var source in actionGroup[action][protocol]) {
 									var resources = actionGroup[action][protocol][source],
 											resource = resources[0].resource,
-											resourcesSimplified = [];
+											resourceDescriptions = [];
 
 									var resourceIDs = resources.map(function (value, i) {
-										if (value.resource.sourceIsURL && showItemDescription)
-											resourcesSimplified.push(SourceSimplifier.simplifySource(value.resource.sourceHost, value.resource.fullSource));
+										if (value.resource.sourceIsURL && showItemDescription) {
+											var descriptions = value.resource.descriptionsForResource();
+
+											if (descriptions.length)
+												resourceDescriptions = resourceDescriptions.concat(descriptions);
+										}
 
 										return value.resourceID;
 									});
 
-									resourcesSimplified = resourcesSimplified.filter(function (value, i) {
+									resourceDescriptions = resourceDescriptions.filter(function (value, i) {
 										return value !== null;
 									})._unique();
 
@@ -310,7 +317,7 @@
 										sourceName = _(localizationKey, [globalPage.Special.enabled[source] ? globalPage.Special.enabled[source].value : '']);
 
 										if (Strings.localizationExist(localizationKey + '.description')) {
-											resourcesSimplified = [_(localizationKey + '.description')];
+											resourceDescriptions = [_(localizationKey + '.description')];
 										}
 									}
 
@@ -374,23 +381,23 @@
 											</div>
 										</div>
 
+										<div class="page-host-item-description">
+											<% if (resourceDescriptions.length) { %>
+												<p class="jsb-info jsb-light-scrollbars"><%=resourceDescriptions.join(', ')%></p><%
+											} %>
+										</div>
+
 										<div class="page-host-item-container">
 											<% if (self.stateType !== 'unblocked' || kind !== 'script') { %>
 												<span class="page-host-item-info more-info"></span><%
 											} %>
 											<span class="page-host-item-source-container jsb-light-scrollbars">
-												<span class="page-host-item-source" title="<%=_('view.page.host.click_to_edit')%>"><%=$.trim(sourceName._escapeHTML().replace(/([\n\t]|  +)/g, ' '))%></span>
+												<span class="page-host-item-source <%=resourceDescriptions.length ? 'page-host-item-source-has-description' : ''%>" title="<%=_('view.page.host.click_to_edit')%>"><%=$.trim(sourceName._escapeHTML().replace(/([\n\t]|  +)/g, ' '))%></span>
 											</span>
 											<% if (shouldBadge) { %>
 												<span class="page-host-host-count-container">
 													<a href="javascript:void(0);" class="page-host-host-count" title="<%=_('view.page.items.view_resource_urls')%>"><%=resourceIDs.length%></a>
 												</span><%
-											} %>
-										</div>
-
-										<div class="page-host-item-description">
-											<% if (resourcesSimplified.length) { %>
-												<p class="jsb-info jsb-light-scrollbars jsb-smaller"><%=resourcesSimplified.join(', ')%></p><%
 											} %>
 										</div>
 									</li>

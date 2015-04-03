@@ -143,10 +143,10 @@
 
 					&[data-poppy] {
 						.poppy-menu-target:after {
-							color: #ccc;
+							color: #cacaca;
 
 							& when (@darkMode) {
-								color: #555;
+								color: #5a5a5a;
 							}
 						}
 					}
@@ -409,18 +409,19 @@
 				.poppy-menu-target:after {
 					display: inline-block;
 					position: relative;
-					top: -6px;
+					top: -3px;
 					content: ' ⌄';
 					margin-left: 3px;
-					color: #d2d2d2;
+					color: #d0d0d0;
 					-webkit-transform: scale(1.3, 1);
 					-webkit-font-smoothing: antialiased;
 					font-weight: bold;
 					font-size: 21px;
 					line-height: 0;
+					vertical-align: middle;
 
 					& when (@darkMode) {
-						color: #555;
+						color: #5a5a5a;
 					}
 				}
 
@@ -452,6 +453,7 @@
 		@import "view.setting.less";
 		@import "view.rule.less";
 		@import "view.snapshot.less";
+		@import "view.help.less";
 	}
 }
 

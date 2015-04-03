@@ -1,25 +1,48 @@
 <noscript id="setup-container">
 	<div id="setup-container">
-		<h1 class="jsb-bold"><%=_('JSB')%></h1>
+		<h1 class="jsb-bold"><%=_('setup.hello')%></h1>
+		<p class="jsb-info"><%=_('setup.intro')%></p>
+
+		<div class="horizontal-divider"></div>
+
+		<h2><%=_('setup.common_settings')%></h2>
 		<ul class="generic-menu-options">
+		<%
+			var genericSettings = ['largeFont', 'darkMode', 'autoHideWhitelist', 'autoHideBlacklist', 'autoHideNoRule'];
+
+			for (var i = 0; i < genericSettings.length; i++) { %>
+				<li>
+					<%
+						var setting = UI.Settings.createElementForSetting(Settings.map[genericSettings[i]], null, true).addClass('double-column-flex');
+					%><%=setting[0].outerHTML%>
+				</li><%
+			} %>
+			<li>
+				<div class="horizontal-divider horizontal-divider-short horizontal-divider-transparent"></div>
+			</li>
+			<li>
+				<%
+					var setting = UI.Settings.createElementForSetting(Settings.map.baseColor, null, true).addClass('double-column-flex');
+				%><%=setting[0].outerHTML%>
+				<div class="horizontal-divider horizontal-divider-transparent"></div>
+			</li>
 			<li>
 				<p class="jsb-info"><%=_('setting.blockFirstVisit.description')%></p>
+				<div class="horizontal-divider horizontal-divider-short horizontal-divider-transparent"></div>
 			</li>
 			<li>
-			<%
-				var blockFirstVisitSetting = UI.Settings.createElementForSetting(Settings.map.blockFirstVisit, null, true).addClass('double-column-flex');
+				<%
+					var setting = UI.Settings.createElementForSetting(Settings.map.blockFirstVisit, null, true).addClass('double-column-flex');
 
-				$('.setting-radio-list', blockFirstVisitSetting).addClass('no-indent');
-				$('.setting-section-setting-left', blockFirstVisitSetting).addClass('double-column-flex-left');
-				$('.setting-section-setting-right', blockFirstVisitSetting).addClass('double-column-flex-right');
-
-				$('.more-info', blockFirstVisitSetting).remove();
-			%><%=blockFirstVisitSetting[0].outerHTML%>
+					$('.setting-radio-list', setting).addClass('no-indent');
+				%><%=setting[0].outerHTML%>
 			</li>
 		</ul>
+
 		<div class="horizontal-divider"></div>
+
 		<div class="jsb-align-right">
-			<input type="button" id="mark-setup-complete" value="<%=_('view.page.host.done')%>" />
+			<input type="button" id="mark-setup-complete" value="<%=_('setup.complete')%>" />
 		</div>
 	</div>
 </noscript>

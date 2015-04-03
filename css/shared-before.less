@@ -9,6 +9,7 @@
 @darkMode: false;
 @speedMultiplier: 1;
 @darknessLevel: 0%;
+@headings: ~'h1, h2, h3, h4';
 
 .shared-before(@important) {
 	@-webkit-keyframes shake {
@@ -142,6 +143,7 @@
 			float: none @important;
 			text-indent: 0 @important;
 			letter-spacing: normal @important;
+			font-weight: normal @important;
 			-webkit-margin-collapse: collapse collapse;
 			top: auto;
 			left: auto;
@@ -354,7 +356,7 @@
 
 		input[type="file"] {
 			background: transparent @important;
-			border-color: darken(rgb(235, 235, 235), @darknessLevel) @important;
+			border-color: darken(rgb(240, 240, 240), @darknessLevel) @important;
 			box-shadow: none @important;
 			padding-left: 3px @important;
 			width: 200px @important;
@@ -376,6 +378,7 @@
 			-webkit-transition: background unit(0.15 * @speedMultiplier, s) ease-out, border-color unit(0.15 * @speedMultiplier, s) ease-out @important;
 			overflow: hidden @important;
 			font-family: "Menlo-Regular" @important;
+			text-align: center; 
 
 			&:active {
 				background: darken(#f3f3f3, @darknessLevel) @important;
@@ -386,6 +389,8 @@
 			}
 
 			&:after {
+				position: absolute @important;
+				left: 2px @important;
 				display: inline-block @important;
 				color: rgba(255, 255, 255, 0) @important;
 				font-weight: bold @important;
@@ -397,6 +402,7 @@
 				font-size: 20px @important;
 
 				.lion& {
+					left: 1px @important;
 					-webkit-transform: translate(4px, -8px) scale(1.1, 1.5) rotate(220deg) @important;
 					font-size: 15px @important;
 				}
@@ -430,8 +436,9 @@
 			border-radius: 20px @important;
 
 			&:after {
+				left: 1px @important;
 				content: '•';
-				-webkit-transform: translate(-1px, -5px) scale(2) @important;
+				-webkit-transform: translate(-1px, -1px) scale(1.3) @important;
 				-webkit-transition: text-shadow unit(0.15 * @speedMultiplier, s) ease-out @important;
 
 				.lion& {
@@ -445,10 +452,8 @@
 				font-size: 13px @important;
 
 				.jsb-large-font& {
-					-webkit-transform: translate(1px, -2px) scale(1.3) @important;
-
 					.lion& {
-						-webkit-transform: translate(1px, -3px) scale(1.3) @important;
+						-webkit-transform: translate(1px, -1px) scale(1.3) @important;
 					}
 				}
 			}

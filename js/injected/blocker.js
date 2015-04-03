@@ -87,7 +87,7 @@ var Page = {
 					if (!BROKEN) {
 						BROKEN = true;
 
-						console.error('JavaScript Blocker broke due to a Safari bug. Reloading the page should fix things.', error.message);
+						console.error('JS Blocker broke due to a Safari bug. Reloading the page should fix things.', error.message);
 					}
 				}
 			});
@@ -365,7 +365,7 @@ var Handler = {
 
 		unblockButton.classList.add('jsb-color-allowed');
 
-		notification.addEventListener('click', 'a.show-more', function () {
+		notification.addEventListener('click', 'a.jsb-show-more', function () {
 			var p = document.createElement('p');
 
 			p.innerHTML = _('first_visit.unblock_more_info');
@@ -912,6 +912,8 @@ if (!globalSetting.disabled) {
 		setTimeout(function (willBlockFirstVisit) {
 			if (willBlockFirstVisit) {
 				Page.info.blockedByFirstVisit = willBlockFirstVisit;
+
+				Page.send();
 
 				if (willBlockFirstVisit.action !== 8) {
 					Handler.event.addCustomEventListener('readyForPageNotifications', function () {

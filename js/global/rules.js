@@ -135,16 +135,12 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 			throw new TypeError('Rule: ' + error.message + ' - ' + rule.rule);
 		}
 
-	if (kind._endsWith('*') || type._startsWith('not'))
-		Resource.canLoadCache.clear();
-	else {		
-		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind + '-?'));
-		Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind + '-?'));
-	}
+	this.fixCanLoadCache(type, kind, domain);
 
 	rules.set(rule.rule, {
 		regexp: isRegExp,
-		action: action
+		action: action,
+		meta: rule.meta
 	});
 
 	var added = {
@@ -194,12 +190,7 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 		}
 	}
 
-	if (kind._endsWith('*'))
-		Resource.canLoadCache.clear();
-	else {
-		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind + '-?'));
-		Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind + '-?'));
-	}
+	this.fixCanLoadCache(type, kind, domain);
 
 	Rule.event.trigger('ruleWasRemoved', {
 		self: this,
@@ -208,6 +199,15 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 		domain: domain,
 		rule: rule
 	});
+};
+
+Rule.prototype.fixCanLoadCache = function (type, kind, domain) {
+	if (domain === '*' || type._startsWith('not'))
+		Resource.canLoadCache.clear();
+	else {		
+		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind._escapeRegExp() + '-?'));
+		Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind._escapeRegExp() + '-?'));
+	}
 };
 
 Rule.prototype.clear = function () {
@@ -399,17 +399,17 @@ Rule.prototype.forLocation = function (params) {
 
 	var types = this.kind(params.searchKind),
 			location = params.location.toLowerCase(),
-			host = params.pageRulesOnly ? '' : Utilities.URL.extractHost(location),
-			hostParts = params.pageRulesOnly ? [] : (params.excludeParts ? [host] : Utilities.URL.hostParts(host, true));
+			host = params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? '' : Utilities.URL.extractHost(location),
+			hostParts = params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? [] : (params.excludeParts ? [host] : Utilities.URL.hostParts(host, true));
 
 	if (!params.excludeAllDomains)
 		hostParts.push('*');
 
 	var rules = {
-		page: types.page(location, true),
-		domain: params.pageRulesOnly ? undefined : types.domain(hostParts),
-		notPage: types.notPage(location, true),
-		notDomain: params.pageRulesOnly ? undefined : types.notDomain(hostParts)
+		page: params.onlyRulesOfType === Rules.DOMAIN_RULES_ONLY ? undefined : types.page(location, true),
+		domain: params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? undefined : types.domain(hostParts),
+		notPage: params.onlyRulesOfType === Rules.DOMAIN_RULES_ONLY ? undefined : types.notPage(location, true),
+		notDomain: params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? undefined : types.notDomain(hostParts)
 	};
 
 	if (typeof params.isAllowed === 'boolean')
@@ -438,6 +438,9 @@ var Rules = {
 	__FilterRules: new Store('FilterRules', {
 		save: true
 	}),
+
+	PAGE_RULES_ONLY: 1,
+	DOMAIN_RULES_ONLY: 2,
 
 	ERROR: {
 		RULES: {
@@ -604,22 +607,60 @@ var Rules = {
 		}
 	},
 
+	SourceMatcher: (function () {
+		function SourceMatcher (lowerSource, source) {
+			this.source = source;
+			this.lowerSource = lowerSource;
+			this.sourceHost = Utilities.URL.extractHost(source);
+
+			if (this.sourceHost.length) {
+				this.sourceProtocol = Utilities.URL.protocol(source);
+				this.sourceParts = Utilities.URL.hostParts(Utilities.URL.extractHost(source));
+			}
+		};
+
+		SourceMatcher.prototype.testRule = function (rule, regexp) {
+			if (regexp) {
+				var regExp = Rules.__regExpCache[rule] || (Rules.__regExpCache[rule] = new RegExp(rule.toLowerCase(), 'i'));
+
+				return regExp.test(this.lowerSource);
+			}
+
+			if (!this.sourceHost.length)
+				return rule === this.source;
+
+			var ruleParts = Rules.partsForRule(rule);
+
+			if (ruleParts.protocols && !ruleParts.protocols.hasOwnProperty(this.sourceProtocol))
+				return false;
+
+			return (ruleParts.domain === '*' || ruleParts.domain === this.source || (ruleParts.domain._startsWith('.') && this.sourceParts._contains(ruleParts.domain.substr(1))) || this.sourceParts[0] === ruleParts.domain);
+		}
+
+		return SourceMatcher;
+	})(),
+
 	// Load all rules contained in each list for a given location.
 	// If the last argument is an array, it will be used to determine which lists to exclude.
 	// Temporary rules are only included if the active set is the user set.
 	forLocation: function (params) {
-		var excludeLists = params.excludeLists ? params.excludeLists : [];
+		var excludeLists = params.excludeLists ? params.excludeLists : [],
+				includeLists = params.includeLists ? params.includeLists : false;
 
-		excludeLists.push('user');
+		excludeLists.push('description', 'user');
 
 		if (this.list.active !== this.list.user)
 			excludeLists.push('temporary');
 
 		var lists = {};
 
-		for (var list in Rules.list)
-			if (!excludeLists._contains(list))
-				lists[list] = this.list[list].forLocation(params);
+		if (includeLists) {
+			for (var i = includeLists.length; i--;)
+				lists[includeLists[i]] = this.list[includeLists[i]].forLocation(params);
+		} else
+			for (var list in Rules.list)
+				if (!excludeLists._contains(list))
+					lists[list] = this.list[list].forLocation(params);
 
 		return lists;
 	},
@@ -673,9 +714,15 @@ Object.defineProperty(Rules, '__kinds', {
 
 Object.defineProperty(Rules, 'list', {
 	value: Object.create({}, {
+		description: {
+			enumerable: true,
+			value: new Rule('SourceDescription', null, {
+				action: 1
+			})
+		},
+
 		temporary: {
 			enumerable: true,
-
 			value: new Rule('TemporaryRules')
 		},
 

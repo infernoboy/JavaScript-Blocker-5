@@ -54,6 +54,7 @@ function Resource (resource) {
 Resource.USE_CACHE = true;
 
 Resource.longRegExps = new Store('LongRegExps');
+
 Resource.canLoadCache = new Store('ResourceCanLoad', {
 	save: true,
 	maxLife: TIME.ONE.HOUR * 36,
@@ -163,35 +164,39 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 	return canLoad;
 };
 
-Resource.prototype.rulesForLocation = function (isAllowed, pageRulesOnly, useHideKinds, excludeLists) {
+Resource.prototype.rulesForLocation = function (isAllowed, onlyRulesOfType, useHideKinds, excludeLists, includeLists) {
 	return Rules.forLocation({
 		searchKind: useHideKinds ? this.hideKinds : this.searchKinds,
 		location: this.pageLocation,
 		isAllowed: isAllowed,
-		pageRulesOnly: pageRulesOnly,
-		excludeLists: excludeLists
+		onlyRulesOfType: onlyRulesOfType,
+		excludeLists: excludeLists,
+		includeLists: includeLists
 	});
 };
 
-Resource.prototype.rulesForResource = function (isAllowed) {
+Resource.prototype.rulesForResource = function (isAllowed, excludeLists, includeLists, onlyRulesOfType) {
 	var matchedList,
 			domainRules,
 			rule;
 
+	excludeLists = ['firstVisit'] || excludeLists;
+
 	var self = this,
+			matcher = new Rules.SourceMatcher(self.lowerSource, self.source),
 			matchedRules = {},
 			checkAction = typeof isAllowed === 'boolean',
 			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
 			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
 
-	Rule.withLocationRules(this.rulesForLocation(null, false, false, ['firstVisit']), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
+	Rule.withLocationRules(this.rulesForLocation(null, onlyRulesOfType, false, excludeLists, includeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
 		matchedList = matchedRules._getWithDefault(ruleListName, {});
 
 		for (rule in rules.data) {
 			if (checkAction && !!(rules.data[rule].value.action % 2) !== isAllowed)
 				continue;
 
-			if (Rules.matches(rule, rules.data[rule].value.regexp, rules.data[rule].value.regexp ? self.lowerSource : self.source, self.pageLocation)) {
+			if (matcher.testRule(rule, rules.data[rule].value.regexp)) {
 				domainRules = matchedList
 					._getWithDefault(ruleKind, {})
 					._getWithDefault(ruleType, {})
@@ -199,6 +204,7 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 				
 				domainRules[rule] = {
 					action: rules.data[rule].value.action,
+					meta: rules.data[rule].value.meta,
 					regexp: rules.data[rule].value.regexp,
 					ruleList: ruleList
 				};
@@ -216,11 +222,33 @@ Resource.prototype.rulesForResource = function (isAllowed) {
 	return matchedRules;
 };
 
+Resource.prototype.descriptionsForResource = function (isAllowed) {
+	var kind,
+			type,
+			domain,
+			rule;
+
+	var descriptionList = [],
+			descriptions = this.rulesForResource(isAllowed, null, ['description'], Rules.DOMAIN_RULES_ONLY);
+
+	if (descriptions.description)
+		for (kind in descriptions.description)
+			for (type in descriptions.description[kind])
+				for (domain in descriptions.description[kind][type])
+					for (rule in descriptions.description[kind][type][domain])
+						descriptions.description[kind][type][domain][rule].meta.map(function (value) {
+							descriptionList._pushMissing(_('description.' + value));
+						});
+
+	return descriptionList;
+};
+
 Resource.prototype.shouldHide = function () {
-	var filterHide = (this.action === ACTION.BLACKLIST || this.action === ACTION.WHITELIST) && Settings.getItem('autoHideFilterList'),
+	var filterHideBlacklist = this.action === ACTION.BLACKLIST && Settings.getItem('autoHideBlacklist'),
+			filterHideWhitelist = this.action === ACTION.WHITELIST && Settings.getItem('autoHideWhitelist'),
 			noRuleHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action < 0 && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideNoRule'));
 
-	return (!this.unblockable && (filterHide || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
+	return (!this.unblockable && (filterHideBlacklist || filterHideWhitelist || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
 };
 
 Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
@@ -275,6 +303,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 			action;
 
 	var self = this,
+			matcher = new Rules.SourceMatcher(self.lowerSource, self.source),
 			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
 			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
 
@@ -311,7 +340,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 			for (rule in rules.data) {
 				if (longAllowed)
 					longRules._getWithDefault(rules.data[rule].value.action, []).push(rule.toLowerCase());
-				else if (Rules.matches(rule, rules.data[rule].value.regexp, self.source, self.pageLocation))
+				else if (matcher.testRule(rule, rules.data[rule].value.regexp))
 					canLoad = {
 						pageRule: pageRule,
 						action: rules.data[rule].value.action,

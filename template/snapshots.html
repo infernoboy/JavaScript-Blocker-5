@@ -1,7 +1,7 @@
 <noscript id="snapshot-container">
 	<div id="snapshot-container">
 		<div class="jsb-info">
-			<span id="snapshot-storage-info"></span>&nbsp;
+			<span id="snapshot-storage-info"></span><q></q>
 			<input type="button" id="snapshot-create-snapshot" value="<%=_('snapshots.create_snapshot')%>" />
 		</div>
 		<div class="horizontal-divider horizontal-divider-transparent"></div>
@@ -18,7 +18,7 @@
 
 <noscript id="snapshot-list-item">
 	<li class="<%=self.active ? 'snapshot-active' : ''%>" data-snapshotID="<%=self.id%>">
-		<a href="javascript:void(0);" class="snapshot-item-name <%=self.equal ? 'current' : ''%>" data-i18n-current="current"><%=self.name%></a>
+		<a href="javascript:void(0);" class="snapshot-item-name <%=self.equal ? 'current' : ''%>" data-i18n-current="<%=_('snapshots.current')%>"><%=self.name%></a>
 		<% if (!globalPage.Rules.isLockerLocked()) { %>
 			<input type="button" class="snapshot-item-delete jsb-color-blocked double-click blend-in" value="<%=_('Delete')%>" />
 			<input type="button" class="snapshot-item-<%=self.active ? 'close' : 'preview'%> blend-in" value="<%=_('snapshots.' + (self.active ? 'close' : 'preview'))%>" /><%

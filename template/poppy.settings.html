@@ -1,0 +1,196 @@
+<noscript id="setting-menu-backup">
+	<h3 class="jsb-centered"><%=_('setting_menu.backup')%></h3>
+
+	<ul class="generic-menu-options">
+		<li class="double-column-flex">
+			<div class="double-column-flex-left"><%=_('setting_menu.include')%>:<q></q></div>
+			<div class="double-column-flex-right">
+				<ul class="generic-menu-options no-indent">
+					<li>
+						<input type="checkbox" id="setting-menu-backup-export-settings" checked="checked" /> <label for="setting-menu-backup-export-settings"><%=_('view_toolbar.setting')%></label>
+					</li>
+					<li>
+						<input type="checkbox" id="setting-menu-backup-export-first-visit" checked="checked" /> <label for="setting-menu-backup-export-first-visit"><%=_('setting_menu.export_first_visit')%></label>
+					</li>
+					<li>
+						<input type="checkbox" id="setting-menu-backup-export-rules" checked="checked" /> <label for="setting-menu-backup-export-rules"><%=_('setting_menu.export_rules')%></label>
+					</li>
+					<li>
+						<input type="checkbox" id="setting-menu-backup-export-snapshots" checked="checked" /> <label for="setting-menu-backup-export-snapshots"><%=_('setting_menu.export_snapshots')%></label>
+					</li>
+					<li>
+						<input type="checkbox" id="setting-menu-backup-export-user-scripts" checked="checked" /> <label for="setting-menu-backup-export-user-scripts"><%=_('setting_menu.export_user_scripts')%></label>
+					</li>
+				</ul>
+			</div>
+		</li>
+
+		<li>
+			<div class="horizontal-divider horizontal-divider-transparent horizontal-divider-short"></div>
+		</li>
+
+		<li>
+			<label><%=_('setting_menu.export_backup')%>:</label><q></q>
+			<input id="setting-menu-backup-export" type="button" value="<%=_('setting_menu.export')%>" />
+		</li>
+
+		<li>
+			<p class="jsb-readable"><%=_('setting_menu.export.description')%></p>
+			<div class="horizontal-divider"></div>
+		</li>
+
+		<li>
+			<label><%=_('setting_menu.import_backup')%>:</label><q></q>
+			<input id="setting-menu-backup-import" type="file" value="<%=_('setting_menu.import')%>" />
+		</li>
+
+		<li>
+			<input type="checkbox" id="clear-existing" checked="checked" /> <label for="clear-existing"><%=_('settings.clear_before_import')%></label>
+		</li>
+
+		<li>
+			<p class="jsb-readable"><%=_('setting_menu.import.description')%> <a href="javascript:void(0);" id="setting-menu-backup-import-alternative"><%=_('setting_menu.import.alternative')%></a></p>
+		</li>
+	</ul>
+</noscript>
+
+<noscript id="backup-import-alternative">
+	<h3 class="jsb-centered"><%=_('setting_menu.backup')%></h3>
+
+	<div class="generic-menu">
+		<ul class="generic-menu-options generic-menu-menu">
+			<li>
+				<p class="jsb-readable jsb-info"><%=_('setting_menu.import.alternative.paste')%></p>
+			</li>
+
+			<li>
+				<textarea id="backup-import-alternative"></textarea>
+			</li>
+
+			<li>
+				<input type="checkbox" id="clear-existing" checked="checked" /> <label for="clear-existing"><%=_('settings.clear_before_import')%></label>
+			</li>
+
+			<li class="jsb-align-right">
+				<input type="button" id="backup-import-alternative-import" value="<%=_('setting_menu.import')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="set-lock-password">
+	<h3 class="jsb-centered"><%=_('settings.set_locker_password')%></h3>
+
+	<div class="generic-menu">
+		<ul id="lock-password-set" class="generic-menu-menu generic-menu-options">
+			<% if (!Locker.passwordIsSet()) { %>
+				<li>
+					<p class="jsb-info jsb-readable"><%=_('setting.setLockerPassword.description')%></p>
+					<div class="horizontal-divider"></div>
+				</li><%
+			} %>
+			<li>
+				<table class="generic-menu-options">
+					<tbody>
+						<% if (Locker.passwordIsSet()) { %>
+							<tr>
+								<td class="jsb-align-right"><label for="lock-password-previous"><%=_('settings.current_locker_password')%>:</label><q></q></td>
+								<td><input type="password" id="lock-password-previous" class="trigger-on-enter" /></td>
+							</tr><%
+						} %>
+
+						<tr>
+							<td class="jsb-align-right"><label for="lock-password"><%=_('settings.new_locker_password')%>:</label><q></q></td>
+							<td><input type="password" id="lock-password" class="trigger-on-enter" /></td>
+						</tr>
+
+						<tr>
+							<td class="jsb-align-right"><label for="lock-password-verify"><%=_('settings.verify_locker_password')%>:</label><q></q></td>
+							<td><input type="password" id="lock-password-verify" class="trigger-on-enter" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</li>
+
+			<li class="jsb-align-right">
+				<% if (Locker.passwordIsSet()) { %>
+					<input type="button" id="lock-password-forgot" value="<%=_('setting.setLockerPassword.iforgot')%>" /><%
+				} %>
+				<% if (!self.preventCancel) { %>
+					<input type="button" id="lock-password-cancel" value="<%=_('Cancel')%>" /><%
+				} %>
+				<input type="button" id="lock-password-save" class="on-enter" value="<%=_('Save')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="toggle-lock">
+	<h3 class="jsb-centered"><%=_('settings.enter_locker_password')%></h3>
+
+	<div class="generic-menu">
+		<ul class="generic-menu-menu generic-menu-options">
+			<li>
+				<label class="jsb-label"><%=_('locker.' + (self.locked ? 'unlocking' : 'locking'))%>:</label>
+				<span><%=self.info%></span>
+				<div class="horizontal-divider"></div>
+			</li>
+
+			<li class="jsb-centered">
+				<label for="lock-password"><%=_('settings.locker_password')%>:</label><q></q>
+				<input type="password" id="lock-password" class="trigger-on-enter" />
+				<div class="horizontal-divider horizontal-divider-short horizontal-divider-transparent"></div>
+			</li>
+
+			<li class="jsb-align-right">
+				<input type="button" id="lock-password-forgot" value="<%=_('setting.setLockerPassword.iforgot')%>" />
+				<input type="button" id="lock-password-cancel" value="<%=_('Cancel')%>" />
+				<input type="button" id="lock-password-toggle" class="on-enter" value="<%=_(self.locked ? 'Unlock' : 'Lock')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="forgot-locker-password">
+	<html>
+		<head>
+			<title><%=_('setting.setLockerPassword.iforgot.header')%></title>
+
+			<style type="text/css">
+				html {
+					font-family: "Helvetica Neue";
+				}
+			</style>
+		</head>
+		<body>
+			<h1><%=_('setting.setLockerPassword.iforgot.header')%></h1>
+			<p><%=_('setting.setLockerPassword.iforgot.instructions')%></p>
+		</body>
+	</html>
+</noscript>
+
+<noscript id="confirm-setting-change">
+	<p class="jsb-info jsb-readable"><%=self.string%></p>
+
+	<div class="jsb-align-right">
+		<input type="button" id="setting-confirm-cancel" value="<%=_('Cancel')%>" /><q></q>
+		<input type="button" id="setting-confirm-change" value="<%=_('Change')%>" />
+	</div>
+</noscript>
+
+<noscript id="user-script-storage-add">
+	<p class="jsb-info"><%=_('setting.newUserScriptStorageItem.json')%></p>
+
+	<input type="text" class="user-script-storage-add-key trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.key')%>" />
+	<input type="text" class="user-script-storage-add-value trigger-on-enter" placeholder="<%=_('setting.newUserScriptStorageItem.value')%>" /><q></q>
+	<input type="button" class="user-script-storage-add-add on-enter" value="<%=_('setting.newUserScriptStorageItem.subLabel')%>" />
+</noscript>
+
+<noscript id="user-script-confirm-view-switch">
+	<p class="jsb-info"><%=_('setting.saveUserScript.unsaved')%></p>
+
+	<div class="jsb-align-right">
+		<input type="button" class="user-script-confirm-view-switch-cancel" value="<%=_('Cancel')%>" /><q></q>
+		<input type="button" class="user-script-confirm-view-switch-switch" value="<%=_('Switch')%>" data-viewID="<%=self.viewID%>" />
+	</div>
+</noscript>
