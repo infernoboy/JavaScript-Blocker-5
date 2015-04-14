@@ -94,11 +94,19 @@ var Settings = {
 	},
 
 	anySettingChanged: function (event) {
-		if (Utilities.Page.isGlobal && window.globalSetting && event.key in window.globalSetting)
-			setTimeout(function () {
-				if (event.key !== 'debugMode')
-					window.globalSetting[event.key] = Settings.getItem(event.key);
-			});
+		if (Utilities.Page.isGlobal) {
+			if (window.globalSetting && event.key in window.globalSetting)
+				setTimeout(function () {
+					if (event.key !== 'debugMode')
+						window.globalSetting[event.key] = Settings.getItem(event.key);
+				});
+
+			if (event.key === 'openSettings') {
+				Update.showRequiredPopover();
+
+				UI.view.switchTo('#main-views-setting');
+			}
+		}
 
 		if (!event.key || !event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')
 			if (window.UI && UI.Settings && UI.Settings.view && UI.Settings.view.is('.active-view'))
@@ -219,7 +227,7 @@ var Settings = {
 	},
 
 	unlockSettingSet: function (settingKey, value, storeKey) {
-		Locker
+		UI.Locker
 			.showLockerPrompt('setting')
 			.then(function () {
 				Settings.setItem(settingKey, value, storeKey, false, true);
@@ -417,7 +425,7 @@ var Settings = {
 	import: function (settings, clearExisting) {
 		var willNotImport = ['donationVerified', 'trialStart', 'updateNotify'];
 
-		Locker
+		UI.Locker
 			.showLockerPrompt('importBackupSettings')
 			.then(function (settings) {
 				var settings = SettingStore.import(settings);
@@ -465,7 +473,7 @@ var Settings = {
 
 				UI.view.switchTo('#main-views-page');
 
-				UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch'], function (event) {
+				UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch', 'popoverOpened'], function (event) {
 					event.preventDefault();
 
 					UI.Page.showModalInfo(_('settings.safari_restart'));

@@ -717,7 +717,8 @@ Object.defineProperty(Rules, 'list', {
 		description: {
 			enumerable: true,
 			value: new Rule('SourceDescription', null, {
-				action: 1
+				action: 1,
+				ignoreLock: true
 			})
 		},
 

@@ -63,6 +63,25 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'donation-beg': function (poppy) {
+		poppy.content
+			.on('click', '#beg-later', function () {
+				poppy.close();
+			})
+
+			.on('click', '#beg-donate', function () {
+				Tabs.create('http://jsblocker.toggleable.com/donate');
+
+				Popover.hide();
+			})
+
+			.on('click', '#beg-donated', function () {
+				poppy.close();
+
+				UI.Extras.showUnlockPrompt();
+			});
+	},
+
 	'set-lock-password': function (poppy) {
 		var previousPassword = $('#lock-password-previous', poppy.content),
 				newPassword = $('#lock-password', poppy.content),
@@ -123,16 +142,22 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#lock-password-toggle', function () {
-				var validated = Locker.validatePassword(password.val());
+				Utilities
+					.watchdog('lockToggle', 1, 1000)
+					.then(function () {
+						var validated = Locker.validatePassword(password.val());
 
-				if (!validated)
-					return password.focus().selectAll().shake();
+						if (!validated)
+							return password.focus().selectAll().shake();
 
-				Locker.lock(poppy.lockerKey, !poppy.locked);
+						Locker.lock(poppy.lockerKey, !poppy.locked);
 
-				poppy.close();
+						poppy.close();
 
-				poppy.resolve();
+						poppy.resolve();
+					}, function () {
+						password.focus();
+					});
 			});
 	},
 
@@ -143,7 +168,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#disable-menu-for-disable', function () {
-				Locker
+				UI.Locker
 					.showLockerPrompt('disable')
 					.then(function () {
 						globalPage.Command.toggleDisabled(true);
@@ -174,7 +199,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#main-menu-console', function (event) {
-				Locker
+				UI.Locker
 					.showLockerPrompt('console', false, true)
 					.then(function () {
 						Poppy.closeLinksTo(poppy);
@@ -204,7 +229,7 @@ Object._extend(Poppy.scripts, {
 	'rule-menu': function (poppy) {
 		poppy.content
 			.on('click', '#rule-menu-lock', function () {
-				Locker.showLockerPrompt('rules');
+				UI.Locker.showLockerPrompt('rules');
 			})
 
 			.on('click', '#rule-menu-open-snapshots', function () {
@@ -233,7 +258,7 @@ Object._extend(Poppy.scripts, {
 	'setting-menu': function (poppy) {
 		poppy.content
 			.on('click', '#setting-menu-lock', function () {
-				Locker.showLockerPrompt('settings');
+				UI.Locker.showLockerPrompt('settings');
 			})
 
 			.on('click', '#setting-menu-backup', function () {
@@ -302,6 +327,19 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'import-rules-from-four': function (poppy) {
+		var rulesFromFour = $('#rules-from-four', poppy.content);
+
+		rulesFromFour.focus();
+
+		poppy.content
+			.on('click', '#import-rules-from-four', function () {
+				globalPage.Upgrade.importRulesFromJSB4(rulesFromFour.val());
+
+				poppy.close();
+			});
+	},
+
 	'temporary-rules-menu': function (poppy) {
 		poppy.content
 			.on('click', '#temporary-menu-new', function (event) {
@@ -357,7 +395,7 @@ Object._extend(Poppy.scripts, {
 
 			.on('click', '#active-menu-clear', function (event) {
 				UI.event.addCustomEventListener('poppyDidClose', function () {
-					Locker
+					UI.Locker
 						.showLockerPrompt('clearRules')
 						.then(function () {
 							globalPage.Rules.list.user.clear();
@@ -641,7 +679,7 @@ Object._extend(Poppy.scripts, {
 						newKinds.push(newKindPrefix + this.getAttribute('data-kind'));
 					});
 
-				Locker
+				UI.Locker
 					.showLockerPrompt('disable', !newKinds._contains('disable'), true)
 					.then(function () {
 						try {
@@ -792,7 +830,7 @@ Object._extend(Poppy.scripts, {
 			.on('change', '#console-debug-mode', function () {
 				var self = this;
 
-				Locker
+				UI.Locker
 					.showLockerPrompt('setting', false, true)
 					.then(function () {
 						window.globalSetting.debugMode = self.checked;
@@ -818,7 +856,7 @@ Object._extend(Poppy.scripts, {
 				var messageHistory = Utilities.messageHistory();
 				
 				var errors = messageHistory.error.map(function (value, i) {
-					return value.message + (value.stack ? "\nStack:" + value.stack : '');
+					return value.message.join(' ') + (value.stack ? "\n\t\tStack:" + value.stack : '');
 				});
 
 				var messages = ['Error Messages', '', errors.join("\n"), "\n", 'Debug Messages', '', messageHistory.debug.join("\n")];

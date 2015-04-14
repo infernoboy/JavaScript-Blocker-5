@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5-beta1</string>
+	<string>5</string>
 	<key>CFBundleVersion</key>
-	<string>150403</string>
+	<string>150414</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
@@ -67,6 +67,6 @@
 	<key>Update Manifest URL</key>
 	<string>http://dl.dropbox.com/u/11967/extupdates.plist</string>
 	<key>Website</key>
-	<string>http://javascript-blocker.toggleable.com/</string>
+	<string>http://jsblocker.toggleable.com/</string>
 </dict>
 </plist>

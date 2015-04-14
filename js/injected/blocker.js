@@ -161,7 +161,7 @@ var Handler = {
 	},
 
 	setPageLocation: function () {
-		if (Utilities.Page.isAbout && FRAME_ELEMENT) {
+		if (Utilities.Page.isAbout && FRAME_ELEMENT && FRAME_ELEMENT.getAttribute('data-jsbParentHost')) {
 			Page.info.location = FRAME_ELEMENT.getAttribute('data-jsbParentLocation');
 			Page.info.host = FRAME_ELEMENT.getAttribute('data-jsbParentHost');
 			Page.info.protocol = FRAME_ELEMENT.getAttribute('data-jsbParentProtocol');
@@ -878,14 +878,20 @@ Handler.setPageLocation();
 document.addEventListener('visibilitychange', Handler.visibilityChange, true);
 
 if (!globalSetting.disabled) {
-	var JSBSupport = GlobalCommand('canLoadResource', {
-		kind: 'disable',
-		strict: true,
-		pageLocation: Page.info.location,
-		pageProtocol: Page.info.protocol,
-		source: '*',
-		isFrame: !Utilities.Page.isTop
-	});
+	if (Page.info.location)
+		var JSBSupport = GlobalCommand('canLoadResource', {
+			kind: 'disable',
+			strict: true,
+			pageLocation: Page.info.location,
+			pageProtocol: Page.info.protocol,
+			source: '*',
+			isFrame: !Utilities.Page.isTop
+		});
+	else
+		var JSBSupport = {
+			isAllowed: true,
+			action: -1
+		};
 
 	if (!JSBSupport.isAllowed) {
 		globalSetting.disabled = true;

@@ -3,7 +3,7 @@
 /***************************************
  * @file js/predefined.js
  * @author Travis Roman (travis@toggleable.com)
- * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @package JS Blocker (http://JSblocker.toggleable.com)
  ***************************************/
 
 function Predefined () {
@@ -112,6 +112,7 @@ function Predefined () {
 		'.amazon.co.uk': scriptRules.get('.amazon.com'),
 		'.amazon.de': scriptRules.get('.amazon.com')
 	});
+	
 
 	/* ====================BLACKLIST===================== */
 

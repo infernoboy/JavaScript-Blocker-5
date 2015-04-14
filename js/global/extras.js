@@ -91,5 +91,5 @@ Maintenance.event.addCustomEventListener('globalPageReady', function () {
 	}, true);
 }, true);
 
-// Extras.Trial.autoStart();
-Extras.Trial.start();
+Extras.Trial.autoStart();
+// Extras.Trial.start();

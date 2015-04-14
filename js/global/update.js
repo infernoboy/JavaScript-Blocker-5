@@ -38,17 +38,17 @@ var Update = {
 	},
 
 	allUpdatesCompleted: function () {
-		if (!BrowserWindows.all().length)
-			Tabs.create('about:blank');
-
 		UI.event.addCustomEventListener('popoverOpened', function () {
-			var poppy = new Popover.window.Poppy(0.5, 0);
+			var poppy = new Popover.window.Poppy(0.5, 0, false, 'donation-beg');
 
 			Update
 				.fetchChangeLog(Version.display)
-				.then(function (changeLog) {
+				.finally(function (changeLog) {
+					if (!Extras.isUnlockedByDonating())
+						poppy.modal();
+
 					poppy
-						.setContent(Template.create('poppy', 'change-log', {
+						.setContent(Template.create('poppy', 'donation-beg', {
 							changeLog: changeLog,
 							version: Version.display
 						}))
@@ -162,7 +162,7 @@ var Update = {
 
 	fetchChangeLog: function (displayVersion) {
 		return new Promise(function (resolve, reject) {
-			$.get('http://javascript-blocker.toggleable.com/change-log/' + displayVersion.replace(/\./g, ''))
+			$.get('http://jsblocker.toggleable.com/change-log/' + displayVersion.replace(/\./g, ''))
 				.done(function (responseText, textStatus, request) {
 					if (textStatus === 'success')
 						resolve($('#sites-canvas-main-content', responseText))

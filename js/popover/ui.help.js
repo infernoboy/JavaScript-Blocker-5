@@ -49,7 +49,7 @@ UI.Help = {
 			if (event.detail.to.id === '#main-views-help') {
 				event.preventDefault();
 
-				Tabs.create('mailto:helpme@toggleable.com?subject=I Need Help With JSB5!&body=Please thoroughly describe the problem you are having. Include screenshots if you think it will help.', true);
+				Tabs.create('mailto:helpme@toggleable.com?subject=I need help with JSB5&body=Please thoroughly describe the problem you are having. Include screenshots if you think it will help.', true);
 			}
 		}
 	}

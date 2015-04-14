@@ -46,7 +46,7 @@
 
 			<select id="create-rule-which-item" title="<%=_('view.page.editor.which.title')%>">
 				<option value="items-all" <%=self.kind._contains('*') ? selected : ''%>>
-					<%=_('view.page.host.editor.all_resources')%>
+					<%=_('view.page.host.editor.all_kinds')%>
 				</option>
 
 				<option value="items-of-kind" <%=!self.kind._contains('*') ? selected : ''%>>

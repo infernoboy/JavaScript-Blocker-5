@@ -260,14 +260,14 @@
 				if (position.poppy.top + poppyHeight + arrowHeight > containerHeight) { // If overflow on bottom side
 					var currentHeightTotal;
 
-					while ((currentHeightTotal = position.poppy.top + this.poppy.outerHeight() + 15 - Poppy.__offset) > containerHeight) {
+					while ((currentHeightTotal = position.poppy.top + this.poppy.outerHeight() + 5 - Poppy.__offset) > containerHeight) {
 						this.noArrow = true;
 
 						if (position.poppy.top > -Poppy.__offset) {
 							position.poppy.top--;
 							this.position.y--;
 						} else {
-							poppyAndContent.css('height', '-=' + (currentHeightTotal - containerHeight - 15) + 'px');
+							poppyAndContent.css('height', '-=' + (currentHeightTotal - containerHeight - 5) + 'px');
 
 							break;
 						}
@@ -277,14 +277,14 @@
 				if (poppyHeight + arrowHeight > this.position.y) { // If overflow on top side
 					var currentHeightTotal;
 
-					while ((currentHeightTotal = this.poppy.outerHeight() + arrowHeight + 15) > this.position.y) {
+					while ((currentHeightTotal = this.poppy.outerHeight() + arrowHeight + 5) > this.position.y) {
 						this.noArrow = true;
 
 						if (position.poppy.bottom > -Poppy.__offset) {
 							position.poppy.bottom--;
 							this.position.y++;
 						} else {
-							poppyAndContent.css('height', '-=' + (currentHeightTotal - this.position.y - 15) + 'px');
+							poppyAndContent.css('height', '-=' + (currentHeightTotal - this.position.y - 5) + 'px');
 
 							break;
 						}
@@ -409,6 +409,9 @@
 		if (UI.event.trigger('poppyWillShow', this))
 			return this;
 
+		if (Poppy.modalOpen)
+			this.poppy.addClass('poppy-show-close');
+
 		if (this.isModal) {
 			Poppy.modalOpen = true;
 
@@ -491,7 +494,7 @@
 			if (!keepModalOpen)
 				Poppy.closeModal();
 			else {
-				Poppy.__modal.css('zIndex', keepModalOpen.zIndex - 1);
+				Poppy.__modal.css('z-index', keepModalOpen.zIndex - 1);
 
 				keepModalOpen.poppy.removeClass('poppy-blur');
 			}

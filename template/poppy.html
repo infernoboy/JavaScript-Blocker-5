@@ -271,17 +271,11 @@
 	</ul>
 </noscript>
 
-<noscript id="change-log">
-	<h3 class="jsb-centered"><%=_('change_log', [self.version])%></h3>
-
-	<div id="change-log" class="jsb-info jsb-readable"><%=self.changeLog.html()%></div>
-</noscript>
-
 <noscript id="extras-unlock-prompt">
 	<h3 class="jsb-centered">Unlock Extra Features</h3>
 
 	<p class="jsb-info jsb-readable">
-		<a class="no-underline" href="http://javascript-blocker.toggleable.com/donation_only"><%=_('extras.what')%></a>
+		<a class="no-underline" href="http://jsblocker.toggleable.com/donation_only"><%=_('extras.what')%></a>
 	</p><div></div>
 
 	<%
@@ -310,8 +304,8 @@
 
 	<div class="horizontal-divider"></div>
 
-	<a class="no-underline" href="mailto:iforgot@toggleable.com?subject=iForgot%20JSB%20Donation"><%=_('setting.setLockerPassword.iforgot')%></a> <span class="jsb-label">┊</span>
-	<a class="no-underline" href="http://javascript-blocker.toggleable.com/donate"><%=_('extras.make_donation')%></a>
+	<a class="no-underline" href="mailto:iforgot@toggleable.com?subject=iForgot%20my%20JSB%20donation%20information"><%=_('setting.setLockerPassword.iforgot')%></a> <span class="jsb-label">┊</span>
+	<a class="no-underline" href="http://jsblocker.toggleable.com/donate"><%=_('extras.make_donation')%></a>
 	
 	<% if (!Extras.isUnlockedForFree()) { %>
 		<span class="jsb-label jsb-smaller">┊</span>
@@ -324,4 +318,22 @@
 	<div class="jsb-align-right">
 		<input type="button" id="extras-unlock-free-now" value="<%=_('extras.unlock_free')%>" />
 	</div>
+</noscript>
+
+<noscript id="donation-beg">
+	<h3 class="jsb-centered"><%=_('change_log', [self.version])%></h3>
+
+	<div id="change-log" class="jsb-info jsb-readable"><%=typeof self.changeLog === 'number' ? self.changeLog : self.changeLog.html()%></div>
+
+	<% if (!Extras.isUnlockedByDonating()) { %>
+		<div class="horizontal-divider"></div>
+		<p class="jsb-info"><%=_('beg.thank_you')%></p>
+		<p class="jsb-info jsb-readable"><%=_('beg.why')%></p>
+
+		<div class="jsb-align-right">
+			<input type="button" id="beg-later" value="<%=_('beg.later')%>" /><q></q>
+			<input type="button" id="beg-donate" value="<%=_('beg.make_donation')%>" /><q></q>
+			<input type="button" id="beg-donated" value="<%=_('beg.ive_donated')%>" />
+		</div><%
+	} %>
 </noscript>

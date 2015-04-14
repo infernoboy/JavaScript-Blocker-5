@@ -480,7 +480,7 @@ var UI = {
 						case 'c':
 							event.preventDefault();
 
-							Locker
+							UI.Locker
 								.showLockerPrompt('console')
 								.then(function () {
 									var consolePoppy = new Poppy(0.5, 0, true, 'console');
@@ -588,7 +588,7 @@ var UI = {
 
 						this.classList.remove('unread-error');
 
-						Locker
+						UI.Locker
 							.showLockerPrompt('console')
 							.then(function () {
 								var consolePoppy = new Poppy(event.pageX, event.pageY, true, 'console');

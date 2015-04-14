@@ -205,13 +205,20 @@ Settings.settings = {
 		setting: 'debugMode',
 		props: {
 			type: 'boolean',
-			default: true
+			default: false
 		}
 	}, {
 		setting: 'showPopoverOnLoad',
 		props: {
 			type: 'boolean',
 			default: false
+		}
+	}, {
+		setting: 'openSettings',
+		props: {
+			type: 'boolean',
+			readOnly: true,
+			default: true
 		}
 	}],
 
@@ -392,7 +399,8 @@ Settings.settings = {
 			default: 'auto',
 			onChange: function () {
 				setTimeout(function () {
-					Popover.window.location.reload()
+					if (!SettingStore.__locked)
+						Popover.window.location.reload()
 				}, 500);
 			}
 		}
@@ -421,7 +429,7 @@ Settings.settings = {
 		props: {
 			type: 'button',
 			onClick: function () {
-				Locker.showSetPasswordPrompt();
+				UI.Locker.showSetPasswordPrompt();
 			}
 		}
 	}, {
@@ -1106,10 +1114,13 @@ Settings.settings = {
 		setting: 'importRulesFromFour',
 		props: {
 			type: 'button',
-			onClick: function () {
-				var rules = prompt('Paste the exported backup below. This can be either a full backup or just the backup containing your rules. You must have made a donation or unlocked features without contributing.');
+			onClick: function (button) {
+				var offset = $(button).offset(),
+						poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'import-rules-from-four');
 
-				Upgrade.importRulesFromJSB4(rules);
+				poppy
+					.setContent(Template.create('poppy.settings', 'import-rules-from-four'))
+					.show();
 			}
 		}
 	}],
@@ -1170,6 +1181,8 @@ Settings.settings = {
 	// User script settings
 	userScripts: [{
 		header: 'extraFeatures',
+	}, {
+		description: 'newUserScript.description',
 	}, {
 		when: {
 			settings: {
@@ -1283,7 +1296,7 @@ Settings.settings = {
 			}
 		}, {
 			header: 'extraFeatures'
-		}, {
+		}, /*{
 			setting: 'blockReferrer',
 			props: {
 				type: 'boolean',
@@ -1321,7 +1334,7 @@ Settings.settings = {
 			}
 		}, {
 			divider: true //===================================================================================
-		}, {
+		},*/ {
 			description: 'enabledSpecials.description'
 		}, {
 			setting: 'enabledSpecials',

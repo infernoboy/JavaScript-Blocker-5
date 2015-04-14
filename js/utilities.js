@@ -1320,6 +1320,42 @@ var Extension = {
 	},
 
 	Object: {
+		_toHTMLList: {
+			value: function (container) {
+				container = container || $('<ul>');
+
+				container.addClass('object-as-list');
+
+				var li,
+						keyName,
+						keyValue;
+
+				for (var key in this)
+					if (this.hasOwnProperty(key)) {
+						li = $('<li>');
+						keyName = $('<span>').appendTo(li).text(key + ': ');
+
+						keyName.addClass('object-key-name').appendTo(li);
+
+						if (Object._isPlainObject(this[key])) {
+							keyValue = $('<div>');
+
+							keyValue.html(this[key]._toHTMLList($('<ul>')));
+						} else {
+							keyValue = $('<pre>');
+
+							keyValue.text(JSON.stringify(this[key], null, 2));
+						}
+
+						keyValue.addClass('object-key-value').appendTo(li);
+
+						li.appendTo(container);
+					}
+
+				return container;
+			}
+		},
+
 		_findKey: {
 			value: function (findKey) {
 				if (this.hasOwnProperty(findKey))

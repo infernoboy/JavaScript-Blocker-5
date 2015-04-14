@@ -321,7 +321,7 @@ UI.Page = {
 				ruleDomain = ruleWhereValue;
 			}
 
-			Locker
+			UI.Locker
 				.showLockerPrompt('disable', ruleType !== 'disable' && ruleType !== 'enable')
 				.then(function () {
 					if (ruleType === 'disable' || ruleType === 'enable') {
@@ -678,7 +678,9 @@ UI.Page = {
 
 					poppy.setContent(Template.create('poppy.page', 'item-info', {
 						kind: item.parents('.page-host-items').attr('data-kind'),
-						action: parseInt(item.attr('data-action'), 10)
+						action: parseInt(item.attr('data-action'), 10),
+						source: item.attr('data-source'),
+						isAllowed: poppy.isAllowed
 					}));
 
 					if (poppy.content.is(':empty'))

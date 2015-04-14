@@ -71,10 +71,12 @@ FilterList.prototype.merge = function () {
 };
 
 FilterList.prototype.download = function () {
+	var self = this;
+
 	return $.get(this.url).fail(function (error) {
 		FilterList.__updating--;
 
-		LogError('failed to download filter list ' + this.name, error.statusText);
+		LogError('failed to download filter list ' + self.name + '/' + self.url, error.statusText);
 	});
 };
 

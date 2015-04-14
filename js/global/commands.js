@@ -192,7 +192,7 @@ function Command (command, data, event) {
 				enabledKinds: Settings.getItem('enabledKinds'),
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
-				blockReferrer: Settings.getItem('blockReferrer'),
+				// blockReferrer: Settings.getItem('blockReferrer'),
 				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 
 				contentURLs: window.CONTENT_URLS
@@ -575,7 +575,7 @@ Command.toggleDisabled = function (force, doNotReload) {
 	if (Command.event.trigger('willDisable', window.globalSetting.disabled))
 		return;
 
-	Locker
+	UI.Locker
 		.showLockerPrompt('disable', typeof force === 'boolean')
 		.then(function () {
 			window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;

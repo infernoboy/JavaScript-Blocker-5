@@ -178,7 +178,10 @@ var UserScript = {
 				name: name
 			});
 
-			return resource ? atob(resource.data) : '';
+			if (!resource)
+				throw new Error('resource not found: ' + GM_info.script.name + '/' + name);
+
+			return atob(resource.data);
 		},
 		GM_getResourceURL: function (name) {
 			var resource = messageExtensionSync('userScript.getResource', {
@@ -187,7 +190,7 @@ var UserScript = {
 			});
 
 			if (!resource)
-				return '';
+				throw new Error('resource not found: ' + GM_info.script.name + '/' + name);
 
 			var URL = window.webkitURL || window.URL || {};
 

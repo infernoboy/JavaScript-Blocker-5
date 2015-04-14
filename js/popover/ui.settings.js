@@ -48,9 +48,7 @@ UI.Settings = {
 			.on('input', '.user-script-content', function () {
 				this.setAttribute('data-blockViewSwitch', 1);
 
-				$('[data-settingButton="saveUserScript"]', UI.Settings.views)
-					.prop('disabled', false)
-					.val(_('setting.saveUserScript.subLabel'));
+				UI.Settings.enableUserScriptSave();
 			})
 
 			.on('click', '*[data-settingButton]', function (event) {
@@ -82,6 +80,18 @@ UI.Settings = {
 		UI.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
 		UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
 		UI.event.addCustomEventListener('viewWillSwitch', UI.Settings.events.viewWillSwitch);
+	},
+
+	disableUserScriptSave: function () {
+		$('[data-settingButton="saveUserScript"]', UI.Settings.views)
+			.prop('disabled', true)
+			.val(_('setting.saveUserScript.subLabel.saved'));
+	},
+
+	enableUserScriptSave: function () {
+		$('[data-settingButton="saveUserScript"]', UI.Settings.views)
+			.prop('disabled', false)
+			.val(_('setting.saveUserScript.subLabel'));
 	},
 
 	bindInlineSettings: function (inlineSettings) {
@@ -530,6 +540,8 @@ UI.Settings = {
 		$('li', wrapper).append(element.children());
 
 		list.append(wrapper.children());
+
+		UI.Settings.disableUserScriptSave();
 	},
 
 	events: {
@@ -569,13 +581,12 @@ UI.Settings = {
 			if (event.detail.to.id === '#main-views-setting' && Settings.isLocked()) {
 				event.preventDefault();
 
-				if (!Poppy.poppyWithScriptNameExist('setting-menu')) {
-					UI.event.addCustomEventListener('poppyDidShow', function (event) {
-						event.detail.close();
-					}, true);
-
-					UI.view.showPoppyMenu($('.view-switcher *[data-poppy="setting-menu"] .poppy-menu-target')[0], event, true);
-				}
+				if (!Poppy.poppyWithScriptNameExist('setting-menu'))
+					UI.Locker
+						.showLockerPrompt('settings')
+						.then(function () {
+							UI.view.switchTo(event.detail.to.id);
+						});
 			}
 
 			if (!event.detail.to.id._startsWith('#setting-views'))

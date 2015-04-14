@@ -7,6 +7,9 @@ var RESOURCE = {
 };
 
 function Resource (resource) {
+	if (typeof resource.pageLocation !== 'string')
+		throw new Error('resource page location is not a string.');
+
 	this.strict = resource.strict;
 	this.kind = resource.kind;
 	this.framedKind = 'framed:' + this.kind;
