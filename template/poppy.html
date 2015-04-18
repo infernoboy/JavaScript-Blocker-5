@@ -337,3 +337,38 @@
 		</div><%
 	} %>
 </noscript>
+
+<noscript id="edit-page">
+	<%
+		var section = $('.page-host-section[data-id="' + self.poppy.attr('data-menuMeta') + '"]', UI.container),
+				isDisabled = section.attr('data-disabled') === '1';
+	%>
+
+	<div class="generic-menu">
+		<div class="generic-menu-menu jsb-align-right">
+			<input type="button" value="<%=_('view.page.header.' + (isDisabled ? 'enable_jsb' : 'disable_jsb'))%>" data-action="<%=isDisabled ? 'enable' : 'disable'%>" />
+		</div>
+	</div>
+
+	<div class="horizontal-divider"></div>
+
+	<h3 class="jsb-centered jsb-color-allowed"><%=_('rule.allow')%></h3>
+
+	<div class="generic-menu">
+		<div class="generic-menu-menu jsb-align-right">
+			<input type="button" value="<%=_('view.page.header.all_kinds')%>" data-action="allow" data-which="all" />
+			<input type="button" value="<%=_('view.page.header.checked_kinds')%>" data-action="allow" data-which="some" />
+		</div>
+	</div>
+
+	<div class="horizontal-divider"></div>
+
+	<h3 class="jsb-centered jsb-color-blocked"><%=_('rule.block')%></h3>
+
+	<div class="generic-menu">
+		<div class="generic-menu-menu jsb-align-right">
+			<input type="button" value="<%=_('view.page.header.all_kinds')%>" data-action="block" data-which="all" />
+			<input type="button" value="<%=_('view.page.header.checked_kinds')%>" data-action="block" data-which="some" />
+		</div>
+	</div>
+</noscript>

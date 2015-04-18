@@ -170,6 +170,12 @@ var Special = {
 			isFrame: Page.info.isFrame
 		});
 
+		if (Page.info.frameBlocked)
+			this.enabled.inline_script_execution = {
+				enabled: true,
+				action: -14
+			};
+
 		for (var special in this.enabled) {
 			if (!this.enabled[special].enabled) {
 				if (!this.specials[special].excludeFromPage)

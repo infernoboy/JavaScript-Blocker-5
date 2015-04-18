@@ -393,8 +393,7 @@ Settings.settings = {
 			type: 'option',
 			options: [
 				['auto', 'setting.language.option.automatic'],
-				['en-us', 'US English'],
-				['tilde', 'Tilde'],
+				['en-us', 'US English']
 			],
 			default: 'auto',
 			onChange: function () {
@@ -549,6 +548,15 @@ Settings.settings = {
 			default: false,
 			onChange: function () {
 				Resource.canLoadCache.clear().saveNow();
+			}
+		}
+	}, {
+		setting: 'ignorePredefined',
+		props: {
+			type: 'boolean',
+			default: false,
+			onChange: function () {
+				Predefined();
 			}
 		}
 	}, {

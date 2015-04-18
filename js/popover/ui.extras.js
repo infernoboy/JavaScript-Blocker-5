@@ -14,13 +14,19 @@ UI.Extras = {
 			.show();
 	},
 
-	checkTrialEndedNotification: function () {
+	checkTrialEndedNotification: function (event) {
 		if (Extras.Trial.endedNotificationRequired() && !Poppy.poppyWithScriptNameExist('extras-unlock-prompt')) {
+			globalPage.Update.showRequiredPopover();
+
 			Extras.Trial.ended();
 
 			UI.Extras.showUnlockPrompt();
+
+			if (event.type === 'pageDidBadge')
+				event.unbind();
 		}
 	}
 };
 
 UI.event.addCustomEventListener('popoverOpened', UI.Extras.checkTrialEndedNotification);
+UI.event.addCustomEventListener('pageDidBadge', UI.Extras.checkTrialEndedNotification);

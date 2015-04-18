@@ -76,6 +76,7 @@
 						float: right;
 						margin-top: -3px;
 						margin-bottom: -3px;
+						padding-right: 5px;
 					}
 
 					&create-rules {
@@ -100,6 +101,7 @@
 			}
 
 			.page-host-editor,
+			.page-host-frame-blocked,
 			.page-host-first-visit,
 			.page-host-snapshot-in-use {
 				position: relative;
@@ -138,6 +140,7 @@
 				}
 			}
 
+			.page-host-frame-blocked,
 			.page-host-snapshot-in-use {
 				display: block;
 			}
@@ -145,7 +148,6 @@
 			.page-host-editor {
 				padding: 4px 5px 3px 3px;
 				z-index: 0;
-				border-bottom-color: darken(#e0e0e0, @darknessLevel);
 
 				* {
 					text-align: center;

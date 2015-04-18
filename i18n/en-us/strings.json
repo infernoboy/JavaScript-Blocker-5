@@ -14,6 +14,7 @@
 	"Lock": "Lock",
 	"Unlock": "Unlock",
 
+	"setup.please_complete": "Please scroll down and click <b>Complete Setup</b> if you're ready to continue.",
 	"setup.complete": "Complete Setup",
 	"setup.hello": "Thanks for installing JS Blocker!",
 	"setup.intro": "Your browsing experience just got a whole lot safer and faster. JS Blocker puts you in control of what webpages can do—no more advertisements, no more being tracked, and no more unnecessary clutter. You'll have to reload any pages you already have open for JS Blocker to start taking effect on them.",
@@ -67,6 +68,10 @@
 	"view.page.header.via_frame": "Via Frame",
 	"view.page.header.hidden_item": "1 hidden item",
 	"view.page.header.hidden_items": "{0} hidden items",
+	"view.page.header.disable_jsb": "Disable JS Blocker...",
+	"view.page.header.enable_jsb": "Enable JS Blocker...",
+	"view.page.header.all_kinds": "All Kinds...",
+	"view.page.header.checked_kinds": "Checked Kinds...",
 	"view.page.host.double_click_resize": "Click and drag to resize; double-click for an even split",
 	"view.page.host.editor.edit_rule": "Edit Rule",
 	"view.page.host.editor.new_rule": "New Rule",
@@ -82,12 +87,12 @@
 	"view.page.host.editor.disable": "disable",
 	"view.page.host.editor.checked_items": "checked items",
 	"view.page.host.editor.all_kinds": "all kinds",
-	"view.page.host.editor.checked_kinds": "checked kinds…",
-	"view.page.host.editor.create_rules": "Create Rules",
+	"view.page.host.editor.checked_kinds": "checked kinds",
+	"view.page.host.editor.create_rules": "Save",
 
 	"view.page.host.rules_locked": "Rules cannot be created or modified while locked.",
 	"view.page.host.disabled": "JS Blocker is disabled on this page.",
-	"view.page.host.done": "Done",
+	"view.page.host.done": "Cancel",
 	"view.page.host.edit": "Edit",
 	"view.page.host.column.allowed": "Allowed",
 	"view.page.host.column.blocked": "Blocked",
@@ -179,6 +184,8 @@
 	"view.page.item.info.show_rules": "Show Rules",
 	"view.page.item.info.show_user_script": "Show User Script",
 	"view.page.item.info.loading": "Loading…",
+
+	"frame_blocked": "This frame loaded even though you most likely didn't want it to. All resources that didn't match any of your rules were blocked and inline scripts were not executed.",
 	
 	"view_toolbar.disable": "Disable",
 	"view_toolbar.menu": "Menu",
@@ -240,7 +247,8 @@
 	"setting.newUserScriptStorageItem.key": "Key",
 	"setting.newUserScriptStorageItem.value": "Value",
 
-	"setting.alwaysUseTimedDisable.label": "Always use timed disable",
+	"setting.alwaysUseTimedDisable.label": "Respect time setting when disabling via navigation bar",
+	"setting.alwaysUseTimedDisable.help": "When unchecked, clicking <b>Disable</b> on the navigation bar will disable JS Blocker until manually re-enabled.",
 	"setting.persistDisabled.label": "Stay disabled after restarting Safari",
 	"setting.disablingReloadsAll.label": "Reload all pages after manually disabling/enabling",
 
@@ -262,8 +270,8 @@
 	"setting.showPageEditorImmediately.label": "Show page editor immediately",
 	"setting.quickCyclePageItems.label": "Quickly cycle through page editor items",
 	"setting.createRulesOnClose.label": "Create rules when closing the popover",
-	"setting.autoHideWhitelist.label": "Hide whitelisted items",
-	"setting.autoHideBlacklist.label": "Hide blacklisted items",
+	"setting.autoHideWhitelist.label": "Hide items allowed by filter lists",
+	"setting.autoHideBlacklist.label": "Hide items blocked by filter lists",
 	"setting.autoHideNoRule.label": "Hide allowed and blocked items that didn't match a rule",
 	"setting.autoHideNoRule.help": "Cleans up the page UI by only showing you items are blacklisted, whitelisted, or that you created a rule for.",
 	"setting.recommendReloadAlways.label": "When a page has items blocked because it was loaded in the background, reload it automatically",
@@ -291,8 +299,9 @@
 	"setting.lockerAlwaysLocked.console.label": "Open console",
 	"setting.lockerAlwaysLocked.disable.label": "Disable or enable JS Blocker",
 
-	"setting.ignoreWhitelist.label": "Ignore whitelist rules",
-	"setting.ignoreBlacklist.label": "Ignore blacklist rules",
+	"setting.ignoreWhitelist.label": "Ignore allowing rules in filter lists",
+	"setting.ignoreBlacklist.label": "Ignore blocking rules in filter lists",
+	"setting.ignorePredefined.label": "Ignore built-in filtering rules",
 	"setting.secureOnly.label": "Resources on secure sites must also be secure",
 	"setting.allowExtensions.label": "Allow resources from other extensions",
 	"setting.blockFirstVisit.description": "When visiting an unknown hostname or domain, you can choose to have all of its resources blocked until you deem it trustworthy. Once you do, the resource blocking settings will take control over what gets blocked.",
@@ -380,7 +389,7 @@
 	"setting.enabledSpecials.zoom.option.default": "Default",
 
 	"setting.blockFrom.option.nowhere": "Nowhere",
-	"setting.blockFrom.option.blacklist": "Blacklist only",
+	"setting.blockFrom.option.blacklist": "Filter lists only",
 	"setting.blockFrom.option.anywhere": "Anywhere",
 	"setting.blockFrom.option.hostnames": "Different hostnames",
 	"setting.blockFrom.option.domains": "Different domains",
@@ -602,7 +611,7 @@
 	"xhr.allow_once_all": "Allow All Once",
 	"xhr.block_once": "Block Once",
 	"xhr.block_once_all": "Block All Once",
-	"xhr.create_rule": "Create Rule&hellip;",
+	"xhr.create_rule": "Create Rule…",
 
 	"poppy.beautifying_script": "Beautifying script…",
 
@@ -711,5 +720,6 @@
 	"description.webtrends": "WebTrends Tracking",
 	"description.realmedia": "24/7 RealMedia Advertisements",
 	"description.owneriq": "OwnerIQ Tracking",
-	"description.mig": "MIG Advertisements"
+	"description.mig": "MIG Advertisements",
+	"description.sharethis": "ShareThis Social"
 }

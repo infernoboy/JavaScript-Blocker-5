@@ -7,8 +7,11 @@ var RESOURCE = {
 };
 
 function Resource (resource) {
-	if (typeof resource.pageLocation !== 'string')
+	if (typeof resource.pageLocation !== 'string') {
+		LogDebug('resource failure', resource);
+
 		throw new Error('resource page location is not a string.');
+	}
 
 	this.strict = resource.strict;
 	this.kind = resource.kind;

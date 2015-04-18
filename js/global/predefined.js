@@ -7,7 +7,10 @@
  ***************************************/
 
 function Predefined () {
-	Rules.list.predefined.rules.clear();
+	Rules.list.predefined.clear();
+
+	if (Settings.getItem('ignorePredefined'))
+		return;
 	
 	var kind,
 			domain,
@@ -182,11 +185,11 @@ function Predefined () {
 				'coremetrics\\.com',
 				'serving\\-sys\\.com',
 				'insightexpressai\\.com',
-				'googletagservices.com',
-				'live.spokenlayer.com',
-				'linksalpha.com',
-				'sharethis.com',
-				'addthis.com'
+				'googletagservices\\.com',
+				'live\\.spokenlayer\\.com',
+				'linksalpha\\.com',
+				'sharethis\\.com',
+				'addthis\\.com'
 			]
 		},
 		frame: {

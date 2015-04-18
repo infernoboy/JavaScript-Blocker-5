@@ -129,6 +129,7 @@ function Command (command, data, event) {
 					UI.Page.section.toggleEditMode(section, true, true);
 
 					$('.page-host-item-edit-check', item).prop('checked', true);
+					$('.page-host-editor-kind', section).find('option:first').prop('selected', true).end().trigger('change');
 
 					item.scrollIntoView(UI.view.views, 0, 0);
 				}
@@ -172,8 +173,17 @@ function Command (command, data, event) {
 					action: ACTION.BLOCKED_ATTENTION_REQUIRED
 				};
 			} else {
-				if (info.pageProtocol === 'about:')
+				if (info.pageProtocol === 'about:' || info.getPageLocationFromTab) {
 					info.pageLocation = this.event.target.url || info.pageLocation;
+					info.pageProtocol = Utilities.URL.protocol(this.event.target.url || info.pageLocation);
+				}
+
+				if (typeof info.pageLocation !== 'string') {
+					LogDeug('unable to determine proper resource information', info, this.event.target.url);
+
+					info.pageLocation = 'about:blank';
+					info.pageProtocol = 'about:';
+				}
 
 				var resource = new Resource(info);
 

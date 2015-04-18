@@ -26,10 +26,8 @@ var BLOCKED_ELEMENTS = [],
 		BROKEN = false,
 		FRAME_ELEMENT = null;
 
-if (!Utilities.Page.isTop) {
-	if (window.location.protocol === 'about:')
-		FRAME_ELEMENT = window.frameElement;
-}
+if (!Utilities.Page.isTop)
+	FRAME_ELEMENT = window.frameElement;
 
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
@@ -47,6 +45,10 @@ var BLOCKABLE = {
 	XHR_POST: ['xhr_post'],
 	XHR_PUT: ['xhr_put'],
 	XHR_GET: ['xhr_get']
+};
+
+var TopPage = {
+	info: null
 };
 
 var Page = {
@@ -161,10 +163,18 @@ var Handler = {
 	},
 
 	setPageLocation: function () {
-		if (Utilities.Page.isAbout && FRAME_ELEMENT && FRAME_ELEMENT.getAttribute('data-jsbParentHost')) {
-			Page.info.location = FRAME_ELEMENT.getAttribute('data-jsbParentLocation');
-			Page.info.host = FRAME_ELEMENT.getAttribute('data-jsbParentHost');
-			Page.info.protocol = FRAME_ELEMENT.getAttribute('data-jsbParentProtocol');
+		if (FRAME_ELEMENT && FRAME_ELEMENT.getAttribute('data-jsbParentHost')) {
+			TopPage.info = {
+				location: FRAME_ELEMENT.getAttribute('data-jsbParentLocation'),
+				host: FRAME_ELEMENT.getAttribute('data-jsbParentHost'),
+				protocol: FRAME_ELEMENT.getAttribute('data-jsbParentProtocol')
+			};
+		}
+
+		if (Utilities.Page.isAbout && FRAME_ELEMENT) {
+			Page.info.location = TopPage.info.location;
+			Page.info.host = TopPage.info.host;
+			Page.info.protocol = TopPage.info.protocol;
 		} else {
 			Page.info.location = Utilities.Page.getCurrentLocation();
 			Page.info.host = Utilities.Page.isAbout ? document.location.href.substr(document.location.protocol.length) : (document.location.host || 'blank'),
@@ -912,8 +922,28 @@ if (!globalSetting.disabled) {
 		// 	Page.send(true);
 		// }, 0);
 	} else {
-		var useHost = Utilities.Page.isAbout ? (PARENT.host || Page.info.host) : Page.info.host,
-				willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', useHost);
+		if (Page.info.isFrame) {
+			var frameState = GlobalCommand('canLoadResource', {
+				getPageLocationFromTab: true,
+				kind: 'frame',
+				source: window.location.href,
+				isFrame: false
+			});
+
+			if (!frameState.isAllowed) {
+				Page.info.frameBlocked = frameState;
+
+				for (var nodeName in BLOCKABLE)
+					Resource.staticActions[BLOCKABLE[nodeName][0]] = {
+						isAllowed: false,
+						action: -16
+					};
+
+				Page.send();
+			}
+		}
+
+		var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
 
 		setTimeout(function (willBlockFirstVisit) {
 			if (willBlockFirstVisit) {

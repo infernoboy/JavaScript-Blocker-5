@@ -86,7 +86,7 @@ Maintenance.event.addCustomEventListener('globalPageReady', function () {
 		Extras.ERROR = {
 			'-3': _('extras.unlock.error.email_missing'),
 			'-2': _('extras.unlock.error.email_not_found'),
-			'-1': _('extras.unlock.error.email_limit_reached'),
+			'-1': _('extras.unlock.error.email_limit_reached')
 		};
 	}, true);
 }, true);

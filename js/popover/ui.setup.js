@@ -32,9 +32,17 @@ UI.Setup = {
 
 	preventViewSwitch: function (event) {
 		if (event.detail.to.id._startsWith('#main-views')) {
-			if (!Settings.getItem('setupComplete'))
+			if (!Settings.getItem('setupComplete')) {
 				event.preventDefault();
-			else
+
+				var poppy = new Poppy(event.pageX, event.pageY, true);
+
+				poppy.setContent(Template.create('main', 'jsb-readable', {
+					string: _('setup.please_complete')
+				}));
+
+				poppy.show();
+			}	else
 				event.unbind();
 		}
 	}

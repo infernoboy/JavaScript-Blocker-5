@@ -423,7 +423,7 @@ var Settings = {
 	},
 
 	import: function (settings, clearExisting) {
-		var willNotImport = ['donationVerified', 'trialStart', 'updateNotify'];
+		var willNotImport = ['donationVerified', 'trialStart', 'updateNotify', 'FilterListLastUpdate'];
 
 		UI.Locker
 			.showLockerPrompt('importBackupSettings')

@@ -326,6 +326,25 @@ var UI = {
 					}
 
 
+					// ===== Poppy Menus =====
+
+					var poppyMenus = event.detail.querySelectorAll('*[data-poppy]:not(.poppy-menu-ready)');
+
+					for (var i = poppyMenus.length; i--;) {
+						poppyMenus[i].classList.add('poppy-menu-ready');
+
+						poppyMenus[i].querySelector('.poppy-menu-target').addEventListener('click', function (event) {
+							UI.view.showPoppyMenu(this, event);
+						});
+
+						poppyMenus[i].addEventListener('mousedown', function (event) {
+							Utilities.Timer.timeout('showPoppyMenu', function (event, tab) {						
+								UI.view.showPoppyMenu(tab.querySelector('.poppy-menu-target'), event, true);
+							}, 200, [event, this]);
+						});
+					}
+
+
 					// ===== Double-click Buttons =====
 
 					var doubleClickButtons = event.detail.querySelectorAll('.double-click:not(.double-click-ready)');
@@ -561,18 +580,8 @@ var UI = {
 						.show();
 				})
 
-				.on('click', '*[data-poppy] .poppy-menu-target', function (event) {
-					UI.view.showPoppyMenu(this, event);
-				})
-
-				.on('mousedown', '*[data-poppy]', function (event) {
-					Utilities.Timer.timeout('showPoppyMenu', function (event, tab) {						
-						UI.view.showPoppyMenu(tab.querySelector('.poppy-menu-target'), event, true);
-					}, 200, [event, this]);
-				})
-
 				.on('click', '#full-toggle', function () {
-					if (!UI.event.trigger('willDisable', window.globalSetting.disabled))
+					if (!UI.event.trigger('willDisable', window.globalSetting.disabled) && !UI.event.trigger('pressAndHoldSucceeded'))
 						globalPage.Command.toggleDisabled();
 				})
 
@@ -746,7 +755,7 @@ var UI = {
 					poppyName = self.parent().attr('data-poppy'),
 					offset = self.offset().left,
 					rightOffset = offset + width,
-					inRange = (event.pageX > rightOffset - 11 && event.pageX < rightOffset);
+					inRange = (event.pageX > rightOffset - 12 && event.pageX < rightOffset);
 
 			if (inRange && force)
 				return;
@@ -768,7 +777,11 @@ var UI = {
 
 				var poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
 
-				poppy.setContent(Template.create('poppy', poppyName)).stayOpenOnScroll();
+				poppy.poppy.attr('data-menuMeta', menuHolder.attr('data-poppyMenuMeta'));
+
+				poppy.setContent(Template.create('poppy', poppyName, {
+					poppy: poppy.poppy
+				})).stayOpenOnScroll();
 
 				if (force)
 					UI.event.addCustomEventListener('poppyWillClose', function (event) {
@@ -792,7 +805,7 @@ var UI = {
 					menuHolder.attr('data-poppyMenuWillShow', 1);
 
 					if (!inRange)
-						UI.event.addCustomEventListener('willDisable', function (event) {
+						UI.event.addCustomEventListener('pressAndHoldSucceeded', function (event) {
 							event.unbind();
 
 							var moveX = Math.abs(event.pageX - pageX),
@@ -800,7 +813,7 @@ var UI = {
 
 							if (moveX < 5 && moveY < 5)
 								event.preventDefault();
-						});
+						}, true);
 
 					UI.event.addCustomEventListener('poppyDidShow', function () {
 						menuHolder.removeAttr('data-poppyMenuWillShow', 1);
@@ -857,8 +870,11 @@ var UI = {
 						currentHeader
 							.clone(true, true)
 							.attr('id', floatedHeaderID)
-							.addClass('floated-header')
-							.insertBefore(currentHeader);
+							.addClass('floated-header');
+
+					$('*', currentHeaderClone).removeClass('poppy-menu-ready');
+
+					currentHeaderClone.insertBefore(currentHeader);
 
 					var relatedElementCache = currentHeader.data('relatedElement');
 
@@ -903,6 +919,19 @@ var UI = {
 				}
 			},
 
+			requestFrame: function (viewContainer, viewContainerSelector, self, timestamp) {
+				var lastScrollTop = viewContainer.data('requestScrollTop');
+
+				if (lastScrollTop === viewContainer[0].scrollTop)
+					return window.requestAnimationFrame(self.bind(null, self));
+
+				viewContainer.data('requestScrollTop', viewContainer[0].scrollTop);
+
+				UI.view.floatingHeaders.__onScroll(null, viewContainerSelector);
+
+				window.requestAnimationFrame(self.bind(null, self));
+			},
+
 			add: function (viewContainerSelector, headerSelector, related, offset) {
 				UI.event.addCustomEventListener(['popoverOpened', 'pageDidRender'], function (viewContainerSelector, headerSelector, related, offset) {
 					var headersInView = UI.view.floatingHeaders.__floating._getWithDefault(viewContainerSelector, {}),
@@ -917,8 +946,10 @@ var UI = {
 
 					if (viewContainer.data('floatingHeaders'))
 						return;
-			
-					viewContainer.data('floatingHeaders', true).scroll(Utilities.throttle(UI.view.floatingHeaders.__onScroll, 30, [viewContainerSelector]));
+
+					var boundRequestFrame = UI.view.floatingHeaders.requestFrame.bind(null, viewContainer, viewContainerSelector);
+
+					boundRequestFrame(boundRequestFrame);
 				}.bind(null, viewContainerSelector, headerSelector, related, offset));
 			}
 		}

@@ -556,6 +556,38 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'edit-page': function (poppy) {
+		poppy.content
+			.on('click', 'input', function () {
+				var sectionID = poppy.poppy.attr('data-menuMeta'),
+						section = $('.page-host-section[data-id="' + sectionID + '"]', UI.Page.view),
+						action = this.getAttribute('data-action'),
+						which = this.getAttribute('data-which'),
+						editorKind = $('.page-host-editor-kind', section),
+						editorWhichItems = $('.page-host-editor-which-items', section);
+
+				UI.Page.section.toggleEditMode(section, true);
+
+				if (action === 'block' || action === 'allow') {
+					$('option', editorKind).eq(action === 'block' ? 1 : 2).prop('selected', true);
+
+					editorKind.trigger('change');
+
+					$('option', editorWhichItems).eq(which === 'all' ? 1 : 2).prop('selected', true);
+
+					editorWhichItems.trigger('change');
+				}	else {
+					$('option', editorKind).eq(action === 'enable' ? 0 : 6).prop('selected', true);
+
+					editorKind.trigger('change');
+				}	
+
+				$('.page-host-header', section).click();
+
+				poppy.close();
+			});
+	},
+
 	'create-rule': function (poppy) {
 		var list = $('#create-rule-list', poppy.content),
 				type = $('#create-rule-type', poppy.content),

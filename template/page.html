@@ -3,30 +3,15 @@
 		var isLocked = globalPage.Rules.isLocked(),
 				snapshotInUse = globalPage.Rules.snapshotInUse(); %>
 
-	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>">
+	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>">
 		<div class="page-host-header">
 			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
-			<input type="button" class="page-host-edit" value="<%=_('view.page.host.edit')%>" />
+			<!-- <input type="button" class="page-host-edit" value="<%=_('view.page.host.edit')%>" /> -->
+			<button class="page-host-edit" data-poppy="edit-page" data-poppyMenuMeta="<%=self.id%>"><span href="javascript:void(0);" class="poppy-menu-target no-underline"><%=_('view.page.host.edit')%></span></button>
 			<input type="button" class="page-host-create-rules" value="<%=_('view.page.host.editor.create_rules')%>" />
 		</div>
 
 		<div class="jsb-clear-float"></div>
-
-		<%
-			if (self.blockedByFirstVisit) { %>
-				<div class="page-host-first-visit">
-					<span class="more-info"></span>
-					<p class="jsb-info">
-						<%=_(self.blockedByFirstVisit.action !== 8 ? 'first_visit.body' : 'first_visit.blocked.body', [_(Settings.getItem('blockFirstVisit') === 'domain' ? 'first_visit.body.domain' : 'first_visit.body.host')])%>
-					</p>
-					<p class="jsb-info jsb-align-right page-host-first-visit-buttons">
-						<% if (self.blockedByFirstVisit.action !== 8) { %>
-							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" /><q></q><%
-						} %>
-						<input type="button" class="page-host-first-visit-unblock jsb-color-allowed" value="<%=_('first_visit.unblock')%>" /><q></q>
-					</p>
-				</div><%
-			} %>
 
 		<div class="page-host-editor">
 			<%
@@ -67,7 +52,7 @@
 				</select><label></label>
 			</div>
 
-			<div class="page-host-editor-kinds jsb-info jsb-hidden">
+			<div class="page-host-editor-kinds jsb-info">
 			<%
 				var didBreak = false,
 						kinds = globalPage.Rules.__kinds,
@@ -79,7 +64,7 @@
 						
 					if (!['*', 'disable', 'user_script']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
 						b++; %>
-						<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i] + self.id%>" data-kind="<%=kinds[i]%>" />
+						<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i] + self.id%>" data-kind="<%=kinds[i]%>" <%=kinds[i] !== 'special' ? 'checked="checked"' : ''%> />
 						<label for="page-host-editor-kinds-<%=kinds[i] + self.id%>"><%=_('view.page.host.kind.' + kinds[i])%></label><q></q><%
 
 						if (b > 4 && !didBreak) {
@@ -127,6 +112,29 @@
 				</div>
 			</div>
 		</div>
+
+		<%
+			if (self.frameBlocked) { %>
+				<div class="page-host-frame-blocked">
+					<p class="jsb-info"><%=_('frame_blocked')%></p>
+				</div><%
+			} %>
+
+		<%
+			if (self.blockedByFirstVisit) { %>
+				<div class="page-host-first-visit">
+					<span class="more-info"></span>
+					<p class="jsb-info">
+						<%=_(self.blockedByFirstVisit.action !== 8 ? 'first_visit.body' : 'first_visit.blocked.body', [_(Settings.getItem('blockFirstVisit') === 'domain' ? 'first_visit.body.domain' : 'first_visit.body.host')])%>
+					</p>
+					<p class="jsb-info jsb-align-right page-host-first-visit-buttons">
+						<% if (self.blockedByFirstVisit.action !== 8) { %>
+							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" /><q></q><%
+						} %>
+						<input type="button" class="page-host-first-visit-unblock jsb-color-allowed" value="<%=_('first_visit.unblock')%>" /><q></q>
+					</p>
+				</div><%
+			} %>
 
 		<% if (snapshotInUse) { %>
 			<div class="page-host-snapshot-in-use">

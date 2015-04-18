@@ -250,10 +250,10 @@ UI.Page = {
 			if ((wasInEditMode && force === true) || (!wasInEditMode && force === false))
 				return;
 
-			var editButtons = $('.page-host-edit', section),
+			var editButtons = $('.page-host-edit .poppy-menu-target', section),
 					items = $('.page-host-columns .page-host-item', section).find('.page-host-item-container, .page-host-item-edit-container');
 
-			editButtons.val(wasInEditMode ? _('view.page.host.edit') : _('view.page.host.done'));
+			editButtons.text(wasInEditMode ? _('view.page.host.edit') : _('view.page.host.done'));
 
 			if (quick)
 				pageHostEditor.toggle().css('margin-top', 0);
@@ -263,8 +263,11 @@ UI.Page = {
 
 				if (wasInEditMode)
 					pageHostEditor.marginSlideUp(310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
-				else
+				else {
 					pageHostEditor.marginSlideDown(310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+
+					$('.page-host-editor-which-items', section).trigger('change');
+				}
 
 				var editorHeight = pageHostEditor.outerHeight();
 
@@ -561,7 +564,7 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-header', function (event) {
-					if (event.target.classList.contains('page-host-edit'))
+					if (event.target.classList.contains('page-host-edit') || event.target.classList.contains('poppy-menu-target'))
 						return;
 
 					var section = $(this).parents('.page-host-section');
@@ -573,6 +576,7 @@ UI.Page = {
 					var enableOptions;
 
 					var editor = $(this).parents('.page-host-editor'),
+							selectEnableOptionIndex = 0,
 							whichItems = $('.page-host-editor-which-items', editor),
 							options = $('option', whichItems);
 
@@ -582,12 +586,17 @@ UI.Page = {
 						enableOptions = options.filter('[value="jsb"]');
 					else if (this.value === 'block/allow')
 						enableOptions = options.filter('[value="items-checked"]');
-					else if (this.value === 'block' || this.value === 'allow')
+					else if (this.value === 'block' || this.value === 'allow') {
 						enableOptions = options.filter('[value="items-checked"], [value="items-all"], [value="items-of-kind"]');
-					else if (this.value === 'hide' || this.value === 'show')
+
+						selectEnableOptionIndex = 2;
+					}	else if (this.value === 'hide' || this.value === 'show') {
 						enableOptions = options.not('[value="jsb"]');
 
-					enableOptions.prop('disabled', false).eq(0).prop('selected', true);
+						selectEnableOptionIndex = 2;
+					}
+
+					enableOptions.prop('disabled', false).eq(selectEnableOptionIndex).prop('selected', true);
 
 					whichItems.trigger('change');
 				})
@@ -597,9 +606,9 @@ UI.Page = {
 							kinds = section.find('.page-host-editor-kinds');
 
 					if (this.value === 'items-of-kind')
-						kinds.slideDown(225 * window.globalSetting.speedMultiplier);
+						kinds.stop(true).slideDown(225 * window.globalSetting.speedMultiplier);
 					else
-						kinds.slideUp(225 * window.globalSetting.speedMultiplier);
+						kinds.stop(true).slideUp(225 * window.globalSetting.speedMultiplier);
 
 					$('.page-host-columns .page-host-item', section).toggleClass('page-host-item-disabled', this.value !== 'items-checked');
 
@@ -692,6 +701,9 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {
+					if (UI.event.trigger('pressAndHoldSucceeded'))
+						return;
+
 					if (globalPage.Rules.isLocked())
 						return (new Poppy(event.pageX, event.pageY, true))
 							.setContent(Template.create('main', 'jsb-readable', {
@@ -700,12 +712,16 @@ UI.Page = {
 							.show();
 
 					var self = $(this),
+							section = self.parents('.page-host-section'),
 							isItem = self.is('.page-host-item-source');
 
-					if (isItem)
+					if (isItem) {
 						self.parents('.page-host-item').find('.page-host-item-edit-check').prop('checked', true);
 
-					UI.Page.section.toggleEditMode(self.parents('.page-host-section'));
+						$('.page-host-editor-kind', section).find('option:first').prop('selected', true).end().trigger('change');
+					}
+
+					UI.Page.section.toggleEditMode(section);
 				})
 
 				.on('click', '.page-host-unblocked .page-host-items[data-kind="script"] .page-host-item-source', function (event) {

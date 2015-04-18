@@ -235,7 +235,7 @@ Page.prototype.addFrame = function (frame) {
 		});
 	}
 
-	if (mergeInto && ((!mergeInto.info.disabled && !frame.info.disabled) || (mergeInto.info.disabled && frame.info.disabled))) {
+	if (mergeInto && ((!mergeInto.info.disabled && !frame.info.disabled) || (mergeInto.info.disabled && frame.info.disabled)) && !frame.info.frameBlocked) {
 		frame.merged = true;
 
 		var myState,
@@ -299,6 +299,8 @@ Page.prototype.badgeState = function (state) {
 				}
 
 		ToolbarItems.badge(count, self.tab);
+
+		UI.event.trigger('pageDidBadge');
 	}, 50, [this]);
 };
 
