@@ -1,0 +1,20 @@
+<noscript id="update-150424">
+	<h3 class="jsb-centered">A Simplified Page Editor</h3>
+
+	<p class="jsb-info jsb-readable">Would you like to use the new simplfiied page editor view? It hides all of the advanced options until you really need them.</p>
+	<ul class="generic-menu-options jsb-readable">
+		<li>
+			<%
+				var setting = UI.Settings.createElementForSetting(Settings.map.useSimplePageEditor, null, true);
+			%><%=setting[0].outerHTML%>
+		</li>
+		<li>
+			<div class="horizontal-divider"></div>
+		</li>
+		<li>
+			<%
+				var setting = UI.Settings.createElementForSetting(Settings.map.showResourceURLsOnNumberClick, null, true);
+			%><%=setting[0].outerHTML%>
+		</li>
+	</ul>
+</noscript>

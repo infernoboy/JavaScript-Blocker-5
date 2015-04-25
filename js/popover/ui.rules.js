@@ -144,7 +144,7 @@ UI.Rules = {
 					builtListCount = 0,
 					ruleListContainer = Template.create('rules', 'multi-list-container');
 
-			excludeLists.push('description', 'firstVisit');
+			excludeLists._pushMissing(['description', 'firstVisit']);
 
 			UI.Rules.event.addCustomEventListener('rulesFinishedBuilding', function (event) {
 				if (++builtListCount === buildListCount) {

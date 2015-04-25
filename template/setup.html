@@ -5,6 +5,16 @@
 
 		<div class="horizontal-divider"></div>
 
+		<ul class="generic-menu-options">
+			<li>
+				<%
+					var setting = UI.Settings.createElementForSetting(Settings.map.importSettings, null, true).addClass('double-column-flex');
+				%><%=setting[0].outerHTML%>
+			</li>
+		</ul>
+
+		<div class="horizontal-divider"></div>
+
 		<h2><%=_('setup.common_settings')%></h2>
 		<ul class="generic-menu-options">
 		<%

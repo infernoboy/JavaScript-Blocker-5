@@ -2,42 +2,44 @@
 	<h3 class="jsb-centered"><%=_('setting_menu.backup')%></h3>
 
 	<ul class="generic-menu-options">
-		<li class="double-column-flex">
-			<div class="double-column-flex-left"><%=_('setting_menu.include')%>:<q></q></div>
-			<div class="double-column-flex-right">
-				<ul class="generic-menu-options no-indent">
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-settings" checked="checked" /> <label for="setting-menu-backup-export-settings"><%=_('view_toolbar.setting')%></label>
-					</li>
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-first-visit" checked="checked" /> <label for="setting-menu-backup-export-first-visit"><%=_('setting_menu.export_first_visit')%></label>
-					</li>
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-rules" checked="checked" /> <label for="setting-menu-backup-export-rules"><%=_('setting_menu.export_rules')%></label>
-					</li>
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-snapshots" checked="checked" /> <label for="setting-menu-backup-export-snapshots"><%=_('setting_menu.export_snapshots')%></label>
-					</li>
-					<li>
-						<input type="checkbox" id="setting-menu-backup-export-user-scripts" checked="checked" /> <label for="setting-menu-backup-export-user-scripts"><%=_('setting_menu.export_user_scripts')%></label>
-					</li>
-				</ul>
-			</div>
-		</li>
+		<% if (!self.importOnly) { %>
+			<li class="double-column-flex">
+				<div class="double-column-flex-left"><%=_('setting_menu.include')%>:<q></q></div>
+				<div class="double-column-flex-right">
+					<ul class="generic-menu-options no-indent">
+						<li>
+							<input type="checkbox" id="setting-menu-backup-export-settings" checked="checked" /> <label for="setting-menu-backup-export-settings"><%=_('view_toolbar.setting')%></label>
+						</li>
+						<li>
+							<input type="checkbox" id="setting-menu-backup-export-first-visit" checked="checked" /> <label for="setting-menu-backup-export-first-visit"><%=_('setting_menu.export_first_visit')%></label>
+						</li>
+						<li>
+							<input type="checkbox" id="setting-menu-backup-export-rules" checked="checked" /> <label for="setting-menu-backup-export-rules"><%=_('setting_menu.export_rules')%></label>
+						</li>
+						<li>
+							<input type="checkbox" id="setting-menu-backup-export-snapshots" checked="checked" /> <label for="setting-menu-backup-export-snapshots"><%=_('setting_menu.export_snapshots')%></label>
+						</li>
+						<li>
+							<input type="checkbox" id="setting-menu-backup-export-user-scripts" checked="checked" /> <label for="setting-menu-backup-export-user-scripts"><%=_('setting_menu.export_user_scripts')%></label>
+						</li>
+					</ul>
+				</div>
+			</li>
 
-		<li>
-			<div class="horizontal-divider horizontal-divider-transparent horizontal-divider-short"></div>
-		</li>
+			<li>
+				<div class="horizontal-divider horizontal-divider-transparent horizontal-divider-short"></div>
+			</li>
 
-		<li>
-			<label><%=_('setting_menu.export_backup')%>:</label><q></q>
-			<input id="setting-menu-backup-export" type="button" value="<%=_('setting_menu.export')%>" />
-		</li>
+			<li>
+				<label><%=_('setting_menu.export_backup')%>:</label><q></q>
+				<input id="setting-menu-backup-export" type="button" value="<%=_('setting_menu.export')%>" />
+			</li>
 
-		<li>
-			<p class="jsb-readable"><%=_('setting_menu.export.description')%></p>
-			<div class="horizontal-divider"></div>
-		</li>
+			<li>
+				<p class="jsb-readable"><%=_('setting_menu.export.description')%></p>
+				<div class="horizontal-divider"></div>
+			</li><%
+		} %>
 
 		<li>
 			<label><%=_('setting_menu.import_backup')%>:</label><q></q>

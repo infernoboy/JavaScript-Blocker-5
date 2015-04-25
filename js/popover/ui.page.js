@@ -15,7 +15,7 @@ UI.Page = {
 
 		var pageInfo = page.tree(),
 				showHiddenItems = Settings.getItem('showHiddenItems'),
-				showResourceURLs = Settings.getItem('showResourceURLs'),
+				showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
 				renderedSections = $('<div />');
 
 		renderedSections.append(Template.create('page', 'host-section', pageInfo));
@@ -112,7 +112,7 @@ UI.Page = {
 		$(window)
 			.on('blur', function () {
 				if (!Popover.visible() && Settings.getItem('createRulesOnClose')) {
-					$('.page-host-section.page-host-editing').each(function () {
+					$('.page-host-section.page-host-editing', UI.Page.view).each(function () {
 						UI.Page.section.createRules($(this));
 					});
 				}
@@ -240,12 +240,15 @@ UI.Page = {
 	},
 
 	section: {
-		toggleEditMode: function (section, force, quick) {
+		toggleEditMode: function (section, force, quick, forceAdvanced) {
 			if (globalPage.Rules.isLocked())
 				return;
 
 			var pageHostEditor = section.find('.page-host-editor').stop(true, true),
 					wasInEditMode = pageHostEditor.is(':visible');
+
+			if (forceAdvanced && Settings.getItem('useSimplePageEditor'))
+				$('.page-host-editor-advanced:not(.is-advanced)', pageHostEditor).toggleClass('jsb-hidden').addClass('is-advanced');
 
 			if ((wasInEditMode && force === true) || (!wasInEditMode && force === false))
 				return;
@@ -409,6 +412,8 @@ UI.Page = {
 					var tab = UI.Page.stateContainer.data('page').tab;
 
 					Utilities.Timer.timeout(tab, function (tab, ruleWasCreated) {
+						UI.view.toTop(UI.view.views);
+
 						MessageTarget({
 							target: tab
 						}, ruleWasCreated ? 'reload' : 'sendPage');
@@ -427,6 +432,8 @@ UI.Page = {
 
 		openedPopover: function () {
 			UI.Page.clear();
+
+			Settings.setItem('temporarilyShowResourceURLs', false);
 
 			globalPage.Page.requestPageFromActive();
 		},
@@ -454,14 +461,14 @@ UI.Page = {
 		},
 
 		popoverDidResize: function () {
-			UI.view.views.trigger('scroll');
+			UI.view.floatingHeaders.adjustAll();
 		},
 
 		sectionSwitchedOutOfEditMode: function (event) {
 			$('.page-host-item', event.detail).removeClass('page-host-item-disabled');
 
 			setTimeout(function () {
-				UI.view.views.trigger('scroll');
+				UI.view.floatingHeaders.adjustAll();
 			}, 225 * window.globalSetting.speedMultiplier);
 		},
 
@@ -572,6 +579,14 @@ UI.Page = {
 					section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 2);
 				})
 
+				.on('click', '.page-host-editor-advanced-options', function (event) {
+					var editor = $(this).parents('.page-host-editor');
+
+					$('.page-host-editor-advanced:not(.is-advanced)', editor).toggleClass('jsb-hidden').addClass('is-advanced');
+
+					this.classList.add('jsb-hidden');
+				})
+
 				.on('change', '.page-host-editor-kind', function (event) {
 					var enableOptions;
 
@@ -653,10 +668,20 @@ UI.Page = {
 
 					event.stopImmediatePropagation();
 
-					UI.Page.section.createRules($(this).parents('.page-host-section'));
+					$('.page-host-section.page-host-editing', UI.Page.view).each(function () {
+						UI.Page.section.createRules($(this));
+					});
 				})
 
 				.on('click', '.page-host-host-count', function (event) {
+					var showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs');
+
+					if (!showResourceURLs && Settings.getItem('showResourceURLsOnNumberClick')) {
+						UI.Page.clear();
+
+						return Settings.setItem('temporarilyShowResourceURLs', true);
+					}
+
 					var item = $(this).parents('.page-host-item'),
 							resources = item.data('resources'),
 							poppy = new Poppy(event.pageX, event.pageY, true),
@@ -700,8 +725,15 @@ UI.Page = {
 					poppy.show();
 				})
 
-				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source', function (event) {
+				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description', function (event) {
 					if (UI.event.trigger('pressAndHoldSucceeded'))
+						return;
+
+					var self = $(this),
+							section = self.parents('.page-host-section'),
+							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description');
+
+					if (section.is('.page-host-editing') && isItem)
 						return;
 
 					if (globalPage.Rules.isLocked())
@@ -710,10 +742,6 @@ UI.Page = {
 								string: _('view.page.host.rules_locked')
 							}))
 							.show();
-
-					var self = $(this),
-							section = self.parents('.page-host-section'),
-							isItem = self.is('.page-host-item-source');
 
 					if (isItem) {
 						self.parents('.page-host-item').find('.page-host-item-edit-check').prop('checked', true);

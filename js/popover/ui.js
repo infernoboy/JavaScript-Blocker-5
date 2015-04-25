@@ -658,16 +658,18 @@ var UI = {
 
 			if (viewContainer.scrollTop() === 0 && viewContainer.scrollLeft() === 0) {
 				if (!Settings.getItem('showPageEditorImmediately'))
-					viewContainer.trigger('scroll');
+					UI.view.floatingHeaders.adjustAll();
 
 				onComplete();
-			} else
+			} else {
 				viewContainer
 					.animate({
 						scrollTop: 0,
 						scrollLeft: 0
-					}, 225 * window.globalSetting.speedMultiplier, onComplete)
-					.trigger('scroll');
+					}, 225 * window.globalSetting.speedMultiplier, onComplete);
+
+				UI.view.floatingHeaders.adjustAll();
+			}
 		},
 
 		switchTo: function (viewID, evenIfPoppy) {
@@ -723,7 +725,7 @@ var UI = {
 
 			switchToView.addClass('active-view');
 
-			viewContainer.trigger('scroll');
+			UI.view.floatingHeaders.adjustAll();
 
 			UI.event.trigger('viewDidSwitch', {
 				view: switchToView,
@@ -917,6 +919,11 @@ var UI = {
 						width: currentHeader.width()
 					});
 				}
+			},
+
+			adjustAll: function () {
+				for (var viewContainerSelector in UI.view.floatingHeaders.__floating)
+					UI.view.floatingHeaders.__onScroll(null, viewContainerSelector);
 			},
 
 			requestFrame: function (viewContainer, viewContainerSelector, self, timestamp) {

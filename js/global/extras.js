@@ -17,9 +17,13 @@ var Extras = {
 
 	unlockUsingEmail: function (email) {
 		return new Promise(function (resolve, reject) {
-			$.get(Extras.__verificationURL, {
-				id: email,
-				install: Settings.getItem('installID')
+			$.ajax({
+				url: Extras.__verificationURL,
+				timeout: 5000,
+				data: {
+					id: email,
+					install: Settings.getItem('installID')
+				}
 			})
 				.done(function (result) {
 					var result = parseInt(result, 10);

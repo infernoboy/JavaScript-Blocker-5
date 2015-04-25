@@ -10,9 +10,9 @@
        <key>Developer Identifier</key>
        <string>6S8J5HV3H4</string>
        <key>CFBundleVersion</key>
-       <string>203</string>
+       <string>204</string>
        <key>CFBundleShortVersionString</key>
-       <string>4.1.22</string>
+       <string>4.1.23</string>
        <key>URL</key>
        <string>http://dl.dropbox.com/u/11967/JS%20Blocker.safariextz</string>
      </dict>
@@ -22,9 +22,9 @@
        <key>Developer Identifier</key>
        <string>6S8J5HV3H4</string>
        <key>CFBundleVersion</key>
-       <string>203</string>
+       <string>204</string>
        <key>CFBundleShortVersionString</key>
-       <string>4.1.22</string>
+       <string>4.1.23</string>
        <key>URL</key>
        <string>http://dl.dropbox.com/u/11967/JS%20BlockerBeta.safariextz</string>
      </dict>
@@ -34,9 +34,9 @@
        <key>Developer Identifier</key>
        <string>6S8J5HV3H4</string>
        <key>CFBundleVersion</key>
-       <string>150417</string>
+       <string>150425</string>
        <key>CFBundleShortVersionString</key>
-       <string>5.0.1</string>
+       <string>5.0.2</string>
        <key>URL</key>
        <string>http://dl.dropbox.com/u/11967/JSB5.safariextz</string>
      </dict>

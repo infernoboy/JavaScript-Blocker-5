@@ -1,7 +1,8 @@
 <noscript id="host-section">
 	<%
 		var isLocked = globalPage.Rules.isLocked(),
-				snapshotInUse = globalPage.Rules.snapshotInUse(); %>
+				snapshotInUse = globalPage.Rules.snapshotInUse(),
+				useSimplePageEditor = !self.forceAdvanced || Settings.getItem('useSimplePageEditor'); %>
 
 	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>">
 		<div class="page-host-header">
@@ -28,87 +29,94 @@
 					<option value="temporary" <%=(Settings.getItem('defaultRuleList') !== 'always' && (Settings.getItem('lastRuleWasTemporary') || Settings.getItem('defaultRuleList') === 'temporary')) ? 'selected="selected"' : ''%>><%=_('view.page.host.editor.temporarily')%></option>
 				</select><label></label>
 
-				<select class="page-host-editor-kind" title="<%=_('view.page.editor.kind.title')%>">
-					<%
-						if (!self.disabled) { %>
-							<option value="block/allow"><%=_('view.page.host.editor.block_allow')%></option>
-							<option value="block"><%=_('view.page.host.editor.block')%></option>
-							<option value="allow"><%=_('view.page.host.editor.allow')%></option>
-							<option value="hide"><%=_('view.page.host.editor.hide')%></option>
-							<option value="show"><%=_('view.page.host.editor.show')%></option><%
-						} %>
-					<option value="enable"><%=_('view.page.host.editor.enable')%></option>
-					<option value="disable"><%=_('view.page.host.editor.disable')%></option>
-				</select><label></label>
+				<span class="page-host-editor-advanced <%=useSimplePageEditor ? '' : 'jsb-hidden'%>">block or allow selected items</span>
+				<a href="javascript:void(0);" class="page-host-editor-advanced page-host-editor-advanced-options jsb-smaller jsb-label <%=useSimplePageEditor ? '' : 'jsb-hidden'%>">Advanced</a>
 
-				<select class="page-host-editor-which-items <%=self.disabled ? 'select-single' : ''%>" title="<%=_('view.page.editor.which.title')%>">
-					<option value="<%=self.disabled ? 'jsb' : 'items-checked'%>"><%=self.disabled ? _('JSB') : _('view.page.host.editor.checked_items')%></option>
-					<%
-						if (!self.disabled) { %>
-							<option value="items-all"><%=_('view.page.host.editor.all_kinds')%></option>
-							<option value="items-of-kind"><%=_('view.page.host.editor.checked_kinds')%></option>
-							<option value="jsb" disabled="disabled"><%=_('JSB')%><%
-						} %>
-				</select><label></label>
-			</div>
-
-			<div class="page-host-editor-kinds jsb-info">
-			<%
-				var didBreak = false,
-						kinds = globalPage.Rules.__kinds,
-						b = 0;
-
-				for (var i = 0; i < kinds.length; i++) {
-					if (kinds[i] === 'special' && !Extras.isActive())
-						continue;
-						
-					if (!['*', 'disable', 'user_script']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
-						b++; %>
-						<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i] + self.id%>" data-kind="<%=kinds[i]%>" <%=kinds[i] !== 'special' ? 'checked="checked"' : ''%> />
-						<label for="page-host-editor-kinds-<%=kinds[i] + self.id%>"><%=_('view.page.host.kind.' + kinds[i])%></label><q></q><%
-
-						if (b > 4 && !didBreak) {
-							didBreak = true; %>
-							<br /> <%
-						}
-					}
-				} %>
-			</div>
-
-			<div class="jsb-info page-host-editor-bottom">
-				<div class="page-host-editor-where-wrapper">
-					<input type="checkbox" id="page-host-editor-where-not-<%=self.id%>" class="page-host-editor-where-not" /> <label for="page-host-editor-where-not-<%=self.id%>"><%=_('view.page.editor.not')%></label>
-					<select class="page-host-editor-where" title="<%=_('view.page.editor.where.title')%>">
+				<span class="page-host-editor-advanced <%=useSimplePageEditor ? 'jsb-hidden' : ''%>">
+					<select class="page-host-editor-kind" title="<%=_('view.page.editor.kind.title')%>">
 						<%
-							var defaultDomain = Settings.getItem('defaultRuleDomain'),
-									selected = 'selected="selected"';
-						%>
-
-						<option value="domain-all" <%=defaultDomain === 'all' ? selected : ''%>><%=_('view.page.editor.on_all_domains')%></option>
-						<option value="domain-0" data-domain="<%=self.host%>" <%=defaultDomain === 'host' ? selected : ''%>><%=_('view.page.editor.on_domain', [self.host])%></option>
-						<%
-							var hostParts = Utilities.URL.hostParts(self.host);
-
-							for (var i = 0; i < hostParts.length; i++) { %>
-								<option value="domain-<%=i + 1%>" data-domain=".<%=hostParts[i]%>" <%=(defaultDomain === 'domain' && i === hostParts.length - 1) ? selected : ''%>><%=_('view.page.editor.within_domain', [hostParts[i]])%></option><%
+							if (!self.disabled) { %>
+								<option value="block/allow"><%=_('view.page.host.editor.block_allow')%></option>
+								<option value="block"><%=_('view.page.host.editor.block')%></option>
+								<option value="allow"><%=_('view.page.host.editor.allow')%></option>
+								<option value="hide"><%=_('view.page.host.editor.hide')%></option>
+								<option value="show"><%=_('view.page.host.editor.show')%></option><%
 							} %>
-					<%
-						for (var i = 0; i < self.locations.length; i++) {
-							if (self.locations[i]._startsWith('about:'))
-								continue;
-
-							var pageParts = Utilities.URL.pageParts(self.locations[i]);
-
-							if (pageParts.parts.length > 0) { %>
-								<optgroup label="<%=(pageParts.parts[1] || pageParts.parts[0])._entityQuotes()%>" data-location="<%=self.locations[i]._entityQuotes()%>"><%
-
-								for (var b = (pageParts.parts[1] ? 1 : 0); b < pageParts.parts.length; b++) { %>
-									<option value="page-<%=b%>" data-page="<%=pageParts.parts[b]._entityQuotes()%>"><%=_('view.page.editor.' + (b === pageParts.parts.length - 1 ? 'on_domain' : 'from_within_domain'), [pageParts.parts[b]._escapeHTML()])%></option><%
-								} %>
-								</optgroup><%
-							}
-						} %>
+						<option value="enable"><%=_('view.page.host.editor.enable')%></option>
+						<option value="disable"><%=_('view.page.host.editor.disable')%></option>
 					</select><label></label>
+
+					<select class="page-host-editor-which-items <%=self.disabled ? 'select-single' : ''%>" title="<%=_('view.page.editor.which.title')%>">
+						<option value="<%=self.disabled ? 'jsb' : 'items-checked'%>"><%=self.disabled ? _('JSB') : _('view.page.host.editor.checked_items')%></option>
+						<%
+							if (!self.disabled) { %>
+								<option value="items-all"><%=_('view.page.host.editor.all_kinds')%></option>
+								<option value="items-of-kind"><%=_('view.page.host.editor.checked_kinds')%></option>
+								<option value="jsb" disabled="disabled"><%=_('JSB')%><%
+							} %>
+					</select><label></label>
+				</span>
+			</div>
+
+			<div class="page-host-editor-advanced <%=useSimplePageEditor ? 'jsb-hidden' : ''%>">
+				<div class="page-host-editor-kinds jsb-info">
+				<%
+					var didBreak = false,
+							kinds = globalPage.Rules.__kinds,
+							b = 0;
+
+					for (var i = 0; i < kinds.length; i++) {
+						if (kinds[i] === 'special' && !Extras.isActive())
+							continue;
+							
+						if (!['*', 'disable', 'user_script']._contains(kinds[i]) && Settings.getItem('enabledKinds', kinds[i])) {
+							b++; %>
+							<input type="checkbox" id="page-host-editor-kinds-<%=kinds[i] + self.id%>" data-kind="<%=kinds[i]%>" <%=kinds[i] !== 'special' ? 'checked="checked"' : ''%> />
+							<label for="page-host-editor-kinds-<%=kinds[i] + self.id%>"><%=_('view.page.host.kind.' + kinds[i])%></label><q></q><%
+
+							if (b > 4 && !didBreak) {
+								didBreak = true; %>
+								<br /> <%
+							}
+						}
+					} %>
+				</div>
+
+				<div class="jsb-info page-host-editor-bottom">
+					<div class="page-host-editor-where-wrapper">
+						<input type="checkbox" id="page-host-editor-where-not-<%=self.id%>" class="page-host-editor-where-not" /> <label for="page-host-editor-where-not-<%=self.id%>"><%=_('view.page.editor.not')%></label>
+						<select class="page-host-editor-where" title="<%=_('view.page.editor.where.title')%>">
+							<%
+								var defaultDomain = Settings.getItem('defaultRuleDomain'),
+										selected = 'selected="selected"';
+							%>
+
+							<option value="domain-all" <%=defaultDomain === 'all' ? selected : ''%>><%=_('view.page.editor.on_all_domains')%></option>
+							<option value="domain-0" data-domain="<%=self.host%>" <%=defaultDomain === 'host' ? selected : ''%>><%=_('view.page.editor.on_domain', [self.host])%></option>
+							<%
+								var hostParts = Utilities.URL.hostParts(self.host);
+
+								for (var i = 0; i < hostParts.length; i++) { %>
+									<option value="domain-<%=i + 1%>" data-domain=".<%=hostParts[i]%>" <%=(defaultDomain === 'domain' && i === hostParts.length - 1) ? selected : ''%>><%=_('view.page.editor.within_domain', [hostParts[i]])%></option><%
+								} %>
+						<%
+							for (var i = 0; i < self.locations.length; i++) {
+								if (self.locations[i]._startsWith('about:'))
+									continue;
+
+								var pageParts = Utilities.URL.pageParts(self.locations[i]);
+
+								if (pageParts.parts.length > 0) { %>
+									<optgroup label="<%=(pageParts.parts[1] || pageParts.parts[0])._entityQuotes()%>" data-location="<%=self.locations[i]._entityQuotes()%>"><%
+
+									for (var b = (pageParts.parts[1] ? 1 : 0); b < pageParts.parts.length; b++) { %>
+										<option value="page-<%=b%>" data-page="<%=pageParts.parts[b]._entityQuotes()%>"><%=_('view.page.editor.' + (b === pageParts.parts.length - 1 ? 'on_domain' : 'from_within_domain'), [pageParts.parts[b]._escapeHTML()])%></option><%
+									} %>
+									</optgroup><%
+								}
+							} %>
+						</select><label></label>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -214,7 +222,7 @@
 						continue;
 
 					if (globalPage.Rules.kindShouldBadge(kind)) {
-						if (self.stateType === 'unblocked' || Settings.getItem('showResourceURLs')) {
+						if (self.stateType === 'unblocked' || (Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'))) {
 							if (self.state[kind].source) {
 								items = [];
 
@@ -232,7 +240,7 @@
 			%>
 			<span class="page-host-state-count"><%=itemCount%></span>
 			<span class="page-host-state-count-type">
-				<% if (self.stateType === 'unblocked' || Settings.getItem('showResourceURLs')) { %>
+				<% if (self.stateType === 'unblocked' || (Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'))) { %>
 					<%=_('view.page.host.count_type.item'._pluralize(itemCount))%>
 				<% } else { %>
 					<%=_('view.page.host.count_type.host'._pluralize(itemCount))%>
@@ -247,7 +255,7 @@
 		<%
 			var kindArray = Object.keys(self.state)._sortUsingArray(globalPage.Rules.__kinds),
 					showItemDescription = Settings.getItem('showItemDescription'),
-					showResourceURLs = Settings.getItem('showResourceURLs'),
+					showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
 					quickCyclePageItems = Settings.getItem('quickCyclePageItems'),
 					actionGroup = {};
 
@@ -348,7 +356,7 @@
 											<div class="page-host-item-edit-select-wrapper">
 											<%
 												if (useSelect) { %>
-													<select <%=disableEdit%> class="page-host-item-edit-select <%=quickCyclePageItems ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
+													<select <%=disableEdit%> class="page-host-item-edit-select blend-in <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
 
 													var sourceDomain,
 															displaySource;
@@ -369,7 +377,7 @@
 													</select><label></label><%
 												} else { %>
 													<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="false" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
-													<select <%=disableEdit%> class="page-host-item-edit-select <%=Settings.getItem('quickCyclePageItems') ? 'select-cycle' : ''%>">
+													<select <%=disableEdit%> class="page-host-item-edit-select <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%>">
 													<%
 														var sourceParts = Utilities.URL.pageParts(source),
 																index = sourceParts.parts.length - 1;

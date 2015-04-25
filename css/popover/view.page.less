@@ -175,7 +175,17 @@
 					}
 				}
 
-				.page-host-editor-bottom {
+				&-advanced-options {
+					position: absolute;
+					right: 5px;
+					top: 14px;
+
+					.jsb-large-font& {
+						top: 15px;
+					}
+				}
+
+				&-bottom {
 					display: -webkit-flex;
 					margin-top: -1px;
 
@@ -323,8 +333,11 @@
 					}
 				}
 
-				.page-host-items-container .page-host-items:not([data-kind="script"]) .page-host-item .page-host-item-source {
-					cursor: text;
+				.page-host-items-container .page-host-items:not([data-kind="script"]) .page-host-item {
+					.page-host-item-source,
+					.page-host-item-description .jsb-info {
+						cursor: text;
+					}
 				}
 			}
 
@@ -381,6 +394,7 @@
 						}
 
 						&[data-action="-11"] {
+							.page-host-item-description .jsb-info,
 							.page-host-item-container .page-host-item-source {
 								font-style: oblique;
 								cursor: text;
@@ -459,27 +473,36 @@
 						}
 
 						&[data-protocol="https:"] {
-							.page-host-item-edit-select,
-							.page-host-item-source-container > * {
-								color: darken(gold, 25%);
+							.page-host-item- {
+								&edit-select,
+								&description > *,
+								&source-container > * {
+									color: darken(gold, 25%);
 
-								& when (@darkMode) {
-									color: darken(gold, 14%);
+									& when (@darkMode) {
+										color: darken(gold, 14%);
+									}
 								}
 							}
 						}
 
 						&[data-protocol="safari-extension:"] {
-							.page-host-item-edit-select,
-							.page-host-item-source-container > * {
-								color: #0851FE;
+							.page-host-item- {
+								&edit-select,
+								&description > *,
+								&source-container > * {
+									color: #0851FE;
+								}
 							}
 						}
 
 						&[data-protocol="ftp:"] {
-							.page-host-item-edit-select,
-							.page-host-item-source-container > * {
-								color: #950085;
+							.page-host-item- {
+								&edit-select,
+								&description > *,
+								&source-container > * {
+									color: #950085;
+								}
 							}
 						}
 
@@ -606,6 +629,7 @@
 							.jsb-info {
 								margin-top: -2px;
 								margin-left: 21px;
+								cursor: pointer;
 							}
 						}
 
@@ -633,6 +657,7 @@
 
 						.page-host-item-description {
 							.jsb-info {
+								cursor: text;
 								color: rgba(0, 0, 0, 0.5);
 								font-size: 0.9em;
 

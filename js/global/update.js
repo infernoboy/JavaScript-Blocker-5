@@ -56,7 +56,8 @@ var Update = {
 				});
 		}, true, true);
 
-		Update.showRequiredPopover();
+		if (Popover.visible())
+			Update.showRequiredPopover();
 	},
 
 	performUpdate: function () {
@@ -77,9 +78,16 @@ var Update = {
 		}
 
 		var updateToVersion = availableUpdates[0],
+				hasBlockingUpdate = false,
 				update = Update.versions[updateToVersion];
 
-		if (update && update.blocking) {
+		for (var i = availableUpdates.length; i--;)
+			if (hasBlockingUpdate = (availableUpdates[i] && availableUpdates[i].blocking))
+				break;
+
+		if (hasBlockingUpdate) {
+			Update.showRequiredPopover();
+
 			Command.toggleDisabled(true, true);
 
 			Command.event.addMissingCustomEventListener('willDisable', Update.__keepDisabled);
@@ -94,7 +102,7 @@ var Update = {
 
 					poppy.updateVersion = updateVersion;
 
-					poppy.modal().setContent(Template.create('poppy', 'update-' + updateVersion));
+					poppy.modal().setContent(Template.create('poppy.update', 'update-' + updateVersion));
 
 					poppy.show();
 				}.bind(null, updateToVersion), true, true);
@@ -185,6 +193,22 @@ Update.versions[150215] = {
 		SettingStore.removeItem('Storage-EasyRules');
 
 		return true;
+	}
+};
+
+Update.versions[150424] = {
+	blocking: false,
+
+	poppy: function (poppy) {
+		poppy.showCloseButton();
+		
+		UI.event.addCustomEventListener('poppyDidClose', function (event) {
+			if (event.detail === poppy) {
+				event.unbind();
+
+				Update.updatedToVersion(poppy.updateVersion);
+			}
+		});
 	}
 };
 

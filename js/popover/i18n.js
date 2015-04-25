@@ -21,6 +21,8 @@ var Strings = {
 			dataType: 'json'
 		})
 			.done(function (strings) {
+				Strings.__currentLanguage = language;
+
 				Strings.strings[language] = strings;
 
 				$('#language-style').attr('href', ExtensionURL('i18n/' + language + '/style.less'));
@@ -42,8 +44,6 @@ var Strings = {
 
 		if (this.__currentLanguage !== useLanguage)
 			this.loadLanguage(useLanguage);
-
-		this.__currentLanguage = useLanguage;
 
 		return this.__currentLanguage;
 	},

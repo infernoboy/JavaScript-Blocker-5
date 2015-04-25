@@ -262,9 +262,9 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#setting-menu-backup', function () {
-				var alternativePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'setting-menu-backup');
+				var backupPoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'setting-menu-backup');
 
-				alternativePoppy.setContent(Template.create('poppy.settings', 'setting-menu-backup')).show();
+				backupPoppy.setContent(Template.create('poppy.settings', 'setting-menu-backup')).show();
 			})
 
 			.on('click', '#setting-menu-restore-defaults', function (event) {
@@ -566,7 +566,7 @@ Object._extend(Poppy.scripts, {
 						editorKind = $('.page-host-editor-kind', section),
 						editorWhichItems = $('.page-host-editor-which-items', section);
 
-				UI.Page.section.toggleEditMode(section, true);
+				UI.Page.section.toggleEditMode(section, true, false, true);
 
 				if (action === 'block' || action === 'allow') {
 					$('option', editorKind).eq(action === 'block' ? 1 : 2).prop('selected', true);

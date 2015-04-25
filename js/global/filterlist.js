@@ -73,7 +73,10 @@ FilterList.prototype.merge = function () {
 FilterList.prototype.download = function () {
 	var self = this;
 
-	return $.get(this.url).fail(function (error) {
+	return $.ajax({
+		url: this.url,
+		timeout: 5000
+	}).fail(function (error) {
 		FilterList.__updating--;
 
 		LogError('failed to download filter list ' + self.name + '/' + self.url, error.statusText);

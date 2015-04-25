@@ -167,7 +167,7 @@ Settings.settings = {
 				type: 'boolean',
 				default: false,
 				onChange: function () {
-					var showResourceURLs = Settings.getItem('showResourceURLs');
+					var showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs');
 
 					Popover.window.document.documentElement.classList.toggle('popover-expanded', showResourceURLs);
 
@@ -219,6 +219,30 @@ Settings.settings = {
 			type: 'boolean',
 			readOnly: true,
 			default: true
+		}
+	}, {
+		setting: 'importSettings',
+		props: {
+			type: 'button',
+			onClick: function (button) {
+				var offset = $(button).offset(),
+						backupPoppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'setting-menu-backup');
+
+				backupPoppy
+					.setContent(Template.create('poppy.settings', 'setting-menu-backup', {
+						importOnly: true
+					}))
+					.show();
+			}
+		}
+	}, {
+		setting: 'temporarilyShowResourceURLs',
+		props: {
+			type: 'boolean',
+			default: false,
+			onChange: function () {
+				Settings.map.showResourceURLs.props.onChange();
+			}
 		}
 	}],
 
@@ -301,6 +325,18 @@ Settings.settings = {
 		props: {
 			type: 'boolean',
 			default: false
+		}
+	}, {
+		setting: 'useSimplePageEditor',
+		props: {
+			type: 'boolean',
+			default: true
+		}
+	}, {
+		setting: 'showResourceURLsOnNumberClick',
+		props: {
+			type: 'boolean',
+			default: true
 		}
 	}, {
 		when: {
@@ -626,15 +662,28 @@ Settings.settings = {
 				}
 			},
 			onChange: function () {
-				var locked = !!Rules.isLockerLocked();
-
-				Locker.lock('rules', false);
-
 				Rules.list.firstVisit.clear();
-
-				Locker.lock('rules', locked);
 			}
 		}
+	}, {
+		when: {
+			hide: true,
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.NOT.IS,
+					key: 'blockFirstVisit',
+					needle: 'nowhere'
+				}]
+			}
+		},
+		settings: [{
+			setting: 'showBlockFirstVisitNotification',
+			props: {
+				type: 'boolean',
+				default: true
+			}
+		}]
 	}, {
 		divider: true //===================================================================================
 	}, {

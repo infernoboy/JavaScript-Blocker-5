@@ -179,7 +179,7 @@ function Command (command, data, event) {
 				}
 
 				if (typeof info.pageLocation !== 'string') {
-					LogDeug('unable to determine proper resource information', info, this.event.target.url);
+					LogDebug('unable to determine proper resource information', info, this.event.target.url);
 
 					info.pageLocation = 'about:blank';
 					info.pageProtocol = 'about:';
@@ -204,6 +204,7 @@ function Command (command, data, event) {
 				hideInjected: Settings.getItem('hideInjected'),
 				// blockReferrer: Settings.getItem('blockReferrer'),
 				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
+				showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
 
 				contentURLs: window.CONTENT_URLS
 			};

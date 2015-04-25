@@ -49,8 +49,9 @@ UI.Settings = {
 				this.setAttribute('data-blockViewSwitch', 1);
 
 				UI.Settings.enableUserScriptSave();
-			})
+			});
 
+		UI.container
 			.on('click', '*[data-settingButton]', function (event) {
 				var settingName = this.getAttribute('data-settingButton'),
 						setting = Settings.map[settingName];

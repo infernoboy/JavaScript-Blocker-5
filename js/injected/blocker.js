@@ -930,7 +930,7 @@ if (!globalSetting.disabled) {
 				isFrame: false
 			});
 
-			if (!frameState.isAllowed) {
+			if (!frameState.isAllowed && frameState.action >= 0) {
 				Page.info.frameBlocked = frameState;
 
 				for (var nodeName in BLOCKABLE)
@@ -951,7 +951,7 @@ if (!globalSetting.disabled) {
 
 				Page.send();
 
-				if (willBlockFirstVisit.action !== 8) {
+				if (willBlockFirstVisit.action !== 8 && window.globalSetting.showBlockFirstVisitNotification) {
 					Handler.event.addCustomEventListener('readyForPageNotifications', function () {
 						if (Page.info.isFrame)
 							GlobalPage.message('bounce', {
