@@ -777,6 +777,9 @@ var UI = {
 							event.preventDefault();
 					}, true);
 
+				if (Poppy.poppyWithScriptNameExist(poppyName) && !force)
+					return Poppy.closeAll();
+
 				var poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
 
 				poppy.poppy.attr('data-menuMeta', menuHolder.attr('data-poppyMenuMeta'));

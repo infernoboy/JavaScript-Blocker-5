@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<title>JS Blocker Manual</title>
+	
+	<meta charset="utf-8" />
+	
+	<link rel="stylesheet" href="css/site.css" type="text/css" />
+	<link rel="stylesheet" href="../css/highlight.css" />
+	
+	<script src="../js/global/jquery.js"></script>
+	<script src="js/site.js"></script>
+	<script src="../js/popover/highlight.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+
+<body>
+	<header>
+		<h1>JavaScript Blocker</h1>
+		<p>A manual and how-to guide.</p>
+	</header>
+
+	<div class="jump">
+		<ul id="jump-to"></ul>
+		<br style="clear:both;" />
+	</div>
+	
+	<article>
+		<header id="intro"><h3>Introduction</h3></header>
+		
+		<section>
+			<p class="no-padding">
+				JavaScript Blocker keeps you safe on the web by preventing
+				tracking agencies, social networks, and generally bad places from loading on webpages. There are also some other features
+				that can make your browsing experience more enjoyable. In this manual you will learn about every aspect of
+				JavaScript Blocker.
+			</p>
+
+			<p>A predefined set of rules—the whitelist and blacklist—is automatically installed to help with allowing or
+				blocking "safe" or "bad" items. If you want to ignore either or both of these lists, you can do so via the
+				extension's settings page. Theese lists utilize the power of
+				<a href="https://easylist.adblockplus.org/en/" target="_blank">EasyList</a> and 
+				<a href="https://easylist.adblockplus.org/en/" target="_blank">EasyPrivacy</a>.</p>
+		</section>
+	</article>
+	
+	<article>
+		<header id="interface"><h3>User Interface</h3></header>
+
+		<section>
+			<header><h4>Main Window</h4></header>
+			
+			<article>
+				<p>If this is the first install of the extension (i.e. you aren't updating from a previous version) you will see the initial
+					blank window. You'll have to reload your open webpages in order for the window to become populated.</p>
+				<aside>
+					<img class="thumb" src="images/blank-window.png" height="177" width="232" />
+					<img class="thumb" src="images/first-populate.png" height="177" width="232" />
+				</aside>
+
+				<div class="divider"></div>
+
+				<div class="crop" style="width: 464px; height: 22px;">
+					<img class="inline" src="images/blank-window.png" height="354" width="464" style="margin: 0;" />
+				</div>
+				<ul>
+					<li>
+						<p><b>Unlock/Contribute</b> lets you remove the restriction on the extra features of the extension. Once clicked, a popup will
+							appear where you can input your email address for verification or unlock without contributing.</p>
+					</li>
+					<li>
+						<p><b>Disable</b> turns off all features of the extension until Safari is relaunched or you re-enable the extension.</p>
+					</li>
+					<li>
+						<p><b>Help</b> takes you here</p>
+					</li>
+					<li>
+						<p><b>Settings</b> will open the extension's settings page in a new tab.</p>
+					</li>
+					<li>
+						<p><b>Rules</b> opens a popup that lets you quickly manage the active temporary rules, show all your rules, or create
+							a quick backup.</p>
+					</li>
+					<li>
+						<p><b>Show Hidden</b> allows you to see items that you've hidden.</p>
+					</li>
+					<li>
+						<p><b>JavaScript Blocker</b> lets you access a console where errors will appear. It must be double clicked to open.</p>
+					</li>
+				</ul>
+
+				<div class="divider"></div>
+
+				<div class="crop" style="width: 464px; height: 321px;">
+					<img class="inline" src="images/first-populate.png" height="354" width="464" style="margin: -31px 0 0;" />
+				</div>
+				<ul>
+					<li><p>Here you will see all of the items that have been allowed or blocked. Items may vary in style to let you know what's going on.</p>
+						<section>
+							<ul>
+								<li class="header"><h6>Text</h6></li>
+								<li>
+									<ul>
+										<li>Black. A resource loaded using the non-secure HTTP protocol.</li>
+										<li><span class="brown-gold">Brown or gold.</span> A resource loaded using the secure HTTPS protocol.</li>
+										<li><span class="blue">Blue.</span> A resource from a Safari extension.</li>
+										<li><span class="purple">Purple.</span> A resource using the file transfer protocol.</li>
+										<li><i>Italic (<span class="brown-gold">and</span> <span class="blue">any</span> <span class="purple">color</span>).</i> The item cannot be blocked,
+											typically for frames when a navigation event occurred.</li>
+									</ul>
+								</li>
+								<li class="header"><h6>Background Colors</h6></li>
+								<li>
+									<ul>
+										<li>Transparent. The item was not affected by an existing rule.</li>
+										<li>Green. The item was allowed by a whitelist rule.</li>
+										<li>Red. The item was blocked by a blacklist rule.</li>
+										<li>Blue. The item was allowed or blocked by a user added rule.</li>
+									</ul>
+								</li>
+							</ul>
+						</section>
+					</li>
+				</ul>
+				<p class="no-padding">Each section can be collapsed by hovering over next to header (SCRIPTS, FRAMES, etc.) and clicking <b>Hide</b>.</p>
+				<p>You can also collapse the the Allowed/Blocked sections by clicking on its header.</p>
+				<p>The number next to the Allowed/Blocked headers is the total number of resources affected. It will also count any
+					hidden items and therefore may not match the number of items displayed until clicking <b>Show Hidden</b>. It can be clicked to show buttons
+					two buttons: <b>Some</b> and <b>All</b>. Clicking on
+					<b>Some</b> will reveal check boxes and select boxes so that you can select multiple items to block, allow, or hide all
+					at once. Selecting <b>All</b> will show you check boxes with the type of item to block, allow, or hide (scripts, frames, etc.).</p>
+			</article>
+
+			<article>
+				<section>
+					<header><h5>Simple View</h5></header>
+
+					<p>The question mark next to each item will reveal up to two options.</p>
+					<ul>
+						<li><p>If the item is under <b>OTHER</b>, it will tell you exactly what the "other" is doing if it is an <b>Other Feature</b></p></li>
+						<li><p>If the item is under <b>OTHER</b> and begins with "Before Load" or "After Load", it will show the contents of the custom script.</p></li>
+						<li><p><b>Safety Info</b> will be a button if the item was affected by a rule. Otherwise, it will open automatically
+							with three choices to give you a better understanding of how safe the host is for that item.</p></li>
+						<li><p><b>Show Matched Rules</b> will appear if the item was affected by any type of rule. It will open a popup
+							containing the rules that matched the item.</p></li>
+					</ul>
+				</section>
+
+				<section>
+					<header><h5>Expert View</h5></header>
+
+					<p>The question mark next to each item may reveal additional options alongside the ones above.</p>
+					<ul>
+						<li><p><b>Metadata</b> allows you to view more information about the item, such as the type of embed or object, or POST parameters for an XHR request.</p></li>
+						<li><p><b>View Script|Frame|Image Source?</b> lets you view the source code of frames and scripts, and view images within the
+							popover.</p></li>
+						<li><p><b>View Request Response</b> lets you load and view an XHR GET request.</p></li>
+					</ul>
+				</section>
+			</article>
+		</section>
+	</article>
+
+	<article>
+		<header id="rules"><h3>Features</h3></header>
+
+		<section>
+			<p class="no-padding">The extension controls which resources are allowed or blocked based on the domain of the webpage
+				and the source of the item in question. There are several blockers included to control almost anything on a webpage.
+				Only the script, frame, and XHR blockers are enabled by default. Each one has its own default action which can be configured
+				from the settings page under <b>Rules</b>. 
+			</p>
+
+			<article>
+				<section>
+					<header><h4>Methods of Action</h4></header>
+			
+					<p>Any rule created can be permanent or temporary. A temporary rule is one that will be automatically removed when Safari is restarted.</p>
+					<p>Rules can be created to always block scripts if they originate from a different hostname, from a different sub-domain, anywhere, or the blacklist only.</p>
+					<p>Let's say I choose to block rules if they come from a different hostname. Now, I navigate to example.org and it attempts to load a resource from example.com—a different hostname—a rule is created to block any resource originating from example.com on example.org. But if example.org tries loading a resource from sub.example.org, it will be allowed since it is a sub-domain of example.org. This is possible by selecting "Different hostnames" from the preferences for "Block * from:".</p>
+					<p>If you wanted to allow resources only from the same originating hostname, choose "Different hosts & subdomains" instead. Then, even a resource from sub.example.org will be blocked.</p>
+					<p>If you wanted to block everything, select "Anywhere".</p>
+					<p>If you wanted to block only known bad scripts, select "Blacklist only".</p>
+				</section>
+			</article>
+
+			<article>
+				<section>
+					<header><h4>Script Blocker</h4></header>
+
+					<p>One of the most important aspects of the extension is its ability to block scripts. By default, the extension
+						will block any script contained within the blacklist. This means that
+						you are automatically protected from tracking agencies, advertisers, social networks, etc.</p>
+					<p>Scripts are considered to be any resource loaded using a <b><code>&lt;script&gt;</code></b> tag. Scripts that
+						are not loaded from somewhere and are not using a data URI cannot be blocked. Unfortunately this is a limitation of Safari
+						extensions. This is mostly not an issue as harmful/unwanted scripts will most likely be loaded from a file.</p>
+				</section>
+
+				<p>The following blockers are part of the extra features of the extension.</p>
+
+				<section>
+					<header><h4>Frame Blocker</h4></header>
+
+					<p>The extension can also prevent <b><code>&lt;frameset&gt;</code></b>s and <b><code>&lt;iframe&gt;</code></b>s
+						from being loaded. These are often used to place ads or social networks on webpages because the frame itself will
+						be from the host of the ad or social network. For example, if I go to <b>www.example.com</b> and they have a frame
+						that loads Facebook, without the frame blocker, I would still see all of Facebook stuff and they can still track
+						where you've been. A placeholder can be used to load a specific frame by clicking on it.</p>
+				</section>
+
+				<section>
+					<header><h4>XHR Blocker</h4></header>
+
+					<p>XHR stands for XML HTTP Request and is a technogloy that webpages use to load or transfer information from/to a server
+						in the background. Blocking these requests from being made can further improve your security by not allowing webpages
+						to post information without you knowing about it. By default, only items on the blacklist will be blocked. This blocker
+						comes with an additional option: ask when neccessary. When enabled, you will be prompted to allow/deny XHR requests
+						as they happen.</p>
+				</section>
+
+				<section>
+					<header><h4>Embed and Object Blocker</h4></header>
+
+					<p><b><code>&lt;embed&gt;</code></b>s and <b><code>&lt;object&gt;</code></b>s can be things like Flash, Java, etc.
+						By default, these elements are blocked regardless of where they originate from. A placeholder can be used to load
+						a specific embed or object by clicking on it.</p>
+				</section>
+
+				<section>
+					<header><h4>Video Blocker</h4></header>
+
+					<p>This will block only HTML5 <b><code>&lt;video&gt;</code></b> elements. To block Flash videos, use the <b>Embed and
+						Object Blocker</b>. All videos are blocked by default. A placeholder can be used to load a specific video by clicking on it.</p>
+				</section>
+
+				<section>
+					<header><h4>Image Hider</h4></header>
+
+					<p><b>Images will only be prevented from appearing on the webpage.</b> Unfortunately they will still be downloaded, though
+						you will never see them. This is a limitation of WebKit, the engine behind Safari. All images are allowed by default regardless of where
+						they are from. A placeholder can be used to view specific images by clicking on it.</p>
+				</section>
+
+				<section>
+					<header><h4>Other Features</h4></header>
+
+					<p>The extension can also help block some JavaScript annoyances and help with reading webpages. They can be enabled
+						one-by-one under <b>Other Features</b> on the settings page. With the exception of the first three items, they act
+						just like a blocker so you can create rules for them on a per-domain basis. If the feature is active, it will appear
+						as a blocked item under <b>OTHER</b> in the main window. The text below appearing in <b>bold</b> will be the name
+						of the item as it appears in the window.</p>
+
+					<ul>
+						
+						<li><p>When navigating to a short URL, you can choose to see what the URL will expand into and confirm if you want
+							to continue or not.</p></li>
+						<li><p>An experimental feature to block all referrer information for GET requests in the main window when just preventing
+							links from sending it isn't enough.</p></li>
+						
+						<li><p><b>Links sending referrers</b></p><p>Prevent links on webpages from sending referrer information so the destination will not know where you are
+							coming from.</p>
+							<section>
+								<p>Adds the attribute <b><code>rel="noreferrer"</code></b> to anchor elements.</p>
+							</section>
+						</li>
+						<li><p><b>Modal alert dialogs</b></p><p>Alert dialogs can be displayed within the webpage instead of a standard modal
+							dialog so they don't get in your way. Multiple alerts will stack and can be closed by swiping to the right or clicking the
+							close button.</p></li>
+						<li><p><b>Context menu overrides</b></p><p>Ensure that right-clicking on a webpage will always work as intended and that other extensions will not be able
+							to fill up the context menu.</p></li>
+						<li><p><b>Window resize functions</b></p><p>Prevent webpages from changing the size of your browser window or opening a new window with a custom size.</p>
+							<section>
+								<p>These functions are overwritten: <code>resizeBy, resizeTo, moveTo, open</code>.
+							</section>
+						</li>
+						<li><p><b>Autocomplete disablers</b></p><p>Make sure forms are always able to autocomplete even if they set <b><code>autocomplete="off"</code></b>.</p></li>
+						<li><p><b>Inline script execution</b></p><p>Prevent scripts that are embedded into the webpage from executing.</p>
+							<section>
+								<p>Injects the following meta tag into the webpage:<br/><br/>
+									<code>&lt;meta http-equiv="content-security-policy" content="default-src *; script-src *; style-src * \'unsafe-inline\'; object-src *" /&gt;</code><br/><br/></p>
+							</section>
+						</li>
+						<li><p><b>Default webpage font</b></p><p>Force webpages to use a custom font so you'll always be able to read the content.</p></li>
+						<li><p><b>Default webpage zoom level</b></p><p>Automatically zoom in on webpages if you have trouble seeing them.</p>
+							<section>
+								<p>Adds a <code>zoom</code> CSS property to the <code>&lt;body&gt;</code> element.</p>
+							</section>
+						</li>
+					</ul>
+				</section>
+			</article>
+		</section>
+	</article>
+
+	<article>
+		<header id="snapshots"><h3>Snapshots</h3></header>
+
+		<section>
+			<p class="no-padding">Snapshots is one of the extension's extra features that automatically creates backups
+				of your rules any time they are modified. You can use it to recover from any accidental changes or to create
+				different rule sets for different situations, such as when you're at home or in public.</p>
+			<p>You can access the snapshots UI from the rule list by clicking the time machine icon in the actions bar.</p>
+			<aside>
+				<div class="crop inline" style="width: 20px; height: 18px;">
+					<img class="inline" src="images/rule-list-normal.png" height="354" width="464" style="margin: -95px 0 0 -212px;" />
+				</div>
+			</aside>
+			<p>Once opened, you will see a summary of how many snapshots there are and how much space they are using. You can limit
+				the amount of <b>UNKEPT</b> snapshots from the settings page.</p>
+			<aside>
+				<img class="thumb" src="images/snapshots.png" width="232" height="177" />
+			</aside>
+			<p>When you first start off, there will only be snapshots under <b>UNKEPT</b> since they are not saved permanently by
+				default. Clicking <b>Create Snapshot</b> will create a new, unnamed <b>KEPT</b> snapshot with the current date and time.</p>
+
+			<article>
+				<section>
+					<header><h4>Snapshot Previews</h4></header>
+
+					<p>You can preview a snapshot's rules (i.e. temporarily use them in place of the current rule set) by clicking <b>Preview</b>.
+						This will take you back to the rule list where you will see see all of the rules in the snapshot. The active preview will be
+						green in the snapshots UI.</p>
+					<p>You can browse around as you normally would to see the rules in action. You will not be able to create or remove
+						any rules while the preview is in use—snapshots are read-only.</p>
+					<p>From the rule list, you can recover rules to place them in the current rule set by clicking the <b>Recover</b>
+						button next to a rule, where <b>Delete</b> would normally be. You can also recover entire domain
+						sets by switching to edit mode (click the little pencil icon in the actions bar). A <b>Recover</b> button will
+						appear next to the domain name. Clicking it will reveal two options: Merge and Replace. Use <b>Merge</b> when you want
+						append the current rules for that domain and <b>Replace</b> to use only the snapshot's version of the domain rules
+						(the current rules for that domain will be removed).</p>
+					<p>Click the time machine icon again to reveal a popup with <b>Merge Rules</b> and <b>Replace Rules</b>. Use <b>Merge</b>
+						when you want to append your current rule set with rules unique to the snapshot and <b>Replace</b> to turn the snapshot
+						into the current rule set. You can also click <b>Close Snapshot</b> to revert back to the current rule set.</p>
+				</section>
+
+				<section>
+					<header><h4>Snapshot Options</h4></header>
+
+					<p>Click on a snapshot's name to reveal a popup.</p>
+					<ul>
+						<li><p><b>Name</b> lets you give the snapshot a custom name. You cannot use the same name twice. Names are case sensitive
+							so "Standard" is not the same as "standard".</p></li>
+						<li class="header"><b>Compare</b> opens a popup with three ways you can compare the snapshot to the current rule set.
+							A comparison can be acted upon just like a preview, but unlike previews, they will last only until the rule list is closed. 
+							Until then, the rules resulting from the comparison will be used in place of the current rules.</li>
+						<li>
+							<ul>
+								<li><p><b>Only in Snapshot</b> will show rules in the snapshot that are not in the current rules.</p></li> 
+								<li><p><b>Not in Snapshot</b> will show rules in the current rules which are not in the snapshot.</p></li>
+								<li><p><b>In Both</b> will show rules that are in both the current rules and the snapshot.</p></li>
+							</ul>
+						</li>
+						<li><p><b>Keep</b> saves the snapshot permanently; it will not be deleted as part of the automatic purge.</p></li>
+						<li><p><b>Unkeep</b> will allow the snapshot to be removed as part of the automatic purge.</p></li>
+						<li><p><b>Delete</b> permanently removes the snapshot.</p></li>
+					</ul>
+				</section>
+			</article>
+		</section>
+	</article>
+
+	<article>
+		<header id="user-scripts"><h3>User Scripts</h3></header>
+
+		<section>
+			<p class="no-padding">You can can inject user scripts into webpages to have total control over them. When creating a script, there
+				is no need to include the <code>&lt;script&gt;</code> tag.
+			<p>Injected scripts can communicate with JavaScript Blocker to perform special functions such as adding a rule or
+				creating custom context menu items. Most custom greasemonkey functions (GM_* functions) are supported with the exception of GM_setClipboard.
+				GM_xmlhttpRequest will allow cross-domain requests and is not subjected to the XHR blocker.</p>
+			<p>When viewing a script ending with <b>.user.js</b>, a prompt will appear to let you add it to JavaScript Blocker.</p>
+			<p>Once a new script is created, rules will be automatically created based on the @match and @include directives. You can also create your own
+				rules to enable it on a per-site basis or create a rule to enable it everywhere.</p>
+			<p>If a script contains an @updateURL, @downloadURL, and @version directive, automatic updating and developer mode can be enabled. New updates will be
+				checked for every 5 days.</p>
+			<p>When developer mode is used, the script (and all of its requirements and resources) are re-downloaded anytime a webpage is loaded, even if it's not a newer version. For
+				technical reasons, changes to any resources or requirements in use by the script will be refelected on the second page reload.</p>
+			<p>View some example user scripts.</p>
+
+			<section class="help-text">
+				<ul class="no-padding">
+					<li>
+						<p><b>Add a rule to block all HTTPS scripts</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Block HTTPS Scripts
+// @namespace http://javascript-blocker.toggleable.com
+// @run-at document-start
+// ==/UserScript==
+
+messageExtension('addRule', {
+  kind: 'script',
+  rule: {
+    simple: 'HTTPS:*',
+    expert: '^https:\\/\\/.*$'
+  },
+  action: 0,
+  domain: window.location.host,
+  temporary: true
+}, function (result) {
+  if (result.error)
+    console.log(result.errorText);
+});</code></pre></p>
+					</li>
+
+					<li>
+						<p><b>Show a notifcation and bind events to elements inside of it</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Notification of Coolness
+// @namespace http://javascript-blocker.toggleable.com
+// ==/UserScript==
+
+messageExtension('notification', {
+  top: true, // Ensure the notification is displayed on the top-most page (i.e. never within a frame.)
+  title: GM_info.script.name,
+  body: '&lt;input type="button" value="Do Something Cool" />',
+  meta: {
+    callback: registerCallback(function (detail) {
+      // This is guaranteed to execute in the original scope it was created in, including all inherited
+      // variables. Detail is any data provided by the executor, executeCallback().
+      alert('Something cool from ' + window.location.href + ' displayed on ' + detail);
+    }, true) // Preserve this callback so it can be used more than once.
+  }
+}, function (detail) {
+  // Since we set top to true, this may not be executed in the scope it was created in. Instead, it is
+  // guaranteed to run on the top-most page since this is where we can interact with the notification.
+
+  var e = document.getElementById(detail.id);
+
+  e.querySelector('.jsb-alert-text input').addEventListener('click', function () {
+    // Since we cannot be sure if we were executed in the proper scope, we use executeCallback() to
+    // run our callback we registered earlier. detail.origin is the ID of this script.
+    executeCallback(detail.origin, detail.meta.callback, window.location.href);
+  });
+});</code></pre></p>
+					</li>
+
+					<li>
+						<p><b>Add a context menu item to alert the current host</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Alert Host
+// @namespace http://javascript-blocker.toggleable.com
+// ==/UserScript==
+
+GM_registerMenuCommand('Alert Current Host', function (event) {
+  alert(window.location.host);
+});</code></pre></p>
+					</li>
+
+					<li>
+						<p><b>Prevent webpages from resizing the window</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Prevent Window Resizing
+// @namespace http://javascript-blocker.toggleable.com
+// @run-at document-start
+// ==/UserScript==
+
+var window_open = window.open;
+
+window.resizeBy = function () {};
+window.resizeTo = function () {};
+window.moveTo = function () {};
+window.open = function (URL, name, specs, replace) {
+  return window_open(URL, name, undefined, replace);
+};</code></pre></p>
+					</li>
+
+					<li>
+						<p><b>Disable context menu</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Disable Context Menu
+// @namespace http://javascript-blocker.toggleable.com
+// @run-at document-start
+// ==/UserScript==
+
+window.addEventListener('contextmenu', function (event) {
+  event.preventDefault();
+}, true);
+document.addEventListener('contextmenu', function (event) {
+  event.preventDefault();
+}, true);</code></pre></p>
+					</li>
+
+					<li>
+						<p><b>Replace some text</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Make Apples Oranges
+// @namespace http://javascript-blocker.toggleable.com
+// ==/UserScript==
+
+document.body.innerHTML = document.body.innerHTML.replace('Apple', 'Orange');</code></pre></p>
+					</li>
+				</ul>
+			</section>
+		</section>
+	</article>
+
+	<article>
+		<header id="faq"><h3>FAQ</h3></header>
+
+		<section>
+			<ul>
+				<li><p>I see "Error 0: error" when trying to verify my payment.</p>
+					<section>
+						<p>Most likely you are unable to contact the verification server. Which is this server. So you probably don't
+							have this problem, but if you do, check you firewall and/or Little Snitch settings. You'll have to allow
+							outbound connections to port 160.</p>
+					</section>
+				</li>
+				<li><p>Blocked/Allowed tells me that x resources were blocked/allowed, but there are see y items.</p>
+					<section>
+						<p>This usually occurs when an item is affected by a whitelist or blacklist rule in simple mode and mostly
+							for allowed items. If the webpage has some items that are whitelisted, they appear separately from the items
+							that are allowed for a different reason. This is so you can see which rules are causing the items to be
+							allowed. If that is not the case, there may be some hidden items. Click <b>Show Hidden</b> in the top bar
+							of the main window to reveal them. Nothing is hidden by default. Items under <b>OTHER</b> are not counted.</p>
+					</section>
+				</li>
+				<li><p>The toolbar icon looks like it has an "X" through it.</p>
+					<section>
+						<p>This means that the extension is completely disabled. Either re-enable it manually or restart Safari.</p>
+					</section>
+				</li>
+				<li><p>How do I uninstall the extension?</p>
+					<section>
+						<p>Safari preferences > Extensions > JavaScript Blocker > Uninstall (on the right).</p>
+					</section>
+				</li>
+			</ul>
+		</section>
+	</article>
+
+	<div id="chatty-viewport"></div>
+	
+	<footer>
+		<p>Copyright &copy; 2012 Travis Roman</p>
+	</footer>
+</body>
+</html>

@@ -68,7 +68,7 @@ Settings.settings = {
 		setting: 'popoverWidth',
 		props: {
 			type: 'number',
-			default: 501
+			default: 515
 		}
 	}, {
 		setting: 'popoverWidthExpanded',
@@ -460,56 +460,94 @@ Settings.settings = {
 	}, {
 		description: 'setLockerPassword.description'
 	}, {
-		setting: 'setLockerPassword',
+		setting: 'useLocker',
 		props: {
-			type: 'button',
-			onClick: function () {
-				UI.Locker.showSetPasswordPrompt();
+			type: 'boolean',
+			default: false,
+			locked: true,
+			onChange: function () {
+				if (Settings.IMPORTING)
+					return;
+
+				if (Locker.isEnabled())
+					UI.Locker
+						.showSetPasswordPrompt()
+						.then(function () {
+							// Success
+						}, function () {
+							Settings.setItem('useLocker', false, null, true, true);
+
+							if (!Settings.getItem('setupComplete'))
+								$('input[data-inlineSetting="useLocker"]', UI.Setup.view).prop('checked', false);
+						});
 			}
 		}
 	}, {
-		divider: true, //===================================================================================
-		classes: 'transparent short'
-	}, {
-		description: 'lockerAlwaysLocked.description',
-		classes: 'short'
-	}, {
-		store: 'lockerAlwaysLocked',
-		props: {
-			type: 'many-boolean',
-			locked: true
-		}
-	}, {
-		setting: 'lockerAlwaysLocked',
-		props: {
-			readOnly: true,
-			storeKey: 'setting',
-			default: true
-		}
-	}, {
-		setting: 'lockerAlwaysLocked',
-		props: {
-			storeKey: 'clearRules',
-			default: true
-		}
-	}, {
-		setting: 'lockerAlwaysLocked',
-		props: {
-			storeKey: 'importBackupSettings',
-			default: true
-		}
-	}, {
-		setting: 'lockerAlwaysLocked',
-		props: {
-			storeKey: 'console',
-			default: false
-		}
-	}, {
-		setting: 'lockerAlwaysLocked',
-		props: {
-			storeKey: 'disable',
-			default: false
-		}
+		when: {
+			hide: true,
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'useLocker',
+					needle: true
+				}]
+			}
+		},
+		settings: [{
+			setting: 'setLockerPassword',
+			props: {
+				type: 'button',
+				onClick: function () {
+					UI.Locker.showSetPasswordPrompt();
+
+					Locker.event.removeCustomEventListener('passwordSet');
+				}
+			}
+		}, {
+			divider: true, //===================================================================================
+			classes: 'transparent short'
+		}, {
+			description: 'lockerAlwaysLocked.description',
+			classes: 'short'
+		}, {
+			store: 'lockerAlwaysLocked',
+			props: {
+				type: 'many-boolean',
+				locked: true
+			}
+		}, {
+			setting: 'lockerAlwaysLocked',
+			props: {
+				readOnly: true,
+				storeKey: 'setting',
+				default: true
+			}
+		}, {
+			setting: 'lockerAlwaysLocked',
+			props: {
+				storeKey: 'clearRules',
+				default: true
+			}
+		}, {
+			setting: 'lockerAlwaysLocked',
+			props: {
+				storeKey: 'importBackupSettings',
+				default: true
+			}
+		}, {
+			setting: 'lockerAlwaysLocked',
+			props: {
+				storeKey: 'console',
+				default: false
+			}
+		}, {
+			setting: 'lockerAlwaysLocked',
+			props: {
+				storeKey: 'disable',
+				default: false
+			}
+		}]
 	}, {
 		divider: true //===================================================================================
 	}, {

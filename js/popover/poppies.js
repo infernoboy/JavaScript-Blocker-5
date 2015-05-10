@@ -101,6 +101,8 @@ Object._extend(Poppy.scripts, {
 
 			.on('click', '#lock-password-cancel', function () {
 				poppy.close();
+
+				Locker.event.trigger('passwordSet', false);
 			})
 
 			.on('click', '#lock-password-save', function () {
@@ -218,11 +220,11 @@ Object._extend(Poppy.scripts, {
 	'page-menu': function (poppy) {
 		poppy.content
 			.on('change', 'input[type="checkbox"]', function () {
-				UI.event.addCustomEventListener('poppyDidClose', function () {
-					UI.view.switchTo('#main-views-page');
+				poppy.close();
+				
+				UI.view.switchTo('#main-views-page');
 
-					globalPage.Page.requestPageFromActive();
-				}, true);
+				globalPage.Page.requestPageFromActive();
 			})
 	},
 
@@ -306,6 +308,19 @@ Object._extend(Poppy.scripts, {
 						reader.readAsText(file);
 					}
 				}, 0, event);
+			})
+
+			.on('click', '#setting-menu-backup-import', function (event) {
+				var shouldClearSettings = $('#clear-existing', poppy.content).is(':checked');
+
+				Tabs.create(ExtensionURL('importBackup.html#' + Utilities.encode(JSON.stringify({
+					title: _('importBackup.title'),
+					instructions: _('importBackup.instructions'),
+					clearBeforeImport: _('settings.clear_before_import'),
+					shouldClearSettings: shouldClearSettings
+				}))));
+
+				Popover.hide();
 			})
 
 			.on('click', '#setting-menu-backup-import-alternative', function (event) {

@@ -249,7 +249,8 @@
 						border-left: 1px solid darken(#fff, @darknessLevel);
 						padding-left: 1px;
 
-						.page-host-item-edit-check:checked {
+						.page-host-item-edit-check:checked,
+						.page-host-kind-select-all:checked {
 							background-color: @allowColor;
 							border-color: darken(@allowColor, 4%);
 						}
@@ -258,17 +259,15 @@
 					&-allowed {
 						border-right: 1px solid darken(#ddd, @darknessLevel);
 
-						.page-host-item-edit-check:checked {
+						.page-host-item-edit-check:checked,
+						.page-host-kind-select-all:checked {
 							background-color: @blockColor;
 							border-color: darken(@blockColor, 4%);
 						}
 					}
 
-					.page-host-items[data-kind="special"] {
-						.page-host-item-edit-check:checked {
-							background-color: darken(@yosemiteBlue, 9%);
-							border-color: darken(@yosemiteBlue, 13%);
-						}
+					.page-host-kind h4 {
+						cursor: pointer;
 					}
 				}
 
@@ -356,24 +355,30 @@
 
 			.page-host-items-container {
 				.page-host-kind {
+					&-disabled {
+						opacity: 0.3;
+						pointer-events: none;						
+					}
+
+					&-select-all {
+						display: none;
+						margin-left: 1px;
+						margin-right: 4px;
+					}
+
 					> h4 {
 						margin: 0 0 2px 1px;
 						font-weight: 500;
 						white-space: pre;
 					}
+				}
 
-					&-check {
-						margin-left: 1px;
-					}
+				.collapsible-group-wrapper:not(:last-child) .page-host-items {
+					margin-bottom: 7px;
 				}
 
 				.page-host-items {
 					position: relative;
-					margin-bottom: 6px;
-
-					&:last-child {
-						margin-bottom: 2px;
-					}
 
 					.page-host-item {
 						position: relative;
@@ -647,22 +652,51 @@
 					display: inline;
 				}
 
-				.page-host-columns .page-host-items-container {
-					.page-host-item {
-						padding-top: 3px;
-
-						&:not(:last-child) {
-							border-bottom-color: darken(#f1f1f1, @darknessLevel);
+				.page-host-columns {
+					.page-host-kind {
+						&-select-all {
+							display: inline-block;
 						}
 
-						.page-host-item-description {
-							.jsb-info {
-								cursor: text;
-								color: rgba(0, 0, 0, 0.5);
-								font-size: 0.9em;
+						> h4 {
+							&:after {
+								margin-top: 1px;
 
-								& when (@darkMode) {
-									color: rgba(255, 255, 255, 0.4);
+								.jsb-large-font& {
+									margin-top: 0;
+								}
+							}
+						}
+					}
+
+					.page-host-items-container {
+						.collapsible-group-wrapper:not(:last-child) .page-host-items {
+							margin-bottom: 3px;
+							padding-bottom: 3px;
+							border-bottom: 1px solid #eee;
+
+							& when (@darkMode) {
+								border-bottom-color: #000;
+							}
+						}
+
+						.page-host-item {
+							padding-top: 3px;
+							padding-left: 18px;
+
+							&:not(:last-child) {
+								border-bottom-color: darken(#f8f8f8, @darknessLevel);
+							}
+
+							.page-host-item-description {
+								.jsb-info {
+									cursor: text;
+									color: rgba(0, 0, 0, 0.5);
+									font-size: 0.9em;
+
+									& when (@darkMode) {
+										color: rgba(255, 255, 255, 0.4);
+									}
 								}
 							}
 						}

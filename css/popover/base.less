@@ -144,16 +144,6 @@
 
 					.darkness-color();
 
-					&[data-poppy] {
-						.poppy-menu-target:after {
-							color: #cacaca;
-
-							& when (@darkMode) {
-								color: #5a5a5a;
-							}
-						}
-					}
-
 					.yosemite& {
 						top: 4px;
 					}
@@ -359,10 +349,6 @@
 								margin-left: 3px;
 							}
 
-							.poppy-menu-target:after {
-								// margin-right: -3px;
-							}
-
 							&.active-view .poppy-menu-target:after {
 								color: #aaa;
 							}
@@ -415,8 +401,8 @@
 					top: -3px;
 					content: ' ⌄';
 					margin-left: 3px;
-					color: #d0d0d0;
-					-webkit-transform: scale(1.3, 1);
+					color: #bbb;
+					-webkit-transform: scale(1.4, 1.1);
 					-webkit-font-smoothing: antialiased;
 					font-weight: bold;
 					font-size: 21px;
@@ -424,7 +410,7 @@
 					vertical-align: middle;
 
 					& when (@darkMode) {
-						color: #5a5a5a;
+						color: #666;
 					}
 				}
 

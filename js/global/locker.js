@@ -10,12 +10,16 @@ var Locker = {
 			Locker.events.popoverOpened();
 	},
 
+	isEnabled: function () {
+		return Settings.getItem('useLocker');
+	},
+
 	isAlwaysLocked: function (key) {
-		return Settings.getItem('lockerAlwaysLocked', key);
+		return Locker.isEnabled() && Settings.getItem('lockerAlwaysLocked', key);
 	},
 
 	isLocked: function (key) {
-		return Locker.isAlwaysLocked(key) || Settings.getItem('locker', key);
+		return Locker.isEnabled() && (Locker.isAlwaysLocked(key) || Settings.getItem('locker', key));
 	},
 
 	lock: function (key, value) {
@@ -54,12 +58,14 @@ var Locker = {
 
 		SecureSettings.setItem('lockerPassword', newPassword);
 
+		Locker.event.trigger('passwordSet', true);
+
 		return 0;
 	},
 
 	events: {
 		popoverOpened: function () {
-			if (!Locker.passwordIsSet() && !Popover.window.Poppy.poppyWithScriptNameExist('set-lock-password'))		
+			if (Locker.isEnabled() && !Locker.passwordIsSet() && !Popover.window.Poppy.poppyWithScriptNameExist('set-lock-password'))		
 				UI.Locker.showSetPasswordPrompt(true);
 		}
 	}

@@ -9,6 +9,15 @@ UI.Locker = {
 		}));
 
 		poppy.modal().show();
+
+		return new Promise(function (resolve, reject) {
+			Locker.event.addCustomEventListener('passwordSet', function (event) {
+				if (event.detail)
+					resolve();
+				else
+					reject();
+			}, true);
+		});
 	},
 
 	showLockerPrompt: function (key, autoUnlock, keepOpenPoppies) {

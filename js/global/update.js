@@ -212,4 +212,14 @@ Update.versions[150424] = {
 	}
 };
 
+Update.versions[150502] = {
+	blocking: false,
+
+	update: function () {
+		Settings.setItem('useLocker', true, null, true, true);
+
+		return true;
+	}
+};
+
 Update.init();

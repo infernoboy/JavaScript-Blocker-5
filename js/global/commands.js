@@ -461,6 +461,14 @@ function Command (command, data, event) {
 			this.message = success;
 		},
 
+		importBackup: function (detail) {
+			setTimeout(function (detail) {
+				Update.showRequiredPopover();
+
+				Settings.import(Utilities.decode(detail.backup), detail.clearExisting);
+			}, 250, detail);
+		},
+
 		template: {
 			create: function (detail) {
 				try {
@@ -586,37 +594,39 @@ Command.toggleDisabled = function (force, doNotReload) {
 	if (Command.event.trigger('willDisable', window.globalSetting.disabled))
 		return;
 
-	UI.Locker
-		.showLockerPrompt('disable', typeof force === 'boolean')
-		.then(function () {
-			window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
+	Command.event.addCustomEventListener('UIReady', function (event) {
+		UI.Locker
+			.showLockerPrompt('disable', typeof force === 'boolean')
+			.then(function () {
+				window.globalSetting.disabled = typeof force === 'boolean' ? force : !window.globalSetting.disabled;
 
-			Utilities.Timer.remove('timeout', 'autoEnableJSB');
+				Utilities.Timer.remove('timeout', 'autoEnableJSB');
 
-			if (window.globalSetting.disabled && Settings.getItem('alwaysUseTimedDisable'))
-				Utilities.Timer.timeout('autoEnableJSB', function () {
-					Command.toggleDisabled(false, true);
-				}, Settings.getItem('disableTime'));
+				if (window.globalSetting.disabled && Settings.getItem('alwaysUseTimedDisable'))
+					Utilities.Timer.timeout('autoEnableJSB', function () {
+						Command.toggleDisabled(false, true);
+					}, Settings.getItem('disableTime'));
 
-			Command.setToolbarImage();
+				Command.setToolbarImage();
 
-			Settings.setItem('isDisabled', window.globalSetting.disabled);
+				Settings.setItem('isDisabled', window.globalSetting.disabled);
 
-			Command.event.addCustomEventListener('UIReady', function () {
-				UI.event.trigger('disabled', window.globalSetting.disabled);
+				Command.event.addCustomEventListener('UIReady', function () {
+					UI.event.trigger('disabled', window.globalSetting.disabled);
 
-				if (!window.globalSetting.disabled && Popover.visible())
-					Page.requestPageFromActive();
-			}, true);
+					if (!window.globalSetting.disabled && Popover.visible())
+						Page.requestPageFromActive();
+				}, true);
 
-			if (window.UI && !doNotReload)
-				if (Settings.getItem('disablingReloadsAll'))
-					setTimeout(function () {
-						Tabs.messageAll('reload');
-					}, 150);
-				else
-					Tabs.messageActive('reload');
-		});
+				if (window.UI && !doNotReload)
+					if (Settings.getItem('disablingReloadsAll'))
+						setTimeout(function () {
+							Tabs.messageAll('reload');
+						}, 150);
+					else
+						Tabs.messageActive('reload');
+			});
+	}, true);
 };
 
 Command.setToolbarImage = function (event) {

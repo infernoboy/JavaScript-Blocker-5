@@ -634,7 +634,9 @@ UI.Rules = {
 			}
 
 			if (ruleList)
-				UI.Rules.buildRuleList(toView, ruleList, useTheseRules);
+				setTimeout(function (toView, ruleList, useTheseRules) {
+					UI.Rules.buildRuleList(toView, ruleList, useTheseRules);
+				}, 0, toView, ruleList, useTheseRules);
 		},
 
 		elementWasAdded: function (event) {

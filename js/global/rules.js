@@ -1,6 +1,7 @@
 "use strict";
 
 var ACTION = {
+	SOURCE_DESCRIPTION: 9,
 	BLOCK_FIRST_VISIT_NO_NOTIFICATION: 8,
 	BLOCK_FIRST_VISIT: 6,
 	WHITELIST: 5,
@@ -719,7 +720,7 @@ Object.defineProperty(Rules, 'list', {
 		description: {
 			enumerable: true,
 			value: new Rule('SourceDescription', null, {
-				action: 1,
+				action: ACTION.SOURCE_DESCRIPTION,
 				ignoreLock: true
 			})
 		},

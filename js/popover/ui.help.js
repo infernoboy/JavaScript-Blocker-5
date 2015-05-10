@@ -50,6 +50,7 @@ UI.Help = {
 				event.preventDefault();
 
 				Tabs.create('mailto:helpme@toggleable.com?subject=I need help with JSB5&body=Please thoroughly describe the problem you are having. Include screenshots if you think it will help.', true);
+				// Tabs.create(ExtensionURL('help/index.html'));
 			}
 		}
 	}

@@ -49,6 +49,19 @@
 			</li>
 		</ul>
 
+		<h2><%=_('setting.locker')%></h2>
+		<ul class="generic-menu-options">
+			<li>
+				<p class="jsb-info"><%=_('setting.setLockerPassword.description')%></p>
+				<div class="horizontal-divider horizontal-divider-short horizontal-divider-transparent"></div>
+			</li>
+			<li>
+				<%
+					var setting = UI.Settings.createElementForSetting(Settings.map.useLocker, null, true).addClass('double-column-flex');
+				%><%=setting[0].outerHTML%>
+			</li>
+		</ul>
+
 		<div class="horizontal-divider"></div>
 
 		<div class="jsb-align-right">

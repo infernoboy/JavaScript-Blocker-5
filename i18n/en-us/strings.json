@@ -20,6 +20,9 @@
 	"setup.intro": "Your browsing experience just got a whole lot safer and faster. JS Blocker puts you in control of what webpages can do—no more advertisements, no more being tracked, and no more unnecessary clutter. You'll have to reload any pages you already have open for JS Blocker to start taking effect on them.",
 	"setup.common_settings": "Common Settings",
 
+	"importBackup.title": "Import Backup - JS Blocker",
+	"importBackup.instructions": "The backup will be imported immediately after selecting the file. Donations must be re-verified if clearing settings.",
+
 	"extras.will_unlock_free": "Supporting open-source indie software helps keep development going strong. Do you really want to unlock the extra features without donating?",
 	"extras.email_address": "Email Address",
 	"extras.required": "You need to unlock extra features in order to do that.",
@@ -102,6 +105,7 @@
 	"view.page.host.count_type.host": "host",
 	"view.page.host.count_type.hosts": "hosts",
 	"view.page.host.click_to_edit": "Click to switch to edit mode",
+	"view.page.host.click_to_select_all": "Click to select all",
 
 	"view.page.host.kind.*": "All Kinds",
 	"view.page.host.kind.hide:*": "Hide All Kinds",
@@ -218,7 +222,7 @@
 	"setting_menu.export.description": "A file named <b>Unknown</b> will be saved to your downloads folder. Feel free to rename it.",
 	"setting_menu.import_backup": "Import backup",
 	"setting_menu.import": "Import",
-	"setting_menu.import.description": "You'll have to drag-and-drop the backup file into the space above. The import will start immediately after dropping the file. Donations must be re-verified if clearing settings.",
+	"setting_menu.import.description": "You can drag-and-drop the backup file into the space above. The import will start immediately after dropping the file. Donations must be re-verified if clearing settings.",
 	"setting_menu.import.alternative": "Use alternative method.",
 	"setting_menu.import.alternative.paste": "Paste the contents of your backup file below and click <b>Import</b>. Because of how large the backup may be, this can take a few minutes and Safari may appear to hang during the process. Donations must be re-verified if clearing settings.",
 
@@ -290,6 +294,7 @@
 	"setting.toolbarDisplay.option.allowed": "Allowed items",
 	"setting.toolbarDisplay.option.neither": "Neither",
 	"setting.updateNotify.label": "Notify me about new updates",
+	"setting.useLocker.label": "Use locker",
 	"setting.setLockerPassword.label": "Set locker password",
 	"setting.setLockerPassword.subLabel": "Set Password",
 	"setting.setLockerPassword.description": "The locker can be used to prevent unauthorized changes to your rules, settings, and other items. A password must be set in order to use the locker.",
@@ -342,7 +347,7 @@
 	"setting.alwaysBlock.embed.label": "Block embeds and objects from",
 	"setting.alwaysBlock.video.label": "Block videos from",
 	"setting.alwaysBlock.image.label": "Hide images from",
-	"setting.showPlaceholder.frame.label": "Show placeholder for blocked blocked frames",
+	"setting.showPlaceholder.frame.label": "Show placeholder for blocked frames",
 	"setting.showPlaceholder.embed.label": "Show placeholder for blocked embeds and objects",
 	"setting.showPlaceholder.video.label": "Show placeholder for blocked videos",
 	"setting.showPlaceholder.image.label": "Show placeholder for hidden images",
@@ -383,6 +388,7 @@
 	"setting.enabledSpecials.autocomplete_disabler.label": "Prevent webpages from disabling autocomplete",
 	"setting.enabledSpecials.inline_script_execution.label": "Prevent inline scripts from being executed",
 	"setting.enabledSpecials.environmental_information.label": "Randomize environmental information",
+	"setting.enabledSpecials.environmental_information.help": "This feature may break website functionality. Websites won't be able to detect if you have flash installed.",
 	"setting.enabledSpecials.canvas_data_url.label": "Canvas fingerprinting protection",
 	"setting.enabledSpecials.canvas_data_url.help": "When set to ask, a confirmation dialog will appear anytime a webpage attempts to turn a canvas image into a URL. Whenever possible, you will be able to see the generated image in the background in a sandboxed environment. Should you choose to disallow the creation of the URL, a randomized string will be passed instead. <a href='https://www.browserleaks.com/canvas'>Test it out.</a>",
 	"setting.enabledSpecials.canvas_data_url.option.off": "Off",
@@ -580,7 +586,7 @@
 	"special.window_resize.blocked": "Block automated window resizing",
 	"special.window_resize.allowed": "Allow automated window resizing",
 
-	"special.canvas_data_url.prompt": "This page may be attempting to use canvas fingerprinting to track you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there isn't, use your best judgement.",
+	"special.canvas_data_url.prompt": "This page may be attempting to use canvas fingerprinting to track you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there isn't, use your best judgement. If you see the Union Flag, click OK.",
 	"special.canvas_data_url.prompt_old": "This page may be attempting to use canvas fingerprinting to identify you. If this is unexpected and you are not on a site you trust, click Cancel.",
 	"special.canvas_data_url.subsequent": "Subsequent attempts from {0} will be handled automatically.",
 	"special.canvas_data_url.subsequent_session": "Subsequent attempts from {0} will be handled automatically until you restart Safari.",
@@ -626,6 +632,7 @@
 	"help.rules": "Rules",
 	"help.faq": "FAQ",
 
+	"description.recaptcha": "ReCAPTCHA",
 	"description.verisign": "Verisign",
 	"description.ensighten": "Ensighten Tracking",
 	"description.pinterest": "Pinterest",
@@ -680,7 +687,7 @@
 	"description.newstogram": "Newstogram Recommendations",
 	"description.quint": "Quintelligence Tracking",
 	"description.skimlinks": "Skimlinks Tracking",
-	"description.parsley": "Parsley Tracking",
+	"description.parsely": "Parsely Tracking",
 	"description.adtech": "ADTECH Advertisements",
 	"description.motherjones": "MotherJones Tracking",
 	"description.medianet": "Media.net Advertisements",

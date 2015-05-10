@@ -92,7 +92,9 @@
 				<% if (globalPage.Rules.snapshotInUse()) { %>
 					<input type="button" id="rule-menu-close-snapshot" value="<%=_('snapshots.close_snapshot')%>" /><%
 				} %>
-				<input type="button" id="rule-menu-lock" value="<%=_(globalPage.Rules.isLockerLocked() ? 'Unlock' : 'Lock')%>" />
+				<% if (Locker.isEnabled()) { %>
+					<input type="button" id="rule-menu-lock" value="<%=_(globalPage.Rules.isLockerLocked() ? 'Unlock' : 'Lock')%>" /><%
+				} %>
 			</li>
 		</ul>
 	</div>
@@ -201,9 +203,14 @@
 		<div class="generic-menu">
 			<ul class="generic-menu-options generic-menu-menu">
 				<li class="jsb-align-right">
-					<input id="setting-menu-restore-defaults" type="button" value="<%=_('settings.restore_defaults')%>" />
 					<input id="setting-menu-backup" type="button" value="<%=_('setting_menu.backup')%>" />
-					<input id="setting-menu-lock" type="button" value="<%=_('Lock')%>" />
+					<% if (Locker.isEnabled()) { %>
+						<input id="setting-menu-lock" type="button" value="<%=_('Lock')%>" /><%
+					} %>
+					<div class="horizontal-divider"></div>
+				</li>
+				<li class="jsb-align-right">
+					<input id="setting-menu-restore-defaults" class="<%=Locker.isLocked('importBackupSettings') ? '' : 'double-click'%>" type="button" value="<%=_('settings.restore_defaults')%>" />
 				</li>
 			</ul>
 		</div><%

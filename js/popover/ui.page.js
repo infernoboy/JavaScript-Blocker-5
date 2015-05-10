@@ -466,6 +466,7 @@ UI.Page = {
 
 		sectionSwitchedOutOfEditMode: function (event) {
 			$('.page-host-item', event.detail).removeClass('page-host-item-disabled');
+			$('.page-host-kind', event.detail).removeClass('page-host-kind-disabled');
 
 			setTimeout(function () {
 				UI.view.floatingHeaders.adjustAll();
@@ -477,7 +478,7 @@ UI.Page = {
 					editContainer = input.parents('.page-host-item-edit-container');
 
 			if (editContainer.length)
-				$('.page-host-item-edit-check', editContainer).prop('checked', true);
+				$('.page-host-item-edit-check', editContainer).prop('checked', true).change();
 		},
 
 		awaitPageFromTabTimeout: function (event) {
@@ -626,6 +627,7 @@ UI.Page = {
 						kinds.stop(true).slideUp(225 * window.globalSetting.speedMultiplier);
 
 					$('.page-host-columns .page-host-item', section).toggleClass('page-host-item-disabled', this.value !== 'items-checked');
+					$('.page-host-columns .page-host-kind', section).toggleClass('page-host-kind-disabled', this.value !== 'items-checked');
 
 					$('.page-host-editor-where', section).trigger('change');
 				})
@@ -744,7 +746,7 @@ UI.Page = {
 							.show();
 
 					if (isItem) {
-						self.parents('.page-host-item').find('.page-host-item-edit-check').prop('checked', true);
+						self.parents('.page-host-item').find('.page-host-item-edit-check').prop('checked', true).change();
 
 						$('.page-host-editor-kind', section).find('option:first').prop('selected', true).end().trigger('change');
 					}
@@ -778,7 +780,22 @@ UI.Page = {
 				.on('click', '.page-host-item-edit-container .select-single', function (event) {
 					var check = $(this).parents('.page-host-item-edit-container').find('.page-host-item-edit-check');
 
-					check.prop('checked', !check.prop('checked'));
+					check.prop('checked', !check.prop('checked')).change();
+				})
+
+				.on('change', '.page-host-item-edit-check', function (event) {
+					var items = $(this).parents('.page-host-items');
+
+					Utilities.Timer.timeout(items[0], function (items) {
+						var totalChecks = $('.page-host-item-edit-check', items),
+								checked = totalChecks.filter(':checked'),
+								selectAll = items.parent().prev().find('.page-host-kind-select-all');
+
+						selectAll.toggleClass('select-some', totalChecks.length !== checked.length);
+
+						if (!checked.length)
+							selectAll.prop('checked', false);
+					}, 100, [items]);
 				})
 
 				.on('mousedown', '.page-host-item-edit-select', function (event) {
@@ -799,7 +816,33 @@ UI.Page = {
 				.on('change input', '.page-host-item-edit-select, .page-host-item-edit-container .select-custom-input', function (event) {
 					var check = $(this).parents('.page-host-item-edit-container').find('.page-host-item-edit-check');
 
-					check.prop('checked', true);
+					check.prop('checked', true).change();
+				})
+
+				.on('change', '.page-host-kind-select-all', function (event) {
+					if (this.classList.contains('select-some')) {
+						this.classList.remove('select-some');
+
+						this.checked = true;
+
+						return $(this).change();
+					}
+
+					var checks = $(this).parent().parent().next().find('.page-host-item-edit-check');
+
+					checks.prop('checked', this.checked).change();
+				})
+
+				.on('click', '.page-host-column .page-host-kind h4', function (event) {
+					if (event.target.nodeName.toUpperCase() !== 'H4' || event.offsetX > this.offsetWidth)
+						return;
+
+					var check = $(this).parent().find('.page-host-kind-select-all'),
+							section = $(this).parents('.page-host-section');
+
+					check.prop('checked', !check.is(':checked')).change();
+
+					UI.Page.section.toggleEditMode(section, true);
 				});
 		}
 	}

@@ -66,6 +66,8 @@ var Settings = {
 		}
 	},
 
+	IMPORTING: false,
+
 	ERROR: {
 		NOT_FOUND: 'setting not found - {0}',
 		WHEN_GROUP_ERROR: 'cannot set setting at this time - {0}',
@@ -433,6 +435,8 @@ var Settings = {
 				if (!settings)
 					return LogError('failed to import settings');
 
+				Settings.IMPORTING = true;
+
 				var temporaryBackup = JSON.stringify(SettingStore.all());
 
 				if (clearExisting) {
@@ -460,7 +464,7 @@ var Settings = {
 							if (settings[setting] && settings[setting].STORE)
 								SettingStore.setItem(setting, settings[setting]);
 							else
-								Settings.setItem(setting, settings[setting], null, true);
+								Settings.setItem(setting, settings[setting], null, true, true);
 						} catch (e) {
 							LogError('failed to import setting - ' + setting, e);
 						}

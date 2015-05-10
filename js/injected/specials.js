@@ -511,15 +511,15 @@ Special.specials = {
 		if (canLoad.isAllowed)
 			return;
 
-		var ALWAYS_ASK = '1',
+		var ASK_COUNTER = 0,
+				ASK_LIMIT = 3,
+				ALWAYS_ASK = '1',
 				ASK_ONCE = '2',
 				ASK_ONCE_SESSION = '3',
 				ALWAYS_BLOCK = '4';
 
-		var useSimplifiedMethod = document.hidden,
-				toDataURL = HTMLCanvasElement.prototype.toDataURL,
+		var toDataURL = HTMLCanvasElement.prototype.toDataURL,
 				toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
-				shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION),
 				autoContinue = {},
 				alwaysContinue = false;
 
@@ -527,15 +527,19 @@ Special.specials = {
 			path: 'html/canvasFingerprinting.html#'
 		});
 
-		var confirmString = _localize(useSimplifiedMethod ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt');
-
-		if (shouldAskOnce)
-			confirmString += "\n\n" + _localize(JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent', [window.location.host]);
-
 		function protection (dataURL) {
 			var shouldContinue;
 
-			var url = baseURL + dataURL;
+			var useSimplifiedMethod = document.hidden,
+					shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION || ++ASK_COUNTER > ASK_LIMIT),
+					confirmString = _localize(useSimplifiedMethod ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt'),
+					url = baseURL + dataURL;
+
+			if (shouldAskOnce)
+				confirmString += "\n\n" + _localize(JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent', [window.location.host]);
+
+			if (ASK_COUNTER > ASK_LIMIT)
+				JSB.value.value = ASK_ONCE_SESSION;
 
 			if (JSB.value.value === ALWAYS_BLOCK || (!canLoad.isAllowed && canLoad.action > -1))
 				shouldContinue = false;
@@ -584,7 +588,9 @@ Special.specials = {
 				return 'data:image/png;base64,' + btoa(Math.random());
 		}
 
-		HTMLCanvasElement.prototype.toDataURL = function () {			
+		HTMLCanvasElement.prototype.toDataURL = function () {
+			console.log('Canvas fingerprinting traceback:');
+			console.trace();
 			return protection(toDataURL.apply(this, arguments));
 		};
 

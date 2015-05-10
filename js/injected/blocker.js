@@ -306,10 +306,17 @@ var Handler = {
 	},
 
 	contextMenu: function (event) {
-		if (event.target instanceof HTMLElement) {
+		var menuCommands = Object.keys(UserScript.menuCommand);
+
+		if (menuCommands.length && (event.target instanceof HTMLElement)) {
 			var contextMenuTarget = Utilities.Token.generate();
 
 			event.target.setAttribute('data-jsbContextMenuTarget', contextMenuTarget);
+
+			setTimeout(function (element) {
+				if (element)
+					element.removeAttribute('data-jsbContextMenuTarget');
+			}, 3000, event.target);
 		} else
 			var contextMenuTarget = null;
 
