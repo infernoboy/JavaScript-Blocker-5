@@ -527,6 +527,17 @@ Special.specials = {
 			path: 'html/canvasFingerprinting.html#'
 		});
 
+		var shouldSkipProtectionOnFunction = function (fn) {
+			fn = fn.toString();
+
+			console.log(fn)
+
+			if (fn.indexOf('600 32px Arial') > -1 && fn.indexOf('"flag"===a') > -1 && fn.indexOf('55356,56812,55356,56807') > -1)
+				return true;
+
+			return false;
+		};
+
 		function protection (dataURL) {
 			var shouldContinue;
 
@@ -589,13 +600,25 @@ Special.specials = {
 		}
 
 		HTMLCanvasElement.prototype.toDataURL = function () {
-			console.log('Canvas fingerprinting traceback:');
-			console.trace();
+			try {
+				var fn = arguments.callee.caller;
+
+				if (typeof fn === 'function' && shouldSkipProtectionOnFunction(fn))
+					return toDataURL.apply(this, arguments);
+			} catch (e) {}
+
 			return protection(toDataURL.apply(this, arguments));
 		};
 
 		if (typeof toDataURLHD === 'function')
 			HTMLCanvasElement.prototype.toDataURLHD = function () {
+				try {
+					var fn = arguments.callee.caller;
+
+					if (typeof fn === 'function' && shouldSkipProtectionOnFunction(fn))
+						return toDataURLHD.apply(this, arguments);
+				} catch (e) {}
+
 				return protection(toDataURLHD.apply(this, arguments));
 			};
 	},
