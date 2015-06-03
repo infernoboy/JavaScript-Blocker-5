@@ -530,8 +530,6 @@ Special.specials = {
 		var shouldSkipProtectionOnFunction = function (fn) {
 			fn = fn.toString();
 
-			console.log(fn)
-
 			if (fn.indexOf('600 32px Arial') > -1 && fn.indexOf('"flag"===a') > -1 && fn.indexOf('55356,56812,55356,56807') > -1)
 				return true;
 

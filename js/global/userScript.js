@@ -183,10 +183,7 @@ var UserScript = {
 			dataType: 'text',
 			async: async,
 			url: url,
-			timeout: 3000,
-			headers: {
-				'Accept': 'text/x-userscript-meta'
-			}
+			timeout: 3000
 		}).fail(function (error) {
 			LogError('failed to download user script - ' + url, error.statusText);
 		});
@@ -269,6 +266,8 @@ var UserScript = {
 				});
 			}
 		}
+
+		parsed.name = parsed.name.replace(/\|/g, '_');
 
 		parsed.trueNamespace = parsed.name + ':' + parsed.namespace;
 

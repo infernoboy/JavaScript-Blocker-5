@@ -62,7 +62,8 @@ var UserScript = {
 			scriptMetaStr: attributes.metaStr,
 			scriptWillUpdate: attributes.autoUpdate,
 			version: 5,
-			script: meta
+			script: meta,
+			uuid: Utilities.Token.generate()
 		};
 
 		TOKEN.INJECTED[userScript.id] = {

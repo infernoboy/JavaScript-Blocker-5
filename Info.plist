@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>10600.7.5</string>
+	<string>10600.7.7</string>
 	<key>CFBundleDisplayName</key>
 	<string>JS Blocker 5</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5.0.3a</string>
+	<string>5.0.4</string>
 	<key>CFBundleVersion</key>
-	<string>150515</string>
+	<string>150602</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
