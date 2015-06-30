@@ -226,7 +226,7 @@
 								items = [];
 
 								for (pageLocation in self.state[kind].source) {
-									items._pushAll(Object.keys(self.state[kind].source[pageLocation])._unique());
+									items._pushAll(Object.keys(self.state[kind].source[pageLocation]));
 								}
 
 								itemCount += items._unique().length;
@@ -304,7 +304,7 @@
 											resourceDescriptions = [];
 
 									var resourceIDs = resources.map(function (value, i) {
-										if (value.resource.sourceIsURL && showItemDescription) {
+										if (value.resource.sourceIsURL && showItemDescription && self.stateType !== 'unblocked') {
 											var descriptions = value.resource.descriptionsForResource();
 
 											if (descriptions.length)
@@ -338,6 +338,10 @@
 
 									var hasOptions = shouldBadge && !showResourceURLs && protocol !== 'none:',
 											useSelect = hasOptions || !shouldBadge || protocol === 'blob:';
+
+									if (self.stateType === 'unblocked' && kind === 'script') {
+										sourceName = sourceName.substr(0, 300);
+									}
 								%>
 
 									<li
@@ -348,53 +352,55 @@
 										data-action="<%=action%>"
 										data-source="<%=source._entityQuotes()%>"
 									>
-										<div class="page-host-item-edit-container">
-											<div class="page-host-item-edit-check-wrapper">
-												<input <%=disableEdit%> type="checkbox" class="page-host-item-edit-check" title="<%=_('view.page.editor.check_to_' + (self.stateType === 'blocked' ? 'allow' : 'block'))%>" />
-											</div>
-											<div class="page-host-item-edit-select-wrapper">
-											<%
-												if (useSelect) { %>
-													<select <%=disableEdit%> class="page-host-item-edit-select blend-in <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
+										<% if (self.stateType !== 'unblocked') { %>
+											<div class="page-host-item-edit-container">
+												<div class="page-host-item-edit-check-wrapper">
+													<input <%=disableEdit%> type="checkbox" class="page-host-item-edit-check" title="<%=_('view.page.editor.check_to_' + (self.stateType === 'blocked' ? 'allow' : 'block'))%>" />
+												</div>
+												<div class="page-host-item-edit-select-wrapper">
+												<%
+													if (useSelect) { %>
+														<select <%=disableEdit%> class="page-host-item-edit-select blend-in <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
 
-													var sourceDomain,
-															displaySource;
+														var sourceDomain,
+																displaySource;
 
-													var sourceDomains = Utilities.URL.hostParts(source, true);
+														var sourceDomains = Utilities.URL.hostParts(source, true);
 
-													for (var b = 0; b < sourceDomains.length; b++) {
-														sourceDomain = b === 0 ? sourceDomains[b] : sourceDomains[b].substr(1);
+														for (var b = 0; b < sourceDomains.length; b++) {
+															sourceDomain = b === 0 ? sourceDomains[b] : sourceDomains[b].substr(1);
 
-														if (b === 0)
-															displaySource = kind._startsWith('xhr') ? 'view.page.editor.to_domain' : 'view.page.editor.from_domain';
-														else
-															displaySource = kind._startsWith('xhr') ? 'view.page.editor.to_within_domain' : 'view.page.editor.from_within_domain';%>
+															if (b === 0)
+																displaySource = kind._startsWith('xhr') ? 'view.page.editor.to_domain' : 'view.page.editor.from_domain';
+															else
+																displaySource = kind._startsWith('xhr') ? 'view.page.editor.to_within_domain' : 'view.page.editor.from_within_domain';%>
 
-														<option value="<%=sourceDomains[b]._entityQuotes()%>"><%=shouldBadge ? _(displaySource, [sourceDomain._escapeHTML()]) : sourceName._escapeHTML()%></option><%
-													} %>
-
-													</select><label></label><%
-												} else { %>
-													<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="false" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
-													<select <%=disableEdit%> class="page-host-item-edit-select <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%>">
-													<%
-														var sourceParts = Utilities.URL.pageParts(source),
-																index = sourceParts.parts.length - 1;
-
-														if (sourceParts.search.length) { %>
-															<option value="^<%=sourceParts.parts[index]._escapeRegExp()._entityQuotes()%><%=sourceParts.search._escapeRegExp()._entityQuotes()%>$"><%=sourceParts.parts[index]._escapeHTML()%><%=sourceParts.search._escapeHTML()%></option>
-															<option value="^<%=sourceParts.parts[index]._escapeRegExp()._entityQuotes()%>\\?.*$"><%=sourceParts.parts[index]._escapeHTML()%>?</option><%
-
-															index -= 1;
-														}
-
-														for (var c = index + 1; c--;) { %>
-															<option value="^<%=sourceParts.parts[c]._escapeRegExp()._entityQuotes()%><%=c < sourceParts.parts.length - 1 ? '.*' : ''%>$"><%=sourceParts.parts[c]._escapeHTML()%></option><%
+															<option value="<%=sourceDomains[b]._entityQuotes()%>"><%=shouldBadge ? _(displaySource, [sourceDomain._escapeHTML()]) : sourceName._escapeHTML()%></option><%
 														} %>
-													</select><label></label><%
-												} %>
-											</div>
-										</div>
+
+														</select><label></label><%
+													} else { %>
+														<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="false" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
+														<select <%=disableEdit%> class="page-host-item-edit-select <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%>">
+														<%
+															var sourceParts = Utilities.URL.pageParts(source),
+																	index = sourceParts.parts.length - 1;
+
+															if (sourceParts.search.length) { %>
+																<option value="^<%=sourceParts.parts[index]._escapeRegExp()._entityQuotes()%><%=sourceParts.search._escapeRegExp()._entityQuotes()%>$"><%=sourceParts.parts[index]._escapeHTML()%><%=sourceParts.search._escapeHTML()%></option>
+																<option value="^<%=sourceParts.parts[index]._escapeRegExp()._entityQuotes()%>\\?.*$"><%=sourceParts.parts[index]._escapeHTML()%>?</option><%
+
+																index -= 1;
+															}
+
+															for (var c = index + 1; c--;) { %>
+																<option value="^<%=sourceParts.parts[c]._escapeRegExp()._entityQuotes()%><%=c < sourceParts.parts.length - 1 ? '.*' : ''%>$"><%=sourceParts.parts[c]._escapeHTML()%></option><%
+															} %>
+														</select><label></label><%
+													} %>
+												</div>
+											</div><%
+										} %>
 
 										<div class="page-host-item-description">
 											<% if (resourceDescriptions.length) { %>
@@ -416,7 +422,6 @@
 											} %>
 										</div>
 									</li>
-
 								<%
 								}
 							}

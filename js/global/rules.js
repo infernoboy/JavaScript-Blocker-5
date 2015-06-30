@@ -434,6 +434,29 @@ Rule.prototype.forLocation = function (params) {
 	return rules;
 };
 
+Rule.prototype.createContentBlocker = function () {
+	var rules = this.rules.all();
+
+	var map = {
+		xhr_get: 'raw',
+		xhr_post: 'raw',
+		xhr_put: 'raw',
+		script: 'script',
+		frame: 'document',
+		image: 'image',
+		embed: 'media',
+		video: 'media'
+	};
+
+	for (var kind in rules) {
+		if (!(kind in map))
+			continue;
+
+		var resourceType = [map[kind]];
+		
+	}
+};
+
 var Rules = {
 	__locked: false,
 	__regExpCache: {},
@@ -497,6 +520,23 @@ var Rules = {
 			return 1;
 
 		return 0;
+	},
+
+	createContentBlocker: function () {
+		if (!ContentBlocker.isSupported)
+			return false;
+
+		var excludeLists = ['description', 'user'],
+				lists = [];
+
+		if (this.list.active !== this.list.user)
+			excludeLists.push('temporary');
+
+		for (var list in Rules.list)
+			if (!excludeLists._contains(list))
+				lists.push(this.list[list].createContentBlocker());
+
+		return lists;
 	},
 
 	onToggleLock: function (event) {

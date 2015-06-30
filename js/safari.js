@@ -348,6 +348,15 @@ var SecureSettings = {
 	}
 };
 
+var ContentBlocker = {
+	create: function (contentBlocker) {
+		if (ContentBlocker.isSupported)
+			safari.extension.setContentBlocker(contentBlocker);
+	},
+
+	isSupported: typeof safari.extension.setContentBlocker === 'function'
+};
+
 var Events = {
 	__references: {
 		application: {},
@@ -441,6 +450,7 @@ function GlobalCommand (command, data) {
 		data: data
 	});
 };
+
 
 (function () {
 	var SetPopoverToToolbarItem = function (event) {

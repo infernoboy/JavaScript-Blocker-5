@@ -39,6 +39,7 @@ var UI = {
 		Settings.map.useAnimations.props.onChange();
 		Settings.map.largeFont.props.onChange();
 
+		document.documentElement.classList.toggle('capitan', userAgent._contains('10_11'));
 		document.documentElement.classList.toggle('yosemite', userAgent._contains('10_10'));
 		document.documentElement.classList.toggle('mavericks', userAgent._contains('10_9'));
 		document.documentElement.classList.toggle('mountain-lion', userAgent._contains('10_8'));
