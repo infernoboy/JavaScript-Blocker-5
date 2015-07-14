@@ -98,6 +98,7 @@ var Page = {
 
 	info: {
 		id: TOKEN.PAGE,
+		blockFirstVisitStatus: {},
 		state: new Store(TOKEN.PAGE, {
 			ignoreSave: true
 		}),
@@ -951,33 +952,33 @@ if (!globalSetting.disabled) {
 			}
 		}
 
-		var willBlockFirstVisit = GlobalCommand('willBlockFirstVisit', Page.info.host);
+		var blockFirstVisitStatus = GlobalCommand('blockFirstVisitStatus', Page.info.host);
 
-		setTimeout(function (willBlockFirstVisit) {
-			if (willBlockFirstVisit) {
-				Page.info.blockedByFirstVisit = willBlockFirstVisit;
+		Page.info.blockFirstVisitStatus = blockFirstVisitStatus;
 
-				Page.send();
+		setTimeout(function (blockFirstVisitStatus) {
+			Page.info.blockFirstVisitStatus = blockFirstVisitStatus;
 
-				if (willBlockFirstVisit.action !== 8 && window.globalSetting.showBlockFirstVisitNotification) {
+			if (blockFirstVisitStatus.blocked) {
+				if (blockFirstVisitStatus.action !== 8 && window.globalSetting.showBlockFirstVisitNotification) {
 					Handler.event.addCustomEventListener('readyForPageNotifications', function () {
 						if (Page.info.isFrame)
 							GlobalPage.message('bounce', {
 								command: 'showBlockedAllFirstVisitNotification',
 								detail: {
 									targetPageID: PARENT.parentPageID,
-									host: willBlockFirstVisit.host
+									host: blockFirstVisitStatus.host
 								}
 							});
 						else
 							Handler.showBlockedAllFirstVisitNotification({
 								targetPageID: Page.info.id,
-								host: willBlockFirstVisit.host
+								host: blockFirstVisitStatus.host
 							});
 					}, true);
 				}
 			}
-		}, 500, willBlockFirstVisit);
+		}, 500, blockFirstVisitStatus);
 
 		var observer = new MutationObserver(function (mutations) {
 			var i,
@@ -1016,6 +1017,11 @@ if (!globalSetting.disabled) {
 	}
 } else {
 	Page.info.disabled = {
+		action: -1
+	};
+
+	Page.info.blockFirstVisitStatus = {
+		blocked: false,
 		action: -1
 	};
 

@@ -294,19 +294,16 @@ function Command (command, data, event) {
 			});
 		},
 
-		willBlockFirstVisit: function (host) {
+		blockFirstVisitStatus: function (host) {
 			if (host === 'blank')
 				host = Utilities.URL.extractHost(this.event.target.url);
 
-			var	shouldBlockFirstVisit = Page.shouldBlockFirstVisit(host);
+			var	blockFirstVisitStatus = Page.blockFirstVisitStatus(host);
 
-			if (shouldBlockFirstVisit) {
-				if (shouldBlockFirstVisit.action === -ACTION.BLOCK_FIRST_VISIT)
-					Page.blockFirstVisit(shouldBlockFirstVisit.host);
+			if (blockFirstVisitStatus.action === -ACTION.BLOCK_FIRST_VISIT)
+				Page.blockFirstVisit(blockFirstVisitStatus.host);
 
-				this.message = shouldBlockFirstVisit;
-			} else
-				this.message = false;
+			this.message = blockFirstVisitStatus;
 		},
 
 		unblockFirstVisit: function (host) {
@@ -332,6 +329,7 @@ function Command (command, data, event) {
 					meta = detail.meta;
 
 			meta.type = meta.method || meta.type || 'GET';
+			meta.mimeType = meta.overrideMimeType;
 			meta.async = !meta.synchronous;
 			meta.cache = !meta.ignoreCache;
 			meta.dataType = 'text';
@@ -345,7 +343,8 @@ function Command (command, data, event) {
 					action: action,
 					response: {
 						readyState: request.readyState,
-						responseHeaders: (function (headers) {
+						responseHeaders: request.getAllResponseHeaders ? request.getAllResponseHeaders() : '', 
+						responseHeadersObject: (function (headers) {
 							var line;
 
 							var lines = headers.split(/\n/),
@@ -360,7 +359,6 @@ function Command (command, data, event) {
 
 							return headerMap;
 						})(request.getAllResponseHeaders ? request.getAllResponseHeaders() : ''),
-
 						responseText: response,
 						status: request.status,
 						statusText: request.statusText

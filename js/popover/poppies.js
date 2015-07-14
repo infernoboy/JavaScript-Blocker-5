@@ -576,7 +576,23 @@ Object._extend(Poppy.scripts, {
 			.on('click', 'input', function () {
 				var sectionID = poppy.poppy.attr('data-menuMeta'),
 						section = $('.page-host-section[data-id="' + sectionID + '"]', UI.Page.view),
-						action = this.getAttribute('data-action'),
+						blockedFirstVisitStatus = JSON.parse(section.attr('data-blockedFirstVisitStatus') || '');
+
+				if (this.id === 'edit-untrust') {
+					globalPage.Page.blockFirstVisit(blockedFirstVisitStatus.host, true);
+
+					section.removeAttr('data-blockedFirstVisitStatus');
+
+					poppy.close();
+
+					UI.Page.section.toggleEditMode(section, false);					
+
+					Tabs.messageActive('reload');
+
+					return;
+				}
+
+				var action = this.getAttribute('data-action'),
 						which = this.getAttribute('data-which'),
 						editorKind = $('.page-host-editor-kind', section),
 						editorWhichItems = $('.page-host-editor-which-items', section);

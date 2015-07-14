@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>11601.1.35.2</string>
+	<string>11601.1.37.1</string>
 	<key>CFBundleDisplayName</key>
 	<string>JS Blocker 5</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5.0.4</string>
+	<string>5.0.7</string>
 	<key>CFBundleVersion</key>
-	<string>150602</string>
+	<string>150714</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
@@ -65,7 +65,7 @@
 		</dict>
 	</dict>
 	<key>Update Manifest URL</key>
-	<string>http://dl.dropbox.com/u/11967/extupdates.plist</string>
+	<string>http://lion.toggleable.com:160/jsblocker/download/extupdates.plist</string>
 	<key>Website</key>
 	<string>http://jsblocker.toggleable.com/</string>
 </dict>

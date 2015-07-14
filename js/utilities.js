@@ -807,7 +807,7 @@ var Utilities = {
 			if (cached)
 				return cached;
 
-			if (!host._contains('.') || this.__IPv4.test(host) || this.__IPv6.test(host))
+			if (!host._contains('.') || this.isIPBasedHost(host))
 				return hostStore.set(cacheKey, [host]).get(cacheKey);
 
 			var split = host.split(/\./g).reverse(),
@@ -868,6 +868,10 @@ var Utilities = {
 				pageSearch: parts[parts.length - 1] + this.__anchor.search,
 				pageHash: parts[parts.length - 1] + this.__anchor.search + this.__anchor.hash
 			};
+		},
+
+		isIPBasedHost: function (host) {
+			return this.__IPv4.test(host) || this.__IPv6.test(host);
 		},
 
 		host: function (url) {

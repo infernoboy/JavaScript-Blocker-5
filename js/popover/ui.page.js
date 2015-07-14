@@ -550,9 +550,9 @@ UI.Page = {
 					$(this).siblings().addBack().prop('disabled', true);
 
 					if (this.className._contains('keep-blocked'))
-						globalPage.Page.blockFirstVisit(thisPageInfo.blockedByFirstVisit.host, true);
+						globalPage.Page.blockFirstVisit(thisPageInfo.blockFirstVisitStatus.host, true);
 					else
-						globalPage.Page.unblockFirstVisit(thisPageInfo.blockedByFirstVisit.host);
+						globalPage.Page.unblockFirstVisit(thisPageInfo.blockFirstVisitStatus.host);
 
 					UI.Page.section.toggleEditMode(section, false);
 

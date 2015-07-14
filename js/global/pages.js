@@ -176,11 +176,15 @@ Page.unblockFirstVisit = function (host) {
 	});
 };
 
-Page.shouldBlockFirstVisit = function (host) {
+Page.blockFirstVisitStatus = function (host) {
 	var blockFirstVisit = Settings.getItem('blockFirstVisit');
 
 	if (blockFirstVisit === 'nowhere' || host === 'srcdoc')
-		return false;
+		return {
+			blocked: false,
+			action: -1,
+			host: host
+		};
 
 	if (blockFirstVisit === 'domain')
 		host = Resource.mapDomain(host, RESOURCE.DOMAIN);
@@ -189,15 +193,16 @@ Page.shouldBlockFirstVisit = function (host) {
 
 	if (!rule)
 		return {
+			blocked: true,
 			action: -ACTION.BLOCK_FIRST_VISIT,
 			host: host
 		};
 
-	if (rule.action === ACTION.BLOCK_FIRST_VISIT || rule.action === ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION)
-		return {
-			action: rule.action,
-			host: host
-		};
+	return {
+		blocked: (rule.action === ACTION.BLOCK_FIRST_VISIT || rule.action === ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION),
+		action: rule.action,
+		host: host
+	};
 
 	return false;
 };

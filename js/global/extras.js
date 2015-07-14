@@ -46,7 +46,6 @@ var Extras = {
 		Settings.setItem('donationVerified', 777);
 	},
 
-
 	Trial: {
 		__length: TIME.ONE.DAY * 10,
 

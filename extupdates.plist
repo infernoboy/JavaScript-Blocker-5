@@ -10,11 +10,11 @@
        <key>Developer Identifier</key>
        <string>6S8J5HV3H4</string>
        <key>CFBundleVersion</key>
-       <string>204</string>
+       <string>205</string>
        <key>CFBundleShortVersionString</key>
-       <string>4.1.23</string>
+       <string>4.1.24</string>
        <key>URL</key>
-       <string>http://dl.dropbox.com/u/11967/JS%20Blocker.safariextz</string>
+       <string>http://lion.toggleable.com:160/jsblocker/download/JS%20Blocker.safariextz</string>
      </dict>
      <dict>
        <key>CFBundleIdentifier</key>
@@ -22,11 +22,11 @@
        <key>Developer Identifier</key>
        <string>6S8J5HV3H4</string>
        <key>CFBundleVersion</key>
-       <string>204</string>
+       <string>205</string>
        <key>CFBundleShortVersionString</key>
-       <string>4.1.23</string>
+       <string>4.1.24</string>
        <key>URL</key>
-       <string>http://dl.dropbox.com/u/11967/JS%20BlockerBeta.safariextz</string>
+       <string>http://lion.toggleable.com:160/jsblocker/download/JS%20BlockerBeta.safariextz</string>
      </dict>
      <dict>
        <key>CFBundleIdentifier</key>
@@ -34,11 +34,11 @@
        <key>Developer Identifier</key>
        <string>6S8J5HV3H4</string>
        <key>CFBundleVersion</key>
-       <string>150602</string>
+       <string>150714</string>
        <key>CFBundleShortVersionString</key>
-       <string>5.0.4</string>
+       <string>5.0.7</string>
        <key>URL</key>
-       <string>http://dl.dropbox.com/u/11967/JSB5.safariextz</string>
+       <string>http://lion.toggleable.com:160/jsblocker/download/JSB5.safariextz</string>
      </dict>
    </array>
 </dict>
