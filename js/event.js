@@ -37,7 +37,10 @@ function EventListener () {
 	};
 };
 
-EventListener.eventInfo = {};
+EventListener.eventInfo = {
+	pageX: 0,
+	pageY: 0
+};
 
 EventListener.onMouseMove = function (event) {
 	EventListener.eventInfo.pageX = event.pageX;

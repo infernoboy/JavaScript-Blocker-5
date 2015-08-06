@@ -21,7 +21,7 @@
 	"setup.common_settings": "Common Settings",
 
 	"importBackup.title": "Import Backup - JS Blocker",
-	"importBackup.instructions": "The backup will be imported immediately after selecting the file. Donations must be re-verified if clearing settings.",
+	"importBackup.instructions": "The backup will be imported after selecting the file. Donations must be re-verified if clearing settings.",
 
 	"extras.will_unlock_free": "Supporting open-source indie software helps keep development going strong. Do you really want to unlock the extra features without donating?",
 	"extras.email_address": "Email Address",
@@ -222,8 +222,9 @@
 	"setting_menu.export.description": "A file named <b>Unknown</b> will be saved to your downloads folder. Feel free to rename it.",
 	"setting_menu.import_backup": "Import backup",
 	"setting_menu.import": "Import",
-	"setting_menu.import.description": "You can drag-and-drop the backup file into the space above. The import will start immediately after dropping the file. Donations must be re-verified if clearing settings.",
-	"setting_menu.import.alternative": "Use alternative method.",
+	"setting_menu.import.description": "You can drag-and-drop the backup file into the space above. The import will start after dropping the file. Donations must be re-verified if clearing settings.",
+	"setting_menu.import.alternative": "Use alternative method",
+	"setting_menu.import.alternative.jsb4": "to import JSB4 backup.",
 	"setting_menu.import.alternative.paste": "Paste the contents of your backup file below and click <b>Import</b>. Because of how large the backup may be, this can take a few minutes and Safari may appear to hang during the process. Donations must be re-verified if clearing settings.",
 
 	"setting.pageHeader": "Page",

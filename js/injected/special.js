@@ -16,20 +16,22 @@ var Special = {
 		if (pieces.length !== 3 || !TOKEN.INJECTED.hasOwnProperty(pieces[1]) || pieces[2] !== TOKEN.EVENT)
 			return;
 
-		event.detail.sourceID = pieces[1];
-		event.detail.sourceName = TOKEN.INJECTED[pieces[1]].namespace;
+		var eventCopy = Object._extend(true, {}, event);
 
-		if (!Utilities.Token.valid(event.detail.sourceID, event.detail.sourceName))
-			return LogDebug('no longer authorized to execute commands from ' + event.detail.sourceName);
+		eventCopy.detail.sourceID = pieces[1];
+		eventCopy.detail.sourceName = TOKEN.INJECTED[pieces[1]].namespace;
 
-		var response = Command('injected', event);
+		if (!Utilities.Token.valid(eventCopy.detail.sourceID, eventCopy.detail.sourceName))
+			return LogDebug('no longer authorized to execute commands from ' + eventCopy.detail.sourceName);
+
+		var response = Command('injected', eventCopy);
 
 		if (response instanceof Error)
 			return LogDebug('command error ' + response.message + ' - ' + COMMAND[response.message]);
 
 		var action = (response && response.command) ? 'JSBCommander:' : 'JSBCallback:';
 
-		var newEvent = new CustomEvent(action + (response && response.sourceID || event.detail.sourceID) + ':' + TOKEN.EVENT, {
+		var newEvent = new CustomEvent(action + (response && response.sourceID || eventCopy.detail.sourceID) + ':' + TOKEN.EVENT, {
 			detail: response
 		});
 

@@ -538,9 +538,11 @@ var Command = function (type, event) {
 
 		messageTopExtension: function (detail, event) {
 			if (document.hidden) {
-				event.detail.commandToken = Command.requestToken('messageTopExtension');
+				var eventCopy = Object._extend(true, {}, event);
 
-				Handler.event.addCustomEventListener('documentBecameVisible', Command.bind(window, 'injected', event), true);
+				eventCopy.detail.commandToken = Command.requestToken('messageTopExtension');
+
+				Handler.event.addCustomEventListener('documentBecameVisible', Command.bind(window, 'injected', eventCopy), true);
 			} else {
 				detail.meta.originSourceName = TOKEN.INJECTED[detail.sourceID].namespace;
 				detail.meta.originSourceID = detail.sourceID;

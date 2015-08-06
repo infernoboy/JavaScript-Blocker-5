@@ -508,8 +508,12 @@ Special.specials = {
 			source: 'canvas_data_url'
 		});
 
-		if (canLoad.isAllowed)
+		try {
+			if (canLoad.isAllowed)
+				return;
+		} catch (error) {
 			return;
+		}
 
 		var ASK_COUNTER = 0,
 				ASK_LIMIT = 3,
