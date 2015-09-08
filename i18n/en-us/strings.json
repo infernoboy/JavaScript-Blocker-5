@@ -441,6 +441,7 @@
 	"first_visit.body.domain": "domain",
 	"first_visit.keep_blocked": "Don't Trust",
 	"first_visit.unblock": "Trust",
+	"first_visit.unblock_domain": "Trust Domain",
 	"first_visit.unblock_more_info": "Trusting will let the <strong>\"Block [resource type] from\"</strong> settings take control over of what gets blocked. You can still create rules for resources on untrusted websites.",
 
 	"settings.clear_before_import": "Clear settings before import",

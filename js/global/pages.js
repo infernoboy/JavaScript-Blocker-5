@@ -186,22 +186,30 @@ Page.blockFirstVisitStatus = function (host) {
 			host: host
 		};
 
+	var domain = Resource.mapDomain(host, RESOURCE.DOMAIN);
+
 	if (blockFirstVisit === 'domain')
-		host = Resource.mapDomain(host, RESOURCE.DOMAIN);
+		host = domain;
 
-	var rule = Rules.list.firstVisit.kind('*').domain(host).get('*');
+	var rule = Rules.list.firstVisit.kind('*').domain(host).get('*'),
+			rule2 = Rules.list.firstVisit.kind('*').domain(domain).get('*');
 
-	if (!rule)
+	if (!rule && (blockFirstVisit === 'host' && !rule2))
 		return {
 			blocked: true,
 			action: -ACTION.BLOCK_FIRST_VISIT,
-			host: host
+			host: host,
+			domain: domain
 		};
+
+	if (blockFirstVisit === 'host' && rule2)
+		rule = rule2;
 
 	return {
 		blocked: (rule.action === ACTION.BLOCK_FIRST_VISIT || rule.action === ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION),
 		action: rule.action,
-		host: host
+		host: host,
+		domain: domain
 	};
 
 	return false;

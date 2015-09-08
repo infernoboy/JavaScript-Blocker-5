@@ -349,6 +349,7 @@ var Handler = {
 			return;
 
 		var host = detail.host,
+				trustDomain = false,
 				hostDisplay = host._startsWith('.') ? host.substr(1) : host,
 				hostTitle = viaFrame ? _('via_frame') + ' - ' + hostDisplay : hostDisplay;
 
@@ -374,7 +375,12 @@ var Handler = {
 		ignoreButton.classList.add('jsb-color-blocked');
 
 		var unblockButton = notification.addCloseButton(_('first_visit.unblock'), function (notification) {
+			notification.hide();
+
 			GlobalCommand('unblockFirstVisit', host);
+
+			if (trustDomain)
+				GlobalCommand('unblockFirstVisit', detail.domain);
 
 			Utilities.Timer.timeout('FirstVisitReload', function () {
 				window.location.reload();
@@ -383,15 +389,31 @@ var Handler = {
 
 		unblockButton.classList.add('jsb-color-allowed');
 
-		notification.addEventListener('click', 'a.jsb-show-more', function () {
-			var p = document.createElement('p');
+		if (!host._startsWith('.')) {
+			var hasOption = unblockButton.nextElementSibling;
 
-			p.innerHTML = _('first_visit.unblock_more_info');
+			hasOption.classList.remove('jsb-hidden');
 
-			this.parentNode.parentNode.appendChild(p);
+			notification
+				.addCustomEventListener('optionKeyStateChange', function (event) {
+					trustDomain = event.detail;
 
-			this.parentNode.removeChild(this);
-		}, true);
+					unblockButton.value = _(event.detail ? 'first_visit.unblock_domain' : 'first_visit.unblock');
+
+					hasOption.classList.toggle('jsb-hidden', event.detail);
+				});
+		}
+
+		notification
+			.addEventListener('click', 'a.jsb-show-more', function () {
+				var p = document.createElement('p');
+
+				p.innerHTML = _('first_visit.unblock_more_info');
+
+				this.parentNode.parentNode.appendChild(p);
+
+				this.parentNode.removeChild(this);
+			}, true);
 	}
 };
 
@@ -889,8 +911,8 @@ var Resource = {
 	}
 };
 
-if (globalSetting.debugMode)
-	Handler.contentURLsToBlob();
+// if (globalSetting.debugMode)
+Handler.contentURLsToBlob();
 
 Handler.setPageLocation();
 
@@ -967,13 +989,15 @@ if (!globalSetting.disabled) {
 								command: 'showBlockedAllFirstVisitNotification',
 								detail: {
 									targetPageID: PARENT.parentPageID,
-									host: blockFirstVisitStatus.host
+									host: blockFirstVisitStatus.host,
+									domain: blockFirstVisitStatus.domain
 								}
 							});
 						else
 							Handler.showBlockedAllFirstVisitNotification({
 								targetPageID: Page.info.id,
-								host: blockFirstVisitStatus.host
+								host: blockFirstVisitStatus.host,
+								domain: blockFirstVisitStatus.domain
 							});
 					}, true);
 				}
