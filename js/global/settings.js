@@ -429,8 +429,8 @@ var Settings = {
 
 		UI.Locker
 			.showLockerPrompt('importBackupSettings')
-			.then(function (settings) {
-				var settings = SettingStore.import(settings);
+			.then(function (importedSettings) {
+				var settings = SettingStore.import(importedSettings);
 
 				if (!settings)
 					return LogError('failed to import settings');
@@ -473,17 +473,22 @@ var Settings = {
 
 				Settings.setItem('showPopoverOnLoad', true);
 
-				SettingStore.lock(true);
+				setTimeout(function (settings) {
+					if (!settings._isEmpty())
+						Settings.setItem('setupComplete', true);
 
-				UI.view.switchTo('#main-views-page');
+					SettingStore.lock(true);
 
-				UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch', 'popoverOpened'], function (event) {
-					event.preventDefault();
+					UI.view.switchTo('#main-views-page');
 
-					UI.Page.showModalInfo(_('settings.safari_restart'));
-				});
+					UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch', 'popoverOpened'], function (event) {
+						event.preventDefault();
 
-				SecureSettings.clear();
+						UI.Page.showModalInfo(_('settings.safari_restart'));
+					});
+
+					SecureSettings.clear();
+				}, 1000, settings);
 			}.bind(null, settings));
 	}
 };

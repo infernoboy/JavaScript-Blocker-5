@@ -678,18 +678,19 @@ var Element = {
 			return LogError('frame does not have a window', frame);
 
 		setTimeout(function (frame, reason) {
-			frame.contentWindow.postMessage({
-				command: 'requestFrameURL',
-				data: {
-					id: frame.id,
-					host: Page.info.host,
-					pageID: Page.info.id,
-					parentPageID: PARENT.pageID,
-					reason: reason,
-					token: Utilities.Token.create(frame.id)
-				}
-			}, '*');
-		}, 2000, frame, reason)
+			if (frame && frame.contentWindow)
+				frame.contentWindow.postMessage({
+					command: 'requestFrameURL',
+					data: {
+						id: frame.id,
+						host: Page.info.host,
+						pageID: Page.info.id,
+						parentPageID: PARENT.pageID,
+						reason: reason,
+						token: Utilities.Token.create(frame.id)
+					}
+				}, '*');
+			}, 2000, frame, reason)
 	},
 
 	handle: {

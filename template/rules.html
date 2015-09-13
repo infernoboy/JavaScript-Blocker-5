@@ -114,6 +114,8 @@
 						humanString += isAllowing ? 'show' : 'hide';
 					} else if (self.kind._contains('special')) {
 						humanString += 'special';
+					} else if (self.kind._contains('user_script')) {
+						humanString += isAllowing ? 'run' : 'dont_run';
 					} else {
 						humanString += isAllowing ? 'allow' : 'block';
 					}

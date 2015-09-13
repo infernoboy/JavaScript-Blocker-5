@@ -921,7 +921,7 @@ function Log () {
 	var args = Utilities.makeArray(arguments),
 			logMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
 
-	logMessages.unshift((new Date).toLocaleTimeString(), '-');
+	logMessages.unshift((new Date).toLocaleTimeString());
 
 	Log.history.unshift(logMessages.join(' '));
 
@@ -940,7 +940,7 @@ function LogDebug () {
 		var args = Utilities.makeArray(arguments),
 				debugMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
 
-		debugMessages.unshift((new Date).toLocaleTimeString(), '-');
+		debugMessages.unshift((new Date).toLocaleTimeString());
 
 		LogDebug.history.unshift(debugMessages.join(' '));
 
@@ -984,7 +984,7 @@ function LogError () {
 		} else
 			errorMessage = [error];
 
-		errorMessage.unshift((new Date).toLocaleTimeString(), '-');
+		errorMessage.unshift((new Date).toLocaleTimeString());
 
 		LogError.history.unshift({
 			message: errorMessage,

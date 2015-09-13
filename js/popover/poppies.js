@@ -390,6 +390,17 @@ Object._extend(Poppy.scripts, {
 			})
 	},
 
+	'firstVisit-rules-menu': function (poppy) {
+		poppy.content
+			.on('click', '#firstVisit-menu-clear', function (event) {
+				poppy.close();
+
+				globalPage.Rules.list.firstVisit.clear();
+
+				UI.view.switchTo('#rule-views-firstVisit', true);
+			})
+	},
+
 	'active-rules-menu': function (poppy) {
 		poppy.content
 			.on('click', '#active-menu-new', function (event) {

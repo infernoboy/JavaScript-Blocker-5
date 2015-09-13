@@ -194,7 +194,7 @@ Page.blockFirstVisitStatus = function (host) {
 	var rule = Rules.list.firstVisit.kind('*').domain(host).get('*'),
 			rule2 = Rules.list.firstVisit.kind('*').domain(domain).get('*');
 
-	if (!rule && (blockFirstVisit === 'host' && !rule2))
+	if (!rule && !rule2)
 		return {
 			blocked: true,
 			action: -ACTION.BLOCK_FIRST_VISIT,

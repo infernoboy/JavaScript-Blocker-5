@@ -2,7 +2,7 @@
 
 UI.Rules = {
 	__domainFilter: '',
-	__lists: ['page', 'temporary', 'active', 'filter'],
+	__lists: ['page', 'temporary', 'active', 'filter', 'firstVisit'],
 
 	event: new EventListener,
 
@@ -205,7 +205,9 @@ UI.Rules = {
 				hasRules = false;
 
 		if (!globalPage.Rules.isLockerLocked()) {
-			if (ruleList === globalPage.Rules.list.temporary)
+			if (ruleList === globalPage.Rules.list.firstVisit)
+				editable = 3;
+			else if (ruleList === globalPage.Rules.list.temporary)
 				editable = 1;
 			else if (ruleList == globalPage.Rules.list.active) {
 				if (globalPage.Rules.snapshotInUse())
@@ -287,6 +289,12 @@ UI.Rules = {
 						var ruleListItems = [];
 
 						for (var k = 0; k < ruleKeyChunks[j].length; k++) {
+							if (domainGrouped[type][domain][kind][ruleKeyChunks[j][k]].action === globalPage.ACTION.BLOCK_FIRST_VISIT) {
+								domainListItem.remove();
+
+								break;
+							}
+
 							ruleListItems.push(Template.create('rules', 'rule-list-item', {
 								type: type,
 								kind: kind,
@@ -555,8 +563,11 @@ UI.Rules = {
 
 		viewWillSwitch: function (event) {
 			event.afterwards(function (event) {
-				if (!event.defaultPrevented && (event.detail.to.id === '#main-views-rule' || event.detail.to.id === '#main-views-page'))
+				if (!event.defaultPrevented && (event.detail.to.id === '#main-views-rule' || event.detail.to.id === '#main-views-page')) {
 					$('#rule-domain-search', UI.Rules.view).val('').trigger('search');
+
+					$('li[data-view="#rule-views-firstVisit"]', UI.Rules.viewSwitcher).toggle(Settings.getItem('blockFirstVisit') !== 'nowhere');
+				}
 			});
 
 			if (event.detail.to.id === '#main-views-rule' && $('.active-view', UI.Rules.views).is('#rule-views-filter'))
@@ -621,6 +632,10 @@ UI.Rules = {
 
 				case '#rule-views-active':
 					ruleList = globalPage.Rules.list.active;
+				break;
+
+				case '#rule-views-firstVisit':
+					ruleList = globalPage.Rules.list.firstVisit;
 				break;
 
 				case '#rule-views-filter':
