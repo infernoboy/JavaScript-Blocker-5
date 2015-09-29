@@ -113,6 +113,8 @@ FilterList.prototype.process = function (list) {
 
 					Settings.removeItem('filterLists', self.name);
 
+					Rules.__FilterRules.remove(self.name);
+
 					return;
 				}
 

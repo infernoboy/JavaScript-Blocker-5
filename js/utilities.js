@@ -797,7 +797,8 @@ var Utilities = {
 		hostParts: function (host, prefixed) {
 			if (!this.hostParts.cache && window.Store)
 				this.hostParts.cache = new Store('HostParts', {
-					maxLife: TIME.ONE.HOUR
+					maxLife: TIME.ONE.HOUR,
+					inheritMaxLife: false
 				});
 
 			var cacheKey = prefixed ? 'prefixed' : 'unprefixed',

@@ -110,6 +110,9 @@ var Settings = {
 			}
 		}
 
+		if (event.key === 'settingCurrentView')
+			return;
+
 		if (!event.key || !event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')
 			if (window.UI && UI.Settings && UI.Settings.view && UI.Settings.view.is('.active-view'))
 				UI.Settings.repopulateActiveSection();
@@ -461,7 +464,7 @@ var Settings = {
 							continue;
 
 						try {
-							if (settings[setting] && settings[setting].STORE)
+							if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE))
 								SettingStore.setItem(setting, settings[setting]);
 							else
 								Settings.setItem(setting, settings[setting], null, true, true);

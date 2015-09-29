@@ -9,7 +9,8 @@ var Store = (function () {
 
 		this.destructionTimer = null;
 
-		this.prolongDestruction();
+		if (this.selfDestruct > 0)
+			this.prolongDestruction();
 
 		if (!this.data)
 			this.load();
@@ -27,7 +28,7 @@ var Store = (function () {
 
 	Store = Store._extendClass(EventListener);
 
-	Store.__inheritable = ['ignoreSave', 'maxLife', 'selfDestruct'];
+	Store.__inheritable = ['ignoreSave', 'inheritMaxLife', 'selfDestruct'];
 
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
@@ -54,8 +55,13 @@ var Store = (function () {
 	};
 
 	Store.inherit = function (props, store) {
-		for (var i = 0; i < Store.__inheritable.length; i++)
-			props[Store.__inheritable[i]] = (Store.__inheritable[i] in props) ? props[Store.__inheritable[i]] : store[Store.__inheritable[i]];
+		var inheritable = Store.__inheritable.slice(0);
+
+		if (store.inheritMaxLife)
+			inheritable.push('maxLife');
+
+		for (var i = 0; i < inheritable.length; i++)
+			props[inheritable[i]] = (inheritable[i] in props) ? props[inheritable[i]] : store[inheritable[i]];
 
 		return props;
 	};
@@ -174,7 +180,7 @@ var Store = (function () {
 					console.time(timeNow.toLocaleTimeString() + ' - SAVED ' + store.id);
 				}
 
-				Settings.__method('setItem', store.id, store.readyJSON());
+				Settings.__method('setItem', store.id, LZString.compressToUTF16(JSON.stringify(store)));
 
 				if (window.globalSetting.debugMode)
 					console.timeEnd(timeNow.toLocaleTimeString() + ' - SAVED ' + store.id);
@@ -195,6 +201,7 @@ var Store = (function () {
 
 	Store.prototype.setProperties = function (name, props) {
 		this.maxLife = (typeof props.maxLife === 'number') ? props.maxLife : Infinity;
+		this.inheritMaxLife = (typeof props.inheritMaxLife === 'boolean') ? props.inheritMaxLife : true;
 		this.selfDestruct = (typeof props.selfDestruct === 'number') ? props.selfDestruct : 0;
 		this.saveDelay = (typeof props.saveDelay === 'number') ? props.saveDelay : 2000;
 		this.lock = !!props.lock;
@@ -242,9 +249,19 @@ var Store = (function () {
 
 	Store.prototype.load = function () {
 		if (this.save) {
-			var stored = Settings.__method('getItem', this.id, {
-				STORE: {}
-			});
+			var stored = Settings.__method('getItem', this.id, LZString.compressToUTF16('{"STORE":{}}'));
+
+			if (typeof stored === 'string') {
+				var decompressed = LZString.decompressFromUTF16(stored);
+
+				try {
+					stored = JSON.parse(decompressed && decompressed.length ? decompressed : stored);
+				} catch (e) {
+					LogError(stored, decompressed);
+
+					stored = {}
+				}
+			}
 
 			if (stored.lock)
 				this.lock = true;
@@ -483,9 +500,10 @@ var Store = (function () {
 		if ((value === null && !setNull) || value === undefined)
 			return this;
 
-		setTimeout(function (store) {
-			store.prolongDestruction();
-		}, 50, this);
+		if (this.selfDestruct > 0)
+			setTimeout(function (store) {
+				store.prolongDestruction();
+			}, 50, this);
 
 		try {
 			if ((typeof key !== 'string' && typeof key !== 'number') || this.data._hasPrototypeKey(key))
@@ -527,7 +545,8 @@ var Store = (function () {
 	};
 
 	Store.prototype.get = function (key, defaultValue, asReference, noAccess) {
-		this.prolongDestruction();
+		if (this.selfDestruct > 0)
+			this.prolongDestruction();
 
 		try {
 			if (this.data.hasOwnProperty(key)) {

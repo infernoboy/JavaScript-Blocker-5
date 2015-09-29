@@ -29,7 +29,7 @@ var Strings = {
 			})
 
 			.fail(function (error) {
-				LogError('failed to load language - ' + language, error.status);
+				LogDebug('failed to load language - ' + language, error.status);
 
 				Strings.__currentLanguage = Strings.__defaultLanguage;
 			});

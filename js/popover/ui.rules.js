@@ -561,7 +561,7 @@ UI.Rules = {
 				UI.Rules.events.viewDidSwitch(event);
 		},
 
-		viewWillSwitch: function (event) {
+		viewWillSwitch: function (event) {			
 			event.afterwards(function (event) {
 				if (!event.defaultPrevented && (event.detail.to.id === '#main-views-rule' || event.detail.to.id === '#main-views-page')) {
 					$('#rule-domain-search', UI.Rules.view).val('').trigger('search');
@@ -570,7 +570,9 @@ UI.Rules = {
 				}
 			});
 
-			if (event.detail.to.id === '#main-views-rule' && $('.active-view', UI.Rules.views).is('#rule-views-filter'))
+			var activeView = $('.active-view', UI.Rules.views);
+
+			if (event.detail.to.id === '#main-views-rule' && (activeView.is('#rule-views-filter') || activeView.is('#rule-views-firstVisit')))
 				UI.view.switchTo('#rule-views-temporary');
 		},
 
@@ -651,7 +653,7 @@ UI.Rules = {
 			if (ruleList)
 				setTimeout(function (toView, ruleList, useTheseRules) {
 					UI.Rules.buildRuleList(toView, ruleList, useTheseRules);
-				}, 0, toView, ruleList, useTheseRules);
+				}, 20, toView, ruleList, useTheseRules);
 		},
 
 		elementWasAdded: function (event) {

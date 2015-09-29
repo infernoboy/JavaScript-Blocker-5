@@ -289,6 +289,8 @@ var UI = {
 			.addCustomEventListener('viewDidSwitch', function (event) {
 				if (event.detail.id._startsWith('#main-views'))
 					$('#full-toggle', UI.view.viewToolbar).toggleClass('poppy-menu-disabled', $('li[data-view=' + event.detail.id + ']', event.detail.switcher).hasClass('view-switcher-collapses'));
+
+				Poppy.closeAll();
 			})
 
 			.addCustomEventListener('disabled', function (event) {
@@ -341,7 +343,7 @@ var UI = {
 						poppyMenus[i].addEventListener('mousedown', function (event) {
 							Utilities.Timer.timeout('showPoppyMenu', function (event, tab) {						
 								UI.view.showPoppyMenu(tab.querySelector('.poppy-menu-target'), event, true);
-							}, 200, [event, this]);
+							}, 400, [event, this]);
 						});
 					}
 
@@ -667,7 +669,7 @@ var UI = {
 					.animate({
 						scrollTop: 0,
 						scrollLeft: 0
-					}, 225 * window.globalSetting.speedMultiplier, onComplete);
+					}, 0 * window.globalSetting.speedMultiplier, onComplete);
 
 				UI.view.floatingHeaders.adjustAll();
 			}

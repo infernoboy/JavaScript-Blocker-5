@@ -1152,6 +1152,10 @@ Settings.settings = {
 				$fanboySocial: {
 					enabled: false,
 					value: ['https://easylist-downloads.adblockplus.org/fanboy-social.txt', 'Fanboy\'s Anti-social']
+				},
+				$nonIntrusive: {
+					enabled: false,
+					value: ['https://easylist-downloads.adblockplus.org/exceptionrules.txt', 'Non-Intrusive Ads']
 				}
 			},
 			validate: {

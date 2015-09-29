@@ -77,7 +77,7 @@ UI.Settings = {
 			detail: document.body
 		});
 
-		UI.event.addCustomEventListener(['viewWillSwitch', 'viewAlreadyActive'], UI.Settings.events.repopulateActiveSection);
+		UI.event.addCustomEventListener('viewAlreadyActive', UI.Settings.events.repopulateActiveSection);
 		UI.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
 		UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
 		UI.event.addCustomEventListener('viewWillSwitch', UI.Settings.events.viewWillSwitch);
@@ -448,7 +448,7 @@ UI.Settings = {
 		return element;
 	},
 
-	populateSection: function (view, settingSection)  {
+	populateSection: function (view, settingSection)  {		
 		var container = Template.create('settings', 'setting-section-container'),
 				currentSection = $('> .setting-section', view);
 
@@ -590,6 +590,11 @@ UI.Settings = {
 						});
 			}
 
+			if (event.detail.to.id === '#main-views-setting')
+				return setTimeout(function () {
+					UI.Settings.repopulateActiveSection();
+				}, 20);
+
 			if (!event.detail.to.id._startsWith('#setting-views'))
 				return;
 
@@ -606,7 +611,9 @@ UI.Settings = {
 					.show();
 			}
 
-			UI.Settings.populateSection(event.detail.to.view, event.detail.to.view.attr('data-section'));
+			setTimeout(function () {
+				UI.Settings.populateSection(event.detail.to.view, event.detail.to.view.attr('data-section'));
+			}, 20);
 		}
 	}
 };

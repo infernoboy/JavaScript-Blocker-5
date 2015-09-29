@@ -222,4 +222,20 @@ Update.versions[150502] = {
 	}
 };
 
+Update.versions[150927] = {
+	blocking: false,
+
+	update: function () {
+		for (var list in Rules.list)
+			Rules.list[list].rules.saveNow();
+
+		Snapshots.saveNow();
+		UserScript.scripts.saveNow();
+		Settings.__stores.saveNow();
+		Rules.__FilterRules.saveNow();
+
+		return true;
+	}
+};
+
 Update.init();
