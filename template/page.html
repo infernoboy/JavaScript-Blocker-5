@@ -1,3 +1,7 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+-->
+
 <noscript id="host-section">
 	<%
 		var isLocked = globalPage.Rules.isLocked(),
@@ -7,7 +11,7 @@
 	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>" data-blockedFirstVisitStatus="<%=JSON.stringify(self.blockFirstVisitStatus)._entityQuotes()%>">
 		<div class="page-host-header">
 			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
-			<button class="page-host-edit" data-poppy="edit-page" data-poppyMenuMeta="<%=self.id%>"><span href="javascript:void(0);" class="poppy-menu-target no-underline"><%=_('view.page.host.edit')%></span></button>
+			<button class="page-host-edit" data-poppyMenu="edit-page" data-poppyMenuMeta="<%=self.id%>" data-cancelForceBegin="1"><span class="poppy-menu-target no-underline"><%=_('view.page.host.edit')%></span></button>
 			<input type="button" class="page-host-create-rules" value="<%=_('view.page.host.editor.create_rules')%>" />
 		</div>
 
@@ -272,7 +276,7 @@
 				%>
 
 				<header class="page-host-kind" data-expander="<%=expander%>">
-					<h4><input type="checkbox" class="page-host-kind-select-all" title="<%=_('view.page.host.click_to_select_all')%>" /><%=_('view.page.host.kind.' + kind )%></h4>
+					<h4 data-cancelForceBegin="1"><input type="checkbox" class="page-host-kind-select-all" title="<%=_('view.page.host.click_to_select_all')%>" /><%=_('view.page.host.kind.' + kind )%></h4>
 				</header>
 
 				<ul class="page-host-items" data-kind="<%=kind%>">
@@ -405,7 +409,7 @@
 											</div><%
 										} %>
 
-										<div class="page-host-item-description">
+										<div class="page-host-item-description" data-cancelForceBegin="1">
 											<% if (resourceDescriptions.length) { %>
 												<p class="jsb-info jsb-light-scrollbars"><%=resourceDescriptions.join(', ')%></p><%
 											} %>
@@ -413,14 +417,14 @@
 
 										<div class="page-host-item-container">
 											<% if (self.stateType !== 'unblocked' || kind !== 'script') { %>
-												<span class="page-host-item-info more-info"></span><%
+												<span class="page-host-item-info more-info" data-forceTriggersClick="1"></span><%
 											} %>
 											<span class="page-host-item-source-container jsb-light-scrollbars">
-												<span class="page-host-item-source <%=resourceDescriptions.length ? 'page-host-item-source-has-description' : ''%>" title="<%=_('view.page.host.click_to_edit')%>"><%=$.trim(sourceName._escapeHTML().replace(/([\n\t]|  +)/g, ' '))%></span>
+												<span data-cancelForceBegin="1" class="page-host-item-source <%=resourceDescriptions.length ? 'page-host-item-source-has-description' : ''%>" title="<%=_('view.page.host.click_to_edit')%>"><%=$.trim(sourceName._escapeHTML().replace(/([\n\t]|  +)/g, ' '))%></span>
 											</span>
 											<% if (shouldBadge) { %>
 												<span class="page-host-host-count-container">
-													<a href="javascript:void(0);" class="page-host-host-count" title="<%=_('view.page.items.view_resource_urls')%>"><%=resourceIDs.length%></a>
+													<a data-cancelForceBegin="1" href="javascript:void(0);" class="page-host-host-count" title="<%=_('view.page.items.view_resource_urls')%>"><%=resourceIDs.length%></a>
 												</span><%
 											} %>
 										</div>

@@ -1,3 +1,7 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+-->
+
 <noscript id="container">
 	<div id="container">
 		<div id="modal-overlay">
@@ -6,7 +10,7 @@
 
 		<div id="view-container">
 			<div id="view-toolbar">
-				<span id="full-toggle" data-poppy="disable-menu"><span class="poppy-menu-target"><%=_('view_toolbar.disable')%></span></span>
+				<span id="full-toggle" data-poppyMenu="disable-menu" data-cancelForceBegin="1"><span class="poppy-menu-target"><%=_('view_toolbar.disable')%></span></span>
 
 				<%
 					var mainSwitcher = Template.create('main', 'view-switcher', {
@@ -48,7 +52,7 @@
 					}, true);
 				%><%=mainSwitcher.html()%>
 
-				<span id="open-menu"><%=_('view_toolbar.menu')%></span>
+				<span id="open-menu" data-forceTriggersClick="1"><%=_('view_toolbar.menu')%></span>
 			</div>
 
 			<div id="main-views" class="ui-view-container">
@@ -107,7 +111,7 @@
 
 <noscript id="view-switcher">
 	<div id="<%=self.id || ''%>" class="view-switcher-container <%=self.mini ? 'mini' : ''%>">
-		<ul class="view-switcher" data-container="<%=self.container%>"><% for (var viewID in self.views) { %><li data-view="<%=viewID%>" <%=self.views[viewID].poppy ? ('data-poppy="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container poppy-menu-target"><span class="view-switcher-item-name"><%=self.views[viewID].value%></span><span class="view-switcher-item-badge"></span></span></li><% } %></ul>
+		<ul class="view-switcher" data-container="<%=self.container%>"><% for (var viewID in self.views) { %><li data-view="<%=viewID%>" data-cancelForceBegin="1" <%=self.views[viewID].poppy ? ('data-poppyMenu="' + self.views[viewID].poppy + '"') : ''%> class="<%=self.views[viewID].hide ? 'view-switcher-hidden view-switcher-collapses' : ''%>"><span class="view-switcher-item-container <%=self.views[viewID].poppy ? 'poppy-menu-target' : ''%>"><span class="view-switcher-item-name"><%=self.views[viewID].value%></span><span class="view-switcher-item-badge"></span></span></li><% } %></ul>
 	</div>
 </noscript>
 

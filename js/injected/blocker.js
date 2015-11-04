@@ -1,10 +1,19 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
+
 // Sometimes the global page isn't ready when a page is loaded. This can happen
 // when Safari is first launched or after reloading the extension. This loop
 // ensures that it is ready before allowing the page to continue loading.
 var globalSetting;
 
 do {
-	globalSetting = GlobalCommand('globalSetting');
+	try {
+		globalSetting = GlobalCommand('globalSetting');
+	} catch (e) {
+		throw new Error('content blocker mode.');
+	}
 
 	if (!globalSetting.popoverReady && window === window.top) {
 		window.location.reload();
@@ -172,7 +181,7 @@ var Handler = {
 			};
 		}
 
-		if (Utilities.Page.isAbout && FRAME_ELEMENT) {
+		if (Utilities.Page.isAbout && FRAME_ELEMENT && TopPage.info) {
 			Page.info.location = TopPage.info.location;
 			Page.info.host = TopPage.info.host;
 			Page.info.protocol = TopPage.info.protocol;
@@ -345,7 +354,7 @@ var Handler = {
 	},
 
 	showBlockedAllFirstVisitNotification: function (detail, viaFrame) {
-		if (!Utilities.Page.isTop || Utilities.Page.isXML || (detail.targetPageID && detail.targetPageID !== Page.info.id))
+		if (Page.info.isFrame || Utilities.Page.isXML || (detail.targetPageID && detail.targetPageID !== Page.info.id))
 			return;
 
 		var host = detail.host,
@@ -765,7 +774,13 @@ var Element = {
 
 		frame: function (frame) {
 			var frame = frame.target || frame,
-					id = frame.getAttribute('id');
+					id = frame.getAttribute('id'),
+					sandbox = frame.getAttribute('sandbox');
+
+			if (sandbox && !sandbox._contains('allow-scripts')) {
+				frame.setAttribute('data-jsbFrameSandbox', sandbox);
+				frame.setAttribute('sandbox', sandbox + ' allow-scripts');
+			}
 
 			if (!id || !id.length)
 				frame.setAttribute('id', (id = 'frame-' + Utilities.Token.generate()));
@@ -887,7 +902,7 @@ var Resource = {
 						pageLocation: Page.info.location,
 						pageProtocol: Page.info.protocol,
 						source: source,
-						isFrame: !Utilities.Page.isTop
+						isFrame: Page.info.isFrame
 					});
 
 				if (canLoad.action === -85)
@@ -927,7 +942,7 @@ if (!globalSetting.disabled) {
 			pageLocation: Page.info.location,
 			pageProtocol: Page.info.protocol,
 			source: '*',
-			isFrame: !Utilities.Page.isTop
+			isFrame: Page.info.isFrame
 		});
 	else
 		var JSBSupport = {
@@ -1050,7 +1065,7 @@ if (!globalSetting.disabled) {
 		action: -1
 	};
 
-	if (Utilities.Page.isTop)
+	if (!Page.info.isFrame)
 		Page.send();
 }
 

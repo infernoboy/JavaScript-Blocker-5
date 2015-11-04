@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 UI.Setup = {
@@ -15,6 +19,7 @@ UI.Setup = {
 		UI.view.switchTo('#main-views-setup');
 
 		UI.event.addCustomEventListener('viewWillSwitch', UI.Setup.preventViewSwitch);
+		Poppy.Menu.event.addCustomEventListener('poppyMenuWillShow', UI.Setup.preventPoppyMenus);
 
 		UI.Setup.view
 			.on('click', '#mark-setup-complete', UI.Setup.complete);
@@ -28,6 +33,9 @@ UI.Setup = {
 		UI.Setup.view.empty();
 
 		Template.unload('setup');
+
+		UI.event.removeCustomEventListener('viewWillSwitch', UI.Setup.preventViewSwitch);
+		Poppy.Menu.event.removeCustomEventListener('poppyMenuWillShow', UI.Setup.preventPoppyMenus);
 	},
 
 	preventViewSwitch: function (event) {
@@ -45,6 +53,11 @@ UI.Setup = {
 			}	else
 				event.unbind();
 		}
+	},
+
+	preventPoppyMenus: function (event) {
+		if (!Settings.getItem('setupComplete'))
+			event.preventDefault();
 	}
 };
 

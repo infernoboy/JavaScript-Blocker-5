@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 #main-views-page {
 	width: 100%;
 	padding-bottom: 10px;
@@ -384,6 +388,7 @@
 						position: relative;
 						padding: 7px 0 0;
 						border-bottom: 1px solid darken(#ededed, @darknessLevel);
+						-webkit-transition: background unit(0.2 * @speedMultiplier, s) ease-out;
 
 						&:last-child {
 							border-bottom-color: transparent;

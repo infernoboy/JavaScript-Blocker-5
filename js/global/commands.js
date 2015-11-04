@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 function Command (command, data, event) {
@@ -210,6 +214,10 @@ function Command (command, data, event) {
 			};
 		},
 
+		contentBlockerMode: function () {
+			this.message = false;
+		},
+
 		specialsForLocation: function (page) {
 			if (page.pageProtocol === 'about:')
 				page.pageLocation = this.event.target.url || page.pageLocation;
@@ -250,7 +258,7 @@ function Command (command, data, event) {
 			var page = new Page(thePage, tab),
 					renderPage = page;
 
-			if (thePage.isFrame) {		
+			if (thePage.isFrame) {
 				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
 					if (parent.info.state.data && parent.isTop && parent.tab === tab) {
 						parent.addFrame(page);

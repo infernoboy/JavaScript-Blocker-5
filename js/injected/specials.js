@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 Special.specials = {
 	prepareScript: function () {
 		if (window[JSB.eventToken])
@@ -455,8 +459,12 @@ Special.specials = {
 	},
 
 	environmental_information: function () {
-		var now = Math.random().toString(36), nowInt = Date.now(),
-				agent = 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/24.0';
+		var randomInteger = function (min, max) {
+			return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+
+		var now = Math.random().toString(36),
+				agent = 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/' + randomInteger(20, 50) + '.0';
 
 		window.navigator = {
 			geoLocation: window.navigator.geoLocation,
@@ -486,19 +494,23 @@ Special.specials = {
 			getStorageUpdates: window.navigator.getStorageUpdates.bind(window.navigator)
 		};
 
+		function randomInteger (min, max) {
+			return Math.floor(Math.random() * (max - min)) + min;
+		}
+
 		window.screen = {
-			width: 1000,
-			availWidth: 1000,
-			height: 700,
-			availHeight: 700,
+			width: randomInteger(1000, 2000),
+			availWidth: randomInteger(1000, 2000),
+			height: randomInteger(700, 1000),
+			availHeight: randomInteger(700, 1000),
 			availLeft: 0,
 			availTop: 0,
-			pixelDepth: 24,
-			colorDepth: 24
+			pixelDepth: randomInteger(24, 64),
+			colorDepth: randomInteger(24, 64)
 		};
 
 		Date.prototype.getTimezoneOffset = function () {
-			return 0;
+			return randomInteger(-12, 14);
 		};
 	},
 
@@ -626,7 +638,23 @@ Special.specials = {
 	},
 
 	simple_referrer: new Function,
-	anchor_titles: new Function
+	anchor_titles: new Function,
+
+	frameSandboxFixer: function () {
+		var frameSandbox;
+
+		if (window.frameElement && (frameSandbox = window.frameElement.getAttribute('data-jsbFrameSandbox'))) {
+			var meta = document.createElement('meta');
+
+			meta.setAttribute('http-equiv', 'content-security-policy');
+			meta.setAttribute('content', "script-src " + (frameSandbox.indexOf('allow-same-origin') > -1 ? 'self' : 'none'));
+			
+			if (document.documentElement.firstChild)
+				document.documentElement.insertBefore(meta, document.documentElement.firstChild);
+			else
+				document.documentElement.appendChild(meta);
+		}
+	},
 };
 
 (function () {
@@ -642,6 +670,9 @@ Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
 Special.specials.installUserScriptPrompt.excludeFromPage = true;
 Special.specials.historyFixer.excludeFromPage = true;
+Special.specials.historyFixer.ignoreHelpers = true;
+Special.specials.frameSandboxFixer.excludeFromPage = true;
+Special.specials.frameSandboxFixer.ignoreHelpers = true;
 Special.specials.xhr_intercept.excludeFromPage = true;
 Special.specials.simple_referrer.noInject = true;
 Special.specials.anchor_titles.noInject = true;

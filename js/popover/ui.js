@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 var UI = {
@@ -124,16 +128,7 @@ var UI = {
 
 					UI.event.trigger('dragEnd');
 				}
-			})
-
-			.on('mousemove mouseup click dblclick', Utilities.throttle(function (event) {
-				Utilities.setImmediateTimeout(function () {
-					var timerExisted = Utilities.Timer.remove('timeout', 'showPoppyMenu');
-
-					if (timerExisted)
-						$('*[data-poppyMenuWillShow]', UI.container).removeAttr('data-poppyMenuWillShow')
-				});
-			}, 0, true));
+			});
 
 		$(document)
 			.on('mousedown', '.popover-resize', function (event) {
@@ -213,69 +208,6 @@ var UI = {
 
 			.on('input', 'textarea.render-as-input', function (event) {
 				this.value = this.value.replace(/\n/g, '');
-			})
-
-			.on('click', '*[data-expander]:not(.keep-expanded) > *', function (event) {
-				if (event.offsetX > this.offsetWidth) {
-					var header = $(this.parentNode),
-							groupWrapper = header.next(),
-							group = $('> *:first-child', groupWrapper);
-
-					if (group.is(':animated'))
-						return;
-
-					var groupWrapperHeight = groupWrapper.outerHeight(true),
-							isCollapsed = header.hasClass('group-collapsed'),
-							expandingClass = isCollapsed ? 'group-expanding' : 'group-collapsing';
-
-					header.addClass(expandingClass);
-
-					if (!header.hasClass('temporary-expand'))
-						Settings.setItem('expander', !isCollapsed, header.attr('data-expander'));
-
-					groupWrapper.show();
-
-					if (isCollapsed) {
-						header.removeClass('group-collapsed');
-
-						var view = header.parents('.ui-view-container:first');
-
-						if (view.length) {
-							var offset = groupWrapper.offset(),
-									viewOffset = view.offset(),
-									bottom = offset.top + groupWrapperHeight;
-
-							if (bottom > view.height() + viewOffset.top)
-								view.animate({
-									scrollTop: '+=' + (bottom - view.height() - viewOffset.top)
-								}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
-						}
-					}
-
-					group
-						.css({
-							marginTop: isCollapsed ? -groupWrapperHeight : 0,
-							opacity: isCollapsed ? 0.3 : 1
-						})
-						.animate({
-							marginTop: isCollapsed ? 0 : -groupWrapperHeight,
-							opacity: isCollapsed ? 1 : 0.3
-						}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
-							header.removeClass(expandingClass);
-
-							if (!isCollapsed)
-								header.addClass('group-collapsed');
-
-							groupWrapper.css('display', '');
-
-							group.css({
-								marginTop: 0,
-								opacity: 1
-							});
-
-							// Utilities.Element.repaint(document.documentElement);
-						});
-				}
 			});
 
 		UI.event
@@ -329,25 +261,6 @@ var UI = {
 					}
 
 
-					// ===== Poppy Menus =====
-
-					var poppyMenus = event.detail.querySelectorAll('*[data-poppy]:not(.poppy-menu-ready)');
-
-					for (var i = poppyMenus.length; i--;) {
-						poppyMenus[i].classList.add('poppy-menu-ready');
-
-						poppyMenus[i].querySelector('.poppy-menu-target').addEventListener('click', function (event) {
-							UI.view.showPoppyMenu(this, event);
-						});
-
-						poppyMenus[i].addEventListener('mousedown', function (event) {
-							Utilities.Timer.timeout('showPoppyMenu', function (event, tab) {						
-								UI.view.showPoppyMenu(tab.querySelector('.poppy-menu-target'), event, true);
-							}, 400, [event, this]);
-						});
-					}
-
-
 					// ===== Double-click Buttons =====
 
 					var doubleClickButtons = event.detail.querySelectorAll('.double-click:not(.double-click-ready)');
@@ -372,38 +285,6 @@ var UI = {
 
 							this.classList.remove('one-more-time');
 						}, true);
-					}
-
-
-					// ===== Expanders =====
-
-					var expander,
-							keepExpanded;
-
-					var headers = event.detail.querySelectorAll('*[data-expander]'),
-							showExpanderLabels = Settings.getItem('showExpanderLabels');
-
-					for (var i = headers.length; i--;) {
-						if (headers[i].classList.contains('header-expander-ready'))
-							continue;
-
-						expander = headers[i].getAttribute('data-expander');
-						keepExpanded = expander === '0';
-
-						headers[i].classList.add('header-expander-ready');
-
-						$(headers[i])
-							.toggleClass('keep-expanded', keepExpanded)
-							.toggleClass('show-label', showExpanderLabels)
-							.toggleClass('group-collapsed', !keepExpanded && !!Settings.getItem('expander', expander))
-							.find('> *')
-							.attr({
-								'data-i18n-show': _('expander.show'),
-								'data-i18n-hide': _('expander.hide')
-							})
-							.end()
-							.next()
-							.wrapAll('<div class="collapsible-group-wrapper"></div>');
 					}
 				}
 			});
@@ -456,6 +337,16 @@ var UI = {
 			darkMode: variables.darkMode || Settings.getItem('darkMode'),
 			darknessLevel: variables.darknessLevel || Settings.getItem('darkMode') ? 84 : 0,
 			baseColor: variables.baseColor || Settings.getItem('baseColor')
+		});
+	},
+
+	executeLessScript: function (script) {
+		return new Promise(function (resolve, reject) {
+			less.render('JSB { value: ' + script + ' }', { compress: true }).then(function (result) {
+				var value = result.css.substr(10);
+
+				resolve(value.substr(0, value.length - 1));
+			}, reject);
 		});
 	},
 
@@ -572,8 +463,16 @@ var UI = {
 			this.viewSwitcher = $('.view-switcher', this.viewToolbar);
 
 			UI.container
-				.on('click', '.more-info[data-moreInfo]', function (event) {
-					var poppy = new Poppy(event.pageX, event.pageY, false);
+				.on('click', '.more-info[data-moreInfo]', function (event, forceClickEvent, forceClick) {
+					if (Poppy.poppyWithScriptNameExist(this.getAttribute('data-moreInfo')))
+						return;
+					
+					if (forceClickEvent)
+						event = forceClickEvent;
+
+					var poppy = new Poppy(event.pageX, event.pageY, false, this.getAttribute('data-moreInfo'));
+
+					poppy.scaleWithForce(forceClick);
 
 					poppy
 						.linkToOpenPoppy()
@@ -584,26 +483,31 @@ var UI = {
 				})
 
 				.on('click', '#full-toggle', function () {
-					if (!UI.event.trigger('willDisable', window.globalSetting.disabled) && !UI.event.trigger('pressAndHoldSucceeded'))
+					if (!UI.event.trigger('willDisable', window.globalSetting.disabled))
 						globalPage.Command.toggleDisabled();
 				})
 
-				.on('click', '#open-menu', function (event) {
+				.on('click', '#open-menu', function (event, forceClickEvent, forceClick) {
+					if (forceClickEvent)
+						event = forceClickEvent;
+
 					var openMenu = function () {
 						var poppy = new Poppy(event.pageX, event.pageY, true, 'main-menu');
+
+						poppy.scaleWithForce(forceClick);
 
 						poppy.setContent(Template.create('poppy', 'main-menu')).stayOpenOnScroll().show();
 					};
 
 					if (this.classList.contains('unread-error')) {
-						var self = this;
-
 						this.classList.remove('unread-error');
 
 						UI.Locker
 							.showLockerPrompt('console')
 							.then(function () {
 								var consolePoppy = new Poppy(event.pageX, event.pageY, true, 'console');
+
+								consolePoppy.scaleWithForce();
 
 								consolePoppy
 									.setContent(Template.create('poppy', 'console'))
@@ -619,17 +523,21 @@ var UI = {
 					openMenu();
 				})
 
+				.on('webkitmouseforcewillbegin', '.view-switcher', function (event) {
+					event.preventDefault();
+				})
+
 				.on('click', '.view-switcher li', function () {
 					UI.view.switchTo(this.getAttribute('data-view'));
 				})
 
-			UI.event
+			Poppy.event
 				.addCustomEventListener('poppyDidShow', function () {
 					UI.view.views.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
 				})
 
 				.addCustomEventListener('poppyModalOpened', function () {
-					UI.view.viewContainer.addClass('modal-blur');
+					UI.view.viewContainer.toggleClass('modal-blur', !$('#modal-overlay').hasClass('light-modal'));
 				})
 
 				.addCustomEventListener('poppyModalClosed', function () {
@@ -655,7 +563,7 @@ var UI = {
 			onComplete = onComplete || $.noop;
 
 			if (!evenIfPoppy && viewContainer.scrollTop() === 0 && Poppy.poppyExist())
-				UI.event.addCustomEventListener('poppyWillCloseAll', function (event) {
+				Poppy.event.addCustomEventListener('poppyWillCloseAll', function (event) {
 					event.preventDefault();
 				}, true);
 
@@ -751,85 +659,6 @@ var UI = {
 				throw new Error('view not found - ' + viewID);
 
 			return viewContainer.data('data-activeView') === viewID;
-		},
-
-		showPoppyMenu: function (tab, event, force) {
-			var self = $(tab),
-					menuHolder = self.parents('*[data-poppy]'),
-					width = self.outerWidth(),
-					poppyName = self.parent().attr('data-poppy'),
-					offset = self.offset().left,
-					rightOffset = offset + width,
-					inRange = (event.pageX > rightOffset - 12 && event.pageX < rightOffset);
-
-			if (inRange && force)
-				return;
-
-			if (inRange || force) {
-				event.stopPropagation();
-
-				var pageX = event.pageX,
-						pageY = event.pageY;
-
-				if (force)
-					UI.event.addCustomEventListener(self.parent().hasClass('active-view') ? 'viewWillScrollToTop' : 'viewWillSwitch', function (event) {
-						var moveX = Math.abs(event.pageX - pageX),
-								moveY = Math.abs(event.pageY - pageY);
-
-						if (moveX < 5 && moveY < 5)
-							event.preventDefault();
-					}, true);
-
-				if (Poppy.poppyWithScriptNameExist(poppyName) && !force)
-					return Poppy.closeAll();
-
-				var poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
-
-				poppy.poppy.attr('data-menuMeta', menuHolder.attr('data-poppyMenuMeta'));
-
-				poppy.setContent(Template.create('poppy', poppyName, {
-					poppy: poppy.poppy
-				})).stayOpenOnScroll();
-
-				if (force)
-					UI.event.addCustomEventListener('poppyWillClose', function (event) {
-						if (event.detail === poppy) {
-							event.unbind();
-
-							var moveX = Math.abs(event.pageX - pageX),
-									moveY = Math.abs(event.pageY - pageY);
-
-							if (moveX < 5 && moveY < 5)
-								event.preventDefault();
-						}
-					});
-
-				var preventDefault = UI.event.trigger('poppyMenuWillShow', {
-					target: self,
-					menuHolder: menuHolder
-				});
-
-				if (!preventDefault) {
-					menuHolder.attr('data-poppyMenuWillShow', 1);
-
-					if (!inRange)
-						UI.event.addCustomEventListener('pressAndHoldSucceeded', function (event) {
-							event.unbind();
-
-							var moveX = Math.abs(event.pageX - pageX),
-									moveY = Math.abs(event.pageY - pageY);
-
-							if (moveX < 5 && moveY < 5)
-								event.preventDefault();
-						}, true);
-
-					UI.event.addCustomEventListener('poppyDidShow', function () {
-						menuHolder.removeAttr('data-poppyMenuWillShow', 1);
-					}, true);
-
-					poppy.show()
-				}
-			}
 		},
 
 		floatingHeaders: {

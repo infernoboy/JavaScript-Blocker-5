@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 Object._extend(Poppy.scripts, {
@@ -185,7 +189,13 @@ Object._extend(Poppy.scripts, {
 	},
 
 	'main-menu': function (poppy) {
+		$('#main-menu-content-blocker-mode').prop('checked', globalPage.Rules.__contentBlockerMode);
+		
 		poppy.content
+			.on('change', '#main-menu-content-blocker-mode', function () {
+				globalPage.Rules.setContentBlockerMode(this.checked);
+			})
+
 			.on('click', '#main-menu-about', function () {
 				poppy.close();
 
@@ -200,13 +210,18 @@ Object._extend(Poppy.scripts, {
 				UI.Extras.showUnlockPrompt();
 			})
 
-			.on('click', '#main-menu-console', function (event) {
+			.on('click', '#main-menu-console', function (event, forceClickEvent, forceClick) {
+				if (forceClickEvent)
+					event = forceClickEvent;
+
 				UI.Locker
 					.showLockerPrompt('console', false, true)
 					.then(function () {
 						Poppy.closeLinksTo(poppy);
 
 						var consolePoppy = new Poppy(event.pageX, event.pageY, false, 'console');
+
+						consolePoppy.scaleWithForce(forceClick);
 
 						consolePoppy
 							.setContent(Template.create('poppy', 'console'))
@@ -420,7 +435,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#active-menu-clear', function (event) {
-				UI.event.addCustomEventListener('poppyDidClose', function () {
+				Poppy.event.addCustomEventListener('poppyDidClose', function () {
 					UI.Locker
 						.showLockerPrompt('clearRules')
 						.then(function () {
@@ -445,7 +460,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#snapshot-menu-merge-always, #snapshot-menu-make-always, #snapshot-menu-close', function () {
-				UI.event.addCustomEventListener('poppyDidClose', function () {
+				Poppy.event.addCustomEventListener('poppyDidClose', function () {
 					globalPage.Rules.useCurrent();
 
 					UI.view.switchTo('#rule-views-active');
@@ -553,7 +568,7 @@ Object._extend(Poppy.scripts, {
 					return;
 				}
 
-				var result = UI.Settings.saveUserScriptEdit(this, true);
+				var result = UI.Settings.saveUserScriptEdit(this, true, true);
 
 				if (result) {
 					storage.set(keyValue, valueValue);
@@ -585,7 +600,7 @@ Object._extend(Poppy.scripts, {
 	'edit-page': function (poppy) {
 		poppy.content
 			.on('click', 'input', function () {
-				var sectionID = poppy.poppy.attr('data-menuMeta'),
+				var sectionID = poppy.poppy.attr('data-poppyMenuMeta'),
 						section = $('.page-host-section[data-id="' + sectionID + '"]', UI.Page.view),
 						blockedFirstVisitStatus = JSON.parse(section.attr('data-blockedFirstVisitStatus') || '');
 
@@ -845,7 +860,7 @@ Object._extend(Poppy.scripts, {
 						nameVal = name.val();
 
 				if (UI.Snapshots.snapshot.setName(poppy.snapshotID, nameVal)) {
-					UI.event.addCustomEventListener('poppyDidClose', function () {
+					Poppy.event.addCustomEventListener('poppyDidClose', function () {
 						UI.Snapshots.buildSnapshots();
 					}, true);
 
@@ -863,7 +878,7 @@ Object._extend(Poppy.scripts, {
 				poppy.snapshots.remove(poppy.snapshotID);
 				poppy.oppositeSnapshots.set(poppy.snapshotID, snapshot);
 
-				UI.event.addCustomEventListener('poppyDidClose', function () {
+				Poppy.event.addCustomEventListener('poppyDidClose', function () {
 					UI.Snapshots.buildSnapshots();
 				}, true);
 

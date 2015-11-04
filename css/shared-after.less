@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 .shared-after(@important) {
 	.jsb-element,
 	.jsb-injected-element {
@@ -228,7 +232,7 @@
 			list-style: none;
 
 			li.dividing-border {
-				border-bottom: 1px solid darken(#f2f2f2, @darknessLevel);
+				border-bottom: 1px solid darken(#f4f4f4, @darknessLevel);
 			}
 		}
 
@@ -359,7 +363,6 @@
 			> h3,
 			> h4 {
 				display: inline;
-				white-space: nowrap;
 			}
 
 			&:not(.keep-expanded) {
@@ -368,13 +371,16 @@
 				> h2,
 				> h3,
 				> h4 {
-					&:after {
-						position: absolute;
+					.header-expander-label {
 						display: inline-block;
-						content: ' ' attr(data-i18n-hide);
 						margin-left: 7px;
-						opacity: 0;
 						font-weight: 500;
+						opacity: 0;
+						cursor: default;
+
+						&:after {
+							content: attr(data-i18n-hide);
+						}
 					}
 				}
 
@@ -385,8 +391,16 @@
 					> h2,
 					> h3,
 					> h4 {
-						&:after {
-							opacity: 0.8;
+						.header-expander-label {
+							opacity: 1;
+
+							&:active {
+								text-shadow: 0 0 1px rgba(0, 0, 0, 0.6);
+
+								& when (@darkMode) {
+									text-shadow: 0 1px 2px #000, 0 -1px 2px #000, 1px 0 2px #000, -1px 0 2px #000;
+								}
+							}
 						}
 					}
 				}
@@ -402,8 +416,8 @@
 					> h2,
 					> h3,
 					> h4 {
-						&:after {
-							content: ' ' attr(data-i18n-show);
+						.header-expander-label:after {
+							content: attr(data-i18n-show);
 						}
 					}
 				}

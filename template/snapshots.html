@@ -1,3 +1,7 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+-->
+
 <noscript id="snapshot-container">
 	<div id="snapshot-container">
 		<div class="jsb-info">
@@ -18,7 +22,7 @@
 
 <noscript id="snapshot-list-item">
 	<li class="<%=self.active ? 'snapshot-active' : ''%>" data-snapshotID="<%=self.id%>">
-		<a href="javascript:void(0);" class="snapshot-item-name <%=self.equal ? 'current' : ''%>" data-i18n-current="<%=_('snapshots.current')%>"><%=self.name%></a>
+		<a data-forceTriggersClick="1" href="javascript:void(0);" class="snapshot-item-name <%=self.equal ? 'current' : ''%>" data-i18n-current="<%=_('snapshots.current')%>"><%=self.name%></a>
 		<% if (!globalPage.Rules.isLockerLocked()) { %>
 			<input type="button" class="snapshot-item-delete jsb-color-blocked double-click blend-in" value="<%=_('Delete')%>" />
 			<input type="button" class="snapshot-item-<%=self.active ? 'close' : 'preview'%> blend-in" value="<%=_('snapshots.' + (self.active ? 'close' : 'preview'))%>" /><%

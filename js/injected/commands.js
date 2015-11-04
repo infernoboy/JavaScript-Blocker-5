@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 var COMMAND = {
 	SUCCESS: 0,
 	UNAUTHORIZED: -1,
@@ -124,7 +128,7 @@ var Command = function (type, event) {
 
 	Commands.global = {
 		getFrameInfoWithID: function (detail, event) {
-			if (Utilities.Page.isTop && (!detail.data.targetPageID || detail.data.targetPageID === Page.info.id))
+			if (!Page.info.isFrame && (!detail.data.targetPageID || detail.data.targetPageID === Page.info.id))
 				GlobalPage.message('bounce', {
 					command: 'getFrameInfo',
 					detail: {
@@ -135,12 +139,12 @@ var Command = function (type, event) {
 		},
 
 		reload: function () {
-			if (Utilities.Page.isTop)
+			if (!Page.info.isFrame)
 				document.location.reload();
 		},
 
 		sendPage: function () {
-			if (Utilities.Page.isTop)
+			if (!Page.info.isFrame)
 				Page.send();
 		},
 
@@ -149,7 +153,7 @@ var Command = function (type, event) {
 		},
 
 		messageTopExtension: function (detail, event) {
-			if (!Utilities.Page.isTop)
+			if (Page.info.isFrame)
 				return;
 
 			var data = detail.data.meta,
@@ -237,7 +241,7 @@ var Command = function (type, event) {
 		},
 
 		receiveFrameInfo: function (detail) {
-			if (Utilities.Page.isTop && detail.data.attachTo === Page.info.id) {
+			if (!Page.info.isFrame && detail.data.attachTo === Page.info.id) {
 				FRAMED_PAGES[detail.data.info.id] = detail.data.info;
 
 				Page.send();
@@ -333,7 +337,7 @@ var Command = function (type, event) {
 		},
 
 		recommendPageReload: function () {
-			if (Utilities.Page.isTop && !RECOMMEND_PAGE_RELOAD) {
+			if (!Page.info.isFrame && !RECOMMEND_PAGE_RELOAD) {
 				RECOMMEND_PAGE_RELOAD = true;
 
 				var autoReload = GlobalCommand('settingStore.getItem', {
@@ -393,7 +397,7 @@ var Command = function (type, event) {
 		},
 
 		notification: function (detail) {
-			if (!Utilities.Page.isTop || (detail.targetPageID && detail.targetPageID !== Page.info.id))
+			if (Page.info.isFrame || (detail.targetPageID && detail.targetPageID !== Page.info.id))
 				return;
 
 			new PageNotification(detail.data);

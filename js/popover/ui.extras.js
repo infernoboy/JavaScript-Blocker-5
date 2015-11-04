@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 UI.Extras = {
@@ -15,16 +19,18 @@ UI.Extras = {
 	},
 
 	checkTrialEndedNotification: function (event) {
-		if (Extras.Trial.endedNotificationRequired() && !Poppy.poppyWithScriptNameExist('extras-unlock-prompt')) {
-			globalPage.Update.showRequiredPopover();
+		UI.onReady(function () {
+			if (Extras.Trial.endedNotificationRequired() && !Poppy.poppyWithScriptNameExist('extras-unlock-prompt')) {
+				globalPage.Update.showRequiredPopover();
 
-			Extras.Trial.ended();
+				Extras.Trial.ended();
 
-			UI.Extras.showUnlockPrompt();
+				UI.Extras.showUnlockPrompt();
 
-			if (event.type === 'pageDidBadge')
-				event.unbind();
-		}
+				if (event.type === 'pageDidBadge')
+					event.unbind();
+			}
+		});
 	}
 };
 

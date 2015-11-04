@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 var Settings = {
@@ -400,12 +404,9 @@ var Settings = {
 		else if (!options.exportSettings)
 			exported['Storage-FirstVisit'] = allSettings['Storage-FirstVisit'];
 
-		if (!options.exportRules) {
+		if (!options.exportRules)
 			delete exported['Storage-Rules'];
-
-			if (options.exportSettings)
-				delete exported['Storage-StoreSettings'].STORE.expander;
-		} else if (!options.exportSettings)
+		else if (!options.exportSettings)
 			exported['Storage-Rules'] = allSettings['Storage-Rules'];
 
 		if (!options.exportSnapshots)
@@ -423,6 +424,9 @@ var Settings = {
 		delete exported['Storage-Predefined'];
 		delete exported['Storage-ResourceCanLoad'];
 		delete exported['donationVerified'];
+		delete exported['trialStart'];
+		delete exported['updateNotify'];
+		delete exported['installedBundle'];
 
 		return JSON.stringify(exported);
 	},

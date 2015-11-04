@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 var Update = {
@@ -38,7 +42,7 @@ var Update = {
 	},
 
 	allUpdatesCompleted: function () {
-		UI.event.addCustomEventListener('popoverOpened', function () {
+		UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
 			var poppy = new Popover.window.Poppy(0.5, 0, false, 'donation-beg');
 
 			Update
@@ -56,7 +60,7 @@ var Update = {
 				});
 		}, true, true);
 
-		if (Popover.visible())
+		if (!Popover.visible() && (Settings.getItem('updateNotify') || !Extras.isUnlockedByDonating()))
 			Update.showRequiredPopover();
 	},
 
@@ -182,59 +186,6 @@ var Update = {
 					reject(request.status);
 				});
 		});
-	}
-};
-
-
-Update.versions[150215] = {
-	blocking: false,
-
-	update: function () {
-		SettingStore.removeItem('Storage-EasyRules');
-
-		return true;
-	}
-};
-
-Update.versions[150424] = {
-	blocking: false,
-
-	poppy: function (poppy) {
-		poppy.showCloseButton();
-		
-		UI.event.addCustomEventListener('poppyDidClose', function (event) {
-			if (event.detail === poppy) {
-				event.unbind();
-
-				Update.updatedToVersion(poppy.updateVersion);
-			}
-		});
-	}
-};
-
-Update.versions[150502] = {
-	blocking: false,
-
-	update: function () {
-		Settings.setItem('useLocker', true, null, true, true);
-
-		return true;
-	}
-};
-
-Update.versions[150927] = {
-	blocking: false,
-
-	update: function () {
-		for (var list in Rules.list)
-			Rules.list[list].rules.saveNow();
-
-		Snapshots.saveNow();
-		UserScript.scripts.saveNow();
-		Settings.__stores.saveNow();
-		Rules.__FilterRules.saveNow();
-
-		return true;
 	}
 };
 

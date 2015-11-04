@@ -1,3 +1,7 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+-->
+
 <noscript id="poppy">
 	<div id="poppy-<%=self.id%>" class="poppy" data-id="<%=self.id%>">
 		<input type="button" class="poppy-close" value="<%=_('Close')%>" />
@@ -23,12 +27,20 @@
 		<div class="horizontal-divider"></div>
 
 		<div id="main-menu-console-info" class="jsb-align-right">
-			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" />
+			<input type="button" id="main-menu-console" value="<%=_('main_menu.console')%>" data-forceTriggersClick="1" />
 			<%
 				var messageHistory = Utilities.messageHistory(),
 						messageCount = messageHistory.error.length + messageHistory.debug.length; %>
 			<span id="main-menu-console-message-count"><%=_('main_menu.console.message'._pluralize(messageCount), [messageCount])%></span> 
 		</div>
+
+		<% if (false && ContentBlocker.isSupported) { %>
+			<div class="horizontal-divider"></div>
+
+			<div class="generic-menu-menu jsb-align-right">
+				<input type="checkbox" id="main-menu-content-blocker-mode" /> <label for="main-menu-content-blocker-mode">"Content Blocker" mode</label>
+			</div><%
+		} %>
 	</div>
 </noscript>
 
@@ -357,7 +369,7 @@
 
 <noscript id="edit-page">
 	<%
-		var section = $('.page-host-section[data-id="' + self.poppy.attr('data-menuMeta') + '"]', UI.container),
+		var section = $('.page-host-section[data-id="' + self.poppy.attr('data-poppyMenuMeta') + '"]', UI.container),
 				blockedFirstVisitStatus = JSON.parse(section.attr('data-blockedFirstVisitStatus') || ''),
 				isDisabled = section.attr('data-disabled') === '1';
 	%>

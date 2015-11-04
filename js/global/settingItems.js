@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 Settings.settings = {
@@ -1306,11 +1310,11 @@ Settings.settings = {
 						"// @downloadURL \n" +
 						"// ==/UserScript==\n\n\n";
 
+					UI.event.addCustomEventListener('customSettingViewCreated', function (event) {
+						$('.user-script-content', UI.Settings.userScriptEdit).val(defaultUserScript).focus()[0].selectionStart = defaultUserScript.length;
+					}, true);
+
 					UI.Settings.editUserScript('');
-
-					UI.view.switchTo('#setting-views-userScript-edit');
-
-					$('.user-script-content', UI.Settings.userScriptEdit).val(defaultUserScript).focus()[0].selectionStart = defaultUserScript.length;
 				}
 			}
 		}, {
@@ -1390,6 +1394,13 @@ Settings.settings = {
 			setting: 'enabledSpecials',
 			props: {
 				storeKey: 'historyFixer',
+				readOnly: true,
+				default: true
+			}
+		}, {
+			setting: 'enabledSpecials',
+			props: {
+				storeKey: 'frameSandboxFixer',
 				readOnly: true,
 				default: true
 			}

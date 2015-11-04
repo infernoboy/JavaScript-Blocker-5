@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 // Global constants =====================================================================
@@ -1069,6 +1073,24 @@ var Extension = {
 				extended.prototype.constructor = this;
 
 				return extended;
+			},
+		},
+
+		_extends: {
+			value: function (classFn) {
+				function extended () {
+					extended.self.bind(this, (function (localArgs) {
+						classFn.apply(this, localArgs)
+					}).bind(this, arguments)).apply(this, arguments);
+				}
+
+				extended.self = this;
+
+				extended.prototype = Object.create(classFn.prototype);
+
+				extended.prototype.constructor = this;
+
+				return extended;
 			}
 		}
 	},
@@ -1533,6 +1555,11 @@ var Extension = {
 })();
 
 Extension = undefined;
+
+Math._easeOutQuad = function (time, startValue, changeInValue, duration) {
+	time /= duration;
+	return -changeInValue * time * (time - 2) + startValue;
+};
 
 Object._isPlainObject = function (object) {
 	return (typeof object === 'object' && object !== null && object.constructor && object.constructor.name === 'Object');

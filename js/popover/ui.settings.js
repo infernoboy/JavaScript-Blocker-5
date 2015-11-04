@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 UI.Settings = {
@@ -78,7 +82,7 @@ UI.Settings = {
 		});
 
 		UI.event.addCustomEventListener('viewAlreadyActive', UI.Settings.events.repopulateActiveSection);
-		UI.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
+		Poppy.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
 		UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
 		UI.event.addCustomEventListener('viewWillSwitch', UI.Settings.events.viewWillSwitch);
 	},
@@ -245,7 +249,7 @@ UI.Settings = {
 							return;
 						}
 
-						var result = UI.Settings.saveUserScriptEdit(this, true);
+						var result = UI.Settings.saveUserScriptEdit(this, true, true);
 
 						if (result) {
 							storage.remove(this.getAttribute('data-storageKey'));
@@ -374,8 +378,13 @@ UI.Settings = {
 		for (var i = 0; i < settings.length; i++) {
 			setting = settings[i];
 
-			if (setting.customView)
+			if (setting.customView) {
 				setting.customView(container);
+
+				Utilities.setImmediateTimeout(function (container) {
+					UI.event.trigger('customSettingViewCreated', container);
+				}, [container]);
+			}
 
 			else if (setting.divider)
 				container.append(Template.create('settings', 'setting-section-divider', {
@@ -468,7 +477,7 @@ UI.Settings = {
 			UI.Settings.populateSection(activeSettingView, $('.active-view', UI.Settings.views).attr('data-section'));
 	},
 
-	saveUserScriptEdit: function (button, noSwitch) {
+	saveUserScriptEdit: function (button, noSwitch, noAutoLoad) {
 		var userScript = $('.user-script-content', UI.Settings.views),
 				userScriptContent = userScript.val(),
 				result = globalPage.UserScript.add(userScriptContent);
@@ -478,7 +487,7 @@ UI.Settings = {
 
 			if (!noSwitch)
 				UI.view.switchTo('#setting-views-userScripts');
-			else
+			else if (!noAutoLoad)
 				UI.Settings.editUserScript(result);
 		} else if (button) {
 			var offset = $(button).offset(),
@@ -495,54 +504,61 @@ UI.Settings = {
 	editUserScript: function (userScriptNS) {
 		UI.Settings.userScriptEdit.attr('data-userScriptNS', userScriptNS);
 
-		UI.view.switchTo('#setting-views-userScript-edit');
+		var alreadyEditing = $('.active-view', UI.Settings.views).is('#setting-views-userScript-edit');
 
-		try {
-			var meta = globalPage.UserScript.getAttribute(userScriptNS, 'meta'),
-					script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
-					storage = globalPage.UserScript.getStorageItem(userScriptNS);
-		} catch (error) {
-			return;
-		}
+		UI.event.addCustomEventListener(alreadyEditing ? 'UIReady' : 'customSettingViewCreated', function (event) {
+			if (event.detail && !$('.user-script-edit', event.detail).length)
+				return;
 
-		var list = $('ul', UI.Settings.userScriptEdit);
+			try {
+				var meta = globalPage.UserScript.getAttribute(userScriptNS, 'meta'),
+						script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
+						storage = globalPage.UserScript.getStorageItem(userScriptNS);
+			} catch (error) {
+				return;
+			}
 
-		$('.setting-section-divider', list).nextAll().addBack().remove();
+			var list = $('ul', UI.Settings.userScriptEdit);
 
-		list
-			.append(Template.create('settings', 'setting-section-divider'))
-			.append(Template.create('settings', 'setting-section-header', {
-				header: _('setting.userScript.storage', [meta.name._escapeHTML()])
-			}))
-			.append(Template.create('settings', 'setting-section-description', {
-				id: 'description-' + Utilities.Token.generate(),
-				classes: 'dividing-border',
-				description: _('setting.newUserScriptStorageItem.description')
-			}));
+			$('.setting-section-divider', list).nextAll().addBack().remove();
 
-		$('.user-script-content', UI.Settings.userScriptEdit).val(script);
-
-		if (storage && !storage.isEmpty()) {
-			var sortedStorage = storage.keys().sort().reverse();
-
-			for (var i = sortedStorage.length; i--;)
-				list.append(Template.create('settings', 'user-script-storage-item', {
-					userScript: userScriptNS,
-					key: sortedStorage[i],
-					value: storage.get(sortedStorage[i])
+			list
+				.append(Template.create('settings', 'setting-section-divider'))
+				.append(Template.create('settings', 'setting-section-header', {
+					header: _('setting.userScript.storage', [meta.name._escapeHTML()])
+				}))
+				.append(Template.create('settings', 'setting-section-description', {
+					id: 'description-' + Utilities.Token.generate(),
+					classes: 'dividing-border',
+					description: _('setting.newUserScriptStorageItem.description')
 				}));
-		}
 
-		var element = UI.Settings.createElementForSetting(Settings.map.newUserScriptStorageItem, null, true),
-				wrapper = Template.create('settings', 'setting-section-setting', {
-					setting: 'newUserScriptStorageItem'
-				}, true);
+			$('.user-script-content', UI.Settings.userScriptEdit).val(script);
 
-		$('li', wrapper).append(element.children());
+			if (storage && !storage.isEmpty()) {
+				var sortedStorage = storage.keys().sort().reverse();
 
-		list.append(wrapper.children());
+				for (var i = sortedStorage.length; i--;)
+					list.append(Template.create('settings', 'user-script-storage-item', {
+						userScript: userScriptNS,
+						key: sortedStorage[i],
+						value: storage.get(sortedStorage[i])
+					}));
+			}
 
-		UI.Settings.disableUserScriptSave();
+			var element = UI.Settings.createElementForSetting(Settings.map.newUserScriptStorageItem, null, true),
+					wrapper = Template.create('settings', 'setting-section-setting', {
+						setting: 'newUserScriptStorageItem'
+					}, true);
+
+			$('li', wrapper).append(element.children());
+
+			list.append(wrapper.children());
+
+			UI.Settings.disableUserScriptSave();
+		}, true);
+
+		UI.view.switchTo('#setting-views-userScript-edit');
 	},
 
 	events: {
@@ -589,6 +605,9 @@ UI.Settings = {
 							UI.view.switchTo(event.detail.to.id);
 						});
 			}
+
+			if (event.detail.from.id === '#setting-views-userScript-edit')
+				$('.user-script-content', UI.Settings.userScriptEdit).val('');
 
 			if (event.detail.to.id === '#main-views-setting')
 				return setTimeout(function () {

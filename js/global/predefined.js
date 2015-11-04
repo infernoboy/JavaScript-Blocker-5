@@ -1,10 +1,8 @@
-"use strict";
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
 
-/***************************************
- * @file js/predefined.js
- * @author Travis Roman (travis@toggleable.com)
- * @package JS Blocker (http://JSblocker.toggleable.com)
- ***************************************/
+"use strict";
 
 function Predefined () {
 	Rules.list.predefined.clear();

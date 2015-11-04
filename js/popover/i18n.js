@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 var Strings = {
@@ -39,7 +43,7 @@ var Strings = {
 		if (this.__currentLanguage)
 			return this.__currentLanguage;
 
-		var setLanguage = Settings.getItem('language'),
+		var setLanguage = window.Settings ? Settings.getItem('language') : 'auto',
 				useLanguage = (setLanguage !== 'auto') ? setLanguage : window.navigator.language.toLowerCase();
 
 		if (this.__currentLanguage !== useLanguage)

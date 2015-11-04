@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 @darknessLevel: 0%;
 @speedMultiplier: 1;
 @darkMode: false;
@@ -29,7 +33,16 @@
 	padding: 2px 2px 2px 2px;
 	background: -webkit-linear-gradient(top, darken(#ffffff, @darknessLevel + 0.7%), darken(#fafafa, @darknessLevel + 0.7%));
 	box-shadow: 0 1px 10px rgba(1, 0, 1, 0.3);
-	-webkit-transition: -webkit-filter unit(0.13 * @speedMultiplier, s) ease-out;
+	-webkit-transition: -webkit-filter unit(0.13 * @speedMultiplier, s) ease-out, -webkit-transform unit(0.1 * @speedMultiplier, s) ease-out;
+	pointer-events: none;
+
+	&.poppy-fully-shown {
+		pointer-events: all;
+	}
+
+	&.poppy-scales-with-force {
+		-webkit-transition: -webkit-filter unit(0.13 * @speedMultiplier, s) ease-out, opacity unit(0.3 * @speedMultiplier, s) ease-out;
+	}
 
 	& when (@darkMode) {
 		box-shadow: 0 1px 10px rgba(5, 4, 5, 0.9);

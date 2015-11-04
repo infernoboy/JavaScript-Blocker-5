@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 var RESOURCE = {
@@ -13,10 +17,12 @@ function Resource (resource) {
 		throw new Error('resource page location is not a string.');
 	}
 
+	var kindShouldBadge = Rules.kindShouldBadge(this.kind);
+
 	this.strict = resource.strict;
 	this.kind = resource.kind;
 	this.framedKind = 'framed:' + this.kind;
-	this.sourceIsURL = Rules.kindShouldBadge(this.kind) ? Utilities.URL.isURL(resource.source) : false;
+	this.sourceIsURL = kindShouldBadge ? Utilities.URL.isURL(resource.source) : false;
 	this.isFrame = resource.isFrame;
 	this.pageLocation = resource.pageLocation;
 	this.fullLocation = resource.pageLocation;
@@ -24,7 +30,7 @@ function Resource (resource) {
 	this.source = resource.source;
 	this.baseSource = this.source;
 	this.fullSource = this.source;
-	this.sourceHost = Rules.kindShouldBadge(this.kind) ? Utilities.URL.extractHost(this.source) : '';
+	this.sourceHost = kindShouldBadge ? Utilities.URL.extractHost(this.source) : '';
 	this.action = resource.action;
 	this.unblockable = resource.unblockable;
 	this.meta = resource.meta;

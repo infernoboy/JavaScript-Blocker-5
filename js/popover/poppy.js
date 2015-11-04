@@ -1,22 +1,24 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 (function () {
 	var poppies = {};
 
 	window.Poppy = function Poppy (x, y, closeExisting, scriptName) {
-		if (typeof x !== 'number' || typeof y !== 'number')
+		if (typeof x !== 'number' || typeof y !== 'number') {
+			console.trace()
 			throw new TypeError('x or y is not a number');
+		}
 
 		var self = this;
 
 		if (closeExisting)
 			window.Poppy.closeAll();
 
-		if (Utilities.isFloat(x))
-			x = window.Poppy.__container.outerWidth() * x;
-
-		if (Utilities.isFloat(y))
-			y = window.Poppy.__container.outerHeight() * y;
+		this.changePosition(x, y, true);
 
 		this.id = Utilities.Token.generate();
 		this.displayed = false;
@@ -25,11 +27,6 @@
 		this.isUpArrow = false;
 		this.noArrow = false;
 		this.scriptName = scriptName;
-
-		this.originalPosition = {
-			x: x,
-			y: y
-		};
 
 		this.poppy = Template.create('poppy', 'poppy', {
 			id: this.id
@@ -46,7 +43,11 @@
 
 		poppies[this.id] = this;
 
-		this.viewDidScroll = this.viewDidScroll.bind(this);
+		this.__viewDidScroll = this.__viewDidScroll.bind(this);
+		this.__scaleWithForce = Utilities.throttle(this.__scaleWithForce.bind(this), 1, true);
+		this.__firstForceChange = this.__firstForceChange.bind(this);
+		this.close = this.close.bind(this);
+		this.cancelScaleWithForce = this.cancelScaleWithForce.bind(this);
 
 		$('.poppy-close', this.poppy).click(this.close.bind(this));
 	};
@@ -57,6 +58,7 @@
 	Poppy.__zIndex = 700;
 	Poppy.__creating = false;
 
+	Poppy.event = new EventListener;
 	Poppy.scripts = {};
 
 	Poppy.setAllPositions = function () {
@@ -80,8 +82,12 @@
 		return false;
 	};
 
+	Poppy.preventNextCloseAll = function () {
+		Poppy.__preventNextCloseAll = true;
+	};
+
 	Poppy.closeAll = function (eventOrImmediate) {
-		if (UI.event.trigger('poppyWillCloseAll'))
+		if (Poppy.event.trigger('poppyWillCloseAll'))
 			return Promise.all([]);
 
 		var promiseArray = [];
@@ -102,7 +108,7 @@
 
 			Poppy.__modal.stop(true).fadeOut(130 * window.globalSetting.speedMultiplier, 'easeOutQuad');
 
-			UI.event.trigger('poppyModalClosed');
+			Poppy.event.trigger('poppyModalClosed');
 
 			for (var poppyID in poppies)
 				poppies[poppyID].poppy.removeClass('poppy-blur');
@@ -158,7 +164,7 @@
 	Poppy.createLoadingPoppy = function (x, y, closeExisting, onFullyShown) {
 		var loadingPoppy = new Poppy(x, y, closeExisting);
 
-		UI.event.addCustomEventListener('poppyIsFullyShown', function (event) {
+		Poppy.event.addCustomEventListener('poppyIsFullyShown', function (event) {
 			if (event.detail === loadingPoppy) {
 				event.unbind();
 				
@@ -168,6 +174,40 @@
 		});
 
 		return loadingPoppy;
+	};
+
+	Poppy.prototype.__firstForceChange = function (event) {
+		if (this.poppy.hasClass('poppy-fully-shown'))
+			return;
+
+		this.poppy.removeClass('poppy-open').addClass('poppy-did-scale-with-force').css({
+			'opacity': 0
+		});
+	};
+
+	Poppy.prototype.__scaleWithForce = function (event) {
+		if (this.poppy.hasClass('poppy-fully-shown'))
+			return;
+
+		this.poppy.removeClass('poppy-open').addClass('poppy-did-scale-with-force').css({
+			'-webkit-transform': 'scale(' + event.detail.quadForce + ')',
+			'opacity': event.detail.quadForce < 0.11 ? 0 : event.detail.quadForce + 0.4
+		});
+	};
+
+	Poppy.prototype.__viewDidScroll = function (event) {
+		var scrollTop = this.view.scrollTop(),
+				scrollLeft = this.view.scrollLeft();
+
+		this.originalPosition.y -= scrollTop - this.lastScroll.top;
+		this.originalPosition.x -= scrollLeft - this.lastScroll.left;
+
+		this.lastScroll = {
+			top: scrollTop,
+			left: scrollLeft
+		};
+
+		this.setPosition();
 	};
 
 	Poppy.prototype.linkToOpenPoppy = function () {
@@ -184,6 +224,24 @@
 	Poppy.prototype.shake = function () {
 		this.poppy.shake();
 		this.arrow.shake(true);
+	};
+
+	Poppy.prototype.changePosition = function (x, y, noSetPosition) {
+		if (Utilities.isFloat(x))
+			x = window.Poppy.__container.outerWidth() * x;
+
+		if (Utilities.isFloat(y))
+			y = window.Poppy.__container.outerHeight() * y;
+
+		this.originalPosition = {
+			x: x,
+			y: y
+		};
+
+		if (!noSetPosition)
+			this.setPosition();
+
+		return this;
 	};
 
 	Poppy.prototype.calculatePosition = function () {
@@ -329,21 +387,6 @@
 		return this;
 	};
 
-	Poppy.prototype.viewDidScroll = function (event) {
-		var scrollTop = this.view.scrollTop(),
-				scrollLeft = this.view.scrollLeft();
-
-		this.originalPosition.y -= scrollTop - this.lastScroll.top;
-		this.originalPosition.x -= scrollLeft - this.lastScroll.left;
-
-		this.lastScroll = {
-			top: scrollTop,
-			left: scrollLeft
-		};
-
-		this.setPosition();
-	};
-
 	Poppy.prototype.moveWithView = function (view) {
 		if (this.willMoveWithView)
 			return this;
@@ -360,7 +403,7 @@
 			left: view.scrollLeft()
 		};
 
-		view.bind('scroll', this, this.viewDidScroll);
+		view.bind('scroll', this, this.__viewDidScroll);
 
 		return this;
 	};
@@ -371,8 +414,9 @@
 		return this;
 	};
 
-	Poppy.prototype.modal = function () {
+	Poppy.prototype.modal = function (lightModal) {
 		this.isModal = true;
+		this.isLightModal = !!lightModal;
 
 		return this;
 	};
@@ -406,7 +450,7 @@
 	};
 
 	Poppy.prototype.show = function (quick, instant) {
-		if (UI.event.trigger('poppyWillShow', this))
+		if (Poppy.event.trigger('poppyWillShow', this))
 			return this;
 
 		if (Poppy.modalOpen)
@@ -419,9 +463,9 @@
 				if (poppies[poppyID] !== this)
 					poppies[poppyID].poppy.addClass('poppy-blur');
 
-			Poppy.__modal.stop().fadeIn(200 * window.globalSetting.speedMultiplier, 'easeOutQuad').css('z-index', this.zIndex - 1);
+			Poppy.__modal.toggleClass('light-modal', this.isLightModal).stop().fadeIn(200 * window.globalSetting.speedMultiplier, 'easeOutQuad').css('z-index', this.zIndex - 1);
 
-			UI.event.trigger('poppyModalOpened');
+			Poppy.event.trigger('poppyModalOpened');
 		}
 
 		this.closed = false;
@@ -434,16 +478,16 @@
 
 		this.setPosition();
 
-		UI.event.trigger('poppyDidShow', this);
+		Poppy.event.trigger('poppyDidShow', this);
 
 		this.poppy
 			.toggleClass('poppy-open-quick', !!quick)
 			.toggleClass('poppy-open-instant', !!instant)
 			.addClass('poppy-open poppy-displayed')
 			.one('webkitAnimationEnd', function (event) {
-				UI.event.trigger('poppyIsFullyShown', this);
+				Poppy.event.trigger('poppyIsFullyShown', this);
 
-				this.poppy.removeClass('poppy-open');
+				this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
 			}.bind(this));
 
 		Utilities.Timer.timeout('PoppyCreating', function () {
@@ -462,14 +506,28 @@
 	Poppy.prototype.remove = function () {
 		this.poppy.remove();
 
-		UI.event.trigger('poppyDidClose', this);
+		Poppy.event.trigger('poppyDidClose', this);
 
 		delete poppies[this.id];
 	};
 
-	Poppy.prototype.close = function (immediate) {
+	Poppy.prototype.close = function (immediate, doNotCheckEvent) {
 		return new Promise(function (resolve, reject) {
-			if (this.closed || !this.displayed || UI.event.trigger('poppyWillClose', this))
+			if (this.closed || (!doNotCheckEvent && Poppy.event.trigger('poppyWillClose', this)))
+				return this;
+
+			if (this.view)
+				this.view.unbind('scroll', this.__viewDidScroll);
+
+			if (this.forceClickElement && this.forceClickElement.event)
+				this.forceClickElement.event
+					.removeCustomEventListener('firstForceChange', this.__firstForceChange)
+					.removeCustomEventListener('forceChange', this.__scaleWithForce)
+					.removeCustomEventListener('forceDown', this.cancelScaleWithForce)
+					.removeCustomEventListener('forceClickCancelled', this.close)
+					.removeCustomEventListener('click', this.cancelScaleWithForce);
+
+			if (!this.displayed)
 				return this;
 
 			Poppy.closeLinksTo(this);
@@ -499,9 +557,6 @@
 				keepModalOpen.poppy.removeClass('poppy-blur');
 			}
 
-			if (this.view)
-				this.view.unbind('scroll', this.viewDidScroll);
-
 			if (immediate === true || !this.displayed) {
 				this.remove();
 
@@ -520,6 +575,54 @@
 		}.bind(this));
 	};
 
+	Poppy.prototype.scaleWithForce = function (forceClickElement) {
+		if (this.forceClickElement || !forceClickElement || !ForceClickElement.isSupported)
+			return;
+
+		if (!(forceClickElement instanceof ForceClickElement))
+			throw new TypeError('forceClick is not an instance of ForceClickElement');
+
+		this.poppy.addClass('poppy-scales-with-force');
+
+		this.forceClickElement = forceClickElement;
+
+		this.forceClickElement.event
+			.addCustomEventListener('firstForceChange', this.__firstForceChange)
+			.addCustomEventListener('forceChange', this.__scaleWithForce)
+			.addCustomEventListener('forceDown', this.cancelScaleWithForce)
+			.addCustomEventListener('forceClickCancelled', this.close)
+			.addCustomEventListener('click', this.cancelScaleWithForce);
+
+		return this;
+	};
+
+	Poppy.prototype.cancelScaleWithForce = function (event) {
+		if (this.forceClickElement && this.forceClickElement.event)
+			this.forceClickElement.event
+				.removeCustomEventListener('firstForceChange', this.__firstForceChange)
+				.removeCustomEventListener('forceChange', this.__scaleWithForce)
+				.removeCustomEventListener('forceDown', this.cancelScaleWithForce)
+				.removeCustomEventListener('forceClickCancelled', this.close)
+				.removeCustomEventListener('click', this.cancelScaleWithForce);
+
+		if (this.poppy.hasClass('poppy-did-scale-with-force')) {
+			var self = this;
+
+			this.poppy.removeClass('poppy-did-scale-with-force');
+		
+			this.poppy.removeClass('poppy-scales-with-force').css({ '-webkit-transform': 'scale(1.22)', opacity: 1 }).on('webkitTransitionEnd', function (event) {
+				if (event.originalEvent.propertyname === 'opacity')
+					return;
+
+				this.style.webkitTransform = '';
+
+				self.poppy.addClass('poppy-fully-shown');
+			});
+		}
+
+		return this;
+	};
+
 	UI.onReady(function () {
 		Poppy.__modal = $('#modal-overlay');
 		Poppy.__container = $('#container');
@@ -527,6 +630,9 @@
 
 		Poppy.__container
 			.bind('mouseup dblclick', function (event) {
+				if (Poppy.__preventNextCloseAll)
+					return Poppy.__preventNextCloseAll = false;
+
 				if (event.type === 'dblclick')
 					Poppy.__creating = false;
 				
@@ -552,4 +658,7 @@
 	UI.event.addCustomEventListener('pageWillRender', Poppy.closeAll);
 	UI.event.addCustomEventListener('popoverOpened', Poppy.closeAll.bind(Poppy, true));
 	UI.event.addCustomEventListener('popoverDidResize', Poppy.closeAll);
+
+	if (window.globalPage)
+		window.globalPage.Poppy = Poppy;
 })();

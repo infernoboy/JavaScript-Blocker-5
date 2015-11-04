@@ -56,6 +56,11 @@
 	"expander.show": "Show",
 	"expander.hide": "Hide",
 
+	"force_click_add_rule": "Force click to instantly create a rule.",
+	"force_click_add_kind_rules": "Force click to instantly create rules.",
+	"force_click_host_count_popup": "Force click to show each resource.",
+	"force_click_host_count_switch": "Force click to temporarily switch to showing all resource URLs.",
+
 	"select.options": "Options",
 	"select.custom_options": "Custom Options",
 	"select.add_option_option": "Other…",
@@ -634,9 +639,12 @@
 	"poppy.beautifying_script": "Beautifying script…",
 
 	"help.general": "General",
-	"help.page": "Page",
-	"help.rules": "Rules",
 	"help.faq": "FAQ",
+	"help.contact": "Contact",
+	"help.faq.page": "Page",
+	"help.faq.general": "General",
+	"help.faq.rules": "Rules",
+	"help.faq.settings": "Settings",
 
 	"description.recaptcha": "ReCAPTCHA",
 	"description.verisign": "Verisign",

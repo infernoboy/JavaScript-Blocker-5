@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 #view-container {
 	#main-views[data-activeview="#main-views-help"] {
 		overflow: hidden;
@@ -5,7 +9,8 @@
 		position: relative;
 	}
 
-	#main-views-help {
+	#main-views-help,
+	#help-views-faq {
 		width: 100%;
 		-webkit-flex-direction: column;
 		-webkit-align-items: stretch;
@@ -15,8 +20,10 @@
 			height: 100%;
 			display: -webkit-flex;
 		}
+	}
 
-		#help-toolbar {
+	#main-views-help {
+		.view-toolbar {
 			padding-top: 3px;
 			margin-top: -2px;
 			-webkit-flex: 0 0 25px;
@@ -41,28 +48,45 @@
 			}
 		}
 
-		#help-views-container {
+		#help-faq-toolbar {
+			margin-top: 0;
+		}
+
+		#help-views-container,
+		#help-faq-views-container {
 			position: relative;
 			-webkit-flex: 1 1 100%;
 			overflow-y: scroll;
 			overflow-x: auto;
 			margin-top: 1px;
+		}
 
+		#help-views-container[data-activeview="#help-views-faq"] {
+			overflow: hidden;
+			margin-top: 0;
+			position: relative;
+		}
+
+		#help-views-container {
 			.help-content {
 				padding: 10px;
+
+				&#help-contact li {
+					padding-bottom: 5px;
+				}
 
 				.help-questions {
 					margin-top: 15px;
 
 					li {
-						margin-bottom: 7px;
+						margin-bottom: 9px;
 						padding-bottom: 5px;
 
 						&:not(:last-child) {
-							border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+							box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
 
 							& when (@darkMode) {
-								border-bottom-color: rgba(0, 0, 0, 0.45);
+								box-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
 							}
 						}
 					}

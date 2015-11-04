@@ -1,3 +1,7 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+-->
+
 <noscript id="create-rule">
 	<% if (!Extras.isActive()) { %>
 		<p class="jsb-info"><%=_('extras.required')%></p><%
@@ -91,7 +95,7 @@
 
 			<span id="create-rule-domain-wrapper">
 				<input type="text" id="create-rule-domain" class="trigger-on-enter" value="<%=self.domain._entityQuotes()%>" /><q></q>
-				<span class="more-info" data-moreInfo="<%=_('create_rule.domain_info')._entityQuotes()%>"></span>
+				<span class="more-info" data-forceTriggersClick="1" data-moreInfo="<%=_('create_rule.domain_info')._entityQuotes()%>"></span>
 			</span>
 
 			<div id="create-rule-rule-container">
@@ -99,7 +103,7 @@
 
 				<label for="create-rule-rule" class="jsb-label"><%=_('rule.rule')%>:</label><q></q>
 				<input type="text" id="create-rule-rule" class="trigger-on-enter" value="<%=self.rule._entityQuotes()%>" /><q></q>
-				<span class="more-info" data-moreInfo="<%=_('create_rule.rule_info')._entityQuotes()%>"></span>
+				<span class="more-info" data-forceTriggersClick="1" data-moreInfo="<%=_('create_rule.rule_info')._entityQuotes()%>"></span>
 			</div>
 
 			<div class="horizontal-divider horizontal-divider-transparent"></div>

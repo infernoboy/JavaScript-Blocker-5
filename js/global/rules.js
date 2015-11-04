@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 var ACTION = {
@@ -84,7 +88,7 @@ Rule.withLocationRules = function (allRules, callback) {
 			}
 		}
 	}
-}
+};
 
 Rule.prototype.__add = function (type, kind, domain, rule) {
 	if (!this.ignoreLock && Rules.isLockerLocked())
@@ -434,10 +438,12 @@ Rule.prototype.forLocation = function (params) {
 	return rules;
 };
 
-Rule.prototype.createContentBlocker = function () {
-	var rules = this.rules.all();
+Rule.prototype.createContentBlocker = function (withTheseRules) {
+	var allRules = withTheseRules || this.rules.all(),
+			allowingRules = {};
 
 	var map = {
+		'*': 1,
 		xhr_get: 'raw',
 		xhr_post: 'raw',
 		xhr_put: 'raw',
@@ -448,16 +454,96 @@ Rule.prototype.createContentBlocker = function () {
 		video: 'media'
 	};
 
-	for (var kind in rules) {
-		if (!(kind in map))
+	var allKinds = ['raw', 'script', 'document', 'image', 'media', 'font', 'style-sheet'];
+
+	var subDomainBase = '\\/\\/(.+\\.)?';
+
+	var ruleList,
+			ruleKind,
+			ruleType,
+			domains,
+			domain,
+			rule,
+			contentBlockerRules,
+			ruleParts,
+			ruleSub,
+			protocol,
+			i;
+
+	var contentBlocker = [];
+
+	for (ruleKind in allRules) {
+		if (!(ruleKind in map))
 			continue;
 
-		var resourceType = [map[kind]];
-		
+		allowingRules._getWithDefault(ruleKind, {});
+
+		for (ruleType in allRules[ruleKind]) {
+			if (ruleType._startsWith('not') || ruleType === 'page')
+				continue;
+
+			allowingRules[ruleKind]._getWithDefault(ruleType, {});
+
+			if (allRules[ruleKind][ruleType]) {
+				domains = allRules[ruleKind][ruleType]._sort(Rules.__prioritize);
+
+				for (domain in domains) {
+					allowingRules[ruleKind][ruleType]._getWithDefault(domain, {});
+
+					for (rule in domains[domain]) {
+						if (!withTheseRules && (domains[domain][rule].action % 2))
+							allowingRules[ruleKind][ruleType][domain][rule] = domains[domain][rule];
+						else {
+							if (domains[domain][rule].regexp) {
+								ruleSub = rule.substr(1);
+								ruleSub = ruleSub.substr(0, ruleSub.length - 1);
+								ruleSub = ruleSub.replace('[^\\/]', '.');
+								ruleSub = ruleSub.replace('[^\\.]', '[a-zA-Z0-9_]');
+								ruleSub = ruleSub.replace(new RegExp('([^a-za-z0-9_\\.%-]+|$)'._escapeRegExp(), 'g'), '\\/');
+								ruleSub = ruleSub.replace(/\{\d+\}/g, '+');
+
+								if (ruleSub._contains('^') || ruleSub._contains('|'))
+									continue;
+
+								contentBlockerRules = [punycode.toASCII(ruleSub)];
+							}
+							else {
+								contentBlockerRules = [];
+
+								ruleParts = Rules.partsForRule(rule);
+
+								for (protocol in ruleParts.protocols) {
+									contentBlockerRules.push(protocol === 'about:' ? (protocol + ruleParts.domain) : (protocol + subDomainBase + punycode.toASCII(ruleParts.domain)._escapeRegExp() + '\\/.*'))
+								}
+							}
+
+							for (i = contentBlockerRules.length; i--;) {
+								contentBlocker.push({
+									trigger: {
+										'url-filter': contentBlockerRules[i],
+										'resource-type': ruleKind === '*' ? allKinds : [map[ruleKind]],
+										'if-domain': domain === '*' ? undefined : [punycode.toASCII(domain._startsWith('.') ? '*' + domain.substr(1) : domain)]
+									},
+									action: {
+										type: !(domains[domain][rule].action % 2) ? 'block' : 'ignore-previous-rules'
+									}
+								});
+							}
+						}
+					}
+				}
+			}
+		}
 	}
+
+	if (!withTheseRules)
+		contentBlocker = contentBlocker.concat(this.createContentBlocker(allowingRules));
+
+	return contentBlocker;
 };
 
 var Rules = {
+	__contentBlockerMode: false,
 	__locked: false,
 	__regExpCache: {},
 	__partsCache: new Store('RuleParts'),
@@ -522,19 +608,34 @@ var Rules = {
 		return 0;
 	},
 
+	setContentBlockerMode: function (contentBlockerMode) {
+		if (!ContentBlocker.isSupported)
+			return;
+
+		Rules.__contentBlockerMode = !!contentBlockerMode;
+
+		RemoveContentScripts();
+
+		if (Rules.__contentBlockerMode) {
+			ContentBlocker.create(Rules.createContentBlocker());
+		} else {
+			ContentBlocker.create();
+
+			AddContentScriptFromURL('js/injected/compiled.js');
+		}
+	},
+
 	createContentBlocker: function () {
 		if (!ContentBlocker.isSupported)
 			return false;
 
-		var excludeLists = ['description', 'user'],
+		var excludeLists = ['description', 'active', 'firstVisit', 'temporary'],
+				reverseList = Object.keys(Rules.list).reverse(),
 				lists = [];
 
-		if (this.list.active !== this.list.user)
-			excludeLists.push('temporary');
-
-		for (var list in Rules.list)
-			if (!excludeLists._contains(list))
-				lists.push(this.list[list].createContentBlocker());
+		for (var i = 0; i < reverseList.length; i++)
+			if (!excludeLists._contains(reverseList[i]))
+				lists = lists.concat(this.list[reverseList[i]].createContentBlocker());
 
 		return lists;
 	},
@@ -558,7 +659,9 @@ var Rules = {
 				});
 
 		for (var i = currentLists.length; i--;)
-			delete Rules.list[currentLists[i]];
+			try {
+				delete Rules.list[currentLists[i]];
+			} catch (e) {}
 
 		for (var filterList in filterLists)
 			if (filterLists[filterList].enabled)
@@ -823,7 +926,7 @@ Object.defineProperty(Rules, 'list', {
 			})
 		},
 
-		predefined: {
+		'$predefined': {
 			enumerable: true,
 
 			value: new Rule('Predefined', {

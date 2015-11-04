@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 #view-container {
 	#snapshot-container {
 		padding: 3px;
@@ -11,7 +15,7 @@
 			margin-left: 13px;
 
 			li {
-				padding: 7px 0 6px;
+				padding: 6px 0 6px;
 				clear: both;
 
 				&:not(:last-child) {
@@ -32,8 +36,11 @@
 						text-decoration: none;
 						max-width: 330px;
 						overflow: hidden;
+						padding-top: 1px;
 
 						&:after {
+							position: relative;
+							top: -1px;
 							display: inline-block;
 							margin-left: 7px;
 							padding: 1px 5px;
@@ -54,7 +61,7 @@
 					&close,
 					&preview, {
 						float: right;
-						margin-top: -3px;
+						margin-top: -2px;
 						margin-left: 4px;
 						margin-right: 1px;
 					}

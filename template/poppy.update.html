@@ -1,3 +1,7 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+-->
+
 <noscript id="update-150424">
 	<h3 class="jsb-centered">A Simplified Page Editor</h3>
 
@@ -17,4 +21,26 @@
 			%><%=setting[0].outerHTML%>
 		</li>
 	</ul>
+</noscript>
+
+<noscript id="update-151027-kind-headers">
+	<h3 class="jsb-centered">Force Click</h3>
+
+	<p class="jsb-info jsb-readable">Force click kind headers to instantly create rules for the items below it.</p>
+</noscript>
+
+<noscript id="update-151027-page-items">
+	<h3 class="jsb-centered">Force Click</h3>
+
+	<p class="jsb-info jsb-readable">Force click a blocked or allowed item to instantly create a rule for it.</p>
+</noscript>
+
+<noscript id="update-151027-host-count">
+	<h3 class="jsb-centered">Force Click</h3>
+
+	<% if (Settings.getItem('showResourceURLsOnNumberClick')) { %>
+		<p class="jsb-info jsb-readable">Force click item count to show each resource.</p><%
+	} else { %>
+		<p class="jsb-info jsb-readable">Force click item count to temporarily switch to showing all resource URLs.</p><%
+	} %>
 </noscript>

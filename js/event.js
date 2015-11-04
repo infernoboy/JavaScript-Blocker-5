@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 function EventListener () {
@@ -105,30 +109,29 @@ EventListener.prototype.addMissingCustomEventListener = function (name, fn, once
 };
 
 EventListener.prototype.removeCustomEventListener = function (name, fn) {
-	var newListeners = [],
-			listeners = this.listeners(name);
+	var listeners = this.listeners(name);
 
 	for (var i = listeners.fns.length; i--;)
-		if (listeners.fns[i].fn !== fn && fn !== undefined)
-			newListeners.push(listeners.fns[i]);
+		if (listeners.fns[i].fn === fn)
+			listeners.fns._remove(i);
 
-	this.__listeners[name].fns = newListeners;
+	return this;
 };
 
 EventListener.prototype.trigger = function (name, detail, triggerSubsequentListeners) {
 	var info;
 
-	var newListeners = [],
-			fnInstance = {},
+	var fnInstance = {},
 			defaultPrevented = false,
 			afterwards = [],
 			fnInstances = [],
-			listeners = this.listeners(name);
+			listeners = this.listeners(name),
+			listenerFns = listeners.fns._clone();
 
 	listeners.triggerSubsequentListeners = !!triggerSubsequentListeners;
 
-	for (var i = 0; i < listeners.fns.length; i++) {
-		info = listeners.fns[i];
+	for (var i = 0; i < listenerFns.length; i++) {
+		info = listenerFns[i];
 
 		if (info.shouldBeDelayed)
 			Utilities.setImmediateTimeout(info.fn, [detail]);
@@ -148,8 +151,8 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 			fnInstances.push(fnInstance);
 		}
 
-		if (!info.once)
-			newListeners.push(info);
+		if (info.once)
+			listeners.fns._remove(listeners.fns.indexOf(info));
 	}
 
 	for (var i = 0; i < fnInstances.length; i++)
@@ -157,8 +160,6 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 
 	for (var i = 0; i < afterwards.length; i++)
 		afterwards[i]();
-
-	this.__listeners[name].fns = newListeners;
 
 	fnInstances = undefined;
 

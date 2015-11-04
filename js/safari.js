@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 if (!window.safari || !window.safari.extension)
@@ -349,7 +353,7 @@ var SecureSettings = {
 };
 
 var ContentBlocker = {
-	create: function (contentBlocker) {
+	set: function (contentBlocker) {
 		if (ContentBlocker.isSupported)
 			safari.extension.setContentBlocker(contentBlocker);
 	},
@@ -451,6 +455,14 @@ function GlobalCommand (command, data) {
 	});
 };
 
+function RemoveContentScripts () {
+	safari.extension.removeContentScripts();
+};
+
+function AddContentScriptFromURL (url) {
+	safari.extension.addContentScriptFromURL(ExtensionURL(url));
+};
+
 
 (function () {
 	var SetPopoverToToolbarItem = function (event) {
@@ -471,3 +483,12 @@ function GlobalCommand (command, data) {
 			Popover.popover = globalPage.Popover.popover;
 	}
 })();
+
+
+if (!!GlobalPage.tab && window.location.href.indexOf(ExtensionURL()) === -1) {
+	try {
+		GlobalCommand('contentBlockerMode');
+	} catch (e) {
+		throw new Error('content blocker mode.');
+	}
+}

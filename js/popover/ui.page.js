@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 UI.Page = {
@@ -164,6 +168,123 @@ UI.Page = {
 
 				loadingPoppy.setContent(_('view.page.item.info.loading')).show(true);
 			});
+		
+		var forceClickPageItems = new ForceClickElement(UI.Page.view, '.page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description'),
+				forceRuleColorTemplate = 'rgba(219, 235, 256, {0})';
+
+		forceClickPageItems.setThreshold(0.5, 0.05).modifyNormalizedForce(0, 1);
+
+		forceClickPageItems.event
+			.addCustomEventListener('forceClickCancelled', function (event) {
+				Poppy.closeAll();
+
+				$('.page-host-item', UI.Page.view).css('background', '');
+			})
+
+			.addCustomEventListener('forceChange', function (event) {
+				var target = $(event.detail.target),
+						section = target.parents('.page-host-section');
+
+				if (section.hasClass('page-host-editing') || globalPage.Rules.isLocked())
+					return;
+				
+				target
+					.parents('.page-host-item')
+					.css('background', event.detail.normalizedForce > 0.6 ? forceRuleColorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
+
+				if (!Poppy.poppyWithScriptNameExist('force-click-resource')) {
+					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-resource');
+
+					poppy.scaleWithForce(forceClickPageItems).setContent(_('force_click_add_rule')).show();
+				}
+			})
+
+			.addCustomEventListener('forceDown', function (event) {
+				var target = $(event.detail.target),
+						section = target.parents('.page-host-section');
+
+				if (section.hasClass('page-host-editing') || globalPage.Rules.isLocked())
+					return;
+
+				Poppy.closeAll();
+
+				target.click();
+
+				UI.Page.section.createRules(section);
+				UI.Page.section.toggleEditMode(section, false, true);
+			});
+
+		var forceClickPageKinds = new ForceClickElement(UI.Page.view, '.page-host-column .page-host-kind h4');
+
+		forceClickPageKinds
+			.setThreshold(0.5, 0.05)
+			.modifyNormalizedForce(0, 1);
+
+		forceClickPageKinds.event
+			.addCustomEventListener('forceClickCancelled', function (event) {
+				Poppy.closeAll();
+
+				$(event.detail.target).parents('.page-host-section').find('.page-host-item').css('background', '');
+			})
+
+			.addCustomEventListener('forceChange', function (event) {
+				if (event.detail.target.nodeName.toUpperCase() !== 'H4' || globalPage.Rules.isLocked())
+					return;
+
+				var target = $(event.detail.target),
+						section = target.parents('.page-host-section');
+
+				if (section.hasClass('page-host-editing'))
+					return;
+
+				target
+					.parent()
+					.next()
+					.find('.page-host-item')
+					.css('background', event.detail.normalizedForce > 0.6 ? forceRuleColorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
+
+				if (!Poppy.poppyWithScriptNameExist('force-click-resource')) {
+					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-resource');
+
+					poppy.scaleWithForce(forceClickPageKinds).setContent(_('force_click_add_kind_rules')).show();
+				}
+			})
+
+			.addCustomEventListener('forceDown', function (event) {
+				if (event.detail.target.nodeName.toUpperCase() !== 'H4' || globalPage.Rules.isLocked())
+					return;
+
+				var section = $(event.detail.target).parents('.page-host-section');
+
+				if (section.hasClass('page-host-editing'))
+					return;
+
+				Poppy.closeAll()
+
+				$(event.detail.target).click();
+
+				UI.Page.section.createRules(section);
+				UI.Page.section.toggleEditMode(section, false, true);
+			});
+
+		var foreClickHostCount = new ForceClickElement(UI.Page.view, '.page-host-host-count');
+
+		foreClickHostCount.setThreshold(0.5, 0.05).modifyNormalizedForce(0, 1);
+
+		foreClickHostCount.event
+			.addCustomEventListener('forceClickCancelled', function () {
+				Poppy.closeAll();
+			})
+
+			.addCustomEventListener('forceChange', function (event) {
+				var isShowingResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs');
+
+				if (!isShowingResourceURLs && !Poppy.poppyWithScriptNameExist('force-click-host-count')) {
+					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-host-count');
+
+					poppy.scaleWithForce(foreClickHostCount).setContent(_(Settings.getItem('showResourceURLsOnNumberClick') ? 'force_click_host_count_popup' : 'force_click_host_count_switch')).show();
+				}
+			});
 	},
 
 	showSwitcherBadge: function (text) {
@@ -187,6 +308,9 @@ UI.Page = {
 	},
 
 	canRender: function () {
+		if (!UI.Page.view)
+			return false;
+
 		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyDisplayed() && $('.page-host-editing', UI.Page.view).length === 0 && $('.advanced-rule-created', UI.Page.view).length === 0);
 	},
 
@@ -218,7 +342,8 @@ UI.Page = {
 
 			UI.view.views.unbind('scroll', UI.Page.throttledRequestFromActive).one('scroll', UI.Page.throttledRequestFromActive);
 
-			UI.event.addMissingCustomEventListener(['poppyDidClose', 'sectionSwitchedOutOfEditMode', 'dragEnd'], UI.Page.throttledRequestFromActive, true);
+			UI.event.addMissingCustomEventListener(['sectionSwitchedOutOfEditMode', 'dragEnd'], UI.Page.throttledRequestFromActive, true);
+			Poppy.event.addMissingCustomEventListener('poppyDidClose', UI.Page.throttledRequestFromActive, true);
 		}
 	}, 50, null, true),
 
@@ -288,6 +413,9 @@ UI.Page = {
 		},
 
 		createRules: function (section) {
+			if (section.find('.page-host-editor').is(':not(:visible)'))
+				return;
+
 			var ruleAction,
 					ruleDomain;
 
@@ -431,9 +559,11 @@ UI.Page = {
 		},
 
 		openedPopover: function () {
-			UI.Page.clear();
+			if (!Poppy.modalOpen)
+				UI.Page.clear();
 
-			Settings.setItem('temporarilyShowResourceURLs', false);
+			if (Settings.getItem('temporarilyShowResourceURLs'))
+				Settings.setItem('temporarilyShowResourceURLs', false);
 
 			globalPage.Page.requestPageFromActive();
 		},
@@ -563,8 +693,13 @@ UI.Page = {
 					}, 'reload');
 				})
 
-				.on('click', '.page-host-first-visit .more-info', function (event) {
+				.on('click', '.page-host-first-visit .more-info', function (event, forceClickEvent, forceClick) {
+					if (forceClickEvent)
+						event = forceClickEvent;
+
 					var poppy = new Poppy(event.pageX, event.pageY, true);
+
+					poppy.scaleWithForce(forceClick);
 
 					poppy.setContent(Template.create('main', 'jsb-readable', {
 						string: _('first_visit.unblock_more_info')
@@ -675,10 +810,26 @@ UI.Page = {
 					});
 				})
 
-				.on('click', '.page-host-host-count', function (event) {
-					var showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs');
+				.on('click webkitmouseforcedown', '.page-host-host-count', function (event) {
+					if (this.classList.contains('cancel-next-event')) {
+						event.stopImmediatePropagation();
 
-					if (!showResourceURLs && Settings.getItem('showResourceURLsOnNumberClick')) {
+						return this.classList.remove('cancel-next-event');
+					}
+
+					var isShowingResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
+							showResourceURLsOnNumberClick = Settings.getItem('showResourceURLsOnNumberClick'),
+							isForceClick = event.type === 'webkitmouseforcedown';
+
+					this.classList.add('cancel-next-event');
+
+					if (isForceClick) {
+						Poppy.preventNextCloseAll();
+
+						showResourceURLsOnNumberClick = !showResourceURLsOnNumberClick;
+					}
+
+					if (!isShowingResourceURLs && showResourceURLsOnNumberClick) {
 						UI.Page.clear();
 
 						return Settings.setItem('temporarilyShowResourceURLs', true);
@@ -686,7 +837,7 @@ UI.Page = {
 
 					var item = $(this).parents('.page-host-item'),
 							resources = item.data('resources'),
-							poppy = new Poppy(event.pageX, event.pageY, true),
+							poppy = new Poppy(EventListener.eventInfo.pageX, EventListener.eventInfo.pageY, true),
 							items = [];
 
 					for (var resourceID in resources)
@@ -704,10 +855,15 @@ UI.Page = {
 					poppy.show();
 				})
 
-				.on('click', '.page-host-item-info', function (event) {
+				.on('click', '.page-host-item-info', function (event, forceClickEvent, forceClick) {
+					if (forceClickEvent)
+						event = forceClickEvent;
+
 					var item = $(this).parents('.page-host-item');
 
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'item-info');
+
+					poppy.scaleWithForce(forceClick);
 
 					poppy.isAllowed = item.parents('.page-host-column').is('.page-host-column-allowed');
 					poppy.resources = item.data('resources');
@@ -728,12 +884,15 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description', function (event) {
-					if (UI.event.trigger('pressAndHoldSucceeded'))
+					if (Poppy.Menu.event.trigger('pressAndHoldSucceeded') || Poppy.Menu.event.trigger('forceClicked'))
 						return;
 
 					var self = $(this),
-							section = self.parents('.page-host-section'),
 							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description');
+
+					self.removeClass('force-click-began');
+
+					var section = self.parents('.page-host-section');
 
 					if (section.is('.page-host-editing') && isItem)
 						return;

@@ -1,12 +1,55 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+-->
+
 <noscript id="help-container">
-	<div id="help-toolbar"></div>
+	<div id="help-toolbar" class="view-toolbar"></div>
 	<div id="help-views-container" class="ui-view-container"></div>
 </noscript>
 
-<noscript id="help-page">
+<noscript id="help-faq-container">
+	<div id="help-faq-toolbar" class="view-toolbar"></div>
+	<div id="help-faq-views-container" class="ui-view-container"></div>
+</noscript>
+
+<noscript id="help-contact">
+	<div id="help-contact" class="help-content">
+		<ul class="generic-menu-options">
+			<li class="dividing-border">Email: <a href="mailto:helpme@toggleable.com?subject=I need help with JSB5&amp;body=Please thoroughly describe the problem you are having. Include screenshots if you think it will help.">helpme@toggleable.com</a></li>
+			<li class="dividing-border">AIM: <a href="aim:goim?screenname=thunderstorms@me.com">thunderstorms@me.com</a></li>
+			<li>Google Plus/Hangouts: <a href="https://plus.google.com/+TravisRoman/about">Travis Roman</a></li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="help-faq"></noscript>
+
+<noscript id="help-faq-general">
 	<div class="help-content">
-		<input type="button" class="help-questions-hide-all blend-in" value="<%=_('rules.hide_all')%>" /><q></q>
-		<input type="button" class="help-questions-show-all blend-in" value="<%=_('rules.show_all')%>" />
+		<input type="button" class="help-questions-hide-all blend-in jsb-smaller" value="<%=_('rules.hide_all')%>" /><q></q>
+		<input type="button" class="help-questions-show-all blend-in jsb-smaller" value="<%=_('rules.show_all')%>" />
+
+		<ul class="help-questions">
+			<li>
+				<header>
+					<h4>Can I give you money?</h4>
+				</header>
+
+				<div class="help-question-answer">
+					Why yes, you can! Just head over to the <a href="http://jsblocker.toggleable.com/donate">donation page</a> to
+					learn how. Donating will grant you permanent access to all of JS Blocker's extra features. You'll receive a
+					confirmation email once your donation has been processed. You can then unlock by opening <b>Menu</b> above
+					and then clicking <b>Donate</b>.
+				</div>
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="help-faq-page">
+	<div class="help-content">
+		<input type="button" class="help-questions-hide-all blend-in jsb-smaller" value="<%=_('rules.hide_all')%>" /><q></q>
+		<input type="button" class="help-questions-show-all blend-in jsb-smaller" value="<%=_('rules.show_all')%>" />
 
 		<ul class="help-questions">
 			<li>
@@ -15,17 +58,8 @@
 				</header>
 
 				<div class="help-question-answer">
-					I dunno.
-				</div>
-			</li>
-
-			<li>
-				<header>
-					<h4>How do I do that other thing?</h4>
-				</header>
-
-				<div class="help-question-answer">
-					Press the button.
+					Click on the item that you want to allow or block to switch to edit mode. The item will be checked off
+					automatically. Choose any other items and then click <b>Save</b> to create the rules and reload the page.
 				</div>
 			</li>
 
@@ -35,15 +69,62 @@
 				</header>
 
 				<div class="help-question-answer">
-					Figure it out.
+					Open the <b>Page</b> menu above and check <b>Show resource URLs</b>.
 				</div>
 			</li>
 		</ul>
 	</div>
 </noscript>
 
-<noscript id="help-faq">
+<noscript id="help-faq-rules">
 	<div class="help-content">
-		<h1>FAQ</h1>
-	</div>		
+		<input type="button" class="help-questions-hide-all blend-in jsb-smaller" value="<%=_('rules.hide_all')%>" /><q></q>
+		<input type="button" class="help-questions-show-all blend-in jsb-smaller" value="<%=_('rules.show_all')%>" />
+
+		<ul class="help-questions">
+			<li>
+				<header>
+					<h4>From a trust notification, how can I trust the domain example.com instead of www.example.com?</h4>
+				</header>
+
+				<div class="help-question-answer">
+					When you see the notification on the webpage, hold the option/alt key on your keyboard to
+					reveal <b>Trust Domain</b> on the notification.
+				</div>
+			</li>
+
+			<li>
+				<header>
+					<h4>I accidentally deleted or modified a rule! What can I do?</h4>
+				</header>
+
+				<div class="help-question-answer">
+					Snapshots has you covered. Open the <b>Rules</b> menu above and then click <b>Snapshots</b>. You will
+					see a list of dates, each of which contain your rules as they were on the given date. Click on a date
+					to reveal options, including one to compare. By comparing the snapshot rules to your current rules, you
+					will be able to easily see which ones you need to restore.
+				</div>
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="help-faq-settings">
+	<div class="help-content">
+		<input type="button" class="help-questions-hide-all blend-in jsb-smaller" value="<%=_('rules.hide_all')%>" /><q></q>
+		<input type="button" class="help-questions-show-all blend-in jsb-smaller" value="<%=_('rules.show_all')%>" />
+
+		<ul class="help-questions">
+			<li>
+				<header>
+					<h4>How do I import a backup?</h4>
+				</header>
+
+				<div class="help-question-answer">
+					Open the <b>Settings</b> menu above and then click <b>Backup</b>. If you are importing
+					a backup from JavaScript Blocker 4, click <b>Use alternative method</b> on the backup popup.
+				</div>
+			</li>
+		</ul>
+	</div>
 </noscript>

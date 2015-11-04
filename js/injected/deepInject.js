@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 function DeepInject (name, script, noToken) {
 	if (typeof name !== 'string')
 		name = '';

@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 UI.Rules = {
@@ -70,6 +74,9 @@ UI.Rules = {
 	},
 
 	getFilterListName: function (listName) {
+		if (listName === '$predefined')
+			return 'Built-in';
+		
 		var listReference = Settings.getItem('filterLists')[listName];
 
 		if (listReference)
@@ -430,7 +437,7 @@ UI.Rules = {
 				})
 
 				.on('click', '.multi-list-item-wrapper[data-editable="1"] .multi-list-item-header', function (event) {
-					if (event.offsetX > this.offsetWidth)
+					if (event.target.classList.contains('header-expander-label'))
 						return;
 
 					var ruleList = globalPage.Rules.list[this.parentNode.parentNode.getAttribute('data-listName')],
@@ -450,7 +457,7 @@ UI.Rules = {
 				})
 
 				.on('click', '.rule-group-type-wrapper[data-editable="1"] .rule-group-type-header', function (event) {
-					if (event.offsetX > this.offsetWidth)
+					if (event.target.classList.contains('header-expander-label'))
 						return;
 
 					var self = $(this),
@@ -473,7 +480,7 @@ UI.Rules = {
 				})
 
 				.on('click', '.rule-group-domain-wrapper[data-editable="1"] .rule-group-domain-header', function (event) {
-					if (event.offsetX > this.offsetWidth)
+					if (event.target.classList.contains('header-expander-label'))
 						return;
 
 					var self = $(this),
@@ -497,7 +504,7 @@ UI.Rules = {
 				})
 
 				.on('click', '.rule-group-kind-wrapper[data-editable="1"] .rule-group-kind-header', function (event) {
-					if (event.offsetX > this.offsetWidth)
+					if (event.target.classList.contains('header-expander-label'))
 						return;
 
 					var self = $(this),
@@ -557,8 +564,11 @@ UI.Rules = {
 		},
 
 		viewAlreadyActive: function (event) {
-			if (event.detail.id._startsWith('#rule-views'))
+			if (event.detail.id._startsWith('#rule-views')) {
 				UI.Rules.events.viewDidSwitch(event);
+
+				$('li[data-view="#rule-views-firstVisit"]', UI.Rules.viewSwitcher).toggle(Settings.getItem('blockFirstVisit') !== 'nowhere');
+			}
 		},
 
 		viewWillSwitch: function (event) {			
@@ -665,7 +675,7 @@ UI.Rules = {
 	}
 };
 
-UI.event.addCustomEventListener('poppyDidShow', UI.Rules.events.poppyDidShow);
+Poppy.event.addCustomEventListener('poppyDidShow', UI.Rules.events.poppyDidShow);
 UI.event.addCustomEventListener('viewAlreadyActive', UI.Rules.events.viewAlreadyActive);
 UI.event.addCustomEventListener('viewWillSwitch', UI.Rules.events.viewWillSwitch);
 UI.event.addCustomEventListener('viewDidSwitch', UI.Rules.events.viewDidSwitch);

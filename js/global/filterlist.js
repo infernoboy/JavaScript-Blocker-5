@@ -1,8 +1,12 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 function FilterList (listName, listURL) {
 	if (!Rules.list[listName])
-		throw new Error(listName + ' is not a valid FilterList.');
+		throw new Error(listName + ' is not a known FilterList.');
 
 	FilterList.__updating++;
 

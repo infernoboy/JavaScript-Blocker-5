@@ -39,6 +39,8 @@
        <string>5.0.11</string>
        <key>URL</key>
        <string>http://lion.toggleable.com:160/jsblocker/download/JSB5.safariextz</string>
+       <key>Update From Gallery</key>
+       <true/>
      </dict>
    </array>
 </dict>

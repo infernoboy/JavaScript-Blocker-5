@@ -1,3 +1,7 @@
+/*
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+*/
+
 "use strict";
 
 UI.Snapshots = {
@@ -21,12 +25,17 @@ UI.Snapshots = {
 				UI.view.switchTo('#main-views-snapshot');
 			})
 
-			.on('click', '.snapshot-item-name', function (event) {
+			.on('click', '.snapshot-item-name', function (event, forceClickEvent, forceClick) {
+				if (forceClickEvent)
+					event = forceClickEvent;
+
 				var self = $(this),
 						kept = self.parents('.snapshot-list').is('#snapshot-kept-list'),
 						snapshotID = self.parents('li').attr('data-snapshotID'),
 						snapshots = self.parents('.snapshot-list').data('snapshots'),
 						poppy = new Poppy(event.pageX, event.pageY, true, 'snapshot-item');
+
+				poppy.scaleWithForce(forceClick);
 
 				poppy.snapshotID = snapshotID;
 				poppy.snapshots = snapshots;
