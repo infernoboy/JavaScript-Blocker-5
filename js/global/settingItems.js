@@ -1302,12 +1302,21 @@ Settings.settings = {
 			props: {
 				type: 'button',
 				onClick: function (button) {
-					var defaultUserScript = "// ==UserScript==\n" +
-						"// @name My User Script:" + Utilities.Token.generate() + "\n" +
-						"// @namespace " + Settings.getItem('installID') + "\n" +
+					var scriptName;
+
+					var scriptNameTemplate = 'My User Script {0}',
+							scriptNamespace = Settings.getItem('installID'),
+							scriptIndex = 0;
+
+					while (UserScript.scripts.keyExist((scriptName = scriptNameTemplate._format([++scriptIndex])) + ':' + scriptNamespace)) {}
+
+					var defaultUserScript =
+						"// ==UserScript==\n" +
+						"// @name " + scriptName + "\n" +
+						"// @namespace " + scriptNamespace + "\n" +
 						"// @version 0.1\n" +
-						"// @updateURL \n" +
 						"// @downloadURL \n" +
+						"// @domain *\n" +
 						"// ==/UserScript==\n\n\n";
 
 					UI.event.addCustomEventListener('customSettingViewCreated', function (event) {
@@ -1362,10 +1371,10 @@ Settings.settings = {
 		props: {
 			type: 'button',
 			onClick: function (button) {
-				UI.Settings.saveUserScriptEdit(button, true);
-
-				button.disabled = true;
-				button.value = _('setting.saveUserScript.subLabel.saved');
+				if (UI.Settings.saveUserScriptEdit(button, true)) {
+					button.disabled = true;
+					button.value = _('setting.saveUserScript.subLabel.saved');
+				}
 			}
 		},
 	}],

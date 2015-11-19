@@ -913,6 +913,12 @@ var Utilities = {
 			this.__anchor.href = url;
 
 			return this.__anchor.search;
+		},
+
+		pathname: function (url) {
+			this.__anchor.href = url;
+
+			return this.__anchor.pathname;
 		}
 	}
 };
@@ -1077,21 +1083,28 @@ var Extension = {
 		},
 
 		_extends: {
-			value: function (classFn) {
-				function extended () {
-					extended.self.bind(this, (function (localArgs) {
-						classFn.apply(this, localArgs)
-					}).bind(this, arguments)).apply(this, arguments);
+			value: (function () {
+				function _super (superClass, localArgs) {
+					return superClass.apply(this, localArgs.concat(Utilities.makeArray(arguments).slice(2)));
 				}
 
-				extended.self = this;
+				return function (superClass) {
+					function extended () {
+						this.super = _super.bind(this, superClass, Utilities.makeArray(arguments));
+						this.superWithArgs = _super.bind(this, superClass, []);
 
-				extended.prototype = Object.create(classFn.prototype);
+						return extended.self.apply(this, arguments);
+					}
 
-				extended.prototype.constructor = this;
+					extended.self = this;
 
-				return extended;
-			}
+					extended.prototype = Object.create(superClass.prototype);
+
+					extended.prototype.constructor = this;
+
+					return extended;
+				}
+			})()
 		}
 	},
 

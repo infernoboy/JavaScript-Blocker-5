@@ -51,7 +51,7 @@ Update.versions[150927] = {
 };
 
 // === 5.0.12 ===
-Update.versions[151027] = {
+Update.versions[151104] = {
 	blocking: false,
 
 	update: function (updateVersion) {
@@ -139,3 +139,18 @@ Update.versions[151027] = {
 		});
 	}
 };
+
+// === 5.0.12a ===
+Update.versions[151104.1] = {
+	blocking: false,
+	doNotBeg: true
+};
+
+// === 5.0.13 ===
+Update.versions[151105] = {
+	blocking: false,
+
+	update: function (updateVersion) {
+		Settings.import(SettingStore.export(), true, true);
+	}
+}

@@ -4,14 +4,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 "use strict";
 
-function PressAndHoldElement (magic, element, selector, holdTime) {
+var PressAndHoldElement = function (element, selector, useDirectBind, holdTime) {
 	this.__successPreventsClick = false;
 
 	this.elementEvents = PressAndHoldElement.elementEvents;
 
 	this.holdTime = holdTime || 350;
-
-	this.__cancelClick = PressAndHoldElement.__cancelClick.bind(this, this);
 
 	var self = this;
 
@@ -21,19 +19,21 @@ function PressAndHoldElement (magic, element, selector, holdTime) {
 				self.cancel(event);
 		}, 0, true));
 
-	magic();
-}
-
-PressAndHoldElement = PressAndHoldElement._extends(MagicBinder);
+	this.super();
+}._extends(MagicBinder);
 
 PressAndHoldElement.elementEvents = {
 	mousedown: function (self, event) {
 		self.startTimer(event);
 	},
 
-	mouseout: function (self, event) {
-		if (self.__successPreventsClick && self.__hasClickEvent)
-			self.__cancelClick(event);
+	click: function (self, event) {
+		if (self.resolved && (self.__successPreventsClick || self.__clickEventPreventsDefault)) {
+			self.resolved = false;
+
+			event.preventDefault();
+			event.stopImmediatePropagation();
+		}
 	},
 
 	webkitmouseforcewillbegin: function (self, event) {
@@ -48,18 +48,6 @@ PressAndHoldElement.elementEvents = {
 	}
 };
 
-PressAndHoldElement.__cancelClick = function (self, event) {
-	if (!self.__hasClickEvent)
-		return;
-
-	self.__hasClickEvent = false;
-
-	event.preventDefault();
-	event.stopImmediatePropagation();
-
-	$(event.target).unbind('click', this.__cancelClick);
-};
-
 PressAndHoldElement.prototype.successPreventsClick = function () {
 	this.__successPreventsClick = true;
 
@@ -67,14 +55,14 @@ PressAndHoldElement.prototype.successPreventsClick = function () {
 };
 
 PressAndHoldElement.prototype.startTimer = function (event) {
+	this.__clickEventPreventsDefault = true;
 	this.data = undefined;
+	this.resolved = false;	
 
 	Utilities.Timer.timeout(this, function (self, event) {
-		if (self.__successPreventsClick) {
-			self.__hasClickEvent = true;
+		self.resolved = true;
 
-			$(event.target).bind('click', self.__cancelClick);
-		}
+		Poppy.preventNextCloseAll();
 
 		self.event.trigger('resolve', {
 			event: event,
@@ -84,6 +72,7 @@ PressAndHoldElement.prototype.startTimer = function (event) {
 };
 
 PressAndHoldElement.prototype.now = function (data) {
+	this.__clickEventPreventsDefault = false;
 	this.data = data;
 
 	Utilities.Timer.timeoutNow(this);
@@ -93,7 +82,7 @@ PressAndHoldElement.prototype.cancel = function (event) {
 	var hadTimer = Utilities.Timer.remove('timeout', this);
 
 	if (hadTimer) {
-		this.__cancelClick(event);
+		$(event.currentTarget).trigger('mouseup');
 
 		this.event.trigger('reject', event);
 	}

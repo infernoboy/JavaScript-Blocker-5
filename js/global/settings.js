@@ -5,9 +5,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 var Settings = {
-	__method: function (method, setting, value) {
+	__method: function (method, setting, value, persist) {
 		if (SettingStore.available)
-			return SettingStore[method](setting, value);
+			return SettingStore[method](setting, value, null, persist);
 		else
 			return GlobalCommand('settingStore.' + method, {
 				setting: setting,
@@ -316,6 +316,10 @@ var Settings = {
 
 			if (setting.props.onChange)
 				setting.props.onChange(value);
+
+			Settings.anySettingChanged({
+				key: settingKey
+			});
 		} else
 			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
 
@@ -431,25 +435,27 @@ var Settings = {
 		return JSON.stringify(exported);
 	},
 
-	import: function (settings, clearExisting) {
+	import: function (settings, clearExisting, semi) {
 		var willNotImport = ['donationVerified', 'trialStart', 'updateNotify', 'FilterListLastUpdate', 'installedBundle'];
 
 		UI.Locker
-			.showLockerPrompt('importBackupSettings')
+			.showLockerPrompt('importBackupSettings', !!semi)
 			.then(function (importedSettings) {
 				var settings = SettingStore.import(importedSettings);
 
 				if (!settings)
 					return LogError('failed to import settings');
 
-				Settings.IMPORTING = true;
+				if (!semi)
+					Settings.IMPORTING = true;
 
 				var temporaryBackup = JSON.stringify(SettingStore.all());
 
 				if (clearExisting) {
 					SettingStore.clear();
 
-					Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
+					if (!semi)
+						Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
 				}
 
 				if (settings.settings && settings.rules && settings.simpleRules)
@@ -463,39 +469,52 @@ var Settings = {
 						return;
 					}
 				else {
+					var value;
+
 					for (var setting in settings) {
 						if (willNotImport._contains(setting))
 							continue;
 
+						value = settings[setting];
+
 						try {
 							if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE))
-								SettingStore.setItem(setting, settings[setting]);
-							else
-								Settings.setItem(setting, settings[setting], null, true, true);
+								SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= 100000);
+							else {
+
+								try {
+									value = JSON.parse(value);
+								} catch (e) {}
+
+								Settings.setItem(setting, value, null, true, true);
+							}
 						} catch (e) {
 							LogError('failed to import setting - ' + setting, e);
 						}
 					}
 				}
 
-				Settings.setItem('showPopoverOnLoad', true);
+				if (!semi)
+					Settings.setItem('showPopoverOnLoad', true);
 
-				setTimeout(function (settings) {
+				setTimeout(function (settings, semi) {
 					if (!settings._isEmpty())
 						Settings.setItem('setupComplete', true);
 
-					SettingStore.lock(true);
+					if (!semi) {
+						SettingStore.lock(true);
 
-					UI.view.switchTo('#main-views-page');
+						UI.view.switchTo('#main-views-page');
 
-					UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch', 'popoverOpened'], function (event) {
-						event.preventDefault();
+						UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch', 'popoverOpened'], function (event) {
+							event.preventDefault();
 
-						UI.Page.showModalInfo(_('settings.safari_restart'));
-					});
+							UI.Page.showModalInfo(_('settings.safari_restart'));
+						});
 
-					SecureSettings.clear();
-				}, 1000, settings);
+						SecureSettings.clear();
+					}
+				}, 1000, settings, semi);
 			}.bind(null, settings));
 	}
 };

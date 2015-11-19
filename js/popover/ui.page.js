@@ -597,6 +597,7 @@ UI.Page = {
 		sectionSwitchedOutOfEditMode: function (event) {
 			$('.page-host-item', event.detail).removeClass('page-host-item-disabled');
 			$('.page-host-kind', event.detail).removeClass('page-host-kind-disabled');
+			$('.page-host-columns input[type="checkbox"]', event.detail).prop('checked', false);
 
 			setTimeout(function () {
 				UI.view.floatingHeaders.adjustAll();
@@ -729,6 +730,8 @@ UI.Page = {
 					var editor = $(this).parents('.page-host-editor'),
 							selectEnableOptionIndex = 0,
 							whichItems = $('.page-host-editor-which-items', editor),
+							selectedIndex = whichItems[0].selectedIndex,
+							newSelectIndex = 0,
 							options = $('option', whichItems);
 
 					options.prop('disabled', true)
@@ -740,14 +743,14 @@ UI.Page = {
 					else if (this.value === 'block' || this.value === 'allow') {
 						enableOptions = options.filter('[value="items-checked"], [value="items-all"], [value="items-of-kind"]');
 
-						selectEnableOptionIndex = 2;
-					}	else if (this.value === 'hide' || this.value === 'show') {
+						newSelectIndex = 2;
+					}	else if (this.value === 'hide' || this.value === 'show')
 						enableOptions = options.not('[value="jsb"]');
 
-						selectEnableOptionIndex = 2;
-					}
+					enableOptions.prop('disabled', false);
 
-					enableOptions.prop('disabled', false).eq(selectEnableOptionIndex).prop('selected', true);
+					if (options.eq(selectedIndex).prop('disabled') || newSelectIndex)
+						enableOptions.eq(newSelectIndex).prop('selected', true);
 
 					whichItems.trigger('change');
 				})
@@ -810,18 +813,10 @@ UI.Page = {
 					});
 				})
 
-				.on('click webkitmouseforcedown', '.page-host-host-count', function (event) {
-					if (this.classList.contains('cancel-next-event')) {
-						event.stopImmediatePropagation();
-
-						return this.classList.remove('cancel-next-event');
-					}
-
+				.on('click webkitmouseforcedown', '.page-host-host-count', function (event) {	
 					var isShowingResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
 							showResourceURLsOnNumberClick = Settings.getItem('showResourceURLsOnNumberClick'),
 							isForceClick = event.type === 'webkitmouseforcedown';
-
-					this.classList.add('cancel-next-event');
 
 					if (isForceClick) {
 						Poppy.preventNextCloseAll();

@@ -454,12 +454,24 @@ function Command (command, data, event) {
 			UserScript.download(url, false).done(function (userScript) {
 				try {
 					success = UserScript.add(userScript);
+
+					if (typeof success === 'string') {
+						var downloadURL = UserScript.getAttribute(success, 'downloadURL');
+
+						if (!downloadURL) {
+							UserScript.setAttribute(success, 'customDownloadURL', url);
+							UserScript.setAttribute(success, 'autoUpdate', true);
+
+							Settings.anySettingChanged({
+								key: 'userScripts'
+							});
+						}
+					}
 				} catch (error) {
 					success = error;
 
 					LogError(error);
 				}
-
 			}).fail(function () {
 				success = false;
 			});
@@ -493,15 +505,9 @@ function Command (command, data, event) {
 			getItem: function (detail) {
 				this.message = SettingStore.getItem(detail.setting, detail.value);
 			},
-			getJSON: function (detail) {
-				this.message = SettingStore.getJSON(detail.setting, detail.value);
-			},
 
 			setItem: function (detail) {
 				this.message = SettingStore.setItem(detail.setting, detail.value);
-			},
-			setJSON: function (detail) {
-				this.message = SettingStore.setJSON(detail.setting, detail.value);
 			}
 		},
 

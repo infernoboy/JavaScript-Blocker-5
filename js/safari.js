@@ -141,7 +141,7 @@ var Tabs = {
 	all: function (callback) {
 		BrowserWindows.all().forEach(function (browserWindow) {
 			browserWindow.tabs.forEach(function (tab) {
-				callback.call(window, tab);
+				callback.call(window, tab, browserWindow);
 			});
 		});
 	},
@@ -214,6 +214,7 @@ var SettingStore = {
 	__locked: false,
 	__cache: {},
 	__badKeys: ['setItem', 'getItem', 'removeItem', 'clear', 'addEventListener', 'removeEventListener'],
+	__localKeys: [],
 
 	available: !!(window.safari && safari.extension && safari.extension.settings),
 
@@ -233,15 +234,12 @@ var SettingStore = {
 		this.__locked = lock;
 	},
 
-	isSet: function (key) {
-		return safari.extension.settings.hasOwnProperty(key);
-	},
-
 	getItem: function (key, defaultValue, noCache) {
 		if (key in this.__cache)
 			return this.__cache[key];
 
-		var value = safari.extension.settings.getItem(key);
+		var localValue = localStorage.getItem(key),
+				value = localValue ? JSON.parse(localValue) : safari.extension.settings.getItem(key);
 
 		if (value === null)
 			return defaultValue === undefined ? value : defaultValue;
@@ -249,26 +247,14 @@ var SettingStore = {
 		if (!noCache)
 			this.__setCache(key, value);
 
-		return value;
-	},
-
-	getJSON: function (key, defaultValue) {
-		var value = this.getItem(key, undefined, true);
-
-		if (value === null)
-			return defaultValue === undefined ? value : defaultValue;
-
-		if (typeof value !== 'string')
-			return value;
-
 		try {
 			return JSON.parse(value);
-		} catch (error) {
-			return defaultValue;
+		} catch (e) {
+			return value;
 		}
 	},
 
-	setItem: function (key, value, noCache) {
+	setItem: function (key, value, noCache, persist) {
 		if (this.__locked)
 			return;
 
@@ -280,14 +266,13 @@ var SettingStore = {
 		if (!noCache)
 			this.__setCache(key, value);
 
-		safari.extension.settings.setItem(key, value);
-	},
-
-	setJSON: function (key, value) {		
-		if (this.__locked)
-			return;
-
-		safari.extension.settings.setItem(key, JSON.stringify(value));
+		if (persist) {
+			localStorage.removeItem(key);
+			safari.extension.settings.setItem(key, value);
+		} else {
+			localStorage.setItem(key, JSON.stringify(value));
+			safari.extension.settings.removeItem(key);
+		}
 	},
 
 	removeItem: function (key) {
@@ -297,14 +282,15 @@ var SettingStore = {
 		delete this.__cache[key];
 
 		safari.extension.settings.removeItem(key);
+		localStorage.removeItem(key);
 	},
 
 	all: function () {
-		return Object._copy(safari.extension.settings);
+		return Object._extend(Object._copy(safari.extension.settings), Object._copy(localStorage));
 	},
 
 	export: function () {
-		return JSON.stringify(safari.extension.settings);
+		return JSON.stringify(Object._extend(safari.extension.settings, localStorage));
 	},
 
 	import: function (settings) {
@@ -323,6 +309,7 @@ var SettingStore = {
 		this.__cache = {};
 
 		safari.extension.settings.clear();
+		localStorage.clear();
 	}
 };
 
@@ -482,6 +469,20 @@ function AddContentScriptFromURL (url) {
 		if (globalPage)
 			Popover.popover = globalPage.Popover.popover;
 	}
+
+	setTimeout(function () {
+		if (!Utilities.Page.isGlobal)
+			return;
+
+		Utilities.Timer.interval('tabMonitor', function (tabMonitor) {
+			var allWindows = BrowserWindows.all();
+
+			for (var i = allWindows.length; i--;)
+				SetPopoverToToolbarItem({
+					target: allWindows[i]
+				});
+		}, 3000);
+	}, 2000);
 })();
 
 

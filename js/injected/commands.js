@@ -223,11 +223,8 @@ var Command = function (type, event) {
 		},
 
 		executeMenuCommand: function (detail) {
-			if (detail.data.pageID === Page.info.id) {
-				var target = document.querySelector('*[data-jsbContextMenuTarget="' + detail.data.contextMenuTarget + '"]');
-
-				Command.sendCallback(detail.data.sourceID, detail.data.callbackID, target);
-			}
+			if (detail.data.pageID === Page.info.id)
+				Command.sendCallback(detail.data.sourceID, detail.data.callbackID, detail.data.contextMenuTarget);
 		},
 
 		restorePlaceholderElements: function (detail) {
@@ -468,7 +465,7 @@ var Command = function (type, event) {
 					actionStore = isAllowed ? Page.allowed : Page.blocked,
 					found = actionStore.deepFindKey(info.resourceID);
 
-			found.store.set(found.key, {
+			found.store.set(info.resourceID, {
 				action: info.canLoad.action,
 				unblockable: info.unblockable,
 				meta: info.meta

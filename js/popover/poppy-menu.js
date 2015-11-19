@@ -9,13 +9,12 @@ Poppy.Menu = {
 
 	event: new EventListener,
 	forceClick: new ForceClickElement(document, '*[data-poppyMenu]'),
+	pressAndHold: new PressAndHoldElement(document, '*[data-poppyMenu]', true),
 
 	init: function () {
-		var pressAndHold = new PressAndHoldElement(document, Poppy.Menu.forceClick.selector);
+		Poppy.Menu.pressAndHold.successPreventsClick();
 
-		pressAndHold.successPreventsClick();
-
-		pressAndHold.event
+		Poppy.Menu.pressAndHold.event
 			.addCustomEventListener('resolve', function (event) {
 				Poppy.Menu.show(event.detail.event.currentTarget.querySelector('.poppy-menu-target'), event.detail.event);
 
@@ -25,11 +24,11 @@ Poppy.Menu = {
 
 		Poppy.Menu.forceClick
 			.setThreshold(0.5)
-			.modifyNormalizedForce(-0.15, 1, 0.1);
+			.modifyNormalizedForce(0, 0.85, 0.1);
 
 		Poppy.Menu.forceClick.event
 			.addCustomEventListener('firstForceChange', function (event) {
-				pressAndHold.now(true);
+				Poppy.Menu.pressAndHold.now(true);
 			})
 
 			.addCustomEventListener(['forceClickCancelled', 'forceDown', 'forceUp'], function (event) {
@@ -83,16 +82,6 @@ Poppy.Menu = {
 		Poppy.Menu.__poppy = poppy;
 
 		poppy.scaleWithForce(Poppy.Menu.forceClick);
-
-		if (event.type === 'mousedown')
-			Poppy.event.addCustomEventListener('poppyWillClose', function (event) {
-				if (event.detail === poppy) {
-					event.unbind();
-
-					if (event.detail.poppy.classList.contains('poppy-fully-shown'))
-						event.preventDefault();
-				}
-			});
 
 		Poppy.event
 			.addCustomEventListener('poppyIsFullyShown', function (event) {

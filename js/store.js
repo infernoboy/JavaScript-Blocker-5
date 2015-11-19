@@ -184,7 +184,13 @@ var Store = (function () {
 					console.time(timeNow.toLocaleTimeString() + ' - SAVED ' + store.id);
 				}
 
-				Settings.__method('setItem', store.id, LZString.compressToUTF16(JSON.stringify(store)));
+				var savableStore = JSON.stringify(store),
+						useLocal = savableStore.length < 100000;
+
+				if (useLocal)
+					savableStore = LZString.compressToUTF16(savableStore)
+
+				Settings.__method('setItem', store.id, savableStore, !useLocal);
 
 				if (window.globalSetting.debugMode)
 					console.timeEnd(timeNow.toLocaleTimeString() + ' - SAVED ' + store.id);
@@ -256,12 +262,19 @@ var Store = (function () {
 			var stored = Settings.__method('getItem', this.id, LZString.compressToUTF16('{"STORE":{}}'));
 
 			if (typeof stored === 'string') {
-				var decompressed = LZString.decompressFromUTF16(stored);
+				try {
+					var decompressed = LZString.decompressFromUTF16(stored);
+
+					if (!decompressed.length || decompressed.charAt(0) === '@')
+						decompressed = stored;
+				} catch (e) {
+					var decompressed = stored;
+				}
 
 				try {
-					stored = JSON.parse(decompressed && decompressed.length ? decompressed : stored);
+					stored = JSON.parse(decompressed);
 				} catch (e) {
-					LogError(stored, decompressed);
+					LogError(e, decompressed);
 
 					stored = {}
 				}
@@ -386,21 +399,24 @@ var Store = (function () {
 		return found ? value : null;
 	};
 
-	Store.prototype.deepFindKey = function (findKey) {
+	Store.prototype.deepFindKey = function (findKey, level) {
 		var info = {
 			key: findKey,
 			store: null,
 			value: undefined
 		};
 
+		if (typeof level !== 'number')
+			level = false;
+
 		var value;
 
 		for (var key in this.data) {
 			value = this.get(key, null, null, true);
 
-			if (value instanceof Store)
-				info = value.deepFindKey(findKey);
-			else if (findKey === key) {
+			if ((value instanceof Store) && (level > 0 || level === false))
+				info = value.deepFindKey(findKey, level !== false ? level - 1 : level);
+			else if (findKey === key && (level === 0 || level === false)) {
 				info.store = this;
 				info.value = value;
 			}

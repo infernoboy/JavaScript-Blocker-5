@@ -166,4 +166,10 @@ DeepInject.prototype.inject = function (useURL) {
 
 	if ((useURL === false || DeepInject.useURL === false) && !globalSetting.debugMode)
 		injectable.innerText = '';
+
+	var attributes = injectable.attributes;
+
+	for (var i = attributes.length; i--;) {
+		injectable.removeAttribute(attributes[i].nodeName);
+	}
 };

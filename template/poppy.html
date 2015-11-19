@@ -18,7 +18,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	<div id="main-menu" class="generic-menu">
 		<div class="generic-menu-menu jsb-align-right">
 			<input type="button" id="main-menu-submit-feedback" value="<%=_('main_menu.submit_feedback')%>" />
-			<input type="button" id="main-menu-about" value="<%=_('main_menu.about')%>" />
+			<input type="button" id="main-menu-about" value="<%=_('help.about')%>" />
 			<% if (!Extras.isUnlockedByDonating()) { %>
 				<input type="button" id="main-menu-unlock" class="jsb-color-blocked" value="<%=_(Extras.isUnlockedForFree() ? 'main_menu.donate' : 'main_menu.unlock')%>" /><%
 			} %>

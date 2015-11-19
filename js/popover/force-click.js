@@ -4,7 +4,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 "use strict";
 
-function ForceClickElement (magic, element, selector) {
+
+var ForceClickElement = function (element, selector) {
 	this.elementEvents = ForceClickElement.elementEvents;
 
 	this.originalForce = 0;
@@ -15,19 +16,12 @@ function ForceClickElement (magic, element, selector) {
 	this.startThreshold = MouseEvent.WEBKIT_FORCE_AT_MOUSE_DOWN;
 	this.endThreshold = MouseEvent.WEBKIT_FORCE_AT_FORCE_MOUSE_DOWN;
 
-	magic();
+	this.super();
 
-	this.unbind = (function (unbind) {
-		unbind.call(this);
-
-		setTimeout(function (self) {
-			self.currentTarget = undefined;
-			self.target = undefined;
-		}, 100, this);
-	}).bind(this, this.unbind);
-}
-
-ForceClickElement = ForceClickElement._extends(MagicBinder);
+	this.unbind = function () {
+		this.super(['currentTarget', 'target']);
+	}._extends(this.unbind);
+}._extends(MagicBinder);
 
 ForceClickElement.isSupported = false;
 
@@ -60,7 +54,7 @@ ForceClickElement.events = {
 
 					forceClick
 						.setThreshold(0.5, 0.05)
-						.modifyNormalizedForce(-0.25, 1);
+						.modifyNormalizedForce(0, 0.75);
 
 					forceClick.event
 						.addCustomEventListener('forceBegin', function (event) {
@@ -251,7 +245,7 @@ ForceClickElement.elementEvents = {
 };
 
 ForceClickElement.prototype.cancel = function (event) {
-	if (this.__cancelled)
+	if (this.__cancelled || !this.__didTriggerFirstForceChange)
 		return;
 
 	this.__cancelled = true;

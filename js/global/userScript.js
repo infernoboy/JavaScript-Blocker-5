@@ -11,16 +11,36 @@ var UserScript = {
 		save: true
 	}),
 
-	__fetch: function (store, resources) {
+	__fetch: function (attributes, store, resources) {
 		store.clear();
 
 		for (var resourceName in resources)
 			if (resources.hasOwnProperty(resourceName))
 				Utilities.setImmediateTimeout(function (self, store, resources, resourceName) {
 					var xhr = new XMLHttpRequest(),
-							bypassCache = (resources[resourceName]._contains('?') ? '&' : '?') + Date.now();
+							bypassCache = (resources[resourceName]._contains('?') ? '&' : '?') + Date.now(),
+							resourceURL = resources[resourceName],
+							isURL = Utilities.URL.isURL(resourceURL);
 
-					xhr.open('GET', resources[resourceName] + bypassCache, true);
+					if (!isURL) {
+						var sourceURL = attributes.get('customDownloadURL') || attributes.get('downloadURL');
+
+						if (sourceURL) {
+							if (resourceURL._startsWith('/'))
+								var pathname = resourceURL;
+							else {
+								var pathname = Utilities.URL.pathname(sourceURL).split('/');
+
+								pathname.pop();
+
+								pathname = pathname.join('/') + '/' + resourceURL;
+							}
+
+							resourceURL = Utilities.URL.origin(sourceURL) + pathname;
+						}
+					}
+
+					xhr.open('GET', resourceURL + bypassCache, true);
 
 					xhr.responseType = 'arraybuffer';
 
@@ -130,12 +150,12 @@ var UserScript = {
 					Rules.list.user.__remove(false, ruleType, 'user_script', domain, namespace);
 	},
 
-	canBeUpdated: function (meta) {
+	canBeUpdated: function (meta, customDownloadURL) {
 		var updateURLisURL = Utilities.URL.isURL(meta.updateURL),
-				downloadURLisURL = Utilities.URL.isURL(meta.downloadURL),
+				downloadURLisURL = Utilities.URL.isURL(customDownloadURL || meta.downloadURL),
 				installURLisURL = Utilities.URL.isURL(meta.installURL);
 
-		return !!(updateURLisURL && meta.version.length && (downloadURLisURL || installURLisURL));
+		return !!(meta.version.length && (updateURLisURL || downloadURLisURL || installURLisURL));
 	},
 
 	update: function (namespace) {
@@ -146,7 +166,19 @@ var UserScript = {
 				now = Date.now(),
 				userScript = this.scripts.get(namespace),
 				attributes = userScript.get('attributes'),
+				updateURL = attributes.get('updateURL'),
+				downloadURL = attributes.get('downloadURL'),
+				customDownloadURL = attributes.get('customDownloadURL'),
 				isDeveloperMode = !!attributes.get('developerMode');
+
+		if (customDownloadURL)
+			updateURL = downloadURL = customDownloadURL;
+
+		if (updateURL && !downloadURL)
+			downloadURL = updateURL;
+
+		if (downloadURL && !updateURL)
+			updateURL = downloadURL;
 
 		if (isDeveloperMode || (attributes.get('autoUpdate') && (now - attributes.get('lastUpdate', 0) > this.__updateInterval))) {
 			if (!isDeveloperMode)
@@ -154,12 +186,12 @@ var UserScript = {
 
 			currentMeta = attributes.get('meta');
 
-			this.download(attributes.get('updateURL'), !isDeveloperMode).done(function (update) {
+			this.download(updateURL, !isDeveloperMode).done(function (update) {
 				updateMeta = self.parse(update).parsed;
 
 				if (currentMeta.trueNamespace === updateMeta.trueNamespace) {
-					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && this.canBeUpdated(updateMeta))) {
-						self.download(attributes.get('downloadURL'), !isDeveloperMode).done(function (script) {
+					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && this.canBeUpdated(updateMeta, customDownloadURL))) {
+						self.download(downloadURL === updateURL ? update : downloadURL, !isDeveloperMode, downloadURL === updateURL).done(function (script) {
 							self.add(script, true);
 
 							if (!isDeveloperMode)
@@ -178,9 +210,14 @@ var UserScript = {
 		}
 	},
 
-	download: function (url, async) {
+	download: function (url, async, urlIsScript) {
 		if (!Utilities.URL.isURL(url))
 			throw new TypeError(url + ' is not a url.');
+
+		if (urlIsScript)
+			return new Promise(function (resolve, reject) {
+				resolve(url);
+			});
 
 		return $.ajax({
 			cache: false,
@@ -201,7 +238,7 @@ var UserScript = {
 				localValue;
 
 		var lines = script.split(/\n/g),
-				lineMatch = /\/\/\s@([a-z:0-9-]+)\s+([^\n]+)/i,
+				lineMatch = /\/\/\s@([a-z:0-9-]+)(\s+[^\n]+)?/i,
 				parseLine = false,
 				resource = null,
 				metaStr = '';
@@ -223,7 +260,8 @@ var UserScript = {
 			require: {},
 			resource: {},
 			'run-at': '',
-			version: ''
+			version: '',
+			noframes: false
 		};
 
 		for (var line = 0; line < lines.length; line++) {
@@ -234,9 +272,6 @@ var UserScript = {
 			else if (parseLine) {
 				lines[line].replace(lineMatch, function (fullLine, key, value) {
 					value = $.trim(value);
-
-					if (!value.length)
-						return;
 
 					metaStr += fullLine + "\n";
 
@@ -256,24 +291,44 @@ var UserScript = {
 							if (['exclude', 'include', 'match']._contains(key)) {
 								localKey = key + 'JSB';
 								localValue = '^' + value.replace(/\*\./g, '_SUBDOMAINS_').replace(/\*/g, '_ANY_')._escapeRegExp().replace(/_SUBDOMAINS_/g, '([^\\/]+\\.)?').replace(/_ANY_/g, '.*') + '$';
+								localValue = localValue.replace('.tld', '([^\\/]+)(\\/|$)');
 
 								if (localValue === '^.*$' && key !== 'exclude')
 									parsed.domain._pushMissing('*');
 								else
 									parsed[localKey]._pushMissing(localValue);
-							}
 
-							parsed[key]._pushMissing(value);
+								parsed[key]._pushMissing(value);
+							} else if (key === 'domain') {
+								if (value._contains('.tld')) {
+									localValue = '^https?:\\/\\/';
+
+									if (value._startsWith('.')) {
+										localValue += '([^\\/]+\\.)?';
+
+										value = value.substr(1);
+									}
+
+									localValue += value.replace('.tld', '\\.([^\\/]+)(\\/.*|$)$');
+
+									parsed.matchJSB._pushMissing(localValue);
+								} else
+									parsed[key]._pushMissing(value);
+							}
 						}
 					} else if (value.length)
 						parsed[key] = value;
+					else if (key === 'noframes')
+						parsed[key] = true;
 				});
 			}
 		}
 
-		parsed.name = parsed.name.replace(/\|/g, '_');
+		if (parsed.name && parsed.namespace) {
+			parsed.name = parsed.name.replace(/\|/g, '￨');
 
-		parsed.trueNamespace = parsed.name + ':' + parsed.namespace;
+			parsed.trueNamespace = parsed.name + ':' + parsed.namespace;
+		}
 
 		return {
 			parsed: parsed,
@@ -295,7 +350,7 @@ var UserScript = {
 		});
 	},
 
-	add: function (script, isAutoUpdate) {
+	add: function (script, isAutoUpdate, url) {
 		var parsed = this.parse(script),
 				detail = parsed.parsed;
 
@@ -305,17 +360,11 @@ var UserScript = {
 			return -1;
 		}
 
-		var canBeUpdated = this.canBeUpdated(detail);
-
-		if (isAutoUpdate && !canBeUpdated) {
-			LogDebug('attempted to update a script, but the new version will no longer be able to auto update.');
-
-			return -2;
-		}
-
 		var namespace = detail.trueNamespace,
 				userScript = this.scripts.getStore(namespace),
-				attributes = userScript.getStore('attributes');
+				attributes = userScript.getStore('attributes'),
+				customDownloadURL = attributes.get('customDownloadURL', false),
+				canBeUpdated = this.canBeUpdated(detail, customDownloadURL);
 
 		var newAttributes = {
 			enabled: attributes.get('enabled', true),
@@ -323,12 +372,14 @@ var UserScript = {
 			meta: detail,
 			script: script,
 			updateURL: detail.updateURL,
-			downloadURL: detail.updateURL ? (detail.downloadURL || detail.installURL) : null,
+			downloadURL: detail.downloadURL || detail.installURL,
+			customDownloadURL: customDownloadURL,
 			autoUpdate: canBeUpdated,
 			canBeUpdated: canBeUpdated,
 			developerMode: attributes.get('developerMode', false),
 			runAtStart: (detail['run-at'] && detail['run-at'].toLowerCase()) === 'document-start',
-			lastUpdate: Date.now()
+			lastUpdate: Date.now(),
+			noframes: detail.noframes
 		};
 
 		var allowPages = detail.matchJSB.concat(detail.includeJSB),
@@ -356,13 +407,13 @@ var UserScript = {
 				});
 		}
 
-		setTimeout(function (self, userScript, detail) {
+		setTimeout(function (self, userScript, detail, attributes) {
 			// If a script was just updated, the resources and
 			// requirements will always be empty if this is not delayed.
 
-			self.__fetch(userScript.getStore('resources'), detail.resource);
-			self.__fetch(userScript.getStore('requirements'), detail.require);
-		}, 100, this, userScript, detail);
+			self.__fetch(attributes, userScript.getStore('resources'), detail.resource);
+			self.__fetch(attributes, userScript.getStore('requirements'), detail.require);
+		}, 100, this, userScript, detail, attributes);
 
 		attributes.clear().setMany(newAttributes);
 
@@ -371,6 +422,15 @@ var UserScript = {
 		});
 
 		return namespace;
+	},
+
+	sizeOf: function (userScriptNS) {
+		var userScript = UserScript.exist(userScriptNS);
+
+		if (userScript)
+			return Utilities.byteSize(JSON.stringify(userScript).length);
+
+		throw new Error(userScriptNS + ' does not exist.');
 	},
 
 	getAttribute: function (userScriptNS, attribute) {
@@ -391,8 +451,26 @@ var UserScript = {
 	setAttribute: function (userScriptNS, attribute, value) {
 		var userScript = UserScript.exist(userScriptNS);
 
+		if (userScript) {
+			var attributes = userScript.get('attributes');
+
+			switch (attribute) {
+				case 'customDownloadURL':
+					attributes.set('canBeUpdated', Utilities.URL.isURL(value));
+				break;
+			}
+
+			return attributes.set(attribute, value);
+		}
+
+		throw new Error(userScriptNS + ' does not exist.');
+	},
+
+	removeAttribute: function (userScriptNS, attribute) {
+		var userScript = UserScript.exist(userScriptNS);
+
 		if (userScript)
-			return userScript.get('attributes').set(attribute, value);
+			return userScript.get('attributes').remove(attribute);
 
 		throw new Error(userScriptNS + ' does not exist.');
 	},

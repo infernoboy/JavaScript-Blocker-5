@@ -139,19 +139,28 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 							}
 
 							.jsb-info {
-								margin-bottom: 10px;
+								margin-bottom: 12px;
 								margin-top: 0;
 								padding-top: 0;
 							}
 
+							.user-script-size {
+								margin-left: 3px;
+							}
+
 							.user-script-updated {
-								margin-top: 11px;
+								margin-top: 12px;
+								margin-bottom: 8px;
 							}
 						}
 
 						.setting-section-setting-right {
 							-webkit-flex: 0 0 100px;
 						}
+					}
+
+					&#user-script-title h1 {
+						margin-bottom: 0;
 					}
 
 					&.user-script-edit {
@@ -168,7 +177,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						textarea {
 							overflow: scroll;
 							width: 444px;
-							height: 260px;
+							height: 250px;
 							white-space: pre;
 							word-wrap: normal;
 							font-size: 0.9em;
@@ -178,11 +187,15 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						}
 					}
 
+					&.user-script-attribute-item,
 					&.user-script-storage-item {
 						margin-top: 5px;
 
+						.user-script-attribute-item-value,
 						.user-script-storage-item-value {
-							width: 200px;
+							width: 192px;
+							padding-left: 4px;
+							padding-right: 4px;
 						}
 					}
 

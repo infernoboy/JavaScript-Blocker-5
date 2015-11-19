@@ -670,7 +670,6 @@ Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
 Special.specials.installUserScriptPrompt.excludeFromPage = true;
 Special.specials.historyFixer.excludeFromPage = true;
-Special.specials.historyFixer.ignoreHelpers = true;
 Special.specials.frameSandboxFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.ignoreHelpers = true;
 Special.specials.xhr_intercept.excludeFromPage = true;

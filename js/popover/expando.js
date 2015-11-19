@@ -75,6 +75,42 @@ var Expando = {
 			Expando.toggleGroupByHeader($(this.parentNode.parentNode));
 		},
 
+		rulesChanged: function (event) {
+			Utilities.Timer.timeout('expandoRulesChanged', function () {
+				var expander = Settings.__stores.get('expander'),
+						expanderCopy = expander.clone('rulesChanged'),
+						lists = globalPage.Rules.list,
+						listLength = Object.keys(globalPage.Rules.list).filter(function (listName) {
+							return !listName._startsWith('$');
+						}).length;
+
+				expanderCopy.forEach(function (key, value, store) {
+					var split = key.split('ruleGroupDomain,');
+
+					if (split[1]) {
+						var domain = split[1].split(',')[0];
+
+						if (domain && domain.length) {
+							var shouldRemove = 0;
+
+							for (var list in lists) {
+								if (list._startsWith('$'))
+									continue;
+
+								var found = lists[list].rules.deepFindKey(domain, 2);
+
+								if (!found.store)
+									shouldRemove++;
+							}
+
+							if (shouldRemove === listLength)
+								Settings.removeItem('expander', key);
+						}
+					}
+				});
+			}, 3000);
+		},
+
 		elementWasAdded: function (event) {
 			if (event.detail.querySelectorAll) {
 				var expander,
@@ -129,4 +165,5 @@ var Expando = {
 
 Expando.init();
 
+globalPage.Rule.event.addCustomEventListener(['rulesWereCleared', 'ruleWasAdded', 'ruleWasRemoved'], Expando.events.rulesChanged);
 UI.event.addCustomEventListener('elementWasAdded', Expando.events.elementWasAdded);

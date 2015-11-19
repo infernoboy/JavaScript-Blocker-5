@@ -182,7 +182,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 										} %>
 									</span>
 									<% if (!(key in self.props.default)) { %> 
-										<input type="button" class="setting-dynamic-delete" value="<%=_('Delete')%>" /><%
+										<input type="button" class="setting-dynamic-delete double-click" value="<%=_('Delete')%>" /><%
 									} %>
 								</li><%
 							} %>
@@ -206,11 +206,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	<li class="setting-section-setting user-script-item <%=self.index > 0 ? 'dividing-border' : ''%>">
 		
 		<div class="setting-section-setting-left">
-			<p class="jsb-info"><b><%=(self.attributes.get('meta') || { name: '' }).name._escapeHTML()%></b></p>
+			<p class="jsb-info"><input type="checkbox" id="<%=self.id%>-enable" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="enabled" /> <label for="<%=self.id%>-enable"><b><%=(self.attributes.get('meta') || { name: '' }).name._escapeHTML()%></b></label> <span class="user-script-size jsb-label jsb-smaller"><%=globalPage.UserScript.sizeOf(self.key)%></span></p>
 			<ul class="generic-menu-options generic-menu-menu">
-				<li>
-					<input type="checkbox" id="<%=self.id%>-enable" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="enabled" /> <label for="<%=self.id%>-enable"><%=_('user_script.enable_script')%></label>
-				</li>
 				<% if (self.attributes.get('canBeUpdated')) { %>
 					<li>
 						<input type="checkbox" id="<%=self.id%>-auto-update" data-userScript="<%=self.key._entityQuotes()%>" data-attribute="autoUpdate" /> <label for="<%=self.id%>-auto-update"><%=_('user_script.enable_auto_update')%></label>
@@ -235,6 +232,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 </noscript>
 
 <noscript id="user-script-edit">
+	<li id="user-script-title" class="setting-section-header">
+		<div class="setting-section-setting-full">
+			<h1><%=_('userScript.is_new')%></h1>
+		</div>
+	</li>
 	<li class="setting-section-setting user-script-edit">
 		<div class="setting-section-setting-full">
 			<textarea class="user-script-content"></textarea>
@@ -254,6 +256,15 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		<div class="setting-section-setting-right">
 			<input type="text" class="user-script-storage-item-value" data-userScript="<%=self.userScript._entityQuotes()%>" data-storageKey="<%=self.key._entityQuotes()%>" /><q></q>
 			<input type="button" value="<%=_('Delete')%>" class="user-script-storage-item-delete double-click jsb-color-blocked" data-userScript="<%=self.userScript._entityQuotes()%>" data-storageKey="<%=self.key._entityQuotes()%>" /><q></q>
+		</div>
+	</li>
+</noscript>
+
+<noscript id="user-script-attribute-item">
+	<li class="setting-section-setting user-script-attribute-item">
+		<div class="setting-section-setting-left"><%=_('userScript.attribute.' + self.key)%>:<q></q></div>
+		<div class="setting-section-setting-right">
+			<input type="text" class="user-script-attribute-item-value" data-userScript="<%=self.userScript._entityQuotes()%>" data-attributeKey="<%=self.key._entityQuotes()%>" placeholder="<%=_('userScript.attribute.use_default')%>" value="<%=self.value ? self.value : ''%>" /><q></q>
 		</div>
 	</li>
 </noscript>

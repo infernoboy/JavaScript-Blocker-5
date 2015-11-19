@@ -42,6 +42,11 @@ var Update = {
 	},
 
 	allUpdatesCompleted: function () {
+		var updateInfo = Update.versions[Update.installedBundle];
+
+		if (updateInfo && updateInfo.doNotBeg)
+			return;
+
 		UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
 			var poppy = new Popover.window.Poppy(0.5, 0, false, 'donation-beg');
 

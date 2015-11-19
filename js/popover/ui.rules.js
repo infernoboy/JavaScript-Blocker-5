@@ -64,6 +64,8 @@ UI.Rules = {
 
 		$('.active-view', UI.Rules.views).removeClass('active-view');
 
+		$('li[data-view="#rule-views-firstVisit"]', UI.Rules.viewSwitcher).toggle(Settings.getItem('blockFirstVisit') !== 'nowhere')
+
 		UI.Rules.setFilterRulesList(null, true);
 	},
 
@@ -453,7 +455,10 @@ UI.Rules = {
 						action: 0
 					}));
 
-					poppy.linkToOpenPoppy().show();
+					poppy
+						.stayOpenOnPopoverOpen()
+						.linkToOpenPoppy()
+						.show();
 				})
 
 				.on('click', '.rule-group-type-wrapper[data-editable="1"] .rule-group-type-header', function (event) {
@@ -476,7 +481,10 @@ UI.Rules = {
 						action: 0
 					}));
 
-					poppy.linkToOpenPoppy().show();
+					poppy
+						.stayOpenOnPopoverOpen()
+						.linkToOpenPoppy()
+						.show();
 				})
 
 				.on('click', '.rule-group-domain-wrapper[data-editable="1"] .rule-group-domain-header', function (event) {
@@ -500,7 +508,10 @@ UI.Rules = {
 						action: 0
 					}));
 
-					poppy.linkToOpenPoppy().show();
+					poppy
+						.stayOpenOnPopoverOpen()
+						.linkToOpenPoppy()
+						.show();
 				})
 
 				.on('click', '.rule-group-kind-wrapper[data-editable="1"] .rule-group-kind-header', function (event) {
@@ -525,7 +536,10 @@ UI.Rules = {
 						action: 0
 					}));
 
-					poppy.linkToOpenPoppy().show();
+					poppy
+						.stayOpenOnPopoverOpen()
+						.linkToOpenPoppy()
+						.show();
 				})
 
 				.on('click', '.rule-item-container[data-editable="1"] .rule-item-rule', function (event) {
@@ -552,6 +566,7 @@ UI.Rules = {
 					poppy.templateArgs = templateArgs;
 
 					poppy
+						.stayOpenOnPopoverOpen()
 						.linkToOpenPoppy()
 						.setContent(Template.create('poppy.rules', 'create-rule', templateArgs))
 						.show();

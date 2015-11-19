@@ -86,14 +86,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		Poppy.__preventNextCloseAll = true;
 	};
 
-	Poppy.closeAll = function (eventOrImmediate) {
+	Poppy.closeAll = function (eventOrImmediate, isPopoverOpen) {
 		if (Poppy.event.trigger('poppyWillCloseAll'))
 			return Promise.all([]);
 
 		var promiseArray = [];
 
 		for (var poppyID in poppies) {
-			if ((eventOrImmediate && eventOrImmediate.type === 'scroll' && !poppies[poppyID].willRemoveOnScroll) || poppies[poppyID].isModal)
+			if ((isPopoverOpen && poppies[poppyID].staysOpenOnPopoverOpen) || (eventOrImmediate && eventOrImmediate.type === 'scroll' && !poppies[poppyID].willRemoveOnScroll) || poppies[poppyID].isModal)
 				continue;
 
 			promiseArray.push(poppies[poppyID].close(eventOrImmediate));
@@ -408,6 +408,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		return this;
 	};
 
+	Poppy.prototype.stayOpenOnPopoverOpen = function () {
+		this.staysOpenOnPopoverOpen = true;
+
+		return this;
+	};
+
 	Poppy.prototype.stayOpenOnScroll = function () {
 		this.willRemoveOnScroll = false;
 
@@ -605,10 +611,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				.removeCustomEventListener('forceClickCancelled', this.close)
 				.removeCustomEventListener('click', this.cancelScaleWithForce);
 
-		if (this.poppy.hasClass('poppy-did-scale-with-force')) {
+		if (this.poppy.hasClass('poppy-did-scale-with-force') && this.poppy.hasClass('poppy-scales-with-force')) {
 			var self = this;
-
-			this.poppy.removeClass('poppy-did-scale-with-force');
 		
 			this.poppy.removeClass('poppy-scales-with-force').css({ '-webkit-transform': 'scale(1.22)', opacity: 1 }).on('webkitTransitionEnd', function (event) {
 				if (event.originalEvent.propertyname === 'opacity')
@@ -617,6 +621,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				this.style.webkitTransform = '';
 
 				self.poppy.addClass('poppy-fully-shown');
+
+				Poppy.preventNextCloseAll();
 			});
 		}
 
@@ -656,7 +662,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	}, true);
 
 	UI.event.addCustomEventListener('pageWillRender', Poppy.closeAll);
-	UI.event.addCustomEventListener('popoverOpened', Poppy.closeAll.bind(Poppy, true));
+	UI.event.addCustomEventListener('popoverOpened', Poppy.closeAll.bind(Poppy, true, true));
 	UI.event.addCustomEventListener('popoverDidResize', Poppy.closeAll);
 
 	if (window.globalPage)

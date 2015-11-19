@@ -344,6 +344,22 @@ Rule.prototype.domain = function (domain) {
 	return kinds;
 };
 
+Rule.prototype.page = function (page) {
+	var rules;
+
+	var self = this,
+			kinds = {};
+
+	this.rules.forEach(function (kind) {
+		rules = self.kind(kind).page(page);
+
+		if (!rules.isEmpty())
+			kinds[kind] = rules;
+	});
+
+	return kinds;
+};
+
 Rule.prototype.addMany = function (kinds) {
 	if (typeof kinds !== 'object')
 		throw new TypeError(kinds + ' is not an object');

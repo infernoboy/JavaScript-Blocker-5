@@ -306,6 +306,50 @@ UI.Settings = {
 		}
 	},
 
+	bindUserScriptAttributeEdit: function (userScriptAttributes) {
+		for (var i = userScriptAttributes.length; i--;) {
+			var element = $(userScriptAttributes[i]);
+
+			if (element.attr('data-userScriptAttributeBound'))
+				return;
+
+			element
+				.attr('data-userScriptAttributeBound', 1)
+				.on('blur keypress', function (event) {
+					if (this.disabled || (event.which && event.which !== 3 && event.which !== 13))
+						return;
+
+					var userScript = this.getAttribute('data-userScript'),
+							value = $.trim(this.value);
+
+					if (value === 'undefined' || value.length === '') {
+						globalPage.UserScript.removeAttribute(userScript, this.getAttribute('data-attributeKey'));
+
+						this.disabled = true;
+
+						this.blur();
+					} else
+						try {
+							globalPage.UserScript.setAttribute(userScript, this.getAttribute('data-attributeKey'), value);
+
+							this.classList.add('jsb-color-allowed');
+
+							setTimeout(function (self) {
+								self.classList.remove('jsb-color-allowed');
+							}, 1500, this);
+						} catch (e) {
+							this.classList.add('jsb-color-blocked');
+							this.classList.add('shake');
+
+							setTimeout(function (self) {
+								self.classList.remove('jsb-color-blocked');
+								self.classList.remove('shake');
+							}, 1500, this);
+						}
+				});
+		}
+	},
+
 	bindDynamicSettingNew: function (containers) {
 		for (var i = containers.length; i--;) {
 			var container = $(containers[i]);
@@ -513,6 +557,7 @@ UI.Settings = {
 			try {
 				var meta = globalPage.UserScript.getAttribute(userScriptNS, 'meta'),
 						script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
+						customDownloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'customDownloadURL'),
 						storage = globalPage.UserScript.getStorageItem(userScriptNS);
 			} catch (error) {
 				return;
@@ -522,10 +567,13 @@ UI.Settings = {
 
 			$('.setting-section-divider', list).nextAll().addBack().remove();
 
+			$('#user-script-title h1', list).text(meta.name);
+
 			list
 				.append(Template.create('settings', 'setting-section-divider'))
 				.append(Template.create('settings', 'setting-section-header', {
-					header: _('setting.userScript.storage', [meta.name._escapeHTML()])
+					header: _('setting.userScript.storage'),
+					level: 2
 				}))
 				.append(Template.create('settings', 'setting-section-description', {
 					id: 'description-' + Utilities.Token.generate(),
@@ -554,6 +602,23 @@ UI.Settings = {
 			$('li', wrapper).append(element.children());
 
 			list.append(wrapper.children());
+
+			list
+				.append(Template.create('settings', 'setting-section-divider'))
+				.append(Template.create('settings', 'setting-section-header', {
+					header: _('setting.userScript.attributes', [meta.name._escapeHTML()]),
+					level: 2
+				}))
+				.append(Template.create('settings', 'setting-section-description', {
+					id: 'description-' + Utilities.Token.generate(),
+					classes: 'dividing-border',
+					description: _('userScript.attribute.description')
+				}))
+				.append(Template.create('settings', 'user-script-attribute-item', {
+					userScript: userScriptNS,
+					key: 'customDownloadURL',
+					value: customDownloadURL
+				}));;
 
 			UI.Settings.disableUserScriptSave();
 		}, true);
@@ -590,6 +655,7 @@ UI.Settings = {
 				UI.Settings.bindInlineSettings(event.detail.querySelectorAll('*[data-inlineSetting]'));
 				UI.Settings.bindUserScriptSettings(event.detail.querySelectorAll('*[data-attribute]'));
 				UI.Settings.bindUserScriptStorageEdit(event.detail.querySelectorAll('*[data-storageKey]'));
+				UI.Settings.bindUserScriptAttributeEdit(event.detail.querySelectorAll('*[data-attributeKey]'));
 				UI.Settings.bindDynamicSettingNew(event.detail.querySelectorAll('.setting-dynamic-new-container'));
 			}
 		},
@@ -605,9 +671,6 @@ UI.Settings = {
 							UI.view.switchTo(event.detail.to.id);
 						});
 			}
-
-			if (event.detail.from.id === '#setting-views-userScript-edit')
-				$('.user-script-content', UI.Settings.userScriptEdit).val('');
 
 			if (event.detail.to.id === '#main-views-setting')
 				return setTimeout(function () {
@@ -628,7 +691,8 @@ UI.Settings = {
 						viewID: event.detail.to.id
 					}))
 					.show();
-			}
+			} else if (event.detail.from.id === '#setting-views-userScript-edit')
+				$('.user-script-content', UI.Settings.userScriptEdit).val('');
 
 			setTimeout(function () {
 				UI.Settings.populateSection(event.detail.to.view, event.detail.to.view.attr('data-section'));

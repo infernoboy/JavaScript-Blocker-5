@@ -199,7 +199,8 @@ Object._extend(Poppy.scripts, {
 			.on('click', '#main-menu-about', function () {
 				poppy.close();
 
-				UI.view.switchTo('#main-views-about');
+				UI.view.switchTo('#main-views-help');
+				UI.view.switchTo('#help-views-about');
 			})
 
 			.on('click', '#main-menu-submit-feedback', function () {
@@ -385,7 +386,9 @@ Object._extend(Poppy.scripts, {
 					action: 0
 				}));
 
-				newPoppy.show();
+				newPoppy
+					.stayOpenOnPopoverOpen()
+					.show();
 			})
 
 			.on('click', '#temporary-menu-clear', function (event) {
@@ -431,7 +434,9 @@ Object._extend(Poppy.scripts, {
 					action: 0
 				}));
 
-				newPoppy.show();
+				newPoppy
+					.stayOpenOnPopoverOpen()
+					.show();
 			})
 
 			.on('click', '#active-menu-clear', function (event) {

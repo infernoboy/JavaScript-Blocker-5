@@ -7,7 +7,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 function FilterList (listName, listURL) {
 	if (!Rules.list[listName])
 		throw new Error(listName + ' is not a known FilterList.');
-
+	
 	FilterList.__updating++;
 
 	this.name = listName;

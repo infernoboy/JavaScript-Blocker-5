@@ -79,6 +79,7 @@ SourceDescription.describe('*', {
 	'^.*\\/wt(base|init)\\.js.*$': ['webtrends'],
 	'^(https?:\\/\\/([^\\/]+\\.)?247realmedia\\.com\\/.*)|(.*\\/adstream_.*)|(.*\\/realmedia\\/ads\\/.*)$': ['realmedia'],
 
+	'.crazyegg.com': ['crazyegg'],
 	'.wikia-beacon.com': ['wikiaTracking'],
 	"collector-cdn.github.com": ['githubTracking'],
 	"fls-na.amazon.com": ['amazonTracking'],

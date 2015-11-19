@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 function Predefined () {
-	Rules.list.predefined.clear();
+	Rules.list['$predefined'].clear();
 
 	if (Settings.getItem('ignorePredefined'))
 		return;
@@ -63,7 +63,7 @@ function Predefined () {
 		}
 	};
 
-	Rules.list.predefined.addMany({
+	Rules.list['$predefined'].addMany({
 		script: {
 			domain: {
 				'*': {
@@ -100,12 +100,12 @@ function Predefined () {
 	for (kind in whitelistDomains)
 		for (domain in whitelistDomains[kind])
 			for (i = 0; i < whitelistDomains[kind][domain].length; i++) 
-				Rules.list.predefined.addDomain(kind, domain, {
+				Rules.list['$predefined'].addDomain(kind, domain, {
 					rule: '^https?:\\/\\/([^\\/]+\.)?' + whitelistDomains[kind][domain][i] + '\\/.*$',
 					action: 5
 				});
 
-	var scriptRules = Rules.list.predefined.kind('script').domain();
+	var scriptRules = Rules.list['$predefined'].kind('script').domain();
 
 	scriptRules.setMany({
 		'.google.co.uk': scriptRules.get('.google.com'),
@@ -117,7 +117,7 @@ function Predefined () {
 
 	/* ====================BLACKLIST===================== */
 
-	Rules.list.predefined.addMany({
+	Rules.list['$predefined'].addMany({
 		'*': {
 			domain: {
 				'*': {
@@ -207,7 +207,7 @@ function Predefined () {
 	for (kind in blacklistDomain)
 		for (domain in blacklistDomain[kind])
 			for (i = 0; i < blacklistDomain[kind][domain].length; i++)
-				Rules.list.predefined.addDomain(kind, domain, {
+				Rules.list['$predefined'].addDomain(kind, domain, {
 					rule: '^https?:\\/\\/([^\\/]+\.)?' + blacklistDomain[kind][domain][i] + '\\/.*$',
 					action: 4
 				});

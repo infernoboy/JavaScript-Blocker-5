@@ -116,6 +116,9 @@ var UserScript = {
 					action: enabledUserScripts[userScript].action
 				});
 			else {
+				if (enabledUserScripts[userScript].attributes.noframes && Page.info.isFrame)
+					continue;
+
 				if (enabledUserScripts[userScript].requirements) {
 					for (url in enabledUserScripts[userScript].requirements) {
 						requirement = enabledUserScripts[userScript].requirements[url];
@@ -236,7 +239,11 @@ var UserScript = {
 		},
 
 		GM_registerMenuCommand: function (caption, fn, accessKey) {
-			messageExtension('registerMenuCommand', caption, fn, true);
+			var fnWrapper = function (fn, target) {
+				fn(document.querySelector('*[data-jsbContextMenuTarget="' + target + '"]'));
+			}.bind(null, fn);
+
+			messageExtension('registerMenuCommand', caption, fnWrapper, true);
 		},
 
 		GM_setClipboard: function () {
