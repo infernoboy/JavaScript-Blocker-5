@@ -210,8 +210,7 @@ UI.Page = {
 
 				target.click();
 
-				UI.Page.section.createRules(section);
-				UI.Page.section.toggleEditMode(section, false, true);
+				UI.Page.section.createRules(section, true);
 			});
 
 		var forceClickPageKinds = new ForceClickElement(UI.Page.view, '.page-host-column .page-host-kind h4');
@@ -263,8 +262,7 @@ UI.Page = {
 
 				$(event.detail.target).click();
 
-				UI.Page.section.createRules(section);
-				UI.Page.section.toggleEditMode(section, false, true);
+				UI.Page.section.createRules(section, true);
 			});
 
 		var foreClickHostCount = new ForceClickElement(UI.Page.view, '.page-host-host-count');
@@ -412,7 +410,7 @@ UI.Page = {
 			UI.event.trigger(wasInEditMode ? 'sectionSwitchedOutOfEditMode' : 'sectionSwitchedToEditMode', section);
 		},
 
-		createRules: function (section) {
+		createRules: function (section, hideInstantly) {
 			if (section.find('.page-host-editor').is(':not(:visible)'))
 				return;
 
@@ -535,7 +533,7 @@ UI.Page = {
 						});
 					}
 
-					UI.Page.section.toggleEditMode(section, false);
+					UI.Page.section.toggleEditMode(section, false, !!hideInstantly);
 
 					var tab = UI.Page.stateContainer.data('page').tab;
 

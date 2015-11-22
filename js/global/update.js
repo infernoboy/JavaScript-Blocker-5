@@ -122,7 +122,7 @@ var Update = {
 				return;
 			}
 
-			if (update.update(updateToVersion) === true)
+			if (!update.update || update.update(updateToVersion) === true)
 				Update.updatedToVersion(updateToVersion);
 			else
 				return;
