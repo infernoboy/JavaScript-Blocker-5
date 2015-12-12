@@ -7,8 +7,26 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 var UI = {
 	__popoverWidthSetting: 'popoverWidth',
 	__popoverHeightSetting: 'popoverHeight',
+	__drag: false,
 
-	drag: false,
+	get drag() {
+		return UI.__drag;
+	},
+
+	set drag(value) {
+		UI.__drag = value;
+
+		if (value) {
+			document.documentElement.classList.add('jsb-no-select');
+			document.documentElement.classList.add('jsb-drag-cursor');
+		} else {
+			window.getSelection().removeAllRanges();
+
+			document.documentElement.classList.remove('jsb-no-select');
+			document.documentElement.classList.remove('jsb-drag-cursor');
+		}
+	},
+
 	event: new EventListener,
 
 	onReady: function (fn) {
@@ -120,11 +138,6 @@ var UI = {
 			.on('mouseup', function (event) {
 				if (UI.drag) {
 					UI.drag = false;
-
-					window.getSelection().removeAllRanges();
-
-					document.documentElement.classList.remove('jsb-no-select');
-					document.documentElement.classList.remove('jsb-drag-cursor');
 
 					UI.event.trigger('dragEnd');
 				}
@@ -362,6 +375,8 @@ var UI = {
 		},
 
 		openedPopover: function () {
+			UI.drag = false;
+
 			Utilities.setImmediateTimeout(function () {
 				UI.event.trigger('popoverOpened');
 			});
@@ -569,7 +584,7 @@ var UI = {
 
 			if (viewContainer.scrollTop() === 0 && viewContainer.scrollLeft() === 0) {
 				if (!Settings.getItem('showPageEditorImmediately'))
-					UI.view.floatingHeaders.adjustAll();
+					FloatingHeader.adjustAll();
 
 				onComplete();
 			} else {
@@ -579,7 +594,7 @@ var UI = {
 						scrollLeft: 0
 					}, 0 * window.globalSetting.speedMultiplier, onComplete);
 
-				UI.view.floatingHeaders.adjustAll();
+				FloatingHeader.adjustAll();
 			}
 		},
 
@@ -636,7 +651,7 @@ var UI = {
 
 			switchToView.addClass('active-view');
 
-			UI.view.floatingHeaders.adjustAll();
+			FloatingHeader.adjustAll();
 
 			UI.event.trigger('viewDidSwitch', {
 				view: switchToView,
@@ -659,141 +674,6 @@ var UI = {
 				throw new Error('view not found - ' + viewID);
 
 			return viewContainer.data('data-activeView') === viewID;
-		},
-
-		floatingHeaders: {
-			__floating: {},
-
-			__onScroll: function (event, viewContainerSelector) {
-				var viewContainer,
-						viewContainerOffsetTop,
-						offset,
-						related;
-
-				var headersInView = UI.view.floatingHeaders.__floating[viewContainerSelector];
-
-				for (var headerSelector in headersInView) {
-					viewContainer = headersInView[headerSelector].viewContainer;
-					viewContainerOffsetTop = headersInView[headerSelector].viewContainerOffsetTop;
-					offset = headersInView[headerSelector].offset;
-					related = headersInView[headerSelector].related;
-
-					if (typeof offset === 'function')
-						offset = offset(viewContainer, headerSelector);
-
-					var top = viewContainerOffsetTop + offset,
-							allHeaders = $(headerSelector, viewContainer),
-							unfloatedHeaders = allHeaders.not('.floated-header');
-
-					var currentHeader =
-						unfloatedHeaders
-							.filter(function () {
-								var self = $(this);
-
-								return self.is(':visible') && self.offset().top <= viewContainerOffsetTop + offset;
-							})
-							.filter(':last');
-
-					var nextHeader = unfloatedHeaders.eq(unfloatedHeaders.index(currentHeader) + 1);
-
-					$(headerSelector, viewContainer).remove('.floated-header');
-
-					if (!currentHeader.length)
-						return;
-
-					var floatedHeaderID = 'floated-header-' + Utilities.Token.generate();
-					
-					var currentHeaderClone =
-						currentHeader
-							.clone(true, true)
-							.attr('id', floatedHeaderID)
-							.addClass('floated-header');
-
-					$('*', currentHeaderClone).removeClass('poppy-menu-ready');
-
-					currentHeaderClone.insertBefore(currentHeader);
-
-					var relatedElementCache = currentHeader.data('relatedElement');
-
-					if (relatedElementCache)
-						var relatedElement = relatedElementCache;
-					else {
-						var relatedElement = typeof related === 'function' ? related(viewContainer, currentHeader) : null;
-
-						if (relatedElement && relatedElement.saveToCache)
-							currentHeader.data('relatedElement', relatedElement);
-					}
-					
-					var relatedShifted = false,
-							currentHeaderMarginHeight = currentHeader.outerHeight(true);
-
-					if (relatedElement) {
-						var offsetTop = relatedElement.offset().top + relatedElement.outerHeight() + currentHeaderMarginHeight - currentHeader.outerHeight();
-
-						if (offsetTop <= currentHeaderMarginHeight + offset + viewContainerOffsetTop) {
-							top = offsetTop - currentHeaderMarginHeight;
-							relatedShifted = true;
-
-							currentHeaderClone.addClass('floated-header-related-push');
-						}
-					}
-
-					if (nextHeader.length && !relatedShifted) {
-						var offsetTop = nextHeader.offset().top + offset - currentHeader.innerHeight() - viewContainerOffsetTop;
-
-						if (offsetTop < 0) {
-							top += offsetTop;
-
-							currentHeaderClone.addClass('floated-header-push');
-						}
-					}
-
-					currentHeaderClone.css({
-						top: top,
-						left: currentHeader.offset().left,
-						width: currentHeader.width()
-					});
-				}
-			},
-
-			adjustAll: function () {
-				for (var viewContainerSelector in UI.view.floatingHeaders.__floating)
-					UI.view.floatingHeaders.__onScroll(null, viewContainerSelector);
-			},
-
-			requestFrame: function (viewContainer, viewContainerSelector, self, timestamp) {
-				var lastScrollTop = viewContainer.data('requestScrollTop');
-
-				if (lastScrollTop === viewContainer[0].scrollTop)
-					return window.requestAnimationFrame(self.bind(null, self));
-
-				viewContainer.data('requestScrollTop', viewContainer[0].scrollTop);
-
-				UI.view.floatingHeaders.__onScroll(null, viewContainerSelector);
-
-				window.requestAnimationFrame(self.bind(null, self));
-			},
-
-			add: function (viewContainerSelector, headerSelector, related, offset) {
-				UI.event.addCustomEventListener(['popoverOpened', 'pageDidRender'], function (viewContainerSelector, headerSelector, related, offset) {
-					var headersInView = UI.view.floatingHeaders.__floating._getWithDefault(viewContainerSelector, {}),
-							viewContainer = $(viewContainerSelector, UI.container);
-
-					headersInView[headerSelector] = {
-						viewContainer: viewContainer,
-						viewContainerOffsetTop: viewContainer.offset().top,
-						related: related,
-						offset: offset
-					};
-
-					if (viewContainer.data('floatingHeaders'))
-						return;
-
-					var boundRequestFrame = UI.view.floatingHeaders.requestFrame.bind(null, viewContainer, viewContainerSelector);
-
-					boundRequestFrame(boundRequestFrame);
-				}.bind(null, viewContainerSelector, headerSelector, related, offset));
-			}
 		}
 	}
 };

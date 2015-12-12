@@ -94,6 +94,13 @@ function Predefined () {
 					'^data:.*$': whitelistValue
 				}
 			}
+		},
+		xhr_get: {
+			domain: {
+				'player.pbs.org': {
+					'https?:\\/\\/pubads\\.g\\.doubleclick\\.net\\/gampad\\/ads.*': whitelistValue
+				}
+			}
 		}
 	});
 

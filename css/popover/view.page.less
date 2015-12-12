@@ -219,7 +219,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			}
 
 			.page-host-columns {
-				display: -webkit-flex;
 				position: relative;
 				z-index: 1;
 				border-bottom: 1px solid darken(#e5e5e5, @darknessLevel);
@@ -234,7 +233,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				}
 
 				.page-host-column {
-					-webkit-flex: 1 0 50%;
 					overflow: hidden;
 					box-sizing: border-box;
 					padding: 0 2px;
@@ -274,51 +272,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						cursor: pointer;
 					}
 				}
-
-				&-expand-blocked {
-					.page-host-column {
-						&-blocked {
-							-webkit-flex: 1 0 78%;
-
-							.jsb-large-font& {
-								-webkit-flex: 1 0 73%;								
-							}
-						}
-
-						&-allowed {
-							-webkit-flex: 1 0 22%;
-
-							.jsb-large-font& {
-								-webkit-flex: 1 0 27%;
-							}
-						}
-					}
-				}
-
-				&-expand-allowed {
-					.page-host-column {
-						&-blocked {
-							-webkit-flex: 1 0 22%;
-
-							.jsb-large-font& {
-								-webkit-flex: 1 0 27%;
-							}
-						}
-
-						&-allowed {
-							-webkit-flex: 1 0 78%;
-
-							.jsb-large-font& {
-								-webkit-flex: 1 0 73%;								
-							}
-						}
-					}
-				}
 			}
 
 			.page-host-unblocked {
 				position: relative;
-				margin-top: -5px;
+				margin-top: 0;
 				border-bottom: 1px solid darken(#e5e5e5, @darknessLevel);
 				background: darken(#fff, @darknessLevel);
 				padding: 0 3px 1px;
@@ -345,7 +303,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			}
 
 			.page-host-items-container-header {
-				padding: 5px 0 5px 1px;
+				padding: 1px 0 5px 1px;
 				z-index: 4;
 
 				&.floated-header-related-push {

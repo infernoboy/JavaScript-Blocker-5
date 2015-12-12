@@ -116,6 +116,11 @@ Settings.settings = {
 			type: 'many-boolean'
 		}
 	}, {
+		store: 'splitView',
+		props: {
+			type: 'many-number'
+		}
+	}, {
 		setting: 'persistDisabled',
 		props: {
 			type: 'boolean',
@@ -1562,6 +1567,7 @@ Settings.settings = {
 				storeKey: 'font',
 				options: [
 					[false, 'setting.enabledSpecials.zoom.option.default'],
+					['-apple-system', 'System Font'],
 					['Helvetica', 'Helvetica'],
 					['Arial', 'Arial'],
 					['Times', 'Times'],

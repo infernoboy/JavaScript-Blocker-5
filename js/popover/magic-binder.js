@@ -22,7 +22,7 @@ MagicBinder.events = {
 		if (!event.detail.querySelectorAll)
 			return;
 
-		var elements = event.detail.querySelectorAll('*:not([data-magicBind' + this.id + '])');
+		var elements = event.detail.querySelectorAll('*:not([data-magicBind-' + this.id + '])');
 
 		for (var i = elements.length; i--;)
 			if ($(elements[i]).is(this.element.selector + ' ' + this.selector))

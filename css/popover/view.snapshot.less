@@ -11,6 +11,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			margin-left: 0;
 		}
 
+		#snapshot-create-snapshot {
+			float: right;
+			margin-right: 1px;
+		}
+
 		.snapshot-list {
 			margin-left: 13px;
 
@@ -50,6 +55,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 							background: @baseColor;
 							border-radius: 3px;
 							opacity: 0;
+
+							.capitan& {
+								padding: 0 5px 2px;
+							}
 						}
 
 						&.current:after {

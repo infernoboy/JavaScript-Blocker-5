@@ -252,9 +252,7 @@ UI.Rules = {
 			
 			typeUL = ruleGroupType.find('.rule-group-type');
 
-			// buildQueue.push(function (ruleGroupType, container) {
-				ruleGroupType.appendTo(container);
-			// }, [ruleGroupType, container]);
+			ruleGroupType.appendTo(container);
 
 			for (domain in domainGrouped[type]) {
 				if (domainGrouped[type][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
@@ -270,9 +268,7 @@ UI.Rules = {
 
 				domainUL = $('.rule-group-domain', domainListItem);
 
-				// buildQueue.push(function (typeUL, domainListItem) {
-					typeUL.append(domainListItem);
-				// }, [typeUL, domainListItem]);
+				typeUL.append(domainListItem);
 
 				for (kind in domainGrouped[type][domain]) {
 					if (domainGrouped[type][domain][kind]._isEmpty())
@@ -288,9 +284,7 @@ UI.Rules = {
 
 					kindUL = $('.rule-group-kind', kindListItem);
 
-					// buildQueue.push(function (domainUL, kindListItem) {
-						domainUL.append(kindListItem);
-					// }, [domainUL, kindListItem]);
+					domainUL.append(kindListItem);
 
 					var ruleKeyChunks = Object.keys(domainGrouped[type][domain][kind])._chunk(100);
 
@@ -320,6 +314,9 @@ UI.Rules = {
 					}
 				}
 			}
+
+			if (typeUL.is(':empty'))
+				ruleGroupType.remove();
 		}
 
 		buildQueue.push(function (view, container) {			

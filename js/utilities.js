@@ -529,9 +529,9 @@ var Utilities = {
 
 			if (type === 'timeout')
 				timer = setTimeout(function (timer, type, reference, script, args) {
-					script.apply(null, args);
-
 					timer.remove(type, reference);
+
+					script.apply(null, args);
 				}, time, this, type, reference, script, args);
 
 			this.timers[type][timerID] = {
@@ -660,22 +660,22 @@ var Utilities = {
 		@param {Element} textNode - Element that will have its font size adjusted.
 		@param (Element) wrapperNode - Parent element of textNode whose top margin is adjusted so as to be centered within containerNode.
 		*/
-		fitFontWithin: function (containerNode, textNode) {
+		fitFontWithin: function (containerNode, textNode, size) {
 			var textNodeHeight,
 					textNodeWidth;
 
-			var currentFontSize = 30,
+			var currentFontSize = size || 30,
 					maxWrapperHeight = containerNode.offsetHeight + containerNode.offsetHeight,
 					maxWrapperWidth = containerNode.offsetWidth;
 						
 			do {
-				textNode.style.setProperty('font-size', currentFontSize + 'pt', 'important');
+				textNode.style.setProperty('font-size', currentFontSize + 'px', 'important');
 
 				textNodeHeight = textNode.offsetHeight;
 				textNodeWidth = textNode.offsetWidth;
 
 				currentFontSize -= 1;
-			} while ((textNodeHeight > maxWrapperHeight || textNodeWidth > maxWrapperWidth) && currentFontSize > 10);
+			} while ((textNodeHeight > maxWrapperHeight || textNodeWidth > maxWrapperWidth) && currentFontSize > 5);
 
 			return textNodeHeight;		
 		},
@@ -1362,9 +1362,7 @@ var Extension = {
 	Object: {
 		_toHTMLList: {
 			value: function (container) {
-				container = container || $('<ul>');
-
-				container.addClass('object-as-list');
+				container = (container || $('<ul>')).addClass('object-as-list');
 
 				var li,
 						keyName,
@@ -1372,24 +1370,16 @@ var Extension = {
 
 				for (var key in this)
 					if (this.hasOwnProperty(key)) {
-						li = $('<li>');
-						keyName = $('<span>').appendTo(li).text(key + ': ');
+						li = $('<li>').appendTo(container);
 
-						keyName.addClass('object-key-name').appendTo(li);
+						keyName = $('<span>').addClass('object-key-name').appendTo(li).text(key + ': ');
 
-						if (Object._isPlainObject(this[key])) {
-							keyValue = $('<div>');
-
-							keyValue.html(this[key]._toHTMLList($('<ul>')));
-						} else {
-							keyValue = $('<pre>');
-
-							keyValue.text(JSON.stringify(this[key], null, 2));
-						}
+						if (Object._isPlainObject(this[key]))
+							keyValue = $('<div>').append(this[key]._toHTMLList($('<ul>')));
+						else
+							keyValue = $('<pre>').text(JSON.stringify(this[key], null, 2));
 
 						keyValue.addClass('object-key-value').appendTo(li);
-
-						li.appendTo(container);
 					}
 
 				return container;

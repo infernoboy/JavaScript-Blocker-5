@@ -4,7 +4,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 "use strict";
 
-
 var ForceClickElement = function (element, selector) {
 	this.elementEvents = ForceClickElement.elementEvents;
 
@@ -76,7 +75,8 @@ ForceClickElement.events = {
 							if (!event.detail.currentTarget.getAttribute('data-forceClickTarget'))
 								return;
 
-							Poppy.preventNextCloseAll();
+							if (Poppy.poppyExist())
+								Poppy.preventNextCloseAll();
 
 							if (event.type === 'forceUp' && !event.detail.currentTarget.getAttribute('data-clickTriggeredByForce'))
 								Utilities.setImmediateTimeout(function (event, forceClick) {

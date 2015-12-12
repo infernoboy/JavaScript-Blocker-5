@@ -249,6 +249,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			font-weight: normal @important;
 			margin: 0 7px 10px @important;
 
+			&.mini-margin {
+				margin-bottom: 7px @important;
+			}
+
 			& when (@darkMode) {
 				color: lighten(#5a668c, 13%) @important;
 			}
@@ -409,6 +413,137 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 							content: attr(data-i18n-show);
 						}
 					}
+				}
+			}
+		}
+
+		.split-view {
+			position: relative;
+			display: -webkit-flex;
+			width: 100%;
+			-webkit-align-items: stretch;
+			box-sizing: border-box;
+
+			&.split-view-full-height {
+				height: 100%;
+			}
+
+			&.no-animation * {
+				-webkit-transition-duration: 0 !important;
+			}
+
+			&-divider {
+				position: absolute;
+				left: 50%;
+				width: 5px;
+				margin-left: -3px;
+				height: 100%;
+				cursor: col-resize;
+				z-index: 6;
+
+				&.dragging {
+					+ .split-view-left, {
+						&,
+						& + .split-view-right {
+							> *:not(.split-view-will-collapse) {
+								-webkit-transition: left unit(0.45 * @speedMultiplier, s) ease-in-out, right unit(0.45 * @speedMultiplier, s) ease-in-out;
+
+								&,
+								* {
+									white-space: nowrap;
+								}
+							}
+						}
+					}
+				}
+
+				&:not(.dragging) {
+					+ .split-view-left {
+						&,
+						& + .split-view-right {
+							-webkit-transition: all unit(0.2 * @speedMultiplier, s) ease-out; 
+						}
+					}
+				}
+			}
+
+			&-left,
+			&-right {
+				position: relative;
+				overflow-y: auto;
+				overflow-x: hidden;
+				box-sizing: border-box;
+
+				.split-view-will-collapse {
+					display: block;
+					pointer-events: none;
+					z-index: 5;
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					text-align: center;
+					opacity: 0;
+					-webkit-transition: opacity unit(0.45 * @speedMultiplier, s) ease-out;
+					background-color: fade(@baseColor, 15%);
+				}
+
+				> *:not(.split-view-will-collapse) {
+					position: relative;
+					opacity: 1;
+					overflow: hidden;
+				}
+
+				&.collapsed {
+					.split-view-will-collapse {
+						background-color: fade(@baseColor, 35%);
+					}
+
+					> *:not(.split-view-will-collapse) {
+						height: 0;
+						overflow: hidden;
+					}
+				}
+
+				&.collapses {
+					.split-view-will-collapse {				
+						opacity: 1;
+						pointer-events: all;				
+					}
+				}
+			}
+
+			&-left {
+				-webkit-flex: 0 0 50%;
+				padding-right: 1px;
+				border-right: 1px solid darken(#ddd, @darknessLevel);
+
+				.split-view-will-collapse {
+					left: -1px;
+				}
+
+				> *:not(.split-view-will-collapse) {
+					right: 0;
+				}
+
+				&.collapses > *:not(.split-view-will-collapse) {
+					right: 200%;
+				}
+			}
+
+			&-right {
+				-webkit-flex: 1 1 auto;
+				padding-left: 1px;
+				border-left: 1px solid darken(#fff, @darknessLevel);
+				background: darken(#fbfbfb, @darknessLevel);
+
+				> *:not(.split-view-will-collapse) {
+					left: 0;
+				}
+
+				&.collapses > *:not(.split-view-will-collapse) {
+					left: 200%;
 				}
 			}
 		}

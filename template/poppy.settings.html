@@ -3,13 +3,15 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 -->
 
 <noscript id="setting-menu-backup">
-	<h3 class="jsb-centered"><%=_('setting_menu.backup')%></h3>
+	<% if (!self.importOnly) { %>
+		<h3 class="jsb-centered mini-margin"><%=_('setting_menu.backup')%></h3><%
+	} %>
 
-	<ul class="generic-menu-options">
+	<table id="setting-menu-backup">
 		<% if (!self.importOnly) { %>
-			<li class="double-column-flex">
-				<div class="double-column-flex-left"><%=_('setting_menu.include')%>:<q></q></div>
-				<div class="double-column-flex-right">
+			<tr class="top">
+				<td><%=_('setting_menu.include')%>:</td>
+				<td>
 					<ul class="generic-menu-options no-indent">
 						<li>
 							<input type="checkbox" id="setting-menu-backup-export-settings" checked="checked" /> <label for="setting-menu-backup-export-settings"><%=_('view_toolbar.setting')%></label>
@@ -27,37 +29,50 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 							<input type="checkbox" id="setting-menu-backup-export-user-scripts" checked="checked" /> <label for="setting-menu-backup-export-user-scripts"><%=_('setting_menu.export_user_scripts')%></label>
 						</li>
 					</ul>
-				</div>
-			</li>
-
-			<li>
-				<div class="horizontal-divider horizontal-divider-transparent horizontal-divider-short"></div>
-			</li>
-
-			<li>
-				<label><%=_('setting_menu.export_backup')%>:</label><q></q>
-				<input id="setting-menu-backup-export" type="button" value="<%=_('setting_menu.export')%>" />
-			</li>
-
-			<li>
-				<p class="jsb-readable"><%=_('setting_menu.export.description')%></p>
-				<div class="horizontal-divider"></div>
-			</li><%
+				</td>
+			</tr>
+			<tr>
+				<td></td><td></td>
+			</tr>
+			<tr>
+				<td><%=_('setting_menu.backup')%>:</td>
+				<td><input id="setting-menu-backup-export" type="button" value="<%=_('setting_menu.export')%>" /></td>
+			</tr>
+			<tr>
+				<td></td><td></td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<p class="jsb-readable"><%=_('setting_menu.export.description')%></p>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<div class="horizontal-divider horizontal-divider-extra-short"></div>
+				</td>
+			</tr><%
 		} %>
-
-		<li>
-			<label><%=_('setting_menu.import_backup')%>:</label><q></q>
-			<input id="setting-menu-backup-import" type="file" value="<%=_('setting_menu.import')%>" />
-		</li>
-
-		<li>
-			<input type="checkbox" id="clear-existing" checked="checked" /> <label for="clear-existing"><%=_('settings.clear_before_import')%></label>
-		</li>
-
-		<li>
-			<p class="jsb-readable"><%=_('setting_menu.import.description')%><br/><a href="javascript:void(0);" id="setting-menu-backup-import-alternative"><%=_('setting_menu.import.alternative')%></a> <%=_('setting_menu.import.alternative.jsb4')%></p>
-		</li>
-	</ul>
+		<tr>
+			<td colspan="2">
+				<h3 class="jsb-centered mini-margin"><%=_('setting_menu.import')%></h3>
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input type="checkbox" id="clear-existing" checked="checked" /> <label for="clear-existing"><%=_('settings.clear_before_import')%></label></td>
+		</tr>
+		<tr>
+			<td><%=_('setting_menu.import_backup')%>:</td>
+			<td><input id="setting-menu-backup-import" type="file" value="<%=_('setting_menu.import')%>" /></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<p class="jsb-readable"><%=_('setting_menu.import.description')%></p>
+				<div class="horizontal-divider horizontal-divider-transparent horizontal-divider-extra-short"></div>
+				<p><span class="jsb-smaller jsb-label"><a href="javascript:void(0);" id="setting-menu-backup-import-alternative"><%=_('setting_menu.import.alternative')%></a> <%=_('setting_menu.import.alternative.jsb4')%></span></p>
+			</td>
+		</tr>
+	</table>
 </noscript>
 
 <noscript id="backup-import-alternative">

@@ -211,6 +211,7 @@ var GlobalPage = {
 };
 
 var SettingStore = {
+	__syncTimeout: {},
 	__locked: false,
 	__cache: {},
 	__badKeys: ['setItem', 'getItem', 'removeItem', 'clear', 'addEventListener', 'removeEventListener'],
@@ -239,7 +240,7 @@ var SettingStore = {
 			return this.__cache[key];
 
 		var localValue = localStorage.getItem(key),
-				value = localValue ? JSON.parse(localValue) : safari.extension.settings.getItem(key);
+				value = (typeof localValue === 'string') ? JSON.parse(localValue) : safari.extension.settings.getItem(key);
 
 		if (value === null)
 			return defaultValue === undefined ? value : defaultValue;
@@ -271,7 +272,14 @@ var SettingStore = {
 			safari.extension.settings.setItem(key, value);
 		} else {
 			localStorage.setItem(key, JSON.stringify(value));
-			safari.extension.settings.removeItem(key);
+
+			clearTimeout(SettingStore.__syncTimeout[key]);
+
+			SettingStore.__syncTimeout[key] = setTimeout(function (key, value) {
+				delete SettingStore.__syncTimeout[key];
+
+				safari.extension.settings.setItem(key, value);
+			}, 3000, key, value);
 		}
 	},
 
@@ -286,11 +294,11 @@ var SettingStore = {
 	},
 
 	all: function () {
-		return Object._extend(Object._copy(safari.extension.settings), Object._copy(localStorage));
+		return safari.extension.settings;
 	},
 
 	export: function () {
-		return JSON.stringify(Object._extend(safari.extension.settings, localStorage));
+		return JSON.stringify(safari.extension.settings);
 	},
 
 	import: function (settings) {

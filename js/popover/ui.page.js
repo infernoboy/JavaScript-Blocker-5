@@ -18,9 +18,7 @@ UI.Page = {
 		UI.Page.hideSwitcherBadge();
 
 		var pageInfo = page.tree(),
-				showHiddenItems = Settings.getItem('showHiddenItems'),
-				showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
-				renderedSections = $('<div />');
+				renderedSections = $('<div>');
 
 		renderedSections.append(Template.create('page', 'host-section', pageInfo));
 
@@ -35,73 +33,45 @@ UI.Page = {
 			var	hiddenCount = 0,
 					hiddenCountText = $('.page-host-hidden-count', this);
 
-			$('.page-host-item', this).each(function (i) {
-				var shouldHide;
+			$('.page-host-items', this).each(function (i) {
+				var items = $(this);
 
-				var item = $(this),
-						itemIsHidden = false,
-						allResourcesHidden = true,
-						resourceIDs = JSON.parse(this.getAttribute('data-resourceIDs')),
-						resources = item.data('resources', {}).data('resources'),
-						chunks = resourceIDs._chunk(100);
-
-				for (var chunkIndex = 0, chunkLength = chunks.length; chunkIndex < chunkLength; chunkIndex++) {
-					Utilities.setImmediateTimeout(function (resourceIDs) {
-						for (var i = resourceIDs.length; i--;) {
-							resources[resourceIDs[i]] = pageInfo._findKey(resourceIDs[i]);
-
-							if (resources[resourceIDs[i]].shouldHide()) {
-								if (i === 0 || showResourceURLs)
-									hiddenCount++;
-
-								itemIsHidden = true;
-
-								if (showHiddenItems)
-									item.addClass('page-host-item-rule-hidden');
-							} else
-								allResourcesHidden = false;
-						}
-					}, [chunks[chunkIndex]]);
-
-					Utilities.setImmediateTimeout(function () {
-						if (itemIsHidden && allResourcesHidden && !showHiddenItems) {
-							var parent = item.parent();
-
-							item.remove();
-
-							if (!parent.children().length)
-								parent.prev().addBack().remove();
-						}
-					});
-				}
-			});
-
-			Utilities.setImmediateTimeout(function () {
-				if (hiddenCount)
-					hiddenCountText.text(_('view.page.header.' + (hiddenCount === 1 ? 'hidden_item' : 'hidden_items'), [hiddenCount]));
+				if (!items.children().length)
+					items.prev().addBack().remove();
 				else
-					hiddenCountText.addClass('jsb-hidden');
+					$('.page-host-item', this).each(function () {
+						var resources = $(this).data('resources', {}).data('resources'),
+								resourceIDs = JSON.parse(this.getAttribute('data-resourceIDs'));
+
+						for (var i = resourceIDs.length; i--;)
+							resources[resourceIDs[i]] = pageInfo._findKey(resourceIDs[i]);
+					});
 			});
+
+			$('.page-host-items-hidden', this).each(function () {
+				hiddenCount += parseInt(this.value, 10);
+			});
+
+			if (hiddenCount)
+				hiddenCountText.text(_('view.page.header.' + (hiddenCount === 1 ? 'hidden_item' : 'hidden_items'), [hiddenCount]));
+			else
+				hiddenCountText.addClass('jsb-hidden');
 		});
 
-		Utilities.setImmediateTimeout(function () {
-			UI.Page.events.bindSectionEvents(sections, page, pageInfo);
+		UI.Page.events.bindSectionEvents(sections, page, pageInfo);
 
-			UI.Page.stateContainer
-				.empty()
-				.data('page', page)
-				.append(sections)
-				.find('.page-host-editor-kind')
-				.trigger('change');
+		UI.Page.stateContainer
+			.empty()
+			.data('page', page)
+			.append(sections)
+			.find('.page-host-editor-kind')
+			.trigger('change');
 
-			UI.Page.resizeColumns(Settings.getItem('pageHostColumnAllowedWidth'));
+		UI.view.toTop(UI.view.views);
 
-			UI.view.toTop(UI.view.views);
+		UI.Page.__rendering = false;
 
-			UI.Page.__rendering = false;
-
-			UI.event.trigger('pageDidRender', page);
-		});
+		UI.event.trigger('pageDidRender', page);
 	},
 
 	init: function () {
@@ -111,7 +81,7 @@ UI.Page = {
 		UI.Page.modalInfo = $('#page-modal-info', UI.Page.view);
 		UI.Page.stateContainer = $('#page-state-container', UI.Page.view);
 
-		UI.view.floatingHeaders.add(UI.view.views.selector, '.page-host-header', null, -1);
+		new FloatingHeader(UI.view.views, '.page-host-header', null, -1);
 
 		$(window)
 			.on('blur', function () {
@@ -338,29 +308,9 @@ UI.Page = {
 		else {
 			UI.Page.showSwitcherBadge('...');
 
-			UI.view.views.unbind('scroll', UI.Page.throttledRequestFromActive).one('scroll', UI.Page.throttledRequestFromActive);
-
-			UI.event.addMissingCustomEventListener(['sectionSwitchedOutOfEditMode', 'dragEnd'], UI.Page.throttledRequestFromActive, true);
-			Poppy.event.addMissingCustomEventListener('poppyDidClose', UI.Page.throttledRequestFromActive, true);
+			Utilities.Timer.timeout('renderPage', UI.Page.throttledRequestFromActive, 1000);
 		}
 	}, 50, null, true),
-
-	resizeColumns: function (allowedColumnWidth) {
-		var resizers = $('.page-host-columns-resize'),
-				largeFont = Settings.getItem('largeFont'),
-				allowedColumnWidth = Math.min(largeFont ? 0.73 : 0.78, Math.max(largeFont ? 0.27 : 0.22, allowedColumnWidth)),
-				allowedColumnWidthPercent = (allowedColumnWidth * 100),
-				blockedColumnWidthPercent = 100 - allowedColumnWidthPercent;
-
-		resizers.css('left', (allowedColumnWidth * 100) + '%');
-
-		$('.page-host-column-allowed').css('-webkit-flex-basis', allowedColumnWidthPercent + '%');
-		$('.page-host-column-blocked').css('-webkit-flex-basis', blockedColumnWidthPercent + '%');
-
-		Utilities.Timer.timeout('setColumnWidth', function () {
-			Settings.setItem('pageHostColumnAllowedWidth', allowedColumnWidth);
-		}, 20);
-	},
 
 	section: {
 		toggleEditMode: function (section, force, quick, forceAdvanced) {
@@ -589,7 +539,7 @@ UI.Page = {
 		},
 
 		popoverDidResize: function () {
-			UI.view.floatingHeaders.adjustAll();
+			FloatingHeader.adjustAll();
 		},
 
 		sectionSwitchedOutOfEditMode: function (event) {
@@ -598,7 +548,7 @@ UI.Page = {
 			$('.page-host-columns input[type="checkbox"]', event.detail).prop('checked', false);
 
 			setTimeout(function () {
-				UI.view.floatingHeaders.adjustAll();
+				FloatingHeader.adjustAll();
 			}, 225 * window.globalSetting.speedMultiplier);
 		},
 
@@ -650,24 +600,6 @@ UI.Page = {
 
 		bindSectionEvents: function (sections, page, pageInfo) {
 			sections
-				.on('mousedown', '.page-host-columns-resize', function (event) {
-					event.preventDefault();
-
-					UI.drag = this;
-
-					document.documentElement.classList.add('jsb-drag-cursor');
-					document.documentElement.setAttribute('data-cursor', 'col-resize');
-				})
-
-				.on('dblclick', '.page-host-columns-resize', function (event) {
-					UI.Page.resizeColumns(0.5);
-				})
-
-				.on('mousemove', '.page-host-columns', function (event) {
-					if (UI.drag && UI.drag.classList.contains('page-host-columns-resize'))
-						UI.Page.resizeColumns(event.pageX / $(this).outerWidth());
-				})
-
 				.on('click', '.page-host-first-visit-keep-blocked, .page-host-first-visit-unblock', function (event) {
 					var thisPageInfo = pageInfo,
 							section = $(this).parents('.page-host-section'),

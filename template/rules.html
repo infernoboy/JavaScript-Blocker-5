@@ -5,11 +5,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 <noscript id="rule-container">
 	<div id="rule-toolbar">
 		<div id="rule-domain-search-container">
-			<label for="rule-domain-search" class="jsb-label"><%=_('rules.filter_domain')%>:<q></q></label>
-			<input type="search" id="rule-domain-search" incremental="incremental" placeholder="<%=_('rules.domain_or_page')%>"/><q></q>
-			<label for="rule-domain-hide-show" class="jsb-label"><%=_('rules.domains_pages')%>:<q></q>
+			<label for="rule-domain-search" class="jsb-label"><%=_('rules.domains_pages')%>:<q></q>
 			<input type="button" id="rule-domain-hide-all" class="blend-in" value="<%=_('rules.hide_all')%>" /><q></q>
-			<input type="button" id="rule-domain-show-all" class="blend-in" value="<%=_('rules.show_all')%>" />
+			<input type="button" id="rule-domain-show-all" class="blend-in" value="<%=_('rules.show_all')%>" />			
+
+			<input type="search" id="rule-domain-search" incremental="incremental" placeholder="<%=_('rules.filter_domain')%>" tabindex="1" />		
 		</div>
 		<div class="horizontal-divider horizontal-divider-short"></div>
 	</div>

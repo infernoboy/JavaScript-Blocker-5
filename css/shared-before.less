@@ -123,7 +123,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		* {
 			margin: 0 @important;
 			color: #222 @important;
-			font-family: 'Helvetica Neue', Helvetica, sans-serif @important;
+			font-family: -apple-system, 'Helvetica Neue', Helvetica, sans-serif @important;
 			font-size: 1em @important;
 			height: auto @important;
 			min-height: 0 @important;
@@ -325,6 +325,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 			&::-webkit-input-placeholder {
 				padding: 1px 0 @important;
+
+				.capitan& {
+					padding: 2px 0 1px @important;
+				}
 			}
 
 			&,
@@ -341,7 +345,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 		input[type="search"] {
 			-webkit-appearance: none @important;
-			border-radius: 12px @important;
+			border-radius: 4px @important;
+			padding-left: 0;
 			border-bottom-color: darken(rgb(200, 200, 200), @darknessLevel);
 
 			&::-webkit-search-cancel-button {
@@ -361,16 +366,25 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					background: rgba(0, 0, 0, 0.4) @important;
 					border-radius: 12px @important;
 					line-height: 0.7 @important;
-					text-shadow: 0 0 2px rgba(0, 0, 0, 0.3) @important;
+					-webkit-font-smoothing: antialiased @important;
+
+					.lion& {
+						padding: 0 0 0 1px @important;
+						width: 11px @important;
+					}
+
+					.capitan& {
+						margin-top: -1px @important;
+					}
 				}
 			}
 		}
 
 		input[type="file"] {
 			background: transparent @important;
-			border-color: darken(rgb(240, 240, 240), @darknessLevel) @important;
+			border: none @important;
 			box-shadow: none @important;
-			padding-left: 3px @important;
+			padding-left: 0 @important;
 			width: 200px @important;
 		}
 
@@ -770,13 +784,18 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				background: rgba(0, 0, 0, 0.45) @important;
 			}
 
-			&-short {
+			&-short,
+			&-extra-short {
 				margin: 5px 0 @important;
 				background: rgba(0, 0, 0, 0.06) @important;
 
 				& when (@darkMode) {
 					background: rgba(0, 0, 0, 0.35) @important;
 				}
+			}
+
+			&-extra-short {
+				margin: 2px 0 @important;
 			}
 
 			&-transparent {
