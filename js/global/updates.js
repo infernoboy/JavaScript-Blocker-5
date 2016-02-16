@@ -154,3 +154,13 @@ Update.versions[151105] = {
 		Settings.import(SettingStore.export(), true, true);
 	}
 }
+
+
+// === 5.0.15 ===
+Update.versions[151212] = {
+	blocking: false,
+
+	update: function (updateVersion) {
+		Settings.import(SettingStore.export(), true, true);
+	}
+}

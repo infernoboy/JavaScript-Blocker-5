@@ -186,22 +186,27 @@ var UserScript = {
 
 			currentMeta = attributes.get('meta');
 
-			this.download(updateURL, !isDeveloperMode).done(function (update) {
+			this.download(updateURL, true).done(function (update) {
 				updateMeta = self.parse(update).parsed;
 
 				if (currentMeta.trueNamespace === updateMeta.trueNamespace) {
 					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && this.canBeUpdated(updateMeta, customDownloadURL))) {
-						self.download(downloadURL === updateURL ? update : downloadURL, !isDeveloperMode, downloadURL === updateURL).done(function (script) {
+						self.download(downloadURL === updateURL ? update : downloadURL, true, downloadURL === updateURL).done(function (script) {
 							self.add(script, true);
 
-							if (!isDeveloperMode)
-								Tabs.messageActive('notification', {
-									title: _('user_script'),
-									subTitle: currentMeta.name,
-									body: Template.create('main', 'jsb-info', {
-										string: _('user_script.updated_to_version', [updateMeta.version])
-									}, false, true)
-								});
+							if (!isDeveloperMode) {
+								Tabs.messageActive('reload');
+
+								setTimeout(function () {
+									Tabs.messageActive('notification', {
+										title: _('user_script'),
+										subTitle: currentMeta.name,
+										body: Template.create('main', 'jsb-info', {
+											string: _('user_script.updated_to_version', [updateMeta.version])
+										}, false, true)
+									});
+								}, 4000);
+							}
 						});
 					}
 				} else

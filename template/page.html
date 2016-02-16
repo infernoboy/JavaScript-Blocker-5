@@ -312,7 +312,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 										if (value.resource.shouldHide())
 											groupHiddenCount++;
 
-										if (value.resource.sourceIsURL && showItemDescription && self.stateType !== 'unblocked') {
+										if (value.resource.sourceIsURL && showItemDescription && self.stateType !== 'unblocked' && ['http:', 'https:', 'ftp:']._contains(protocol)) {
 											var descriptions = value.resource.descriptionsForResource();
 
 											if (descriptions.length)

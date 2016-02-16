@@ -6,11 +6,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 UI.Setup = {
 	init: function () {
-		if (Settings.getItem('setupComplete'))
-			return;
-
 		if (!Settings.getItem('installID'))
 			Settings.setItem('installID', Utilities.Token.generate() + '-' + Version.display + '-' + Version.bundle);
+
+		if (Settings.getItem('setupComplete'))
+			return;	
 
 		UI.Setup.view = $('#main-views-setup', UI.view.views);
 
