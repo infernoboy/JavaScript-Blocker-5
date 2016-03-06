@@ -146,6 +146,7 @@ Resource.prototype.allow = function () {
 
 Resource.prototype.allowedBySettings = function (enforceNowhere) {
 	var canLoad = {
+		pageRule: false,
 		action: ACTION.ALLOW_WITHOUT_RULE
 	};
 
@@ -290,17 +291,18 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 			domainCached = false;
 
 	if (Resource.USE_CACHE) {
-		var store = Resource.canLoadCache.getStore(searchKinds.concat(excludeLists).join('-')),
+		var canUseCache = !detailed && Rules.list.active === Rules.list.user,
+				store = Resource.canLoadCache.getStore(searchKinds.concat(excludeLists).join('-')),
 				pageSources = store.getStore(this.pageLocation),
 				pageCached = pageSources.get(this.lowerSource);
 
-		if (pageCached && !detailed && Rules.list.active === Rules.list.user)
+		if (pageCached && canUseCache)
 			return pageCached;
 
 		var hostSources = store.getStore(this.pageHost),
 				domainCached = hostSources.get(this.lowerSource);
 
-		if (domainCached && domainCached.action >= 0 && !detailed && Rules.list.active === Rules.list.user)
+		if (domainCached && canUseCache)
 			return domainCached;
 	}
 
@@ -377,6 +379,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 					longStore.getStore(domain).set(action, {
 						regExps: longRegExps,
 						canLoad: {
+							pageRule: pageRule,
 							action: parseInt(action, 10),
 							list: ruleListName
 						}
@@ -388,6 +391,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 					for (i = 0, b = longRegExps.length; i < b; i++) {
 						if (longRegExps[i].test(self.lowerSource)) {
 							canLoad = {
+								pageRule: pageRule,
 								action: parseInt(action, 10),
 								list: ruleListName
 							};

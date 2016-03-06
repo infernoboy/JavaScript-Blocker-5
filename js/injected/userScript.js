@@ -5,15 +5,16 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 var UserScript = {
 	menuCommand: {},
 
-	injectWhenLoaded: function (script) {
-		document.addEventListener('DOMContentLoaded', function (script, event) {
-			UserScript.inject(script);
-		}.bind(null, script), false);
+	injectWhenLoaded: function (script, parentUserScript, parentUserScriptName) {
+		document.addEventListener('DOMContentLoaded', function (script, parentUserScript, parentUserScriptName, event) {
+			UserScript.inject(script, parentUserScript, parentUserScriptName);
+		}.bind(null, script, parentUserScript, parentUserScriptName), false);
 	},
 
 	inject: function (script, parentUserScript, parentUserScriptName) {
 		var isSafe = false,
-				attributes = script.attributes;
+				attributes = script.attributes,
+				requirementScripts = [];
 
 		if (typeof attributes.script === 'string') {
 			try {
@@ -33,17 +34,24 @@ var UserScript = {
 		if (typeof attributes.script !== 'function' && !isSafe)
 			return LogError(['user script did not transform into a function', attributes.meta.name]);
 
+		if (script.requirements) {
+			for (var indexURL in script.requirements)
+				requirementScripts.push(Utilities.decode(script.requirements[indexURL].data));
+		}
+
 		var userScript = new DeepInject(attributes.meta.trueNamespace, attributes.script);
-
-		userScript.anonymize();
-
-		Special.injectHelpers(userScript, this.helpers);
-		Special.injectHelpers(userScript, Special.helpers);
 
 		var userScriptSetup = new DeepInject(null, function () {
 			var unsafeWindow = window,
 					GM_info = JSB.scriptInfo;
 		}, true);
+
+		userScript.anonymize();
+
+		userScript.prepend(requirementScripts);
+
+		Special.injectHelpers(userScript, this.helpers);
+		Special.injectHelpers(userScript, Special.helpers);
 
 		userScript.prepend([userScriptSetup.inner()]);
 
@@ -118,27 +126,6 @@ var UserScript = {
 			else {
 				if (enabledUserScripts[userScript].attributes.noframes && Page.info.isFrame)
 					continue;
-
-				if (enabledUserScripts[userScript].requirements) {
-					for (url in enabledUserScripts[userScript].requirements) {
-						requirement = enabledUserScripts[userScript].requirements[url];
-
-						requirementName = 'RequirementFor-' + userScript + '-' + url;
-
-						UserScript.inject({
-							runAtStart: true,
-
-							attributes: {
-								parentUserScript: userScript,
-								script: Utilities.decode(requirement.data),
-								meta: {
-									name: requirementName,
-									trueNamespace: requirementName
-								}
-							}
-						}, userScript, enabledUserScripts[userScript].attributes.meta.name);
-					}
-				}
 
 				if (enabledUserScripts[userScript].attributes.runAtStart)
 					UserScript.inject(enabledUserScripts[userScript]);

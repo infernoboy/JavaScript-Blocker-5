@@ -18,8 +18,8 @@ var UserScript = {
 			if (resources.hasOwnProperty(resourceName))
 				Utilities.setImmediateTimeout(function (self, store, resources, resourceName) {
 					var xhr = new XMLHttpRequest(),
-							bypassCache = (resources[resourceName]._contains('?') ? '&' : '?') + Date.now(),
 							resourceURL = resources[resourceName],
+							bypassCache = (resourceURL._contains('?') ? '&' : '?') + Date.now(),
 							isURL = Utilities.URL.isURL(resourceURL);
 
 					if (!isURL) {
@@ -127,7 +127,7 @@ var UserScript = {
 			scripts[namespace] = {
 				action: scripts[namespace].action,
 				attributes: attributes,
-				requirements: script.getStore('requirements').all(),
+				requirements: script.getStore('requirements').all()._sort(null, true),
 			};
 		}
 
@@ -269,6 +269,8 @@ var UserScript = {
 			noframes: false
 		};
 
+		var requireIndex = 0;
+
 		for (var line = 0; line < lines.length; line++) {
 			if (!parseLine && /\/\/\s==UserScript==/.test(lines[line]))
 				parseLine = true;
@@ -290,7 +292,7 @@ var UserScript = {
 							parsed[key][resource[0]] = resource[1];
 
 						} else if (key === 'require') {
-							parsed[key][value] = value;
+							parsed[key][requireIndex++ + '-' + value] = value;
 
 						} else {
 							if (['exclude', 'include', 'match']._contains(key)) {
@@ -355,7 +357,7 @@ var UserScript = {
 		});
 	},
 
-	add: function (script, isAutoUpdate, url) {
+	add: function (script, isAutoUpdate) {
 		var parsed = this.parse(script),
 				detail = parsed.parsed;
 

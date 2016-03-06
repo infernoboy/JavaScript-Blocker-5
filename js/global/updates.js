@@ -152,9 +152,10 @@ Update.versions[151105] = {
 
 	update: function (updateVersion) {
 		Settings.import(SettingStore.export(), true, true);
-	}
-}
 
+		return true;
+	}
+};
 
 // === 5.0.15 ===
 Update.versions[151212] = {
@@ -162,5 +163,21 @@ Update.versions[151212] = {
 
 	update: function (updateVersion) {
 		Settings.import(SettingStore.export(), true, true);
+
+		return true;
 	}
-}
+};
+
+// === 5.0.17 ===
+Update.versions[160219] = {
+	blocking: false,
+
+	update: function (updateVersion) {
+		var userScripts = UserScript.scripts.all();
+
+		for (var userScriptNS in userScripts)
+			UserScript.add(userScripts[userScriptNS].attributes.script);
+
+		return true;
+	}
+};

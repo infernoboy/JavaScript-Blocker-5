@@ -188,7 +188,7 @@ function Command (command, data, event) {
 					info.pageLocation = 'about:blank';
 					info.pageProtocol = 'about:';
 				}
-
+				
 				var resource = new Resource(info);
 
 				this.message = resource.canLoad();
