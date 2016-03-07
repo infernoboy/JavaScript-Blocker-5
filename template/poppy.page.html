@@ -6,7 +6,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	<%
 		if (self.kind === 'special') {
 			var localizationKey = 'special.' + self.source + (self.isAllowed ? '.blocked' : '.allowed'),
-					specialData = Settings.getItem('enabledSpecials', self.source) || '*',
+					specialData = (Settings.getItem('enabledSpecials', self.source) || '*').toString(),
 					specialHelp = Strings.localizationExist(localizationKey) ? _(localizationKey, [specialData._escapeHTML()]) : null;
 
 			if (specialHelp) { %>
