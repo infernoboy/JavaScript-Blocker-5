@@ -485,7 +485,7 @@
 
 	"snapshot_menu.merge_always": "Merge With Always",
 
-	"create_rule.domain_info": "Start a domain with <b>.</b> to include all subdomains (e.g. <b>.example.com</b> will apply rule to <b>example.com</b>, <b>www.example.com</b>, etc.).<br><br>Pages must begin with <b>^</b>, end with <b>$</b>, and be a valid regular expression. The entire URL will be tested against this (e.g. <b>http://www.example.com/hello_world<b>).",
+	"create_rule.domain_info": "Start a domain with <b>.</b> to include all subdomains (e.g. <b>.example.com</b> will apply rule to <b>example.com</b>, <b>www.example.com</b>, etc.).<br><br>Pages must begin with <b>^</b>, end with <b>$</b>, and be a valid regular expression. The entire URL will be tested against this (e.g. <b>http://www.example.com/hello_world</b>).",
 	"create_rule.rule_info": "This determines which resources will be affected.<br><br>Enter * or leave blank to match all resources.<br><br>Include protocol matching by separating them with a comma followed by a <b>|</b> and then the domain (e.g. <b>http:,https:,ftp:|.google.com</b>).<br><br>Start a domain with <b>.</b> to include all subdomains (e.g. <b>.example.com</b> will match <b>example.com</b>, <b>www.example.com</b>, etc.).<br><br>Start with a <b>^</b> and end with <b>$</b> to use regular expression matching.",
 
 	"rules.no_kinds_selected": "You have to select at least one kind to create a rule for.",
