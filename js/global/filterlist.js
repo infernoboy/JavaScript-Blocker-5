@@ -125,6 +125,9 @@ FilterList.prototype.process = function (list) {
 				if (line[0] === '!' || line[0] === '[')
 					return; // Line is a comment or determines which version of AdBlock is required.
 
+				if (line[0] === '|' && line[1] !== '|' && line._contains('third-party'))
+					return;
+
 				var dollar = line.indexOf('$'),
 						subLine = line.substr(0, ~dollar ? dollar : line.length),
 						argCheck = line.split(/\$/),
