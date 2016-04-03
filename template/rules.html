@@ -124,6 +124,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						humanString += isAllowing ? 'allow' : 'block';
 					}
 
+					if (self.ruleInfo.thirdParty)
+						humanString += '.thirdParty';
+
 					if (self.ruleInfo.regexp) {
 						humanString += '.matching';
 					} else if (self.kind._contains('special') || self.kind._contains('user_script')) {
@@ -141,5 +144,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			</div>
 			<div class="rule-item-action-container"></div>
 		</div>
+		<% if (self.ruleInfo.exceptionHosts) { %>
+			<div class="rule-item-exception-hosts"><%=_('rules.list.except_on', [self.ruleInfo.exceptionHosts.join(', ')])%></div><%
+		} %>
 	</li>
 </noscript>

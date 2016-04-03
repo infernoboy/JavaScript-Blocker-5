@@ -583,7 +583,7 @@ UI.Rules = {
 			}
 		},
 
-		viewWillSwitch: function (event) {			
+		viewWillSwitch: function (event) {
 			event.afterwards(function (event) {
 				if (!event.defaultPrevented && (event.detail.to.id === '#main-views-rule' || event.detail.to.id === '#main-views-page')) {
 					$('#rule-domain-search', UI.Rules.view).val('').trigger('search');

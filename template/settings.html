@@ -19,6 +19,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	<li class="setting-section-setting" data-setting="<%=self.setting%>"></li>
 </noscript>
 
+<noscript id="setting-section-row">
+	<li class="setting-section-row"><ul class="setting-row-container"></ul></li>
+</noscript>
+
 <noscript id="setting-section-divider">
 	<li class="setting-section-divider <%=self.classes || ''%>"></li>
 </noscript>
@@ -59,12 +63,15 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		var helpHTML = help ? '<span class="more-info" data-forceTriggersClick="1" data-moreInfo="' + help._escapeHTML()._entityQuotes() + '"></span>' : '';
 
 		switch (settingType) {
+			case 'stand-alone-button':
 			case 'button': %>
 				<%=wrapper.left%>
-					<label class="setting-main-label"><%=mainLabel%>:<q></q></label>
+				<% if (settingType !== 'stand-alone-button') { %>
+					<label class="setting-main-label"><%=mainLabel%>:<q></q></label><%
+				} %>
 				<%=wrapper.close%>
 				<%=wrapper.right%>
-					<input type="button" id="<%=self.id%>" class="<%=self.setting.props.classes || ''%>" value="<%=subLabel%>" data-settingButton="<%=self.setting.setting%>" />
+					<input type="button" id="<%=self.id%>" class="<%=self.setting.props.classes || ''%> <%=settingType === 'stand-alone-button' ? 'stand-alone-button' : ''%>" value="<%=subLabel%>" data-settingButton="<%=self.setting.setting%>" />
 					<%=helpHTML%>
 				<%=wrapper.close%><%
 			break;

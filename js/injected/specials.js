@@ -637,6 +637,24 @@ Special.specials = {
 			};
 	},
 
+	page_blocker: function () {
+		window.stop();
+
+		messageExtension('refreshPopover');
+
+		document.documentElement.innerHTML = '<head><style type="text/css">* {text-align:center;}</style><body>' + _localize('setting.enabledSpecials.page_blocker.blocked') + '</body>';
+
+		var meta = document.createElement('meta');
+		
+		meta.setAttribute('http-equiv', 'content-security-policy');
+		meta.setAttribute('content', "script-src *");
+		
+		if (document.documentElement.firstChild)
+			document.documentElement.insertBefore(meta, document.documentElement.firstChild);
+		else
+			document.documentElement.appendChild(meta);
+	},
+
 	simple_referrer: new Function,
 	anchor_titles: new Function,
 

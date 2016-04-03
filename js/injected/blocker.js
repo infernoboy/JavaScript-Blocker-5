@@ -40,7 +40,7 @@ if (!Utilities.Page.isTop)
 
 var TOKEN = {
 	PAGE: Utilities.Token.create('Page'),
-	EVENT: Utilities.Token.generate(),
+	EVENT: Utilities.Token.generate()
 };
 
 var BLOCKABLE = {
@@ -229,8 +229,7 @@ var Handler = {
 		var style = Element.createFromObject('link', {
 			rel: 'stylesheet',
 			type: 'text/css',
-			href: globalSetting.contentURLs.stylesheet.url,
-			'data-jsbAllowAndIgnore': Utilities.Token.create('AllowAndIgnore')
+			href: globalSetting.contentURLs.stylesheet.url
 		});
 
 		document.documentElement.appendChild(style);
@@ -652,8 +651,18 @@ var Element = {
 			if (element.srcdoc)
 				meta.srcdoc = element.srcdoc;
 
-			element.setAttribute('data-jsbFrameURL', source);
-			element.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(source + 'FrameURL', true));
+			Object.defineProperties(element, {
+				jsbFrameURL: {
+					configurable: true,
+					writable: true,
+					value: source
+				},
+				jsbFrameURLToken: {
+					configurable: true,
+					writable: true,
+					value: Utilities.Token.create(source + 'FrameURL', true)
+				}
+			});
 		}
 
 		var actionStore = event.unblockable ? Page.unblocked : ((canLoad.isAllowed || !event.preventDefault) ? Page.allowed : Page.blocked);
@@ -680,7 +689,7 @@ var Element = {
 	},
 
 	requestFrameURL: function (frame, reason, force) {
-		if (!(frame instanceof HTMLElement) && (!force || Utilities.Token.valid(frame.getAttribute('jsbShouldSkipLoadEventURLRequest'), 'ShouldSkipLoadEventURLRequest', true)))
+		if (!(frame instanceof HTMLElement) && (!force || Utilities.Token.valid(frame.jsbShouldSkipLoadEventURLRequest, 'ShouldSkipLoadEventURLRequest', true)))
 			return;
 
 		if (!frame.contentWindow)
@@ -741,14 +750,16 @@ var Element = {
 				return false;
 			}
 
-			if (isAnchor && !Utilities.Token.valid(anchor.getAttribute('data-jsbAnchorPrepared'), 'AnchorPrepared')) {
+			if (isAnchor && !Utilities.Token.valid(anchor.jsbAnchorPrepared, 'AnchorPrepared')) {
 				var href = anchor.getAttribute('href'),
 						absoluteHref = Utilities.URL.getAbsolutePath(href);
 
 				if (!anchor.title && Special.isEnabled('anchor_titles'))
 					anchor.title = absoluteHref;
 
-				anchor.setAttribute('data-jsbAnchorPrepared', Utilities.Token.create('AnchorPrepared', true));
+				Object.defineProperty(anchor, 'jsbAnchorPrepared', {
+					value: Utilities.Token.create('AnchorPrepared', true)
+				});
 
 				if (Special.isEnabled('simple_referrer')) {
 					if (href && href.length && href.charAt(0) !== '#')
@@ -785,12 +796,12 @@ var Element = {
 			if (!id || !id.length)
 				frame.setAttribute('id', (id = 'frame-' + Utilities.Token.generate()));
 
-			var idToken = frame.getAttribute('data-jsbFrameProcessed');
-
-			if (Utilities.Token.valid(idToken, id))
+			if (Utilities.Token.valid(frame.jsbFrameProcessed, id))
 				return;
 
-			frame.setAttribute('data-jsbFrameProcessed', Utilities.Token.create(id, true));
+			Object.defineProperty(frame, 'jsbFrameProcessed', {
+				value: Utilities.Token.create(id, true)
+			});
 
 			Utilities.Timer.timeout('FrameURLRequestFailed' + frame.id, function (frame) {
 				if (BLOCKED_ELEMENTS._contains(frame))
@@ -810,7 +821,9 @@ var Element = {
 
 			try {
 				if (frame && frame.contentWindow && frame.contentWindow.document && frame.contentWindow.document.readyState === 'complete') {
-					frame.setAttribute('jsbShouldSkipLoadEventURLRequest', Utilities.Token.create('ShouldSkipLoadEventURLRequest'));
+					Object.defineProperty(frame, 'jsbShouldSkipLoadEventURLRequest', {
+						value: Utilities.Token.create('ShouldSkipLoadEventURLRequest')
+					});
 
 					Element.requestFrameURL(frame, undefined, true);
 				}
@@ -876,7 +889,7 @@ var Resource = {
 						return true;
 				}
 
-				if (Utilities.Token.valid(element.getAttribute('data-jsbBeforeLoadProcessed'), source))
+				if (Utilities.Token.valid(element.jsbBeforeLoadProcessed, source))
 					return true;
 
 				if (Element.shouldIgnore(element))
@@ -913,7 +926,9 @@ var Resource = {
 				else if (nodeName === 'SCRIPT')
 					Utilities.Timer.resetTimeout('injectStylesheet', 400);
 
-				element.setAttribute('data-jsbBeforeLoadProcessed', Utilities.Token.create(source));
+				Object.defineProperty(element, 'jsbBeforeLoadProcessed', {
+					value: Utilities.Token.create(source)
+				});
 
 				Utilities.setImmediateTimeout(Element.afterCanLoad, [meta, element, excludeFromPage, canLoad, source, event, sourceHost, kind]);
 

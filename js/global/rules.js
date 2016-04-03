@@ -25,7 +25,7 @@ var ACTION = {
 	AWAIT_XHR_PROMPT: -10,
 	AWAIT_XHR_PROMPT_ALLOWED: -11,
 	AUTO_ALLOW_DOCUMENT_FAILURE: -13,
-	AUTO_INJECT_SCRIPT_BLOCKER: -14,
+	AUTO_INJECT_PAGE_BLOCKER: -14,
 	AUTO_BLOCK_ON_UNBLOCKABLE_FRAME: -16,
 	KIND_DISABLED: -85,
 	UNBLOCKABLE: -87
@@ -147,7 +147,9 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 	rules.set(rule.rule, {
 		regexp: isRegExp,
 		action: action,
-		meta: rule.meta
+		meta: rule.meta,
+		thirdParty: rule.thirdParty,
+		exceptionHosts: rule.exceptionHosts,
 	});
 
 	var added = {
@@ -770,10 +772,12 @@ var Rules = {
 	},
 
 	SourceMatcher: (function () {
-		function SourceMatcher (lowerSource, source) {
+		function SourceMatcher (lowerSource, source, pageHost, pageDomain) {
 			this.source = source;
 			this.lowerSource = lowerSource;
 			this.sourceHost = Utilities.URL.extractHost(source);
+			this.pageHost = pageHost;
+			this.pageDomain = pageDomain;
 
 			if (this.sourceHost.length) {
 				this.sourceProtocol = Utilities.URL.protocol(source);
@@ -781,7 +785,13 @@ var Rules = {
 			}
 		};
 
-		SourceMatcher.prototype.testRule = function (rule, regexp) {
+		SourceMatcher.prototype.testRule = function (rule, regexp, thirdParty, exceptionHosts) {
+			if (thirdParty && this.pageDomain === Utilities.URL.domain(this.lowerSource))
+				return -1;
+
+			if (exceptionHosts && exceptionHosts._contains(this.pageHost))
+				return -1;
+
 			if (regexp) {
 				var regExp = Rules.__regExpCache[rule] || (Rules.__regExpCache[rule] = new RegExp(rule.toLowerCase(), 'i'));
 

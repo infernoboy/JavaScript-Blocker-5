@@ -190,7 +190,7 @@ var UserScript = {
 				updateMeta = self.parse(update).parsed;
 
 				if (currentMeta.trueNamespace === updateMeta.trueNamespace) {
-					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && this.canBeUpdated(updateMeta, customDownloadURL))) {
+					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && self.canBeUpdated(updateMeta, customDownloadURL))) {
 						self.download(downloadURL === updateURL ? update : downloadURL, true, downloadURL === updateURL).done(function (script) {
 							self.add(script, true);
 

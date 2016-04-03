@@ -125,13 +125,12 @@ FilterList.prototype.process = function (list) {
 				if (line[0] === '!' || line[0] === '[')
 					return; // Line is a comment or determines which version of AdBlock is required.
 
-				if (line[0] === '|' && line[1] !== '|' && line._contains('third-party'))
-					return;
-
 				var dollar = line.indexOf('$'),
 						subLine = line.substr(0, ~dollar ? dollar : line.length),
 						argCheck = line.split(/\$/),
 						useKind = false,
+						args = [],
+						exceptionHosts = {},
 						domains = ['*'];
 
 				var rule = subLine.replace(/\//g, '\\/')
@@ -165,7 +164,7 @@ FilterList.prototype.process = function (list) {
 				rule = rule.replace(/\.\*\.\*/g, '.*');
 
 				if (argCheck[1]) {
-					var args = argCheck[1].split(',');
+					args = argCheck[1].split(',');
 
 					for (var j = 0; j < args.length; j++) {
 						if (args[j]._startsWith('domain='))
@@ -184,9 +183,33 @@ FilterList.prototype.process = function (list) {
 				if (exclusivelyExceptions)
 					domains.push('*');
 
+				var topDomain,
+						domainSubstr;
+
+				var skipDomains = [];
+
 				for (var g = 0; g < domains.length; g++) {
 					if (domains[g]._startsWith('.~')) {
-						domains[g] = '.' + domains[g].substr(2);
+						domainSubstr = domains[g].substr(2);
+
+						var topDomain = Utilities.URL.domain('jsb://' + domainSubstr);
+
+						if (topDomain !== domainSubstr && domains._contains('.' + topDomain)) {
+							skipDomains.push(domainSubstr);
+
+							exceptionHosts._getWithDefault(topDomain, []).push(domainSubstr);
+						}
+					}
+				}
+
+				for (var g = 0; g < domains.length; g++) {
+					if (domains[g]._startsWith('.~')) {
+						domainSubstr = domains[g].substr(2);
+
+						if (skipDomains._contains(domainSubstr))
+							continue;
+
+						domains[g] = '.' + domainSubstr;
 
 						addType = 'addNotDomain';
 					} else
@@ -196,12 +219,16 @@ FilterList.prototype.process = function (list) {
 						for (var h = 0; h < useKind.length; h++)
 							self.temporaryRules[addType](useKind[h], domains[g], {
 								rule: rule,
-								action: action
+								action: action,
+								thirdParty: args._contains('third-party'),
+								exceptionHosts: exceptionHosts[domains[g].substr(1)]
 							});
 					else
 						self.temporaryRules[addType]('*', domains[g], {
 							rule: rule,
-							action: action
+							action: action,
+							thirdParty: args._contains('third-party'),
+							exceptionHosts: exceptionHosts[domains[g].substr(1)]
 						});
 				}
 			}, [this, $.trim(lines[i]), i]);

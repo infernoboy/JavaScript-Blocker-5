@@ -106,7 +106,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 		&::selection,
 		*::selection {
-			background: desaturate(@yosemiteBlue, 20%) @important;
+			background: desaturate(@baseColor, 20%) @important;
 			color: #fff @important;
 			text-shadow: none @important;
 		}
@@ -234,7 +234,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					inset -1px 0 0 @focusShadow @important;
 			}
 
-
 			&[type="text"],
 			&[type="password"],
 			&[type="search"] {
@@ -347,7 +346,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			-webkit-appearance: none @important;
 			border-radius: 4px @important;
 			padding-left: 0;
-			border-bottom-color: darken(rgb(200, 200, 200), @darknessLevel);
 
 			&::-webkit-search-cancel-button {
 				-webkit-appearance: none @important;

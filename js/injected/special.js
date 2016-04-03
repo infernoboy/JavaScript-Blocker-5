@@ -177,7 +177,7 @@ var Special = {
 		});
 
 		if (Page.info.frameBlocked)
-			this.enabled.inline_script_execution = {
+			this.enabled.page_blocker = {
 				enabled: true,
 				action: -14
 			};

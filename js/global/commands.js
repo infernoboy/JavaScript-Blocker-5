@@ -150,7 +150,7 @@ function Command (command, data, event) {
 
 		openTabWithURL: function (url) {
 			var tab = Tabs.create(url);
-			
+
 			this.message = Tabs.array().indexOf(tab);
 		},
 
@@ -193,6 +193,10 @@ function Command (command, data, event) {
 
 				this.message = resource.canLoad();
 			}
+		},
+
+		refreshPopover: function (info) {
+			Page.requestPageFromActive();
 		},
 
 		globalSetting: function (setting) {

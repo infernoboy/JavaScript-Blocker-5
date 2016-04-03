@@ -5,6 +5,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 var Locker = {
+	__temporaryUnlock: null,
+
 	event: new EventListener,
 
 	init: function () {
@@ -23,7 +25,7 @@ var Locker = {
 	},
 
 	isLocked: function (key) {
-		return Locker.isEnabled() && (Locker.isAlwaysLocked(key) || Settings.getItem('locker', key));
+		return Locker.isEnabled() && (Locker.__temporaryUnlock !== key && (Locker.isAlwaysLocked(key) || Settings.getItem('locker', key)));
 	},
 
 	lock: function (key, value) {
@@ -33,6 +35,13 @@ var Locker = {
 
 		if (typeof alwaysLocked === 'undefined')
 			Settings.setItem('locker', newValue, key);
+		else {
+			Locker.__temporaryUnlock = key;
+
+			Utilities.setImmediateTimeout(function () {
+				Locker.__temporaryUnlock = null;
+			});
+		}
 
 		if (isLocked !== value)
 			Locker.event.trigger(value ? 'locked' : 'unlocked', {

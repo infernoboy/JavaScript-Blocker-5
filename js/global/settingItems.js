@@ -63,6 +63,12 @@ Settings.settings = {
 			default: 0
 		}
 	}, {
+		setting: 'lastUserScriptUpdateCheck',
+		props: {
+			type: 'number',
+			default: 0
+		}
+	}, {
 		setting: 'settingCurrentView',
 		props: {
 			type: 'string',
@@ -504,15 +510,17 @@ Settings.settings = {
 			}
 		},
 		settings: [{
-			setting: 'setLockerPassword',
-			props: {
-				type: 'button',
-				onClick: function () {
-					UI.Locker.showSetPasswordPrompt();
+			asRow: [{
+				setting: 'setLockerPassword',
+				props: {
+					type: 'stand-alone-button',
+					onClick: function () {
+						UI.Locker.showSetPasswordPrompt();
 
-					Locker.event.removeCustomEventListener('passwordSet');
+						Locker.event.removeCustomEventListener('passwordSet');
+					}
 				}
-			}
+			}]
 		}, {
 			divider: true, //===================================================================================
 			classes: 'transparent short'
@@ -1196,41 +1204,44 @@ Settings.settings = {
 			return [(new Date(lastUpdate || Date.now())).toLocaleString(), nextUpdateHuman.days, nextUpdateHuman.hours, nextUpdateHuman.minutes];
 		}
 	}, {
-		setting: 'updateFilterLists',
-		props: {
-			type: 'button',
-			validate: {
-				onFail: 'updateFilterLists.validate.fail',
-				test: function () {
-					var lastUpdate = Settings.getItem('FilterListLastUpdate'),
-							fiveMinutes = TIME.ONE.MINUTE * 5;
+		asRow: [{
+			setting: 'updateFilterLists',
+			props: {
+				type: 'stand-alone-button',
+				validate: {
+					onFail: 'updateFilterLists.validate.fail',
+					test: function () {
+						var lastUpdate = Settings.getItem('FilterListLastUpdate');
 
-					return Date.now() > lastUpdate + fiveMinutes;
+						return Date.now() > lastUpdate + (TIME.ONE.MINUTE * 5);
+					}
+				},
+				onClick: function (button) {
+					FilterList.cancelUpdate();
+
+					FilterList.fetch();
+
+					button.disabled = true;
 				}
 			},
-			onClick: function (button) {
-				FilterList.cancelUpdate();
-
-				FilterList.fetch();
-
-				button.disabled = true;
-			}
-		},
+		}]
 	}, {
 		divider: true //===================================================================================
 	}, {
-		setting: 'importRulesFromFour',
-		props: {
-			type: 'button',
-			onClick: function (button) {
-				var offset = $(button).offset(),
-						poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'import-rules-from-four');
+		asRow: [{
+			setting: 'importRulesFromFour',
+			props: {
+				type: 'stand-alone-button',
+				onClick: function (button) {
+					var offset = $(button).offset(),
+							poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'import-rules-from-four');
 
-				poppy
-					.setContent(Template.create('poppy.settings', 'import-rules-from-four'))
-					.show();
+					poppy
+						.setContent(Template.create('poppy.settings', 'import-rules-from-four'))
+						.show();
+				}
 			}
-		}
+		}]
 	}],
 
 	// Snapshot settings
@@ -1272,17 +1283,18 @@ Settings.settings = {
 				}
 			}
 		}, {
-			divider: true, //===================================================================================
-			classes: 'transparent short'
+			divider: true //===================================================================================
 		}, {
-			setting: 'clearSnapshots',
-			props: {
-				type: 'button',
-				classes: 'double-click',
-				onClick: function () {
-					Rules.list.user.rules.snapshot.snapshots.clear();
+			asRow: [{
+				setting: 'clearSnapshots',
+				props: {
+					type: 'stand-alone-button',
+					classes: 'double-click',
+					onClick: function () {
+						Rules.list.user.rules.snapshot.snapshots.clear();
+					}
 				}
-			}
+			}]
 		}]
 	}],
 
@@ -1290,7 +1302,7 @@ Settings.settings = {
 	userScripts: [{
 		header: 'extraFeatures',
 	}, {
-		description: 'newUserScript.description',
+		description: 'userScripts.description',
 	}, {
 		when: {
 			settings: {
@@ -1303,34 +1315,61 @@ Settings.settings = {
 			}
 		},
 		settings: [{
-			setting: 'newUserScript',
-			props: {
-				type: 'button',
-				onClick: function (button) {
-					var scriptName;
+			divider: true //===================================================================================
+		}, {
+			asRow: [{
+				setting: 'newUserScript',
+				props: {
+					type: 'stand-alone-button',
+					onClick: function (button) {
+						var scriptName;
 
-					var scriptNameTemplate = 'My User Script {0}',
-							scriptNamespace = Settings.getItem('installID'),
-							scriptIndex = 0;
+						var scriptNameTemplate = 'My User Script {0}',
+								scriptNamespace = Settings.getItem('installID'),
+								scriptIndex = 0;
 
-					while (UserScript.scripts.keyExist((scriptName = scriptNameTemplate._format([++scriptIndex])) + ':' + scriptNamespace)) {}
+						while (UserScript.scripts.keyExist((scriptName = scriptNameTemplate._format([++scriptIndex])) + ':' + scriptNamespace)) {}
 
-					var defaultUserScript =
-						"// ==UserScript==\n" +
-						"// @name " + scriptName + "\n" +
-						"// @namespace " + scriptNamespace + "\n" +
-						"// @version 0.1\n" +
-						"// @downloadURL \n" +
-						"// @domain *\n" +
-						"// ==/UserScript==\n\n\n";
+						var defaultUserScript =
+							"// ==UserScript==\n" +
+							"// @name " + scriptName + "\n" +
+							"// @namespace " + scriptNamespace + "\n" +
+							"// @version 0.1\n" +
+							"// @downloadURL \n" +
+							"// @domain *\n" +
+							"// ==/UserScript==\n\n\n";
 
-					UI.event.addCustomEventListener('customSettingViewCreated', function (event) {
-						$('.user-script-content', UI.Settings.userScriptEdit).val(defaultUserScript).focus()[0].selectionStart = defaultUserScript.length;
-					}, true);
+						UI.event.addCustomEventListener('customSettingViewCreated', function (event) {
+							$('.user-script-content', UI.Settings.userScriptEdit).val(defaultUserScript).focus()[0].selectionStart = defaultUserScript.length;
+						}, true);
 
-					UI.Settings.editUserScript('');
+						UI.Settings.editUserScript('');
+					}
 				}
-			}
+			}, {
+				setting: 'updateUserScriptsNow',
+				props: {
+					type: 'stand-alone-button',
+					validate: {
+						onFail: 'updateUserScriptsNow.validate.fail',
+						test: function () {
+							var lastUpdate = Settings.getItem('lastUserScriptUpdateCheck');
+
+							return Date.now() > lastUpdate + (TIME.ONE.MINUTE * 5);
+						}
+					},
+					onClick: function (button) {
+						button.disabled = true;
+
+						var userScripts = UserScript.scripts.keys();
+
+						for (var i = userScripts.length; i--;)
+							UserScript.update(userScripts[i]);
+
+						Settings.setItem('lastUserScriptUpdateCheck', Date.now());
+					}
+				}
+			}]
 		}, {
 			divider: true //===================================================================================
 		}, {
@@ -1474,6 +1513,14 @@ Settings.settings = {
 						showSynchronousXHRNotification: Settings.getItem('showSynchronousXHRNotification')
 					};
 				}
+			}
+		}, {
+			setting: 'enabledSpecials',
+			props: {
+				type: 'boolean',
+				storeKey: 'page_blocker',
+				isExtra: true,
+				default: true
 			}
 		}, {
 			setting: 'enabledSpecials',

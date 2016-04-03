@@ -181,3 +181,30 @@ Update.versions[160219] = {
 		return true;
 	}
 };
+
+// === 5.0.18 ===
+Update.versions[160315] = {
+	blocking: false,
+
+	update: function (updateVersion) {
+		FilterList.fetch();
+
+		return true;
+	}
+};
+
+
+// === 5.0.19 ===
+Update.versions[160320] = {
+	blocking: false,
+
+	update: function (updateVersion) {
+		Resource.canLoadCache.clear();
+
+		Predefined();
+		
+		FilterList.fetch();
+
+		return true;
+	}
+};

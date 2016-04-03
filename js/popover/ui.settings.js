@@ -415,7 +415,8 @@ UI.Settings = {
 				settingElement,
 				listSetting,
 				shouldRender,
-				subContainer;
+				subContainer,
+				settingRow;
 
 		var allSettings = Settings.all();
 
@@ -428,6 +429,14 @@ UI.Settings = {
 				Utilities.setImmediateTimeout(function (container) {
 					UI.event.trigger('customSettingViewCreated', container);
 				}, [container]);
+			}
+
+			else if (setting.asRow) {
+				settingRow = Template.create('settings', 'setting-section-row');
+
+				this.createList($('ul', settingRow), setting.asRow);
+
+				container.append(settingRow);
 			}
 
 			else if (setting.divider)

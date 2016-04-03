@@ -164,7 +164,7 @@ var Update = {
 		return versions;
 	},
 
-	updatedToVersion: function (version) {
+	updatedToVersion: function (version) {		
  		version = parseFloat(version);
 
  		if (version <= Update.installedBundle)

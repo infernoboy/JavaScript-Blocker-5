@@ -349,7 +349,8 @@ var UI = {
 			speedMultiplier: variables.speedMultiplier || window.globalSetting.speedMultiplier,
 			darkMode: variables.darkMode || Settings.getItem('darkMode'),
 			darknessLevel: variables.darknessLevel || Settings.getItem('darkMode') ? 84 : 0,
-			baseColor: variables.baseColor || Settings.getItem('baseColor')
+			baseColor: variables.baseColor || Settings.getItem('baseColor'),
+			focusShadow: 'lighten(' + (variables.baseColor || Settings.getItem('baseColor')) + ', 30%)'
 		});
 	},
 

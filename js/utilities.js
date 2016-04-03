@@ -779,6 +779,8 @@ var Utilities = {
 		},
 
 		extractHost: function (url) {
+			this.__anchor.href = url;
+
 			var url = (typeof url !== 'string') ? Utilities.Page.getCurrentLocation() : url;
 
 			if (/^about:/.test(url))
@@ -792,8 +794,6 @@ var Utilities = {
 
 			if (/^blob:/.test(url))
 				return 'Blob URI';
-
-			this.__anchor.href = url;
 
 			return this.__anchor.host;
 		},
@@ -919,6 +919,10 @@ var Utilities = {
 			this.__anchor.href = url;
 
 			return this.__anchor.pathname;
+		},
+
+		domain: function (url) {
+			return Utilities.URL.hostParts(Utilities.URL.extractHost(url)).reverse()[0];
 		}
 	}
 };
@@ -928,39 +932,70 @@ var Utilities = {
 
 var LOG_HISTORY_SIZE = 20;
 
+function _cleanErrorStack(stackArray) {
+	return stackArray.map(function (stackLine) {
+		return stackLine.replace(ExtensionURL(), '/');
+	});
+}
+
+function _createConsoleFormat(messages) {
+	var format = '',
+			messages = Utilities.Page.isGlobal ? messages : ['(JSB)'].concat(messages);
+
+	messages.unshift((new Date).toLocaleTimeString() + ' - ');
+
+	for (var i = 0; i < messages.length; i++)
+		format += ('%' + (typeof messages[i] === 'object' ? 'o' : (typeof messages[i] === 'number' ? 'f' : 's'))) + ' ';
+
+	messages.unshift(format);
+	return messages;
+}
+
 function Log () {
-	var args = Utilities.makeArray(arguments),
-			logMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
+	var stack = Error().stack.split("\n");
 
-	logMessages.unshift((new Date).toLocaleTimeString());
+	stack.shift();
 
-	Log.history.unshift(logMessages.join(' '));
+	var cleanErrorStack = _cleanErrorStack(stack).join("\n"),
+			messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
+
+	Log.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack.replace(/\n/g, "<br>"));
 
 	Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
 
 	if (window.localConsole)
-		window.localConsole.log.apply(window.localConsole, logMessages);
+		window.localConsole.log.apply(window.localConsole, messages);
 
-	console.log.apply(console, logMessages);
+	console.log.apply(console, messages);
+
+	console.groupCollapsed('Stack');
+	console.log(cleanErrorStack);
+	console.groupEnd();
 };
 
 Log.history = [];
 
 function LogDebug () {
 	if (globalSetting.debugMode) {
-		var args = Utilities.makeArray(arguments),
-				debugMessages = Utilities.Page.isGlobal ? args : ['(JSB)'].concat(args);
+		var stack = Error().stack.split("\n");
 
-		debugMessages.unshift((new Date).toLocaleTimeString());
+		stack.shift();
 
-		LogDebug.history.unshift(debugMessages.join(' '));
+		var cleanErrorStack = _cleanErrorStack(stack).join("\n"),
+				messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
+
+		LogDebug.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack.replace(/\n/g, "<br>"));
 
 		LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
 
 		if (window.localConsole)
-			window.localConsole.debug.apply(window.localConsole, debugMessages);
+			window.localConsole.debug.apply(window.localConsole, messages);
 
-		console.debug.apply(console, debugMessages);
+		console.debug.apply(console, messages);
+
+		console.groupCollapsed('Stack');
+		console.log(cleanErrorStack);
+		console.groupEnd();
 
 		if (Utilities.Page.isWebpage)
 			for (var i = 0; i < args.length; i++)

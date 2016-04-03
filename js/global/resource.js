@@ -27,10 +27,12 @@ function Resource (resource) {
 	this.pageLocation = resource.pageLocation;
 	this.fullLocation = resource.pageLocation;
 	this.pageHost = Utilities.URL.extractHost(this.pageLocation);
+	this.pageDomain = Utilities.URL.domain(this.pageLocation);
 	this.source = resource.source;
 	this.baseSource = this.source;
 	this.fullSource = this.source;
 	this.sourceHost = kindShouldBadge ? Utilities.URL.extractHost(this.source) : '';
+	this.sourceDomain = Utilities.URL.domain(this.source);
 	this.action = resource.action;
 	this.unblockable = resource.unblockable;
 	this.meta = resource.meta;
@@ -191,12 +193,13 @@ Resource.prototype.rulesForLocation = function (isAllowed, onlyRulesOfType, useH
 Resource.prototype.rulesForResource = function (isAllowed, excludeLists, includeLists, onlyRulesOfType) {
 	var matchedList,
 			domainRules,
-			rule;
+			rule,
+			testedRule;
 
 	excludeLists = ['firstVisit'] || excludeLists;
 
 	var self = this,
-			matcher = new Rules.SourceMatcher(self.lowerSource, self.source),
+			matcher = new Rules.SourceMatcher(this.lowerSource, this.source, this.pageHost, this.pageDomain),
 			matchedRules = {},
 			checkAction = typeof isAllowed === 'boolean',
 			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
@@ -209,7 +212,9 @@ Resource.prototype.rulesForResource = function (isAllowed, excludeLists, include
 			if (checkAction && !!(rules.data[rule].value.action % 2) !== isAllowed)
 				continue;
 
-			if (matcher.testRule(rule, rules.data[rule].value.regexp)) {
+			testedRule = matcher.testRule(rule, rules.data[rule].value.regexp, rules.data[rule].value.thirdParty, rules.data[rule].value.exceptionHosts)
+
+			if (testedRule > -1 && testedRule) {
 				domainRules = matchedList
 					._getWithDefault(ruleKind, {})
 					._getWithDefault(ruleType, {})
@@ -219,6 +224,8 @@ Resource.prototype.rulesForResource = function (isAllowed, excludeLists, include
 					action: rules.data[rule].value.action,
 					meta: rules.data[rule].value.meta,
 					regexp: rules.data[rule].value.regexp,
+					thirdParty: rules.data[rule].value.thirdParty,
+					exceptionHosts: rules.data[rule].value.exceptionHosts,
 					ruleList: ruleList
 				};
 			}
@@ -275,6 +282,9 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 
 	excludeLists = excludeLists || [];
 
+	if (this.kind === 'disable')
+		excludeLists = excludeLists.concat(Special.__excludeLists);
+
 	if (this.unblockable) {
 		canLoad.action = ACTION.UNBLOCKBABLE;
 
@@ -314,10 +324,12 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 			longRegExps,
 			i,
 			b,
-			action;
+			party,
+			action,
+			testedRule;
 
 	var self = this,
-			matcher = new Rules.SourceMatcher(self.lowerSource, self.source),
+			matcher = new Rules.SourceMatcher(this.lowerSource, this.source, this.pageHost, this.pageDomain),
 			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
 			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
 
@@ -331,19 +343,27 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 		}
 
 		if (longAllowed && longRegExps) {
-			actionLoop:
-			for (action in longRegExps.data) {
-				if ((ignoreBlacklist && action == ACTION.BLACKLIST) || (ignoreWhitelist && action == ACTION.WHITELIST))
+			for (party in longRegExps.data) {
+				if (party === 'third-party' && self.sourceDomain === self.pageDomain)
 					continue;
 
-				for (i = 0, b = longRegExps.data[action].value.regExps.length; i < b; i++) {
-					if (longRegExps.data[action].value.regExps[i].test(self.lowerSource)) {
-						canLoad = longRegExps.data[action].value.canLoad;
+				actionLoop:
+				for (action in longRegExps.data[party].value.data) {
+					if ((ignoreBlacklist && action == ACTION.BLACKLIST) || (ignoreWhitelist && action == ACTION.WHITELIST))
+						continue;
 
-						if (action % 2)
-							break actionLoop;
-						else
-							continue actionLoop;
+					if (longRegExps.data[party].value.data[action].value.exceptionHosts && longRegExps.data[party].value.data[action].value.exceptionHosts._contains(self.pageHost))
+						continue;
+
+					for (i = 0, b = longRegExps.data[party].value.data[action].value.regExps.length; i < b; i++) {
+						if (longRegExps.data[party].value.data[action].value.regExps[i].test(self.lowerSource)) {
+							canLoad = longRegExps.data[party].value.data[action].value.canLoad;
+
+							if (action % 2)
+								break actionLoop;
+							else
+								continue actionLoop;
+						}
 					}
 				}
 			}
@@ -353,53 +373,73 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 
 			for (rule in rules.data) {
 				if (longAllowed)
-					longRules._getWithDefault(rules.data[rule].value.action, []).push(rule.toLowerCase());
-				else if (matcher.testRule(rule, rules.data[rule].value.regexp))
-					canLoad = {
-						pageRule: pageRule,
-						action: rules.data[rule].value.action,
-						list: ruleListName,
-						detail: !detailed ? undefined : {
-							ruleKind: ruleKind,
-							ruleType: ruleType,
-							domain: domain,
-							rule: rule,
-							ruleList: ruleList
-						}
-					};
+					longRules
+						._getWithDefault(rules.data[rule].value.thirdParty ? 'third-party' : 'first-party', {})
+						._getWithDefault(rules.data[rule].value.action, []).push({
+							rule: rule.toLowerCase(),
+							exceptionHosts: rules.data[rule].value.exceptionHosts
+						});
+				else {
+					testedRule = matcher.testRule(rule, rules.data[rule].value.regexp, rules.data[rule].value.thirdParty, rules.data[rule].value.exceptionHosts);
+
+					if (testedRule > -1 && testedRule)
+						canLoad = {
+							pageRule: pageRule,
+							action: rules.data[rule].value.action,
+							list: ruleListName,
+							detail: !detailed ? undefined : {
+								ruleKind: ruleKind,
+								ruleType: ruleType,
+								domain: domain,
+								rule: rule,
+								ruleList: ruleList
+							}
+						};
+				}
 			}
 
 			if (longAllowed) {
-				actionLoop:
-				for (action in longRules) {
-					longRegExps = longRules[action]._chunk(740).map(function (chunk) {
-						return new RegExp(chunk.join('|'));
-					});
+				for (party in longRules) {
+					actionLoop:
+					for (action in longRules[party]) {
+						longRegExps = longRules[party][action]._chunk(3000).map(function (chunk) {
+							return new RegExp(chunk.map(function (piece) {
+								return piece.rule;
+							}).join('|'));
+						});
 
-					longStore.getStore(domain).set(action, {
-						regExps: longRegExps,
-						canLoad: {
-							pageRule: pageRule,
-							action: parseInt(action, 10),
-							list: ruleListName
-						}
-					});
-
-					if ((ignoreBlacklist && action == ACTION.BLACKLIST) || (ignoreWhitelist && action == ACTION.WHITELIST))
-						continue;
-
-					for (i = 0, b = longRegExps.length; i < b; i++) {
-						if (longRegExps[i].test(self.lowerSource)) {
-							canLoad = {
+						longStore.getStore(domain).getStore(party).set(action, {
+							regExps: longRegExps,
+							exceptionHosts: longRules[party][action][0].exceptionHosts,
+							canLoad: {
 								pageRule: pageRule,
 								action: parseInt(action, 10),
 								list: ruleListName
-							};
+							}
+						});
 
-							if (action % 2)
-								break actionLoop;
-							else
-								continue actionLoop;
+						if (party === 'third-party' && self.sourceDomain === self.pageDomain)
+							continue;
+
+						if (longRules[party][action][0].exceptionHosts && longRules[party][action][0].exceptionHosts._contains(self.pageHost))
+							continue;
+
+						if ((ignoreBlacklist && action == ACTION.BLACKLIST) || (ignoreWhitelist && action == ACTION.WHITELIST))
+							continue;
+
+						for (i = 0, b = longRegExps.length; i < b; i++) {
+							if (longRegExps[i].test(self.lowerSource)) {
+								canLoad = {
+									pageRule: pageRule,
+									action: parseInt(action, 10),
+									list: ruleListName
+								};
+
+								if (action % 2)
+									break actionLoop;
+								else
+									continue actionLoop;
+							}
 						}
 					}
 				}

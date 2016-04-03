@@ -306,10 +306,10 @@ var Command = function (type, event) {
 				}
 			}
 
-			var previousURL = frame ? frame.getAttribute('data-jsbFrameURL') : 'about:blank',
+			var previousURL = frame ? frame.jsbFrameURL : 'about:blank',
 					previousURLTokenString = previousURL + 'FrameURL';
 
-			if (frame && !Utilities.Token.valid(frame.getAttribute('data-jsbFrameURLToken'), previousURLTokenString))
+			if (frame && !Utilities.Token.valid(frame.jsbFrameURLToken, previousURLTokenString))
 				return;
 
 			if (previousURL !== message.url)
@@ -328,8 +328,18 @@ var Command = function (type, event) {
 			if (frame) {
 				Utilities.Token.expire(previousURLTokenString);
 
-				frame.setAttribute('data-jsbFrameURL', message.url);
-				frame.setAttribute('data-jsbFrameURLToken', Utilities.Token.create(message.url + 'FrameURL', true));
+				Object.defineProperties(frame, {
+					jsbFrameURL: {
+						configurable: true,
+						writable: true,
+						value: message.url
+					},
+					jsbFrameURLToken: {
+						configurable: true,
+						writable: true,
+						value: Utilities.Token.create(message.url + 'FrameURL', true)
+					}
+				});
 			}
 		},
 
@@ -858,6 +868,12 @@ var Command = function (type, event) {
 				callbackID: detail.callbackID,
 				result: GlobalCommand('installUserScriptFromURL', detail.meta.url)
 			};
+		},
+
+		refreshPopover: function (detail) {
+			Page.send();
+			
+			Command.globalRelay(detail);
 		},
 
 		template: {

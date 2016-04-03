@@ -7,6 +7,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 function Predefined () {
 	Rules.list['$predefined'].clear();
 
+	Rules.list['$predefined'].addDomain('special', '*', {
+		rule: 'page_blocker',
+		action: 7
+	});
+
 	if (Settings.getItem('ignorePredefined'))
 		return;
 	
@@ -43,9 +48,6 @@ function Predefined () {
 			'.youtube.com': ['ytimg\\.com', 'clients[0-9]+\\.google\\.com'],
 			'.readability.com': ['cloudfront\\.net'],
 			'.icloud.com': ['gstatic\\.com'],
-			'.monster.com': ['monster\\.com'],
-			'.ensighten.com': ['ensighten\\.com'],
-			'.gorillanation.com': ['gorillanation\\.com'],
 			'.digg.com': ['digg\\.com']
 		},
 		frame: {
@@ -216,6 +218,7 @@ function Predefined () {
 			for (i = 0; i < blacklistDomain[kind][domain].length; i++)
 				Rules.list['$predefined'].addDomain(kind, domain, {
 					rule: '^https?:\\/\\/([^\\/]+\.)?' + blacklistDomain[kind][domain][i] + '\\/.*$',
-					action: 4
+					action: 4,
+					thirdParty: true
 				});
 };

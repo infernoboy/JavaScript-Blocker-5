@@ -391,6 +391,9 @@ var Settings = {
 
 			if (settings[i].props && settings[i].props.subSettings)
 				this.createMap(settings[i].props.subSettings, settings[i].when);
+
+			if (settings[i].asRow)
+				this.createMap(settings[i].asRow);
 		}
 
 		return Settings.map;
