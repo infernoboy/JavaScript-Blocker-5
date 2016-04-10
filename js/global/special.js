@@ -45,7 +45,8 @@ var Special = {
 								enabled[special] = specials[special];
 							else
 								enabled[special].enabled = false;
-						}
+						} else if (!isUserScript)
+							enabled[special].enabled = true
 
 						enabled[special].action = rules.data[rule].value.action;
 
@@ -66,16 +67,17 @@ var Special = {
 		if (this.__enabled)
 			return this.__enabled._clone(true);
 
-		var specials = Settings.getItem('enabledSpecials');
+		var specials = Settings.getItem('enabledSpecials'),
+				allowByDefault = ['page_blocker'];
 
 		this.__enabled = {};
 
 		for (var special in specials)
 			if (specials[special] !== false)
 				this.__enabled[special] = {
-					enabled: true,
+					enabled: !allowByDefault._contains(special),
 					value: specials[special],
-					action: ACTION.BLOCK_WITHOUT_RULE
+					action: allowByDefault._contains(special) ? ACTION.ALLOW_WITHOUT_RULE : ACTION.BLOCK_WITHOUT_RULE
 				};
 
 		return this.enabled;

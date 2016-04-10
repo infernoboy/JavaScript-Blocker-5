@@ -27,12 +27,12 @@ var UserScript = {
 
 					LogDebug('caught an unsafe-eval error from within an injected script - ' + attributes.meta.name);
 				} else
-					LogError(['unable to inject user script', attributes.meta.name], error);
+					LogError('unable to inject user script - ' + attributes.meta.name, error);
 			}
 		}
 
 		if (typeof attributes.script !== 'function' && !isSafe)
-			return LogError(['user script did not transform into a function', attributes.meta.name]);
+			return LogError(Error('user script did not transform into a function - ' + attributes.meta.name));
 
 		if (script.requirements) {
 			for (var indexURL in script.requirements)
@@ -44,6 +44,10 @@ var UserScript = {
 		var userScriptSetup = new DeepInject(null, function () {
 			var unsafeWindow = window,
 					GM_info = JSB.scriptInfo;
+
+			Object.defineProperty(window, 'unsafeWindow', {
+				value: window
+			});
 		}, true);
 
 		userScript.anonymize();

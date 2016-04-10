@@ -374,7 +374,7 @@ Rule.prototype.addMany = function (kinds) {
 
 	for (kind in kinds) {
 		if (!Rules.kindSupported(kind)) {
-			LogError([Rules.ERROR.KIND.NOT_SUPPORTED, kind]);
+			LogError(Error(Rules.ERROR.KIND.NOT_SUPPORTED + ' - ' + kind));
 
 			continue;
 		}
@@ -383,7 +383,7 @@ Rule.prototype.addMany = function (kinds) {
 
 		for (type in kinds[kind]) {
 			if (!types.hasOwnProperty(type)) {
-				LogError([Rules.ERROR.TYPE.NOT_SUPPORTED, type]);
+				LogError(Error(Rules.ERROR.TYPE.NOT_SUPPORTED + ' - ' + type));
 
 				continue;
 			}

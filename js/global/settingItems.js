@@ -51,6 +51,12 @@ Settings.settings = {
 			}
 		}
 	}, {
+		setting: 'feedbackEmail',
+		props: {
+			type: 'string',
+			default: ''
+		}
+	}, {
 		setting: 'isDisabled',
 		props: {
 			type: 'boolean',

@@ -85,7 +85,7 @@ Resource.__many = function (action, resources, domain, rule, framed, temporary) 
 
 	for (var i = 0; i < resources.length; i++) {
 		if (!(resources[i] instanceof Resource)) {
-			LogError(resources[i] + ' is not an instance of Resource');
+			LogError(Error(resources[i] + ' is not an instance of Resource'));
 
 			continue;
 		}

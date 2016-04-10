@@ -194,7 +194,8 @@ var Utilities = {
 		while (bVersionPieces.length < 6)
 			bVersionPieces.push(0);
 
-		var aVersion = aVersionPieces.join(''), bVersion = bVersionPieces.join('');
+		var aVersion = aVersionPieces.join(''),
+				bVersion = bVersionPieces.join('');
 
 		if (aVersion.charAt(0) === '0' || bVersion.charAt(0) === '0') {
 			aVersion = '99999' + aVersion;
@@ -939,10 +940,12 @@ function _cleanErrorStack(stackArray) {
 }
 
 function _createConsoleFormat(messages) {
-	var format = '',
-			messages = Utilities.Page.isGlobal ? messages : ['(JSB)'].concat(messages);
+	var format = '';
 
 	messages.unshift((new Date).toLocaleTimeString() + ' - ');
+
+	if (!Utilities.Page.isGlobal)
+		messages.unshift('(JSB)');
 
 	for (var i = 0; i < messages.length; i++)
 		format += ('%' + (typeof messages[i] === 'object' ? 'o' : (typeof messages[i] === 'number' ? 'f' : 's'))) + ' ';
@@ -1014,26 +1017,26 @@ function LogError () {
 			errorStack,
 			showThisError;
 
-	var args = Utilities.makeArray(arguments);
+	var args = Utilities.makeArray(arguments),
+			now = (new Date).toLocaleTimeString() + ' -';
 			
 	for (var i = 0; i < args.length; i++) {
 		error = args[i];
 		showThisError = false;
 
 		if (error && (error instanceof DOMException || (error.constructor && error.constructor.name && error.constructor.name._endsWith('Error')))) {
-			errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : '';
+			if (!errorStack)
+				errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : null;
 
 			if (error.sourceURL)
-				errorMessage = [error.message, '-', error.sourceURL.replace(ExtensionURL(), '/'),  '-', error.line];
+				errorMessage = ['%s %s (%s:%s)', now, error.message, error.sourceURL.replace(ExtensionURL(), '/'), error.line];
 			else
-				errorMessage = [error.message];
+				errorMessage = ['%s %s', now, error.message];
 		} else
-			errorMessage = [error];
-
-		errorMessage.unshift((new Date).toLocaleTimeString());
+			errorMessage = ['%s %o', now, error];
 
 		LogError.history.unshift({
-			message: errorMessage,
+			message: errorMessage.slice(1),
 			stack: errorStack || ''
 		});
 
@@ -1051,19 +1054,19 @@ function LogError () {
 
 		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || globalSetting.debugMode || showThisError) {
 			if (Utilities.Page.isWebpage)
-				errorMessage.unshift('(JSB)');
+				errorMessage = ['(JSB) ' + errorMessage[0]].concat(errorMessage.slice(1));
 
 			if (window.localConsole)
 				window.localConsole.error.apply(window.localConsole, errorMessage);
 
 			console.error.apply(console, errorMessage);
-
-			if (errorStack) {
-				console.groupCollapsed('(JSB) Stack');
-				console.error(errorStack);
-				console.groupEnd();
-			}
 		}
+	}
+
+	if (errorStack) {
+		console.groupCollapsed('Stack');
+		console.error(errorStack);
+		console.groupEnd();
 	}
 
 	if (window.UI) {
@@ -1172,7 +1175,7 @@ var Extension = {
 						var missingItems = [];
 
 						for (var i = 0, b = needle.length; i < b; i++)
-							if (!this._contains(needle[i]))
+							if (this.indexOf(needle) === -1)
 								if (returnMissingItems)
 									missingItems.push(needle[i]);
 								else

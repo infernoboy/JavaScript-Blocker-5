@@ -204,7 +204,7 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#main-menu-submit-feedback', function () {
-				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5%20Feedback', true);
+				UI.Feedback.showFeedbackPoppy();
 			})
 
 			.on('click', '#main-menu-unlock', function () {
@@ -919,6 +919,61 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'feedback': function (poppy) {
+		var messageElement = $('#feedback-message', poppy.content).focus();
+
+		if (messageElement.length)
+			messageElement[0].selectionStart = messageElement.val().length;
+
+		poppy.content
+			.on('click', '#feedback-send-email', function () {
+				var feedbackData = globalPage.Feedback.createFeedbackData(messageElement.val(), ''),
+						emailableFeedback = "\n\n";
+
+				for (var key in feedbackData)
+					if (key !== 'email')
+						emailableFeedback += key + ': ' + feedbackData[key] + "\n";
+
+				Tabs.create('mailto:JSB5Feedback@toggleable?subject=JSB5 Feedback&body=' + encodeURIComponent(emailableFeedback));
+
+				poppy.close();
+			})
+
+			.on('input', '#feedback-message', function () {
+				this.value = this.value.substr(0, 5000);
+
+				UI.Feedback.lastValue = this.value;
+			})
+
+			.on('click', '#feedback-submit', function (event) {
+				var message = $.trim($('#feedback-message', poppy.content).val()),
+						email = $.trim($('#feedback-email', poppy.content).val());
+
+				if (!message.length)
+					return;
+
+				globalPage.Feedback
+					.submitFeedback(message, email)
+					.then(function (result) {
+						UI.Feedback.lastValue = '';
+
+						poppy
+							.modal(null, true)
+							.hideCloseButton()
+							.setContent(Template.create('poppy.feedback', 'feedback-success'));
+					}, function (error) {
+						var errorPoppy = new Poppy(event.pageX, event.pageY);
+
+						errorPoppy
+							.linkTo(poppy)
+							.setContent(Template.create('poppy.feedback', error === false ? 'feedback-please-wait' : 'feedback-error', {
+								result: error.statusText === 'error' ? _('feedback.error.offline') : error.statusText
+							}))
+							.show();
+					});
+			});
+	},
+
 	console: function (poppy) {
 		poppy.content
 			.on('change', '#console-debug-mode', function () {
@@ -947,15 +1002,7 @@ Object._extend(Poppy.scripts, {
 			})
 			
 			.on('click', '#console-report', function () {
-				var messageHistory = Utilities.messageHistory();
-				
-				var errors = messageHistory.error.map(function (value, i) {
-					return value.message.join(' ') + (value.stack ? "\n\t\tStack:" + value.stack : '');
-				});
-
-				var messages = ['Error Messages', '', errors.join("\n"), "\n", 'Debug Messages', '', messageHistory.debug.join("\n")];
-
-				Tabs.create('mailto:jsbconsole@toggleable.com?subject=JSB5%20Console&body=' + encodeURIComponent(messages.join("\n")), true);
+				UI.Feedback.showFeedbackPoppy(_('feedback.console_attached') + "\n\n");
 			});
 	}
 });

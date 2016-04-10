@@ -46,7 +46,7 @@ var UserScript = {
 
 					xhr.onload = function () {
 						if (this.status !== 200)
-							return LogError(['resource not found', store.name, resourceName]);
+							return LogError(Error('resource not found - ' + store.name), resourceName);
 
 						var data = '',
 								array = new Uint8Array(this.response);
@@ -61,7 +61,7 @@ var UserScript = {
 					};
 
 					xhr.onerror = function () {
-						LogError(['resource load error', store.name, resourceName]);
+						LogError(Error('resource load error - ' + store.name), resourceName);
 					};
 
 					xhr.send(null);
@@ -210,7 +210,7 @@ var UserScript = {
 						});
 					}
 				} else
-					LogError(['attempted to update user script, but updated name is not equal to current name.', currentMeta.trueNamespace, updateMeta.trueNamespace]);
+					LogError(Error('attempted to update user script, but updated name is not equal to current name: ' + currentMeta.trueNamespace + ' - ' + updateMeta.trueNamespace));
 			});
 		}
 	},
@@ -231,7 +231,7 @@ var UserScript = {
 			url: url,
 			timeout: 3000
 		}).fail(function (error) {
-			LogError('failed to download user script - ' + url, error.statusText);
+			LogError(Error('failed to download user script - ' + url), error.statusText);
 		});
 	},
 

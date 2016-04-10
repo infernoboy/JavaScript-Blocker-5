@@ -151,7 +151,7 @@ Update.versions[151105] = {
 	blocking: false,
 
 	update: function (updateVersion) {
-		Settings.import(SettingStore.export(), true, true);
+		// Settings.import(SettingStore.export(), true, true);
 
 		return true;
 	}
@@ -187,23 +187,29 @@ Update.versions[160315] = {
 	blocking: false,
 
 	update: function (updateVersion) {
-		FilterList.fetch();
-
 		return true;
 	}
 };
-
 
 // === 5.0.19 ===
 Update.versions[160320] = {
 	blocking: false,
 
-	update: function (updateVersion) {
-		Resource.canLoadCache.clear();
+	update: function (updateVersion) {		
+		return true;
+	}
+};
 
+// === 5.0.20 ===
+Update.versions[160410] = {
+	blocking: false,
+
+	update: function (updateVersion) {		
 		Predefined();
-		
-		FilterList.fetch();
+
+		UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function (event) {
+			UI.Feedback.showIntroPoppy();
+		}, true);
 
 		return true;
 	}

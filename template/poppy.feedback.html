@@ -1,0 +1,42 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+-->
+
+<noscript id="feedback">
+	<div id="feedback">
+		<h3 class="jsb-centered"><%=_('feedback.feedback')%></h3>
+
+		<p class="jsb-info jsb-readable"><%=_('feedback.includes')%></p>
+
+		<div class="horizontal-divider"></div>
+
+		<label for="feedback-email"><%=_('extras.email_address')%>:</label><q></q>
+		<input type="text" id="feedback-email" value="<%=Settings.getItem('feedbackEmail')._escapeHTML()._entityQuotes()%>" /> <span class="jsb-smaller jsb-label"><%=_('feedback.optional')%></span><br>
+		<textarea id="feedback-message"><%=self.message._escapeHTML()%></textarea>
+		<div class="jsb-align-right">
+			<a href="javascript:void(0);" id="feedback-send-email"><%=_('feedback.email')%></a>
+			<input id="feedback-submit" type="button" value="<%=_('feedback.submit')%>" />
+		</div>
+	</div>
+</noscript>
+
+<noscript id="feedback-intro">
+	<h3 class="jsb-centered">Submitting Feedback</h3>
+
+	<p class="jsb-info jsb-readable">A simpler method of submitting feedback has been introduced. Click <b>Menu</b> then <b>Submit Feedback</b>
+		to quickly and easily share your thoughts or issues with JSB.</p>
+</noscript>
+
+<noscript id="feedback-success">
+	<h3 class="jsb-centered"><%=_('feedback.feedback')%></h3>
+	
+	<p class="jsb-info"><%=_('feedback.feedback_success')%></p>
+</noscript>
+
+<noscript id="feedback-error">	
+	<p class="jsb-info jsb-readable"><%=self.result._escapeHTML()%></p>
+</noscript>
+
+<noscript id="feedback-please-wait">
+	<p class="jsb-info"><%=_('feedback.please_wait')%></p>
+</noscript>

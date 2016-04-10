@@ -120,7 +120,7 @@ var Command = function (type, event) {
 		} catch (error) {
 			this.status = COMMAND.EXECUTION_FAILED;
 
-			return LogError(['command processing error', detail.sourceName + ' => ' + detail.command, detail], error);
+			return LogError('command processing error - ' +  detail.sourceName + ' => ' + detail.command, detail, error);
 		}
 	};
 
@@ -574,7 +574,7 @@ var Command = function (type, event) {
 
 		registerMenuCommand: function (detail) {
 			if (typeof detail.meta !== 'string' || !detail.meta.length)
-				return LogError(['caption is not a valid string', detail.meta]);
+				return LogError(Error('caption is not a valid string'), detail.meta);
 
 			var ref = TOKEN.INJECTED[detail.sourceID],
 					name = ref.parentUserScript ? ref.parentUserScriptName : ref.name;
@@ -588,6 +588,10 @@ var Command = function (type, event) {
 				sourceID: detail.sourceID,
 				callbackID: detail.callbackID
 			};
+		},
+
+		openInTab: function (detail) {
+			Command.globalRelay(detail);
 		},
 
 		XMLHttpRequest: function (detail) {

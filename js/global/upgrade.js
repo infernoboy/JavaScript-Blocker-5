@@ -139,7 +139,7 @@ var Upgrade = {
 
 				UserScript.scripts.saveNow(false, true);
 			} catch (error) {
-				LogError('failed to import user scripts from JSB4 backup');
+				LogError('failed to import user scripts from JSB4 backup', error);
 			}
 		}
 	},

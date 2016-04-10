@@ -529,7 +529,7 @@ var Store = (function () {
 			if ((typeof key !== 'string' && typeof key !== 'number') || this.data._hasPrototypeKey(key))
 				throw new Error(key + ' cannot be used as key.');
 		} catch (e) {
-			return LogError(['ERROR IN SET locked:', this.lock, 'destroyed:', this.destroyed, 'data:', this.data, 'key:', key, 'value:', value, 'store:', this], e);
+			return LogError(['ERROR IN SET - locked:', this.lock, 'destroyed:', this.destroyed, 'data:', this.data, 'key:', key, 'value:', value, 'store:', this], e);
 		}
 
 		this.data[key] = {

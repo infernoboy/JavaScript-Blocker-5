@@ -420,9 +420,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		return this;
 	};
 
-	Poppy.prototype.modal = function (lightModal) {
-		this.isModal = true;
+	Poppy.prototype.modal = function (lightModal, closeModal) {
+		this.isModal = !closeModal;
 		this.isLightModal = !!lightModal;
+
+		if (closeModal)
+			Poppy.closeModal();
 
 		return this;
 	};
@@ -451,6 +454,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 	Poppy.prototype.showCloseButton = function () {
 		this.poppy.addClass('poppy-show-close');
+
+		return this;
+	};
+
+	Poppy.prototype.hideCloseButton = function () {
+		this.poppy.removeClass('poppy-show-close');
 
 		return this;
 	};

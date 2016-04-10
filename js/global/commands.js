@@ -282,7 +282,7 @@ function Command (command, data, event) {
 							page.retries++;
 						}, 500, [page]);
 					else
-						return LogError(['frame does not seem to have a parent', page.info.id]);
+						return LogError(Error('frame does not seem to have a parent: ' + page.info.id));
 			} else
 				page.clearFrames();
 
@@ -491,6 +491,10 @@ function Command (command, data, event) {
 			}, 250, detail);
 		},
 
+		openInTab: function (detail) {
+			Tabs.create(detail);
+		},
+
 		template: {
 			create: function (detail) {
 				try {
@@ -522,13 +526,13 @@ function Command (command, data, event) {
 				if (!userScript) {
 					this.message = null;
 
-					return LogError(detail.namespace + ' does not exist.');
+					return LogError(Error(detail.namespace + ' does not exist.'));
 				}
 
 				if (typeof detail.meta.name !== 'string') {
 					this.message = null;
 
-					return LogError([detail.meta.name + ' is not a string', detail.namespace]);
+					return LogError(Error(detail.meta.name + ' is not a string'), detail.namespace);
 				}
 
 				this.message = userScript.getStore('resources').get(detail.meta.name, null);
@@ -541,13 +545,13 @@ function Command (command, data, event) {
 					} catch (error) {
 						this.message = null;
 
-						return LogError((detail.meta.parentUserScript || detail.namespace) + ' does not exist.');
+						return LogError(Error((detail.meta.parentUserScript || detail.namespace) + ' does not exist.'));
 					}
 
 					if (method !== 'keys' && (typeof detail.meta.key !== 'string' || !detail.meta.key.length)) {
 						this.message = null;
 
-						return LogError([detail.meta.key + ' is not a string', method, detail.meta.parentUserScript || detail.namespace]);
+						return LogError(Error(detail.meta.key + ' is not a string - ' + method, detail.meta.parentUserScript || detail.namespace));
 					}
 
 					var	result = storage[method](detail.meta && detail.meta.key, detail.meta && detail.meta.value, method === 'set' ? true : undefined);
@@ -560,6 +564,9 @@ function Command (command, data, event) {
 				},
 
 				setItem: function (detail) {
+					if (/^(\-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(detail.meta.value))
+						detail.meta.value = Number(detail.meta.value);
+
 					this.commands.__storage.call(this, 'set', detail);
 				},
 

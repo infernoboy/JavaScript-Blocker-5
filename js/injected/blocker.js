@@ -693,7 +693,7 @@ var Element = {
 			return;
 
 		if (!frame.contentWindow)
-			return LogError('frame does not have a window', frame);
+			return LogError(Error('frame does not have a window'), frame);
 
 		setTimeout(function (frame, reason) {
 			if (frame && frame.contentWindow)

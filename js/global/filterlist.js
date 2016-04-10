@@ -37,6 +37,8 @@ FilterList.updateCheck = function () {
 };
 
 FilterList.fetch = function () {
+	Predefined();
+
 	var lists = Settings.getItem('filterLists');
 
 	for (var list in lists)
@@ -45,9 +47,11 @@ FilterList.fetch = function () {
 		else
 			Rules.__FilterRules.remove(list);
 
-	Command.event.addCustomEventListener('UIReady', function () {	
-		UI.event.trigger('filterListsUpdateStarted');
-	}, true);
+	setTimeout(function () {
+		Command.event.addCustomEventListener('UIReady', function () {	
+			UI.event.trigger('filterListsUpdateStarted');
+		}, true);
+	}, 1000);
 };
 
 FilterList.prototype.merge = function () {
@@ -69,8 +73,6 @@ FilterList.prototype.merge = function () {
 		}.bind(null, self), true);
 
 		Rules.list[self.name].rules.replaceWith(self.temporaryRules.rules);
-
-		Predefined();
 	}, [this]);
 };
 
@@ -83,7 +85,7 @@ FilterList.prototype.download = function () {
 	}).fail(function (error) {
 		FilterList.__updating--;
 
-		LogError('failed to download filter list ' + self.name + '/' + self.url, error.statusText);
+		LogError(Error('failed to download filter list ' + self.name + '/' + self.url), error.statusText);
 	});
 };
 
@@ -111,7 +113,7 @@ FilterList.prototype.process = function (list) {
 				if (lineNumber === 0 && line[0] !== '[') {
 					FilterList.__updating--;
 
-					LogError('invalid Filter List - ' + self.name + ' - ' + self.url);
+					LogError(Error('invalid Filter List - ' + self.name + ' - ' + self.url));
 
 					self.valid = false;
 
@@ -239,7 +241,7 @@ FilterList.prototype.process = function (list) {
 
 Command.event.addCustomEventListener('UIReady', function () {
 	UI.event.addCustomEventListener(['popoverOpened', 'filterListsUpdateStarted'], function (event) {
-		if (FilterList.__updating) {
+		if (FilterList.__updating && Popover.visible()) {
 			var poppy = new Popover.window.Poppy(0.5, 0, true);
 
 			poppy.setContent(Template.create('main', 'jsb-readable', {

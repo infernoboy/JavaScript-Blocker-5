@@ -294,11 +294,11 @@ var SettingStore = {
 	},
 
 	all: function () {
-		return safari.extension.settings;
+		return Object._extend(true, safari.extension.settings, localStorage);
 	},
 
 	export: function () {
-		return JSON.stringify(safari.extension.settings);
+		return JSON.stringify(SettingStore.all());
 	},
 
 	import: function (settings) {
@@ -482,14 +482,14 @@ function AddContentScriptFromURL (url) {
 		if (!Utilities.Page.isGlobal)
 			return;
 
-		Utilities.Timer.interval('tabMonitor', function (tabMonitor) {
+		Utilities.Timer.interval('tabMonitor', function () {
 			var allWindows = BrowserWindows.all();
 
 			for (var i = allWindows.length; i--;)
 				SetPopoverToToolbarItem({
 					target: allWindows[i]
 				});
-		}, 3000);
+		}, 10000);
 	}, 2000);
 })();
 

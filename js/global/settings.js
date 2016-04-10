@@ -134,8 +134,11 @@ var Settings = {
 	getItem: function (settingKey, storeKey) {
 		var setting = Settings.map[settingKey];
 
-		if (!setting)
-			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
+		if (!setting) {
+			LogError(Error(Settings.ERROR.NOT_FOUND._format([settingKey])));
+
+			return undefined;
+		}
 
 		var value,
 				defaultValue,
@@ -160,8 +163,11 @@ var Settings = {
 				return storedValues;
 			}
 
-			if (!setting.storeKeySettings[storeKey] && !setting.props.type._startsWith('dynamic') && !setting.props.type._startsWith('many'))
-				throw new Error(Settings.ERROR.STORE_KEY_NOT_FOUND._format([settingKey, storeKey]));
+			if (!setting.storeKeySettings[storeKey] && !setting.props.type._startsWith('dynamic') && !setting.props.type._startsWith('many')){
+				LogError(Error(Settings.ERROR.STORE_KEY_NOT_FOUND._format([settingKey, storeKey])));
+
+				return undefined;
+			}
 
 			storeKey = (setting.storeKeySettings[storeKey] && setting.storeKeySettings[storeKey].props.remap) ? setting.storeKeySettings[storeKey].props.remap : storeKey;
 
@@ -187,9 +193,9 @@ var Settings = {
 			if (typeof defaultValue === 'object' && typeof value !== 'object')
 				value = JSON.parse(value);
 		} catch (error) {
-			LogError(error, setting);
+			LogError('no default value for ' + settingKey, setting, error);
 
-			throw new Error('no default value for ' + settingKey);
+			return undefined;
 		}
 
 		return value;
@@ -377,7 +383,7 @@ var Settings = {
 								when: when
 							};
 						else
-							LogError(['found store setting more than once', settingKey]);
+							LogError(Error('found store setting more than once - ' + settingKey));
 					} else if (settings[i].props && settings[i].props.storeKey)
 						Settings.map[settingKey].storeKeySettings[settings[i].props.storeKey] = settings[i];
 					else if (!Settings.map[settingKey]){
@@ -404,7 +410,7 @@ var Settings = {
 				exported = {};
 
 		if (options.exportSettings)
-			exported = SettingStore.all();
+			exported = SettingStore.all()._clone(true);
 
 		if (!options.exportFirstVisit)
 			delete exported['Storage-FirstVisit'];
@@ -447,7 +453,7 @@ var Settings = {
 				var settings = SettingStore.import(importedSettings);
 
 				if (!settings)
-					return LogError('failed to import settings');
+					return LogError(Error('failed to import settings'));
 
 				if (!semi)
 					Settings.IMPORTING = true;

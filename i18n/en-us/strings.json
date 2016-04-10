@@ -672,6 +672,16 @@
 	"help.faq.rules": "Rules",
 	"help.faq.settings": "Settings",
 
+	"feedback.feedback": "Feedback",
+	"feedback.includes": "Anonymous settings and console messages included.",
+	"feedback.feedback_success": "Your submission has been received. Thanks for the feedback!",
+	"feedback.please_wait": "Please wait at least 5 minutes between submissions.",
+	"feedback.email": "Send an email instead",
+	"feedback.submit": "Submit",
+	"feedback.error.offline": "The feedback server appears to be offline right now. Please try again later.",
+	"feedback.optional": "optional",
+	"feedback.console_attached": "Your console report is ready to be submitted.",
+
 	"description.recaptcha": "ReCAPTCHA",
 	"description.verisign": "Verisign",
 	"description.ensighten": "Ensighten Tracking",
