@@ -934,7 +934,7 @@ Object._extend(Poppy.scripts, {
 					if (key !== 'email')
 						emailableFeedback += key + ': ' + feedbackData[key] + "\n";
 
-				Tabs.create('mailto:JSB5Feedback@toggleable?subject=JSB5 Feedback&body=' + encodeURIComponent(emailableFeedback));
+				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5 Feedback&body=' + encodeURIComponent(emailableFeedback));
 
 				poppy.close();
 			})

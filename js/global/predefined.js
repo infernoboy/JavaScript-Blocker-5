@@ -7,11 +7,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 function Predefined () {
 	Rules.list['$predefined'].clear();
 
-	// Rules.list['$predefined'].addDomain('special', '*', {
-	// 	rule: 'page_blocker',
-	// 	action: 7
-	// });
-
 	if (Settings.getItem('ignorePredefined'))
 		return;
 	

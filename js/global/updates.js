@@ -214,3 +214,9 @@ Update.versions[160410] = {
 		return true;
 	}
 };
+
+// === 5.0.20.1 ===
+Update.versions[160411] = {
+	blocking: false,
+	doNotBeg: true
+};

@@ -34,9 +34,9 @@
        <key>Developer Identifier</key>
        <string>6S8J5HV3H4</string>
        <key>CFBundleVersion</key>
-       <string>160410</string>
+       <string>160411</string>
        <key>CFBundleShortVersionString</key>
-       <string>5.0.20</string>
+       <string>5.0.20.1</string>
        <key>URL</key>
        <string>http://lion.toggleable.com:160/jsblocker/download/JSB5.safariextz</string>
        <key>Update From Gallery</key>
