@@ -946,11 +946,18 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#feedback-submit', function (event) {
+				this.disabled = true;
+
 				var message = $.trim($('#feedback-message', poppy.content).val()),
 						email = $.trim($('#feedback-email', poppy.content).val());
 
-				if (!message.length)
+				if (!message.length) {
+					this.disabled = false;
+
 					return;
+				}
+
+				var self = this;
 
 				globalPage.Feedback
 					.submitFeedback(message, email)
@@ -962,12 +969,14 @@ Object._extend(Poppy.scripts, {
 							.hideCloseButton()
 							.setContent(Template.create('poppy.feedback', 'feedback-success'));
 					}, function (error) {
+						self.disabled = false;
+
 						var errorPoppy = new Poppy(event.pageX, event.pageY);
 
 						errorPoppy
 							.linkTo(poppy)
 							.setContent(Template.create('poppy.feedback', error === false ? 'feedback-please-wait' : 'feedback-error', {
-								result: error.statusText === 'error' ? _('feedback.error.offline') : error.statusText
+								result: error.statusText === 'error' ? _('feedback.error.offline') : (error.statusText || error)
 							}))
 							.show();
 					});

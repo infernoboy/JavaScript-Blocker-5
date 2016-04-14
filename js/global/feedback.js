@@ -49,6 +49,15 @@ var Feedback = {
 
 		Settings.setItem('feedbackEmail', email);
 
-		return $.post(Feedback.__feedbackURL, Feedback.createFeedbackData(message, email));
+		return new Promise(function (resolve, reject) {
+			$.post(Feedback.__feedbackURL, Feedback.createFeedbackData(message, email)).then(function (result) {
+				if (result !== '1')
+					reject(result);
+				else
+					resolve();
+			}, function (error) {
+				reject(error);
+			});
+		});
 	}
 };
