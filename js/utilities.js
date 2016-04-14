@@ -944,7 +944,7 @@ function _createConsoleFormat(messages) {
 
 	messages.unshift((new Date).toLocaleTimeString() + ' - ');
 
-	if (!Utilities.Page.isGlobal)
+	if (Utilities.Page.isWebpage)
 		messages.unshift('(JSB)');
 
 	for (var i = 0; i < messages.length; i++)

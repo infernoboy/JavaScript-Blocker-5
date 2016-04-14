@@ -247,46 +247,53 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		
 		<div class="horizontal-divider"></div>
 
-		<ul class="console">
-			<li><h4 class="jsb-centered"><%=_('console.error_messages')%></h4></li>
-		<%
-			var messageHistory = Utilities.messageHistory();
+		<div id="console-messages" class="split-view" data-splitView="consoleMessages">
+			<div class="split-view-left">
+				<h4 class="jsb-centered"><%=_('console.error_messages')%></h4>
 
-			if (!messageHistory.error.length) { %>
-				<li class="jsb-centered"><span class="console-error-message jsb-smaller"><%=_('console.no_messages')%></span></li><%
-			} else {
-				for (var i = 0; i < messageHistory.error.length; i++) {
-					%><li>
-							<span class="console-error-message"><%=messageHistory.error[i].message.join(' ')%></span>
-							<% if (i !== messageHistory.error.length - 1) %>
-								<div class="horizontal-divider"></div>
-						</li><%
-					if (messageHistory.error[i].stack.length) { %>
-						<li>
-							<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')%></span>
-						</li><%
+				<ul class="console">
+				<%
+					var messageHistory = Utilities.messageHistory();
+
+					if (!messageHistory.error.length) { %>
+						<li class="jsb-centered"><span class="console-error-message jsb-smaller"><%=_('console.no_messages')%></span></li><%
+					} else {
+						for (var i = 0; i < messageHistory.error.length; i++) {
+							%><li>
+									<span class="console-error-message"><%=messageHistory.error[i].message.join(' ')%></span>
+									<% if (i !== messageHistory.error.length - 1) %>
+										<div class="horizontal-divider"></div>
+								</li><%
+							if (messageHistory.error[i].stack.length) { %>
+								<li>
+									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')%></span>
+								</li><%
+							}
+						}
 					}
-				}
-			}
-		%>
-		</ul>
+				%>
+				</ul>
+			</div>
+			<div class="split-view-right">
+				<h4 class="jsb-centered"><%=_('console.debug_messages')%></h4>
 
-		<ul class="console">
-			<li><h4 class="jsb-centered"><%=_('console.debug_messages')%></h4></li>
-		<%
-			if (!messageHistory.debug.length) { %>
-				<li class="jsb-centered"><span class="console-debug-message jsb-smaller"><%=_('console.no_messages')%></span></li><%
-			} else {
-				for (var i = 0; i < messageHistory.debug.length; i++) {
-					%><li>
-							<span class="console-debug-message"><%=messageHistory.debug[i]%></span>
-							<% if (i !== messageHistory.debug.length - 1) %>
-								<div class="horizontal-divider"></div>
-						</li><%
-				}
-			}
-		%>
-		</ul>
+				<ul class="console">
+				<%
+					if (!messageHistory.debug.length) { %>
+						<li class="jsb-centered"><span class="console-debug-message jsb-smaller"><%=_('console.no_messages')%></span></li><%
+					} else {
+						for (var i = 0; i < messageHistory.debug.length; i++) {
+							%><li>
+									<span class="console-debug-message"><%=messageHistory.debug[i]%></span>
+									<% if (i !== messageHistory.debug.length - 1) %>
+										<div class="horizontal-divider"></div>
+								</li><%
+						}
+					}
+				%>
+				</ul>
+			</div>
+		</div>
 	</div>
 </noscript>
 
