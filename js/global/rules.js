@@ -586,13 +586,6 @@ var Rules = {
 		}
 	},
 
-	CREATE: {
-		EXACT: 1,
-		HASH: 2,
-		SEARCH: 4,
-		PATH: 8
-	},
-
 	get fullKindList() {
 		var kinds = [];
 
@@ -835,34 +828,6 @@ var Rules = {
 					lists[list] = this.list[list].forLocation(params);
 
 		return lists;
-	},
-
-	createRegExp: function (url, type) {
-		if (typeof url !== 'string')
-			throw new TypeError(url + ' is not a string.');
-
-		var url = url._escapeRegExp(),
-				endCapture = [];
-
-		if (!(type & Rules.CREATE.EXACT)) {
-			endCapture = ['((', [], ')+.*)?'];
-
-			if (type & Rules.CREATE.HASH)
-				endCapture[1].push('\\#');
-
-			if (type & Rules.CREATE.SEARCH)
-				endCapture[1].push('\\?');
-
-			if (type & Rules.CREATE.PATH)
-				endCapture[1].push('\\/');
-
-			if (endCapture[1].length)
-				endCapture[1] = endCapture[1].join('|');
-			else
-				endCapture = [];
-		}
-
-		return '^' + url + endCapture.join('') + '$';
 	},
 
 	isLocked: function () {
