@@ -367,6 +367,17 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	} %>
 </noscript>
 
+<noscript id="update-available">
+	<h3 class="jsb-centered"><%=_('update_available', [self.version])%></h3>
+	<h4 class="jsb-centered"><a href="javascript:void(0);" id="update-ignore" class="jsb-centered jsb-label"><%=_('update_available.ignore')%></a></h4>
+
+	<p class="jsb-info"><%=_('update_available.more', [self.URL])%></p>
+
+	<div class="horizontal-divider"></div>
+
+	<div id="change-log" class="jsb-info"><%=typeof self.changeLog === 'number' ? self.changeLog : self.changeLog.html()%></div>%
+</noscript>
+
 <noscript id="edit-page">
 	<%
 		var section = $('.page-host-section[data-id="' + self.poppy.attr('data-poppyMenuMeta') + '"]', UI.container),

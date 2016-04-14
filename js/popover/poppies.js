@@ -974,6 +974,15 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'update-available': function (poppy) {
+		poppy.content
+			.on('click', '#update-ignore', function () {
+				Settings.setItem('ignoredUpdates', true, poppy.bundleID);
+
+				poppy.close();
+			});
+	},
+
 	console: function (poppy) {
 		poppy.content
 			.on('change', '#console-debug-mode', function () {

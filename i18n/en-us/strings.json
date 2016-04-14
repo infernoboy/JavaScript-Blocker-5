@@ -51,6 +51,9 @@
 	"remaining_time": "{0} days, {1} hours, {2} minutes",
 
 	"change_log": "Change Log - {0}",
+	"update_available": "Update Available - {0}",
+	"update_available.more": "Open Safari preferences to update or <a href=\"{0}\">download it directly</a>.",
+	"update_available.ignore": "Ignore this update",
 	
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",

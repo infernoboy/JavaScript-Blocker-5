@@ -133,6 +133,11 @@ Settings.settings = {
 			type: 'many-number'
 		}
 	}, {
+		store: 'ignoredUpdates',
+		props: {
+			type: 'many-boolean'
+		}
+	},{
 		setting: 'persistDisabled',
 		props: {
 			type: 'boolean',
