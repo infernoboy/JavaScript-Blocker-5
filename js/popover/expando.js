@@ -165,5 +165,5 @@ var Expando = {
 
 Expando.init();
 
-globalPage.Rule.event.addCustomEventListener(['rulesWereCleared', 'ruleWasAdded', 'ruleWasRemoved'], Expando.events.rulesChanged);
+globalPage.Rule.event.addCustomEventListener(['rulesWereCleared', 'ruleWasAdded', 'ruleWasRemoved', 'manyRulesAdded'], Expando.events.rulesChanged);
 UI.event.addCustomEventListener('elementWasAdded', Expando.events.elementWasAdded);
