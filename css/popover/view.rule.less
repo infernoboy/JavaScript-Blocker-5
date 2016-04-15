@@ -212,9 +212,13 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				margin-bottom: 5px;
 				text-align: center;
 
+				&:last-child {
+					margin-top: -6px;
+				}
+
 				* {
 					&:first-child {
-						margin-right: 8px;
+						margin-right: 10px;
 					}
 
 					&.jsb-hidden {
@@ -222,6 +226,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						opacity: 0;
 						pointer-events: none;
 					}
+
+					font-size: smaller;
+					padding: 1px 7px 2px;
 				}
 			}
 		}
