@@ -5,6 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 UI.Rules = {
+	__domainsPerPage: 150,
 	__domainFilter: '',
 	__lists: ['page', 'temporary', 'active', 'filter', 'firstVisit'],
 
@@ -134,15 +135,6 @@ UI.Rules = {
 	},
 
 	buildRuleList: function (view, ruleList, useTheseRules, keepExpanded) {
-		if (view.is('.ui-view')) {
-			var buildQueue = UI.Rules.views.data('buildQueue') || new Utilities.Queue(0.001);
-
-			buildQueue.clear();
-
-			UI.Rules.views.data('buildQueue', buildQueue);
-		} else
-			var buildQueue = new Utilities.Queue(0.001);
-
 		if (Object._isPlainObject(ruleList)) {
 			var ruleListItem,
 					ruleListItemLI;
@@ -234,6 +226,10 @@ UI.Rules = {
 			.empty()
 			.append(container);
 
+		var currentPage,
+				page,
+				pageTypeUL;
+
 		var types = ['page', 'domain', 'notPage', 'notDomain'];
 
 		for (var i = 0; i < types.length; i++) {
@@ -241,6 +237,10 @@ UI.Rules = {
 
 			if (!(type in domainGrouped) || domainGrouped[type]._isEmpty())
 				continue;
+
+			currentPage = -1;
+			page = null;
+			pageTypeUL = null;
 
 			typeExpander = 'ruleGroupType,' + type;
 
@@ -258,6 +258,20 @@ UI.Rules = {
 				if (domainGrouped[type][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
 					continue;
 
+				if (!page || pageTypeUL.children().length >= UI.Rules.__domainsPerPage) {
+					currentPage++;
+
+					page = $('<div class="rule-group-type-page">');
+
+					if (currentPage === 0)
+						page.addClass('active-page');
+
+					pageTypeUL = page
+						.append(typeUL.clone())
+						.appendTo(typeUL.parent())
+						.find('.rule-group-type');
+				}
+
 				domainExpander = typeExpander + ',ruleGroupDomain,' + domain;
 
 				domainListItem = Template.create('rules', 'domain-list-item', {
@@ -268,7 +282,7 @@ UI.Rules = {
 
 				domainUL = $('.rule-group-domain', domainListItem);
 
-				typeUL.append(domainListItem);
+				pageTypeUL.append(domainListItem);
 
 				for (kind in domainGrouped[type][domain]) {
 					if (domainGrouped[type][domain][kind]._isEmpty())
@@ -307,28 +321,30 @@ UI.Rules = {
 							}));
 						}
 
-						buildQueue.push(function (kindUL, ruleListItems) {
-							hasRules = true;
-							kindUL.append(ruleListItems);
-						}, [kindUL, ruleListItems]);
+						hasRules = true;
+
+						kindUL.append(ruleListItems);
 					}
 				}
 			}
 
-			if (typeUL.is(':empty'))
+			if (currentPage === 0)
+				$('.rule-group-type-page-controller', ruleGroupType).addClass('jsb-hidden');
+			else
+				$('.rule-group-type-page-controller', ruleGroupType).clone().appendTo(typeUL.parent().parent());
+
+			if (!pageTypeUL || pageTypeUL.is(':empty'))
 				ruleGroupType.remove();
+
+			typeUL.remove();
 		}
 
-		buildQueue.push(function (view, container) {			
-			UI.Rules.noRules.toggle(!hasRules);
+		UI.Rules.noRules.toggle(!hasRules);
 
-			UI.Rules.event.trigger('rulesFinishedBuilding', {
-				view: view,
-				hasRules: hasRules
-			});
-		}, [view, container]);
-
-		buildQueue.start();
+		UI.Rules.event.trigger('rulesFinishedBuilding', {
+			view: view,
+			hasRules: hasRules
+		});
 	},
 
 	processRules: function (rules) {
@@ -456,6 +472,25 @@ UI.Rules = {
 						.stayOpenOnPopoverOpen()
 						.linkToOpenPoppy()
 						.show();
+				})
+
+				.on('click', '.rule-group-type-page-controller input', function () {
+					var pageController = $(this).parent().parent().find('.rule-group-type-page-controller'),
+							activePage = pageController.eq(0).parent().find('.active-page'),
+							goToPrevious = this.classList.contains('rule-group-type-previous-page'),
+							advancePage = goToPrevious ? activePage.prev() : activePage.next();
+
+					if (advancePage.length) {
+						activePage.removeClass('active-page');
+
+						advancePage.addClass('active-page');
+					}
+
+					$('.rule-group-type-previous-page', pageController)
+						.toggleClass('jsb-hidden', !advancePage.prev().length);
+
+					$('.rule-group-type-next-page', pageController)
+						.toggleClass('jsb-hidden', !advancePage.next().length);
 				})
 
 				.on('click', '.rule-group-type-wrapper[data-editable="1"] .rule-group-type-header', function (event) {

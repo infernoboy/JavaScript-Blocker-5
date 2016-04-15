@@ -203,6 +203,27 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			.rule-group-domain-header {
 				white-space: nowrap;
 			}
+
+			.rule-group-type-page:not(.active-page) {
+				display: none;
+			}
+
+			.rule-group-type-page-controller {
+				margin-bottom: 5px;
+				text-align: center;
+
+				* {
+					&:first-child {
+						margin-right: 8px;
+					}
+
+					&.jsb-hidden {
+						display: inline;
+						opacity: 0;
+						pointer-events: none;
+					}
+				}
+			}
 		}
 
 		&type {

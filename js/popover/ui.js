@@ -47,11 +47,14 @@ var UI = {
 		var observer = new MutationObserver(function (mutations) {
 			for (var i = 0; i < mutations.length; i++)
 				if (mutations[i].type === 'childList')
-					for (var j = 0; j < mutations[i].addedNodes.length; j++)
-						UI.event.trigger('elementWasAdded', mutations[i].addedNodes[j]);
+					if (mutations[i].addedNodes.length) {
+						UI.event.trigger('elementWasAdded', document.body);
+
+						break;						
+					}
 		});
 
-		observer.observe(document, {
+		observer.observe(document.body, {
 			childList: true,
 			subtree: true
 		});
