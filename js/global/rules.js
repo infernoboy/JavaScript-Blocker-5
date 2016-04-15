@@ -90,7 +90,7 @@ Rule.withLocationRules = function (allRules, callback) {
 	}
 };
 
-Rule.prototype.__add = function (type, kind, domain, rule) {
+Rule.prototype.__add = function (type, kind, domain, rule, isViaMany) {
 	if (!this.ignoreLock && Rules.isLockerLocked())
 		return;
 
@@ -162,7 +162,8 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 		rules: rules
 	};
 
-	Rule.event.trigger('ruleWasAdded', added);
+	if (!isViaMany)
+		Rule.event.trigger('ruleWasAdded', added);
 
 	return added;
 };
@@ -395,10 +396,15 @@ Rule.prototype.addMany = function (kinds) {
 
 					kinds[kind][type][domain][rule].rule = rule;
 
-					this.__add(type, kind, domain, kinds[kind][type][domain][rule]);
+					this.__add(type, kind, domain, kinds[kind][type][domain][rule], true);
 				}
 		}
 	}
+
+	Rule.event.trigger('manyRulesAdded', {
+		self: this,
+		rules: kinds
+	});
 
 	return this;
 };
@@ -566,7 +572,8 @@ var Rules = {
 	__regExpCache: {},
 	__partsCache: new Store('RuleParts'),
 	__FilterRules: new Store('FilterRules', {
-		save: true
+		save: true,
+		saveDelay: 6000
 	}),
 
 	PAGE_RULES_ONLY: 1,
@@ -960,7 +967,7 @@ Rule.event.addCustomEventListener('ruleWasAdded', function (event) {
 		}, 100, [event.detail.self]);
 });
 
-Rule.event.addCustomEventListener(['ruleWasRemoved', 'rulesWereCleared'], function (event) {
+Rule.event.addCustomEventListener(['ruleWasRemoved', 'rulesWereCleared', 'manyRulesAdded'], function (event) {
 	Rule.listCache.getStore(event.detail.self.rules.name || event.detail.self.rules.id).clear();
 });
 
