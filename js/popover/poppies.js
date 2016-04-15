@@ -509,17 +509,22 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#item-info-show-rules', function () {
+				var ruleListItems = $('<ul class="page-rules-container">');
+
+				var resources = poppy.resources,
+						rulePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true);
+
 				poppy.setContent(_('view.page.item.info.loading'));
 
-				setTimeout(function () {
-					var resources = poppy.resources,
-							rulePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true),
-							ruleListItems = $('<ul class="page-rules-container">');
+				UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
+					rulePoppy.setContent(ruleListItems).show();
 
-					UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
+					setTimeout(function () {
 						rulePoppy.setPosition();
-					}, true);
+					});
+				}, true);
 
+				setTimeout(function () {
 					var resourceID,
 							rules,
 							ruleLists,
@@ -539,8 +544,6 @@ Object._extend(Poppy.scripts, {
 
 						ruleListItems.append(resourceListItem);
 					}
-
-					rulePoppy.setContent(ruleListItems).show();
 				});
 			});
 	},

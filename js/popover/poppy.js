@@ -495,10 +495,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 		this.executeScript();
 
-		this.setPosition();
-
-		Poppy.event.trigger('poppyDidShow', this);
-
 		this.poppy
 			.toggleClass('poppy-open-quick', !!quick)
 			.toggleClass('poppy-open-instant', !!instant)
@@ -508,6 +504,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 				this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
 			}.bind(this));
+
+		Utilities.setImmediateTimeout(function (self) {
+			self.setPosition();
+		}, [this]);
+
+		Poppy.event.trigger('poppyDidShow', this);
 
 		Utilities.Timer.timeout('PoppyCreating', function () {
 			Poppy.__creating = false;
