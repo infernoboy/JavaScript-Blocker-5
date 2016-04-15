@@ -36,7 +36,7 @@ FilterList.cancelUpdate = function () {
 };
 
 FilterList.updateCheck = function () {
-	if (Date.now() - Settings.getItem('FilterListLastUpdate') > FilterList.__updateInterval)
+	if (Settings.getItem('setupComplete') && Date.now() - Settings.getItem('FilterListLastUpdate') > FilterList.__updateInterval)
 		FilterList.fetch();
 };
 

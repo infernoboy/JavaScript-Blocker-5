@@ -36,6 +36,8 @@ UI.Setup = {
 
 		UI.event.removeCustomEventListener('viewWillSwitch', UI.Setup.preventViewSwitch);
 		Poppy.Menu.event.removeCustomEventListener('poppyMenuWillShow', UI.Setup.preventPoppyMenus);
+
+		globalPage.FilterList.fetch();
 	},
 
 	preventViewSwitch: function (event) {
