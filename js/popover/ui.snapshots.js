@@ -162,20 +162,10 @@ UI.Snapshots = {
 				UI.Snapshots.buildSnapshots();
 			else
 				UI.Snapshots.__compareQueue.clear();
-		},
-
-		viewDidSwitch: function (event) {
-
-		},
-
-		elementWasAdded: function (event) {
-
 		}
 	}
 };
 
 UI.event.addCustomEventListener(['viewWillSwitch', 'viewAlreadyActive'], UI.Snapshots.events.viewWillSwitch);
-UI.event.addCustomEventListener('viewDidSwitch', UI.Snapshots.events.viewDidSwitch);
-UI.event.addCustomEventListener('elementWasAdded', UI.Snapshots.events.elementWasAdded);
 
 document.addEventListener('DOMContentLoaded', UI.Snapshots.init, true);
