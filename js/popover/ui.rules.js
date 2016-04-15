@@ -477,8 +477,7 @@ UI.Rules = {
 				.on('click', '.rule-group-type-page-controller input', function () {
 					var pageController = $(this).parent().parent().find('.rule-group-type-page-controller'),
 							activePage = pageController.eq(0).parent().find('.active-page'),
-							goToPrevious = this.classList.contains('rule-group-type-previous-page'),
-							advancePage = goToPrevious ? activePage.prev() : activePage.next();
+							advancePage = this.classList.contains('rule-group-type-previous-page') ? activePage.prev() : activePage.next();
 
 					if (advancePage.length) {
 						activePage.removeClass('active-page');
