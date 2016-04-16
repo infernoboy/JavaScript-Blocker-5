@@ -5,7 +5,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 UI.Rules = {
-	__domainsPerPage: 150,
 	__domainFilter: '',
 	__lists: ['page', 'temporary', 'active', 'filter', 'firstVisit'],
 
@@ -226,10 +225,6 @@ UI.Rules = {
 			.empty()
 			.append(container);
 
-		var currentPage,
-				page,
-				pageTypeUL;
-
 		var types = ['page', 'domain', 'notPage', 'notDomain'];
 
 		for (var i = 0; i < types.length; i++) {
@@ -237,10 +232,6 @@ UI.Rules = {
 
 			if (!(type in domainGrouped) || domainGrouped[type]._isEmpty())
 				continue;
-
-			currentPage = -1;
-			page = null;
-			pageTypeUL = null;
 
 			typeExpander = 'ruleGroupType,' + type;
 
@@ -252,25 +243,17 @@ UI.Rules = {
 			
 			typeUL = ruleGroupType.find('.rule-group-type');
 
+			var paginator = new Paginator(ruleGroupType, {
+				pagesWrapper: typeUL
+			});
+
 			ruleGroupType.appendTo(container);
+
+			paginator.appendTo(ruleGroupType);
 
 			for (domain in domainGrouped[type]) {
 				if (domainGrouped[type][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
 					continue;
-
-				if (!page || pageTypeUL.children().length >= UI.Rules.__domainsPerPage) {
-					currentPage++;
-
-					page = $('<div class="rule-group-type-page">');
-
-					if (currentPage === 0)
-						page.addClass('active-page');
-
-					pageTypeUL = page
-						.append(typeUL.clone())
-						.appendTo(typeUL.parent())
-						.find('.rule-group-type');
-				}
 
 				domainExpander = typeExpander + ',ruleGroupDomain,' + domain;
 
@@ -280,9 +263,9 @@ UI.Rules = {
 					editable: editable
 				});
 
-				domainUL = $('.rule-group-domain', domainListItem);
+				paginator.addItem(domainListItem);
 
-				pageTypeUL.append(domainListItem);
+				domainUL = $('.rule-group-domain', domainListItem);
 
 				for (kind in domainGrouped[type][domain]) {
 					if (domainGrouped[type][domain][kind]._isEmpty())
@@ -328,12 +311,7 @@ UI.Rules = {
 				}
 			}
 
-			if (currentPage === 0)
-				$('.rule-group-type-page-controller', ruleGroupType).addClass('jsb-hidden');
-			else
-				$('.rule-group-type-page-controller', ruleGroupType).clone().appendTo(typeUL.parent().parent());
-
-			if (!pageTypeUL || pageTypeUL.is(':empty'))
+			if (!paginator.hasPages())
 				ruleGroupType.remove();
 
 			typeUL.remove();
