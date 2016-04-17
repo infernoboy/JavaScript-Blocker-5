@@ -469,7 +469,7 @@ UI.Page = {
 
 								for (var resourceID in resources)
 									do {
-										hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID], ['hide', 'show'._contains(ruleType)]);
+										hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID], ['hide', 'show']._contains(ruleType));
 
 										if (hasAffect.hasAffect || !hasAffect.detail)
 											break;
