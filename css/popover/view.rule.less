@@ -23,8 +23,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		#rule-toolbar {
 			position: relative;
 			-webkit-flex: 0 0 57px;
-			padding-top: 2px;
-			margin-top: -2px;
+			padding-top: 0;
+			border-top: 1px solid darken(#fff, @darknessLevel);
 			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 			background: darken(rgb(250, 250, 250), @darknessLevel);
 
@@ -34,6 +34,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 			.jsb-large-font& {
 				-webkit-flex: 0 0 61px;
+			}
+
+			.view-toolbar {
+				border-top: 1px solid darken(#fff, @darknessLevel);
 			}
 
 			.view-switcher-container {
