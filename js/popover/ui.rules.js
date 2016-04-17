@@ -187,6 +187,7 @@ UI.Rules = {
 				typeExpander,
 				ruleGroupType,
 				typeUL,
+				typePaginator,
 				domain,
 				domainExpander,
 				domainListItem,
@@ -196,6 +197,7 @@ UI.Rules = {
 				kindListItem,
 				kindHeader,
 				kindUL,
+				rulePaginator,
 				rule,
 				ruleListItem;
 
@@ -243,13 +245,12 @@ UI.Rules = {
 			
 			typeUL = ruleGroupType.find('.rule-group-type');
 
-			var paginator = new Paginator(ruleGroupType, {
-				pagesWrapper: typeUL
+			typePaginator = new Paginator(ruleGroupType, {
+				pageItemWrapper: typeUL
 			});
 
 			ruleGroupType.appendTo(container);
-
-			paginator.appendTo(ruleGroupType);
+			typePaginator.appendTo(ruleGroupType);
 
 			for (domain in domainGrouped[type]) {
 				if (domainGrouped[type][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
@@ -263,7 +264,7 @@ UI.Rules = {
 					editable: editable
 				});
 
-				paginator.addItem(domainListItem);
+				typePaginator.addItem(domainListItem);
 
 				domainUL = $('.rule-group-domain', domainListItem);
 
@@ -281,40 +282,29 @@ UI.Rules = {
 
 					kindUL = $('.rule-group-kind', kindListItem);
 
+					rulePaginator = new Paginator(kindListItem, {
+						pageItemWrapper: kindUL
+					});
+
+					rulePaginator.appendTo($('.rule-group-kind-wrapper', kindListItem));
 					domainUL.append(kindListItem);
 
-					var ruleKeyChunks = Object.keys(domainGrouped[type][domain][kind])._chunk(100);
-
-					for (var j = 0, b = ruleKeyChunks.length; j < b; j++) {
-						var ruleListItems = [];
-
-						for (var k = 0; k < ruleKeyChunks[j].length; k++) {
-							if (domainGrouped[type][domain][kind][ruleKeyChunks[j][k]].action === globalPage.ACTION.BLOCK_FIRST_VISIT) {
-								domainListItem.remove();
-
-								break;
-							}
-
-							ruleListItems.push(Template.create('rules', 'rule-list-item', {
-								type: type,
-								kind: kind,
-								rule: ruleKeyChunks[j][k],
-								ruleInfo: domainGrouped[type][domain][kind][ruleKeyChunks[j][k]],
-								editable: editable
-							}));
-						}
+					for (rule in domainGrouped[type][domain][kind]) {
+						rulePaginator.addItem(Template.create('rules', 'rule-list-item', {
+							type: type,
+							kind: kind,
+							rule: rule,
+							ruleInfo: domainGrouped[type][domain][kind][rule],
+							editable: editable
+						}));
 
 						hasRules = true;
-
-						kindUL.append(ruleListItems);
 					}
 				}
 			}
 
-			if (!paginator.hasPages())
+			if (!typePaginator.hasPages())
 				ruleGroupType.remove();
-
-			typeUL.remove();
 		}
 
 		UI.Rules.noRules.toggle(!hasRules);
