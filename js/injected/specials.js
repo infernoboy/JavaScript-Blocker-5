@@ -615,7 +615,7 @@ Special.specials = {
 
 		HTMLCanvasElement.prototype.toDataURL = function () {
 			try {
-				var fn = arguments.callee.caller;
+				var fn = this.toDataURL.caller;
 
 				if (typeof fn === 'function' && shouldSkipProtectionOnFunction(fn))
 					return toDataURL.apply(this, arguments);
@@ -627,7 +627,7 @@ Special.specials = {
 		if (typeof toDataURLHD === 'function')
 			HTMLCanvasElement.prototype.toDataURLHD = function () {
 				try {
-					var fn = arguments.callee.caller;
+					var fn = this.toDataURLHD.caller;
 
 					if (typeof fn === 'function' && shouldSkipProtectionOnFunction(fn))
 						return toDataURLHD.apply(this, arguments);
