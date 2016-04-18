@@ -13,9 +13,10 @@ var Paginator = function (element, options) {
 
 	this.elementEvents = Paginator.elementEvents;
 
+	this.pageCount = 0;
 	this.itemCount = 0;
 	this.container = element;
-	this.itemsPerPage = options.itemsPerPage || 200;
+	this.itemsPerPage = options.itemsPerPage || 150;
 	this.pageItemWrapper = (options.pageItemWrapper || $('<div>')).clone();
 	this.paginatorWrapper = Template.create('main', 'paginator-wrapper');
 	this.pagesContainer = $('.paginator-pages-container', this.paginatorWrapper);
@@ -37,41 +38,52 @@ Paginator.elementEvents = {
 };
 
 Paginator.prototype.__updateController = function () {
-	var activePage = this.activePage();
+	var self = this,
+			activePage = this.activePage(),
+			from = (parseInt(activePage.attr('data-paginatorPageNumber'), 10) - 1) * this.itemsPerPage,
+			to = Math.min(from + this.itemsPerPage, this.itemCount);
 
-	this.controller.toggleClass('jsb-hidden', this.pagesContainer.children('.paginator-page').length < 2);
+	this.controller.toggleClass('jsb-hidden', this.pagesContainer.children().length < 2);
 
-	$('.paginator-controller-count-from', this.controller).text(activePage.children('.paginator-item:first').attr('data-paginatorItemNumber'));
-	$('.paginator-controller-count-to', this.controller).text(activePage.children('.paginator-item:last').attr('data-paginatorItemNumber'));
-	$('.paginator-controller-count-of', this.controller).text(this.itemCount);
+	$('.paginator-controller-count-from', this.controller).each(function () {
+		this.innerText = from + 1;
+	});
+
+	$('.paginator-controller-count-to', this.controller).each(function () { 
+		this.innerText = to;
+	});
+
+	$('.paginator-controller-count-of', this.controller).each(function () {
+		this.innerText = self.itemCount;
+	});
 
 	$('.paginator-controller-previous', this.controller).toggleClass('jsb-hidden', !activePage.prev().length);
 	$('.paginator-controller-next', this.controller).toggleClass('jsb-hidden', !activePage.next().length);
 };
 
 Paginator.prototype.appendTo = function (element) {
-	this.paginatorWrapper.appendTo(element);
+	element.append(this.paginatorWrapper);
 };
 
 Paginator.prototype.hasPages = function () {
-	return this.pagesContainer.children().length > 0;
+	return this.pagesContainer[0].hasChildNodes();
 };
 
-Paginator.prototype.createPage = function (setActive) {
+Paginator.prototype.createPage = function (setActive, ignoreController) {
 	var isFirstPage = !this.__lastPage,
-			pageItemWrapper = this.pageItemWrapper.clone().addClass('paginator-page');
+			pageItemWrapper = this.pageItemWrapper.clone().attr('data-paginatorPageNumber', ++this.pageCount);
 
-	pageItemWrapper.appendTo(this.pagesContainer);
+	this.pagesContainer.append(pageItemWrapper);
 
 	this.__lastPage = pageItemWrapper;
 
 	if (setActive) {
-		$('> .paginator-page', this.pagesContainer).removeClass('paginator-active');
+		this.pagesContainer.children().removeClass('paginator-active');
 
 		pageItemWrapper.addClass('paginator-active');
 	}
 
-	if (!isFirstPage) {
+	if (!isFirstPage && !ignoreController) {
 		clearTimeout(this.__updateControllerTimeout)
 
 		this.__updateControllerTimeout = setTimeout(function (self) {
@@ -83,16 +95,36 @@ Paginator.prototype.createPage = function (setActive) {
 };
 
 Paginator.prototype.activePage = function () {
-	return this.pagesContainer.children('.paginator-active')
+	return this.pagesContainer.children('.paginator-active');
 };
 
 Paginator.prototype.addItem = function (item) {
-	if (!this.__lastPage || $('> .paginator-item', this.__lastPage).length >= this.itemsPerPage)
+	if (!this.__lastPage || this.__lastPage.children().length >= this.itemsPerPage)
 		this.createPage(!this.__lastPage);
 
-	item.addClass('paginator-item').attr('data-paginatorItemNumber', ++this.itemCount);
-
 	this.__lastPage.append(item);
+
+	this.itemCount++;
+
+	return this;
+};
+
+Paginator.prototype.addItems = function (items) {
+	var remainingItemSpace = this.__lastPage ? this.itemsPerPage - this.__lastPage.children().length : 0,
+			fillCurrentPageItems = items.splice(0, remainingItemSpace),
+			chunkedItems = items._chunk(this.itemsPerPage);
+
+	if (remainingItemSpace)
+		chunkedItems.unshift([fillCurrentPageItems]);		
+
+	for (var i = 0, b = chunkedItems.length; i < b; i++) {
+		if (!this.__lastPage)
+			this.createPage(true);
+
+		this.__lastPage.append(chunkedItems[i]);
+	}
+
+	this.itemCount += items.length;
 
 	return this;
 };

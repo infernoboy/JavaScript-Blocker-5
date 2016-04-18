@@ -198,6 +198,7 @@ UI.Rules = {
 				kindHeader,
 				kindUL,
 				rulePaginator,
+				ruleItems,
 				rule,
 				ruleListItem;
 
@@ -289,8 +290,10 @@ UI.Rules = {
 					rulePaginator.appendTo($('.rule-group-kind-wrapper', kindListItem));
 					domainUL.append(kindListItem);
 
+					ruleItems = [];
+
 					for (rule in domainGrouped[type][domain][kind]) {
-						rulePaginator.addItem(Template.create('rules', 'rule-list-item', {
+						ruleItems.push(Template.create('rules', 'rule-list-item', {
 							type: type,
 							kind: kind,
 							rule: rule,
@@ -300,6 +303,8 @@ UI.Rules = {
 
 						hasRules = true;
 					}
+
+					rulePaginator.addItems(ruleItems);
 				}
 			}
 
