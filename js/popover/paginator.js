@@ -25,7 +25,7 @@ var Paginator = function (element, options) {
 	if (options.pageItemWrapper)
 		options.pageItemWrapper.remove();
 
-	this.superWithArgs(element, '.paginator-controller-previous, .paginator-controller-next');
+	this.superWithArgs(this.controller, '.paginator-controller-previous, .paginator-controller-next');
 }._extends(MagicBinder);
 
 Paginator.elementEvents = {
@@ -120,7 +120,7 @@ Paginator.prototype.addItems = function (items) {
 	if (!this.__lastPage)
 		this.createPage(true);
 
-	for (var i = 0, b = chunkedItems.length; i < b; i++) {me
+	for (var i = 0, b = chunkedItems.length; i < b; i++) {
 		this.__lastPage.append(chunkedItems[i]);
 
 		if (chunkedItems[i + 1])
