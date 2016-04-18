@@ -117,11 +117,14 @@ Paginator.prototype.addItems = function (items) {
 	if (remainingItemSpace)
 		chunkedItems.unshift([fillCurrentPageItems]);		
 
-	for (var i = 0, b = chunkedItems.length; i < b; i++) {
-		if (!this.__lastPage)
-			this.createPage(true);
+	if (!this.__lastPage)
+		this.createPage(true);
 
+	for (var i = 0, b = chunkedItems.length; i < b; i++) {me
 		this.__lastPage.append(chunkedItems[i]);
+
+		if (chunkedItems[i + 1])
+			this.createPage();
 	}
 
 	this.itemCount += items.length;
