@@ -12,12 +12,13 @@ var Expando = {
 
 	toggleGroupByHeader: function (header) {
 		var groupWrapper = header.next(),
-				group = $('> *:first-child', groupWrapper);
+				group = groupWrapper.children(':first-child');
 
 		if (group.is(':animated'))
 			return;
 
 		var groupWrapperHeight = groupWrapper.outerHeight(true),
+				speedMultiplier = groupWrapperHeight > UI.container.height() ? 0.001 : window.globalSetting.speedMultiplier,
 				isCollapsed = header.hasClass('group-collapsed'),
 				expandingClass = isCollapsed ? 'group-expanding' : 'group-collapsing';
 
@@ -36,12 +37,15 @@ var Expando = {
 			if (view.length) {
 				var offset = groupWrapper.offset(),
 						viewOffset = view.offset(),
+						viewHeight = view.height(),
 						bottom = offset.top + groupWrapperHeight;
 
-				if (bottom > view.height() + viewOffset.top)
-					view.animate({
-						scrollTop: '+=' + (bottom - view.height() - viewOffset.top)
-					}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+				if (bottom > viewHeight + viewOffset.top)
+					Utilities.setImmediateTimeout(function (view, bottom, viewHeight, viewOffset) {
+						view.animate({
+							scrollTop: '+=' + (bottom - viewHeight - viewOffset.top)
+						}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+					}, [view, bottom, viewHeight, viewOffset]);
 			}
 		}
 
@@ -53,7 +57,7 @@ var Expando = {
 			.animate({
 				marginTop: isCollapsed ? 0 : -groupWrapperHeight,
 				opacity: isCollapsed ? 1 : 0.3
-			}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
+			}, 310 * speedMultiplier, 'easeOutQuad', function () {
 				header.removeClass(expandingClass);
 
 				if (!isCollapsed)
@@ -65,8 +69,6 @@ var Expando = {
 					marginTop: 0,
 					opacity: 1
 				});
-
-				// Utilities.Element.repaint(document.documentElement);
 			});
 	},
 
@@ -156,7 +158,7 @@ var Expando = {
 							.then((function (headerLabel, value) {
 								headerLabel.css('color', value);
 							}).bind(null, headerLabel));
-					}, 10 * i, header, headerLabel, header.css('color'));
+					}, 5 * i, header, headerLabel, header.css('color'));
 				}
 			}
 		}
