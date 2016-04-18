@@ -119,13 +119,10 @@ var Expando = {
 						header,
 						headerLabel;
 
-				var headers = event.detail.querySelectorAll('*[data-expander]'),
+				var headers = event.detail.querySelectorAll('*[data-expander]:not(.header-expander-ready)'),
 						showExpanderLabels = Settings.getItem('showExpanderLabels');
 
 				for (var i = headers.length; i--;) {
-					if (headers[i].classList.contains('header-expander-ready'))
-						continue;
-
 					headerWrapper = $(headers[i]);
 
 					expander = headers[i].getAttribute('data-expander');
@@ -138,25 +135,28 @@ var Expando = {
 							.toggleClass('keep-expanded', keepExpanded)
 							.toggleClass('show-label', showExpanderLabels)
 							.toggleClass('group-collapsed', !keepExpanded && !!Settings.getItem('expander', expander))
-							.find('> *');
+							.children();
 
 					headerLabel =
 						$('<span class="header-expander-label"></span>')
 							.attr({
 								'data-i18n-show': _('expander.show'),
 								'data-i18n-hide': _('expander.hide')
-							})
-							.appendTo(header);
+							});
+
+					header.append(headerLabel);
 
 					headerWrapper
 						.next()
 						.wrapAll('<div class="collapsible-group-wrapper"></div>');
 
-					UI
-						.executeLessScript('lighten(' + header.css('color') + ', 20%)')
-						.then((function (headerLabel, value) {
-							headerLabel.css('color', value);
-						}).bind(null, headerLabel));
+					setTimeout(function (header, headerLabel, headerColor) {
+						UI
+							.executeLessScript('lighten(' + headerColor + ', 20%)')
+							.then((function (headerLabel, value) {
+								headerLabel.css('color', value);
+							}).bind(null, headerLabel));
+					}, 10 * i, header, headerLabel, header.css('color'));
 				}
 			}
 		}
