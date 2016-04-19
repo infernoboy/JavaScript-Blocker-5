@@ -186,18 +186,19 @@ UI.Rules = {
 		var type,
 				typeExpander,
 				ruleGroupType,
-				typeUL,
 				typePaginator,
 				domainItems,
 				domain,
 				domainExpander,
 				domainListItem,
 				domainUL,
+				kindItems,
 				kind,
 				kindExpander,
 				kindListItem,
 				kindHeader,
 				kindUL,
+				rulesNeedPaginating,
 				rulePaginator,
 				ruleItems,
 				rule,
@@ -245,14 +246,12 @@ UI.Rules = {
 				expander: keepExpanded ? 0 : typeExpander
 			});
 			
-			typeUL = ruleGroupType.find('.rule-group-type');
-
 			typePaginator = new Paginator(ruleGroupType, {
-				pageItemWrapper: typeUL
+				pageItemWrapper: $('.rule-group-type', ruleGroupType)
 			});
 
-			ruleGroupType.appendTo(container);
 			typePaginator.appendTo(ruleGroupType);
+			container.append(ruleGroupType);
 
 			domainItems = [];
 
@@ -268,9 +267,11 @@ UI.Rules = {
 					editable: editable
 				});
 
-				domainItems.push(domainListItem)
-
 				domainUL = $('.rule-group-domain', domainListItem);
+
+				domainItems.push(domainListItem);
+
+				kindItems = [];
 
 				for (kind in domainGrouped[type][domain]) {
 					if (domainGrouped[type][domain][kind]._isEmpty())
@@ -286,12 +287,15 @@ UI.Rules = {
 
 					kindUL = $('.rule-group-kind', kindListItem);
 
-					rulePaginator = new Paginator(kindListItem, {
-						pageItemWrapper: kindUL
-					});
+					if (rulesNeedPaginating = (Object.keys(domainGrouped[type][domain][kind]).length > 150)) {
+						rulePaginator = new Paginator(kindListItem, {
+							pageItemWrapper: kindUL
+						});
 
-					rulePaginator.appendTo($('.rule-group-kind-wrapper', kindListItem));
-					domainUL.append(kindListItem);
+						rulePaginator.appendTo(kindListItem.children('.rule-group-kind-wrapper'));
+					}
+
+					kindItems.push(kindListItem);
 
 					ruleItems = [];
 
@@ -307,8 +311,13 @@ UI.Rules = {
 						hasRules = true;
 					}
 
-					rulePaginator.addItems(ruleItems);
+					if (rulesNeedPaginating)
+						rulePaginator.addItems(ruleItems);
+					else
+						kindUL.append(ruleItems);
 				}
+
+				domainUL.append(kindItems);
 			}
 
 			typePaginator.addItems(domainItems);
