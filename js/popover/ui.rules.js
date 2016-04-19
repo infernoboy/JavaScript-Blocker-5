@@ -188,6 +188,7 @@ UI.Rules = {
 				ruleGroupType,
 				typeUL,
 				typePaginator,
+				domainItems,
 				domain,
 				domainExpander,
 				domainListItem,
@@ -253,6 +254,8 @@ UI.Rules = {
 			ruleGroupType.appendTo(container);
 			typePaginator.appendTo(ruleGroupType);
 
+			domainItems = [];
+
 			for (domain in domainGrouped[type]) {
 				if (domainGrouped[type][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
 					continue;
@@ -265,7 +268,7 @@ UI.Rules = {
 					editable: editable
 				});
 
-				typePaginator.addItem(domainListItem);
+				domainItems.push(domainListItem)
 
 				domainUL = $('.rule-group-domain', domainListItem);
 
@@ -308,7 +311,9 @@ UI.Rules = {
 				}
 			}
 
-			if (!typePaginator.hasPages())
+			typePaginator.addItems(domainItems);
+
+			if (!domainItems.length)
 				ruleGroupType.remove();
 		}
 
