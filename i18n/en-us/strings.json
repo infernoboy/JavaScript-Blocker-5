@@ -295,6 +295,7 @@
 	"setting.useAnimations.label": "Use animations",
 	"setting.useFastAnimations.label": "Use fast animations",
 	"setting.largeFont.label": "Use large font",
+	"setting.createRulesOnClick.label": "Create rules without switching to page editor",
 	"setting.showPageEditorImmediately.label": "Show page editor immediately",
 	"setting.useSimplePageEditor.label": "Use simplified page editor",
 	"setting.useSimplePageEditor.help": "Hides the advanced options of the page editor until you need them.",

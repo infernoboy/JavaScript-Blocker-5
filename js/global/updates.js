@@ -220,3 +220,22 @@ Update.versions[160411] = {
 	blocking: false,
 	doNotBeg: true
 };
+
+// === 5.1.0 ===
+Update.versions[160419] = {
+	blocking: false,
+
+	poppy: function (poppy) {
+		poppy
+			.modal()
+			.showCloseButton();
+		
+		Poppy.event.addCustomEventListener('poppyDidClose', function (event) {
+			if (event.detail === poppy) {
+				event.unbind();
+
+				Update.updatedToVersion(poppy.updateVersion);
+			}
+		});
+	}
+}

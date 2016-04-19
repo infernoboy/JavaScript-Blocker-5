@@ -347,6 +347,12 @@ Settings.settings = {
 	}, {
 		header: 'pageHeader'
 	}, {
+		setting: 'createRulesOnClick',
+		props: {
+			type: 'boolean',
+			default: true
+		}
+	}, {
 		setting: 'showPageEditorImmediately',
 		props: {
 			type: 'boolean',
