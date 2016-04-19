@@ -116,6 +116,7 @@
 	"view.page.host.count_type.items": "items",
 	"view.page.host.count_type.host": "host",
 	"view.page.host.count_type.hosts": "hosts",
+	"view.page.host.click_to_create_rule": "Click to allow or block",
 	"view.page.host.click_to_edit": "Click to switch to edit mode",
 	"view.page.host.click_to_select_all": "Click to select all",
 
