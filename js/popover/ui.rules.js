@@ -335,26 +335,28 @@ UI.Rules = {
 	},
 
 	processRules: function (rules) {
-		var isEditable = rules.attr('data-editable') !== '0';
+		rules.each(function () {
+			var editable = this.getAttribute('data-editable'),
+					isEditable = editable !== '0';
 
-		if (!isEditable)
-			return;
+			if (!isEditable)
+				return;
 
-		var input = $('<input>'),
-				editable = rules.attr('data-editable'),
-				isSnapshot = editable === '2';
+			var input = $('<input>'),
+					isSnapshot = editable === '2';
 
-		input
-			.attr({
-				type: 'button',
-				value: isSnapshot ? _('Restore') : _('Delete')
-			})
-			.addClass((isSnapshot ? 'rule-item-restore' : 'rule-item-delete') + ' blend-in ' + (isSnapshot ? '' : 'double-click jsb-color-blocked'));
+			input
+				.attr({
+					type: 'button',
+					value: isSnapshot ? _('Restore') : _('Delete')
+				})
+				.addClass((isSnapshot ? 'rule-item-restore' : 'rule-item-delete') + ' blend-in ' + (isSnapshot ? '' : 'double-click jsb-color-blocked'));
 
-		rules
-			.addClass('rule-item-processed')
-			.find('.rule-item-action-container')
-			.append(input);
+			$(this)
+				.addClass('rule-item-processed')
+				.find('.rule-item-action-container')
+				.append(input);
+		});
 
 		Poppy.setAllPositions();
 	},
