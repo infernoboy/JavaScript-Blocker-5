@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 UI.Page = {
-	__forceRuleColorTemplate: 'rgba(219, 235, 256, {0})',
+	__forceRuleColorTemplate: 'rgba(255, 220, 255, {0})',
 	__rendering: false,
 
 	__renderPage: function (page) {
@@ -280,7 +280,7 @@ UI.Page = {
 	},
 
 	canRender: function () {
-		if (!UI.Page.view)
+		if (!UI.Page.view || Settings.RESTART_REQUIRED)
 			return false;
 
 		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyDisplayed() && $('.page-host-editing', UI.Page.view).length === 0 && $('.advanced-rule-created', UI.Page.view).length === 0);
