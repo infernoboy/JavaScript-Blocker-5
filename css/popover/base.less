@@ -100,15 +100,24 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				&:not(:last-child) {
 					padding: 0 0 5px;
 					margin: 5px 0;
-					border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+				}
 
-					& when (@darkMode) {
-						border-bottom-color: rgba(0, 0, 0, 0.25);
+				ul {
+					margin-left: 13px;
+
+					li {
+						margin-bottom: 7px;
 					}
 				}
 
-				&:last-child {
-
+				div {
+					> b,
+					> u,
+					> i {
+						display: inline-block;
+						margin-top: 10px;
+						margin-bottom: -5px;
+					}
 				}
 			}
 		}
