@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 var Update = {
-	__versionCheckURL: 'http://lion.toggleable.com:160/jsblocker/latestVersion.php',
+	__versionCheckURL: 'http://lion.toggleable.com:160/jsblocker/download/extupdates.plist',
 
 	wasJustUpdated: false,
 
@@ -37,9 +37,16 @@ var Update = {
 	},
 
 	checkLatestVersion: function () {
-		$.get(Update.__versionCheckURL).then(function (version) {
+		$.get(Update.__versionCheckURL).then(function (plist) {
 			try {
-				var version = JSON.parse(version);
+				var plist = $(plist),
+						jsb = plist.find('string:contains("com.toggleable.JavaScriptBlocker5")');
+
+				var version = {
+					bundleID: Number(jsb.nextAll('key:contains("CFBundleVersion")').next().text()),
+					displayVersion: jsb.nextAll('key:contains("CFBundleShortVersionString")').next().text(),
+					URL: jsb.nextAll('key:contains("URL")').next().text()
+				};
 
 				if (version.bundleID > Update.installedBundle && !Settings.getItem('ignoredUpdates', version.bundleID)) {
 					Update
