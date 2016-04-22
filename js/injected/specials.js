@@ -546,7 +546,7 @@ Special.specials = {
 		var shouldSkipProtectionOnFunction = function (fn) {
 			fn = fn.toString();
 
-			if (/.+((f|fromCharCode)\(\s?55356,\s?(56812|56806),\s?55356,\s?(56807|56826)\s?\)).+/.test(fn))
+			if (/.+((f|h|fromCharCode)\(\s?55356,\s?(56812|56806),\s?55356,\s?(56807|56826)\s?\)).+/.test(fn))
 				return true;
 
 			return false;
@@ -615,9 +615,7 @@ Special.specials = {
 
 		HTMLCanvasElement.prototype.toDataURL = function () {
 			try {
-				var fn = arguments.callee.caller;
-
-				if (typeof fn === 'function' && shouldSkipProtectionOnFunction(fn))
+				if (typeof this.toDataURL.caller === 'function' && shouldSkipProtectionOnFunction(this.toDataURL.caller))
 					return toDataURL.apply(this, arguments);
 			} catch (e) {}
 
@@ -627,9 +625,7 @@ Special.specials = {
 		if (typeof toDataURLHD === 'function')
 			HTMLCanvasElement.prototype.toDataURLHD = function () {
 				try {
-					var fn = arguments.callee.caller;
-
-					if (typeof fn === 'function' && shouldSkipProtectionOnFunction(fn))
+					if (typeof this.toDataURLHD.caller === 'function' && shouldSkipProtectionOnFunction(this.toDataURLHD.caller))
 						return toDataURLHD.apply(this, arguments);
 				} catch (e) {}
 

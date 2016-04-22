@@ -31,12 +31,9 @@ ForceClickElement.events = {
 
 		var forceClick;
 
-		var forceClickElements = event.detail.querySelectorAll('*[data-forceTriggersClick]');
+		var forceClickElements = event.detail.querySelectorAll('*[data-forceTriggersClick]:not(.force-click-ready)');
 
 		for (var i = forceClickElements.length; i--;) {
-			if (forceClickElements[i].classList.contains('force-click-ready'))
-				continue;
-
 			forceClickElements[i].classList.add('force-click-ready');
 
 			(function (forceClickElement) {

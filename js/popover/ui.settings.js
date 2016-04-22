@@ -104,7 +104,7 @@ UI.Settings = {
 			var element = $(inlineSettings[i]);
 
 			if (element.attr('data-inlineSettingBound'))
-				return;
+				continue;
 
 			element.attr('data-inlineSettingBound', 1);
 
@@ -196,12 +196,12 @@ UI.Settings = {
 			var element = $(userScriptSettings[i]);
 
 			if (element.attr('data-userScriptSettingsBound'))
-				return;
+				continue;
 
 			try {
 				var attributeValue = globalPage.UserScript.getAttribute(element.attr('data-userScript'), element.attr('data-attribute'));
 			} catch (eror) {
-				return;
+				continue;
 			}
 
 			element.attr('data-userScriptSettingsBound', 1);
@@ -221,12 +221,12 @@ UI.Settings = {
 			var element = $(userScriptStorages[i]);
 
 			if (element.attr('data-userScriptStorageBound'))
-				return;
+				continue;
 
 			try {
 				var storageItem = globalPage.UserScript.getStorageItem(element.attr('data-userScript'), element.attr('data-storageKey'));
 			} catch (error) {
-				return;
+				continue;
 			}
 
 			try {
@@ -311,7 +311,7 @@ UI.Settings = {
 			var element = $(userScriptAttributes[i]);
 
 			if (element.attr('data-userScriptAttributeBound'))
-				return;
+				continue;
 
 			element
 				.attr('data-userScriptAttributeBound', 1)

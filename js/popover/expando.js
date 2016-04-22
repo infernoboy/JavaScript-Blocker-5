@@ -12,12 +12,13 @@ var Expando = {
 
 	toggleGroupByHeader: function (header) {
 		var groupWrapper = header.next(),
-				group = $('> *:first-child', groupWrapper);
+				group = groupWrapper.children(':first-child');
 
 		if (group.is(':animated'))
 			return;
 
 		var groupWrapperHeight = groupWrapper.outerHeight(true),
+				speedMultiplier = groupWrapperHeight > UI.container.height() ? 0.001 : window.globalSetting.speedMultiplier,
 				isCollapsed = header.hasClass('group-collapsed'),
 				expandingClass = isCollapsed ? 'group-expanding' : 'group-collapsing';
 
@@ -36,12 +37,15 @@ var Expando = {
 			if (view.length) {
 				var offset = groupWrapper.offset(),
 						viewOffset = view.offset(),
+						viewHeight = view.height(),
 						bottom = offset.top + groupWrapperHeight;
 
-				if (bottom > view.height() + viewOffset.top)
-					view.animate({
-						scrollTop: '+=' + (bottom - view.height() - viewOffset.top)
-					}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+				if (bottom > viewHeight + viewOffset.top)
+					Utilities.setImmediateTimeout(function (view, bottom, viewHeight, viewOffset) {
+						view.animate({
+							scrollTop: '+=' + (bottom - viewHeight - viewOffset.top)
+						}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+					}, [view, bottom, viewHeight, viewOffset]);
 			}
 		}
 
@@ -53,7 +57,7 @@ var Expando = {
 			.animate({
 				marginTop: isCollapsed ? 0 : -groupWrapperHeight,
 				opacity: isCollapsed ? 1 : 0.3
-			}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
+			}, 310 * speedMultiplier, 'easeOutQuad', function () {
 				header.removeClass(expandingClass);
 
 				if (!isCollapsed)
@@ -65,8 +69,6 @@ var Expando = {
 					marginTop: 0,
 					opacity: 1
 				});
-
-				// Utilities.Element.repaint(document.documentElement);
 			});
 	},
 
@@ -119,13 +121,10 @@ var Expando = {
 						header,
 						headerLabel;
 
-				var headers = event.detail.querySelectorAll('*[data-expander]'),
+				var headers = event.detail.querySelectorAll('*[data-expander]:not(.header-expander-ready)'),
 						showExpanderLabels = Settings.getItem('showExpanderLabels');
 
 				for (var i = headers.length; i--;) {
-					if (headers[i].classList.contains('header-expander-ready'))
-						continue;
-
 					headerWrapper = $(headers[i]);
 
 					expander = headers[i].getAttribute('data-expander');
@@ -138,25 +137,28 @@ var Expando = {
 							.toggleClass('keep-expanded', keepExpanded)
 							.toggleClass('show-label', showExpanderLabels)
 							.toggleClass('group-collapsed', !keepExpanded && !!Settings.getItem('expander', expander))
-							.find('> *');
+							.children();
 
 					headerLabel =
 						$('<span class="header-expander-label"></span>')
 							.attr({
 								'data-i18n-show': _('expander.show'),
 								'data-i18n-hide': _('expander.hide')
-							})
-							.appendTo(header);
+							});
+
+					header.append(headerLabel);
 
 					headerWrapper
 						.next()
 						.wrapAll('<div class="collapsible-group-wrapper"></div>');
 
-					UI
-						.executeLessScript('lighten(' + header.css('color') + ', 20%)')
-						.then((function (headerLabel, value) {
-							headerLabel.css('color', value);
-						}).bind(null, headerLabel));
+					setTimeout(function (header, headerLabel, headerColor) {
+						UI
+							.executeLessScript('lighten(' + headerColor + ', 20%)')
+							.then((function (headerLabel, value) {
+								headerLabel.css('color', value);
+							}).bind(null, headerLabel));
+					}, 5 * i, header, headerLabel, header.css('color'));
 				}
 			}
 		}
@@ -165,5 +167,5 @@ var Expando = {
 
 Expando.init();
 
-globalPage.Rule.event.addCustomEventListener(['rulesWereCleared', 'ruleWasAdded', 'ruleWasRemoved'], Expando.events.rulesChanged);
+globalPage.Rule.event.addCustomEventListener(['rulesWereCleared', 'ruleWasAdded', 'ruleWasRemoved', 'manyRulesAdded'], Expando.events.rulesChanged);
 UI.event.addCustomEventListener('elementWasAdded', Expando.events.elementWasAdded);

@@ -252,18 +252,20 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 		this.poppy.removeClass('poppy-up poppy-no-arrow');
 
-		this.content.width('');		
+		this.content.width('');
+
+		var defaultArrowHeight = this.arrow.height();
 
 		var position = {
 			arrow: {
 				left: 0,
-				bottom: -this.arrow.height(),
+				bottom: -defaultArrowHeight,
 				top: 'auto'
 			},
 
 			poppy: {
 				left: 0,
-				bottom: Math.max(this.arrow.height() + Poppy.__offset, (Poppy.__container.height() - this.position.y) + this.arrow.height() + Poppy.__offset),
+				bottom: Math.max(defaultArrowHeight + Poppy.__offset, (Poppy.__container.height() - this.position.y) + defaultArrowHeight + Poppy.__offset),
 				top: 'auto'
 			}
 		};
@@ -491,9 +493,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 		this.displayed = true;
 
-		this.setPosition();
-
-		Poppy.event.trigger('poppyDidShow', this);
+		this.executeScript();
 
 		this.poppy
 			.toggleClass('poppy-open-quick', !!quick)
@@ -505,15 +505,15 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
 			}.bind(this));
 
+		Utilities.setImmediateTimeout(function (self) {
+			self.setPosition();
+		}, [this]);
+
+		Poppy.event.trigger('poppyDidShow', this);
+
 		Utilities.Timer.timeout('PoppyCreating', function () {
 			Poppy.__creating = false;
 		}, 0);
-
-		this.executeScript();
-
-		Utilities.setImmediateTimeout(function (poppy) {
-			poppy.setPosition();
-		}, [this]);
 
 		return this;
 	};

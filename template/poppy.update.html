@@ -44,3 +44,18 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		<p class="jsb-info jsb-readable">Force click item count to temporarily switch to showing all resource URLs.</p><%
 	} %>
 </noscript>
+
+<noscript id="update-160419">
+	<h3 class="jsb-centered">Update 5.1.0</h3>
+
+	<p class="jsb-info jsb-readable">Rules will now be created without switching to the page editor.
+		Just click the items you want to allow or block and the page will automatically reload with the changes you made.</p>
+
+	<div class="horizontal-divider"></div>
+
+	<p class="jsb-info">
+		<%
+			var setting = UI.Settings.createElementForSetting(Settings.map.createRulesOnClick, null, true);
+		%><%=setting[0].outerHTML%>
+	</p>
+</noscript>

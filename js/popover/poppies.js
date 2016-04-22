@@ -509,17 +509,22 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#item-info-show-rules', function () {
+				var ruleListItems = $('<ul class="page-rules-container">');
+
+				var resources = poppy.resources,
+						rulePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true);
+
 				poppy.setContent(_('view.page.item.info.loading'));
 
-				setTimeout(function () {
-					var resources = poppy.resources,
-							rulePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true),
-							ruleListItems = $('<ul class="page-rules-container">');
+				UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
+					rulePoppy.setContent(ruleListItems).show();
 
-					UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
+					setTimeout(function () {
 						rulePoppy.setPosition();
-					}, true);
+					});
+				}, true);
 
+				setTimeout(function () {
 					var resourceID,
 							rules,
 							ruleLists,
@@ -539,8 +544,6 @@ Object._extend(Poppy.scripts, {
 
 						ruleListItems.append(resourceListItem);
 					}
-
-					rulePoppy.setContent(ruleListItems).show();
 				});
 			});
 	},
@@ -946,11 +949,18 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#feedback-submit', function (event) {
+				this.disabled = true;
+
 				var message = $.trim($('#feedback-message', poppy.content).val()),
 						email = $.trim($('#feedback-email', poppy.content).val());
 
-				if (!message.length)
+				if (!message.length) {
+					this.disabled = false;
+
 					return;
+				}
+
+				var self = this;
 
 				globalPage.Feedback
 					.submitFeedback(message, email)
@@ -962,15 +972,26 @@ Object._extend(Poppy.scripts, {
 							.hideCloseButton()
 							.setContent(Template.create('poppy.feedback', 'feedback-success'));
 					}, function (error) {
+						self.disabled = false;
+
 						var errorPoppy = new Poppy(event.pageX, event.pageY);
 
 						errorPoppy
 							.linkTo(poppy)
 							.setContent(Template.create('poppy.feedback', error === false ? 'feedback-please-wait' : 'feedback-error', {
-								result: error.statusText === 'error' ? _('feedback.error.offline') : error.statusText
+								result: error.statusText === 'error' ? _('feedback.error.offline') : (error.statusText || error)
 							}))
 							.show();
 					});
+			});
+	},
+
+	'update-available': function (poppy) {
+		poppy.content
+			.on('click', '#update-ignore', function () {
+				Settings.setItem('ignoredUpdates', true, poppy.bundleID);
+
+				poppy.close();
 			});
 	},
 

@@ -51,6 +51,9 @@
 	"remaining_time": "{0} days, {1} hours, {2} minutes",
 
 	"change_log": "Change Log - {0}",
+	"update_available": "Update Available - {0}",
+	"update_available.more": "Open Safari preferences to update or <a href=\"{0}\">download it directly</a>.",
+	"update_available.ignore": "Ignore this update",
 	
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",
@@ -113,6 +116,7 @@
 	"view.page.host.count_type.items": "items",
 	"view.page.host.count_type.host": "host",
 	"view.page.host.count_type.hosts": "hosts",
+	"view.page.host.click_to_create_rule": "Click to allow or block",
 	"view.page.host.click_to_edit": "Click to switch to edit mode",
 	"view.page.host.click_to_select_all": "Click to select all",
 
@@ -292,6 +296,7 @@
 	"setting.useAnimations.label": "Use animations",
 	"setting.useFastAnimations.label": "Use fast animations",
 	"setting.largeFont.label": "Use large font",
+	"setting.createRulesOnClick.label": "Create rules without switching to page editor",
 	"setting.showPageEditorImmediately.label": "Show page editor immediately",
 	"setting.useSimplePageEditor.label": "Use simplified page editor",
 	"setting.useSimplePageEditor.help": "Hides the advanced options of the page editor until you need them.",

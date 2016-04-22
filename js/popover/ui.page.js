@@ -5,6 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 UI.Page = {
+	__forceRuleColorTemplate: 'rgba(255, 220, 255, {0})',
 	__rendering: false,
 
 	__renderPage: function (page) {
@@ -139,8 +140,7 @@ UI.Page = {
 				loadingPoppy.setContent(_('view.page.item.info.loading')).show(true);
 			});
 		
-		var forceClickPageItems = new ForceClickElement(UI.Page.view, '.page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description'),
-				forceRuleColorTemplate = 'rgba(219, 235, 256, {0})';
+		var forceClickPageItems = new ForceClickElement(UI.Page.view, '.page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description');
 
 		forceClickPageItems.setThreshold(0.5, 0.05).modifyNormalizedForce(0, 1);
 
@@ -160,7 +160,7 @@ UI.Page = {
 				
 				target
 					.parents('.page-host-item')
-					.css('background', event.detail.normalizedForce > 0.6 ? forceRuleColorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
+					.css('background', event.detail.normalizedForce > 0.6 ? UI.Page.__forceRuleColorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
 
 				if (!Poppy.poppyWithScriptNameExist('force-click-resource')) {
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-resource');
@@ -175,6 +175,10 @@ UI.Page = {
 
 				if (section.hasClass('page-host-editing') || globalPage.Rules.isLocked())
 					return;
+
+				target
+					.parents('.page-host-item')
+					.css('background', UI.Page.__forceRuleColorTemplate._format([1]));
 
 				Poppy.closeAll();
 
@@ -210,7 +214,7 @@ UI.Page = {
 					.parent()
 					.next()
 					.find('.page-host-item')
-					.css('background', event.detail.normalizedForce > 0.6 ? forceRuleColorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
+					.css('background', event.detail.normalizedForce > 0.6 ? UI.Page.__forceRuleColorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
 
 				if (!Poppy.poppyWithScriptNameExist('force-click-resource')) {
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-resource');
@@ -276,7 +280,7 @@ UI.Page = {
 	},
 
 	canRender: function () {
-		if (!UI.Page.view)
+		if (!UI.Page.view || Settings.RESTART_REQUIRED)
 			return false;
 
 		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyDisplayed() && $('.page-host-editing', UI.Page.view).length === 0 && $('.advanced-rule-created', UI.Page.view).length === 0);
@@ -361,7 +365,7 @@ UI.Page = {
 		},
 
 		createRules: function (section, hideInstantly) {
-			if (section.find('.page-host-editor').is(':not(:visible)'))
+			if (!hideInstantly && section.find('.page-host-editor').is(':not(:visible)'))
 				return;
 
 			var ruleAction,
@@ -469,7 +473,7 @@ UI.Page = {
 
 								for (var resourceID in resources)
 									do {
-										hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID], ['hide', 'show'._contains(ruleType)]);
+										hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID], ['hide', 'show']._contains(ruleType));
 
 										if (hasAffect.hasAffect || !hasAffect.detail)
 											break;
@@ -813,7 +817,9 @@ UI.Page = {
 						return;
 
 					var self = $(this),
-							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description');
+							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description'),
+							pageHostItem = self.parents('.page-host-item'),
+							createRulesOnClick = (!event.isTrigger && isItem && Settings.getItem('createRulesOnClick'));
 
 					self.removeClass('force-click-began');
 
@@ -830,12 +836,28 @@ UI.Page = {
 							.show();
 
 					if (isItem) {
-						self.parents('.page-host-item').find('.page-host-item-edit-check').prop('checked', true).change();
+						var checkbox = $('.page-host-item-edit-check', pageHostItem),
+								wasChecked = checkbox.prop('checked');
 
-						$('.page-host-editor-kind', section).find('option:first').prop('selected', true).end().trigger('change');
+						checkbox
+							.prop('checked', createRulesOnClick ? !wasChecked : true)
+							.change();
+
+						$('.page-host-editor-kind', section)
+							.find('option:first')
+							.prop('selected', true)
+							.end()
+							.change();
 					}
 
-					UI.Page.section.toggleEditMode(section);
+					if (createRulesOnClick) {
+						pageHostItem.css('background', wasChecked ? '' : UI.Page.__forceRuleColorTemplate._format([1]));
+
+						Utilities.Timer.timeout('createRulesOnClick' + section.attr('data-id'), function (section) {
+							UI.Page.section.createRules(section, true);
+						}, 1500, [section]);
+					}	else
+						UI.Page.section.toggleEditMode(section);
 				})
 
 				.on('click', '.page-host-unblocked .page-host-items[data-kind="script"] .page-host-item-source', function (event) {

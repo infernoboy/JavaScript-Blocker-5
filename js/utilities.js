@@ -705,12 +705,12 @@ var Utilities = {
 	},
 
 	Page: {
-		isXML: ((document.ownerDocument || document).documentElement.nodeName.toUpperCase() !== 'HTML' && document.xmlVersion !== null),
+		isXML: window.document ? (((document.ownerDocument || document).documentElement.nodeName.toUpperCase() !== 'HTML' && document.xmlVersion !== null)) : false,
 		isGlobal: (window.GlobalPage && GlobalPage.window === window),
-		isPopover: Popover.window === window,
+		isPopover: window.Popover ? Popover.window === window : false,
 		isTop: window === window.top,
-		isAbout: document.location.protocol === 'about:',
-		isSrcDoc: document.location.href === 'about:srcdoc',
+		isAbout: window.document ? document.location.protocol === 'about:' : false,
+		isSrcDoc: window.document ? document.location.href === 'about:srcdoc' : false,
 
 		getCurrentLocation: function () {
 			if (['http:', 'https:', 'file:']._contains(document.location.protocol)) {
@@ -731,7 +731,7 @@ var Utilities = {
 	},
 
 	URL: {
-		__anchor: document.createElement('a'),
+		__anchor: window.document ? document.createElement('a') : {},
 		__structure: /^(blob:)?(https?|s?ftp|file|safari\-extension):\/\/([^\/]+)\//,
 		__IPv4: /^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})(:[0-9]{1,7})?$/,
 		__IPv6: /^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/,
@@ -807,14 +807,14 @@ var Utilities = {
 				});
 
 			var cacheKey = prefixed ? 'prefixed' : 'unprefixed',
-					hostStore =  this.hostParts.cache.getStore(host),
-					cached = hostStore.get(cacheKey);
+					hostStore = this.hostParts.cache ? this.hostParts.cache.getStore(host) : null,
+					cached = hostStore ? hostStore.get(cacheKey) : null;
 
 			if (cached)
 				return cached;
 
 			if (!host._contains('.') || this.isIPBasedHost(host))
-				return hostStore.set(cacheKey, [host]).get(cacheKey);
+				return hostStore ? hostStore.set(cacheKey, [host]).get(cacheKey) : [host];
 
 			var split = host.split(/\./g).reverse(),
 					part = split[0],
@@ -850,7 +850,7 @@ var Utilities = {
 			if (prefixed)
 				parts.splice(1, 0, '.' + parts[0]);
 			
-			return hostStore.set(cacheKey, parts).get(cacheKey);
+			return hostStore ? hostStore.set(cacheKey, parts).get(cacheKey) : parts;
 		},
 
 		pageParts: function (url) {
@@ -944,7 +944,7 @@ function _createConsoleFormat(messages) {
 
 	messages.unshift((new Date).toLocaleTimeString() + ' - ');
 
-	if (!Utilities.Page.isGlobal)
+	if (Utilities.Page.isWebpage)
 		messages.unshift('(JSB)');
 
 	for (var i = 0; i < messages.length; i++)
@@ -1691,8 +1691,8 @@ Utilities.safariVersionSupported = Utilities.safariBuildVersion >= 537;
 if (!Utilities.safariVersionSupported)
 	throw new Error('safari version too old.');
 
-Utilities.Page.isWebpage = !!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL());
-Utilities.Page.isUserScript = window.location.href._endsWith('.user.js');
+Utilities.Page.isWebpage = window.GlobalPage ? (!!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL())) : false;
+Utilities.Page.isUserScript = window.location ? window.location.href._endsWith('.user.js') : false;
 
 Utilities.Group.NOT._createReverseMap();
 

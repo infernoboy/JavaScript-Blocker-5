@@ -90,7 +90,7 @@ Rule.withLocationRules = function (allRules, callback) {
 	}
 };
 
-Rule.prototype.__add = function (type, kind, domain, rule) {
+Rule.prototype.__add = function (type, kind, domain, rule, isViaMany) {
 	if (!this.ignoreLock && Rules.isLockerLocked())
 		return;
 
@@ -162,7 +162,8 @@ Rule.prototype.__add = function (type, kind, domain, rule) {
 		rules: rules
 	};
 
-	Rule.event.trigger('ruleWasAdded', added);
+	if (!isViaMany)
+		Rule.event.trigger('ruleWasAdded', added);
 
 	return added;
 };
@@ -395,10 +396,15 @@ Rule.prototype.addMany = function (kinds) {
 
 					kinds[kind][type][domain][rule].rule = rule;
 
-					this.__add(type, kind, domain, kinds[kind][type][domain][rule]);
+					this.__add(type, kind, domain, kinds[kind][type][domain][rule], true);
 				}
 		}
 	}
+
+	Rule.event.trigger('manyRulesAdded', {
+		self: this,
+		rules: kinds
+	});
 
 	return this;
 };
@@ -566,7 +572,8 @@ var Rules = {
 	__regExpCache: {},
 	__partsCache: new Store('RuleParts'),
 	__FilterRules: new Store('FilterRules', {
-		save: true
+		save: true,
+		saveDelay: 6000
 	}),
 
 	PAGE_RULES_ONLY: 1,
@@ -584,13 +591,6 @@ var Rules = {
 			NOT_SUPPORTED: 'type not supported',
 			PAGE_NOT_REGEXP: 'Page must begin with ^ and end with $.'
 		}
-	},
-
-	CREATE: {
-		EXACT: 1,
-		HASH: 2,
-		SEARCH: 4,
-		PATH: 8
 	},
 
 	get fullKindList() {
@@ -837,34 +837,6 @@ var Rules = {
 		return lists;
 	},
 
-	createRegExp: function (url, type) {
-		if (typeof url !== 'string')
-			throw new TypeError(url + ' is not a string.');
-
-		var url = url._escapeRegExp(),
-				endCapture = [];
-
-		if (!(type & Rules.CREATE.EXACT)) {
-			endCapture = ['((', [], ')+.*)?'];
-
-			if (type & Rules.CREATE.HASH)
-				endCapture[1].push('\\#');
-
-			if (type & Rules.CREATE.SEARCH)
-				endCapture[1].push('\\?');
-
-			if (type & Rules.CREATE.PATH)
-				endCapture[1].push('\\/');
-
-			if (endCapture[1].length)
-				endCapture[1] = endCapture[1].join('|');
-			else
-				endCapture = [];
-		}
-
-		return '^' + url + endCapture.join('') + '$';
-	},
-
 	isLocked: function () {
 		return this.snapshotInUse() || Locker.isLocked('rules');
 	},
@@ -995,7 +967,7 @@ Rule.event.addCustomEventListener('ruleWasAdded', function (event) {
 		}, 100, [event.detail.self]);
 });
 
-Rule.event.addCustomEventListener(['ruleWasRemoved', 'rulesWereCleared'], function (event) {
+Rule.event.addCustomEventListener(['ruleWasRemoved', 'rulesWereCleared', 'manyRulesAdded'], function (event) {
 	Rule.listCache.getStore(event.detail.self.rules.name || event.detail.self.rules.id).clear();
 });
 

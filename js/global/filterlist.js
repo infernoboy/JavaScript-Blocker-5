@@ -12,11 +12,7 @@ function FilterList (listName, listURL) {
 
 	this.name = listName;
 	this.url = listURL;
-	this.temporaryRules = FilterList.__temporary.get(this.name, new Rule('FilterTemporary'));
-
 	this.valid = true;
-
-	this.temporaryRules.rules.clear();
 
 	this.download().done(this.process.bind(this));
 };
@@ -24,15 +20,23 @@ function FilterList (listName, listURL) {
 FilterList.__cancel = 0;
 FilterList.__updating = 0;
 FilterList.__updateInterval = TIME.ONE.DAY * 4;
+FilterList.__addQueue = {};
 
-FilterList.__temporary = new Store('FilterTemporary');
+FilterList.executeQueue = function () {
+	Utilities.Timer.timeout('addFilterListsRules', function () {
+		for (var listName in FilterList.__addQueue)
+			Rules.list[listName].addMany(FilterList.__addQueue[listName]);
+		
+		FilterList.__addQueue = {};
+	}, 5000);
+};
 
 FilterList.cancelUpdate = function () {
 	FilterList.__cancel = parseInt(FilterList.__updating, 10);
 };
 
 FilterList.updateCheck = function () {
-	if (Date.now() - Settings.getItem('FilterListLastUpdate') > FilterList.__updateInterval)
+	if (Settings.getItem('setupComplete') && Date.now() - Settings.getItem('FilterListLastUpdate') > FilterList.__updateInterval)
 		FilterList.fetch();
 };
 
@@ -44,36 +48,26 @@ FilterList.fetch = function () {
 	for (var list in lists)
 		if (lists[list].enabled)
 			new FilterList(list, lists[list].value[0]);
-		else
+		else if (Rules.__FilterRules.keyExist(list))
 			Rules.__FilterRules.remove(list);
-
-	setTimeout(function () {
-		Command.event.addCustomEventListener('UIReady', function () {	
-			UI.event.trigger('filterListsUpdateStarted');
-		}, true);
-	}, 1000);
 };
 
-FilterList.prototype.merge = function () {
-	Utilities.setImmediateTimeout(function (self) {
-		if (FilterList.__cancel) {
-			FilterList.__cancel--;
-			FilterList.__updating--;
+FilterList.prototype.doneWithRules = function (rules) {
+	if (FilterList.__cancel) {
+		FilterList.__cancel--;
+		FilterList.__updating--;
 
-			return self.temporaryRules.rules.clear();
-		}
+		return;
+	}
 
-		Rules.list[self.name].rules.addCustomEventListener('storeWouldHaveSaved', function (self) {
-			FilterList.__updating--;
+	FilterList.__updating--;
 
-			if (FilterList.__updating === 0)
-				Settings.setItem('FilterListLastUpdate', Date.now());
+	if (FilterList.__updating === 0)
+		Settings.setItem('FilterListLastUpdate', Date.now());
 
-			self.temporaryRules.rules.clear();
-		}.bind(null, self), true);
+	FilterList.__addQueue[this.name] = rules;
 
-		Rules.list[self.name].rules.replaceWith(self.temporaryRules.rules);
-	}, [this]);
+	FilterList.executeQueue();
 };
 
 FilterList.prototype.download = function () {
@@ -90,169 +84,33 @@ FilterList.prototype.download = function () {
 };
 
 FilterList.prototype.process = function (list) {
-	var	lines = list.split(/\n/);
+	var self = this;
 
-	var kindMap = {
-		script: ['script'],
-		image: ['image'],
-		object: ['embed'],
-		xmlhttprequest: ['xhr_get', 'xhr_post', 'xhr_put']
+	var listInfo = {
+		name: this.name,
+		url: this.url,
+		list: list
 	};
 
-	for (var i = 0, b = lines.length; i < b; i++) {
-		if (this.valid && FilterList.__cancel === 0)
-			Utilities.setImmediateTimeout(function (self, line, lineNumber) {
-				if (line._contains('##') || line._contains('#@#') || line._contains('$popup') || !line.length)
-					return; // Ignore element hiding rules, popup rules, and empty lines.
+	var filterListWorker = new Worker('js/global/filterlist-worker.js');
 
-				var addType;
+	filterListWorker.addEventListener('message', function (message) {
+		if (message.data.error) {
+			FilterList.__updating--;
 
-				var action = line._startsWith('@@') ? ACTION.WHITELIST : ACTION.BLACKLIST,
-						line = action === ACTION.WHITELIST ? line.substr(2) : line;
+			LogError(Error('invalid Filter List - ' + message.data.message.name + ' - ' + message.data.message.url));
 
-				if (lineNumber === 0 && line[0] !== '[') {
-					FilterList.__updating--;
+			self.valid = false;
 
-					LogError(Error('invalid Filter List - ' + self.name + ' - ' + self.url));
+			Settings.removeItem('filterLists', message.data.message.name);
 
-					self.valid = false;
-
-					Settings.removeItem('filterLists', self.name);
-
-					Rules.__FilterRules.remove(self.name);
-
-					return;
-				}
-
-				if (line[0] === '!' || line[0] === '[')
-					return; // Line is a comment or determines which version of AdBlock is required.
-
-				var dollar = line.indexOf('$'),
-						subLine = line.substr(0, ~dollar ? dollar : line.length),
-						argCheck = line.split(/\$/),
-						useKind = false,
-						args = [],
-						exceptionHosts = {},
-						domains = ['*'];
-
-				var rule = subLine.replace(/\//g, '\\/')
-					.replace(/\(/g, '\\(')
-					.replace(/\[/g, '\\[')
-					.replace(/\]/g, '\\]')
-					.replace(/\)/g, '\\)')
-					.replace(/\+/g, '\\+')
-					.replace(/\?/g, '\\?')
-					.replace(/\^/g, '([^a-zA-Z0-9_\.%-]+|$)')
-					.replace(/\./g, '\\.')
-					.replace(/\*/g, '.*');
-
-				if (line._startsWith('||'))
-					rule = rule.replace('||', 'https?:\\/\\/([^\\/]+\\.)?');
-				else if (line[0] === '|')
-					rule = rule.replace('|', '');
-				else
-					rule = '.*' + rule;
-
-				if (rule.match(/\|[^$]/))
-					return; // Weirdly written rules that I refuse to parse.
-
-				rule = '^' + rule;
-
-				if (rule._endsWith('|'))
-					rule = rule.substr(0, rule.length - 1) + '.*$';
-				else
-					rule += '.*$';
-
-				rule = rule.replace(/\.\*\.\*/g, '.*');
-
-				if (argCheck[1]) {
-					args = argCheck[1].split(',');
-
-					for (var j = 0; j < args.length; j++) {
-						if (args[j]._startsWith('domain='))
-							domains = args[j].substr(7).split('|').map(function (domain) {
-								return '.' + domain;
-							});
-						else if (args[j] in kindMap)
-							useKind = kindMap[args[j]];
-					}
-				}
-
-				var exclusivelyExceptions = domains.every(function (domain) {
-					return domain._startsWith('.~');
-				});
-
-				if (exclusivelyExceptions)
-					domains.push('*');
-
-				var topDomain,
-						domainSubstr;
-
-				var skipDomains = [];
-
-				for (var g = 0; g < domains.length; g++) {
-					if (domains[g]._startsWith('.~')) {
-						domainSubstr = domains[g].substr(2);
-
-						var topDomain = Utilities.URL.domain('jsb://' + domainSubstr);
-
-						if (topDomain !== domainSubstr && domains._contains('.' + topDomain)) {
-							skipDomains.push(domainSubstr);
-
-							exceptionHosts._getWithDefault(topDomain, []).push(domainSubstr);
-						}
-					}
-				}
-
-				for (var g = 0; g < domains.length; g++) {
-					if (domains[g]._startsWith('.~')) {
-						domainSubstr = domains[g].substr(2);
-
-						if (skipDomains._contains(domainSubstr))
-							continue;
-
-						domains[g] = '.' + domainSubstr;
-
-						addType = 'addNotDomain';
-					} else
-						addType = 'addDomain';
-
-					if (useKind)
-						for (var h = 0; h < useKind.length; h++)
-							self.temporaryRules[addType](useKind[h], domains[g], {
-								rule: rule,
-								action: action,
-								thirdParty: args._contains('third-party'),
-								exceptionHosts: exceptionHosts[domains[g].substr(1)]
-							});
-					else
-						self.temporaryRules[addType]('*', domains[g], {
-							rule: rule,
-							action: action,
-							thirdParty: args._contains('third-party'),
-							exceptionHosts: exceptionHosts[domains[g].substr(1)]
-						});
-				}
-			}, [this, $.trim(lines[i]), i]);
-	}
-
-	Utilities.Timer.timeout('ReplaceNewFilterList-' + this.name, this.merge.bind(this), 2000);
-};
-
-Command.event.addCustomEventListener('UIReady', function () {
-	UI.event.addCustomEventListener(['popoverOpened', 'filterListsUpdateStarted'], function (event) {
-		if (FilterList.__updating && Popover.visible()) {
-			var poppy = new Popover.window.Poppy(0.5, 0, true);
-
-			poppy.setContent(Template.create('main', 'jsb-readable', {
-				header: _('rules.filter_lists.updating'),
-				string: _('rules.filter_lists.updating.description')
-			}));
-
-			poppy.stayOpenOnScroll().show();
-		}
+			Rules.__FilterRules.remove(message.data.message.name);
+		} else
+			self.doneWithRules(message.data.message);
 	});
-}, true);
+
+	filterListWorker.postMessage(listInfo);
+};
 
 FilterList.updateCheck();
 

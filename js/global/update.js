@@ -5,6 +5,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 var Update = {
+	__versionCheckURL: 'http://lion.toggleable.com:160/jsblocker/latestVersion.php',
+
 	wasJustUpdated: false,
 
 	__keepDisabled: function (event) {
@@ -32,6 +34,37 @@ var Update = {
 				
 				Update.performUpdate();
 			}, true);
+	},
+
+	checkLatestVersion: function () {
+		$.get(Update.__versionCheckURL).then(function (version) {
+			try {
+				var version = JSON.parse(version);
+
+				if (version.bundleID > Update.installedBundle && !Settings.getItem('ignoredUpdates', version.bundleID)) {
+					Update
+						.fetchChangeLog(version.displayVersion)
+						.finally(function (changeLog) {
+							UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
+								var poppy = new Popover.window.Poppy(0.5, 0, false, 'update-available');
+
+								poppy.bundleID = version.bundleID;
+
+								if (!Extras.isUnlockedByDonating())
+									poppy.modal().showCloseButton();
+
+								poppy
+									.setContent(Template.create('poppy', 'update-available', {
+										URL: version.URL,
+										changeLog: changeLog,
+										version: Version.display
+									}))
+									.show();
+							}, true);
+						});
+				}
+			} catch (e) {}
+		})
 	},
 
 	showRequiredPopover: function () {
@@ -62,6 +95,10 @@ var Update = {
 							version: Version.display
 						}))
 						.show();
+
+					Poppy.event.addCustomEventListener('poppyDidClose', function (event) {
+						Update.checkLatestVersion();
+					}, true);
 				});
 		}, true, true);
 
@@ -81,7 +118,8 @@ var Update = {
 				Update.wasJustUpdated = false;
 
 				Update.allUpdatesCompleted();
-			}
+			} else
+				Update.checkLatestVersion();
 
 			return;
 		}

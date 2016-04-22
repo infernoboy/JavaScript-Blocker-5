@@ -511,6 +511,8 @@ var Settings = {
 						Settings.setItem('setupComplete', true);
 
 					if (!semi) {
+						Settings.RESTART_REQUIRED = true;
+						
 						SettingStore.lock(true);
 
 						UI.view.switchTo('#main-views-page');
@@ -520,6 +522,8 @@ var Settings = {
 
 							UI.Page.showModalInfo(_('settings.safari_restart'));
 						});
+
+						UI.Page.showModalInfo(_('settings.safari_restart'));
 
 						SecureSettings.clear();
 					}

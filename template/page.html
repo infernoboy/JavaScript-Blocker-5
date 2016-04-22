@@ -259,6 +259,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					showHiddenItems = Settings.getItem('showHiddenItems'),
 					showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
 					quickCyclePageItems = Settings.getItem('quickCyclePageItems'),
+					createRulesOnClick = Settings.getItem('createRulesOnClick'),
 					actionGroup = {},
 					hiddenCount = 0;
 
@@ -429,7 +430,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 												<span class="page-host-item-info more-info" data-forceTriggersClick="1"></span><%
 											} %>
 											<span class="page-host-item-source-container jsb-light-scrollbars">
-												<span data-cancelForceBegin="1" class="page-host-item-source <%=resourceDescriptions.length ? 'page-host-item-source-has-description' : ''%>" title="<%=_('view.page.host.click_to_edit')%>"><%=$.trim(sourceName._escapeHTML().replace(/([\n\t]|  +)/g, ' '))%></span>
+												<span data-cancelForceBegin="1" class="page-host-item-source <%=resourceDescriptions.length ? 'page-host-item-source-has-description' : ''%>" title="<%=_(createRulesOnClick ? 'view.page.host.click_to_create_rule' : 'view.page.host.click_to_edit')%>"><%=$.trim(sourceName._escapeHTML().replace(/([\n\t]|  +)/g, ' '))%></span>
 											</span>
 											<% if (shouldBadge) { %>
 												<span class="page-host-host-count-container">

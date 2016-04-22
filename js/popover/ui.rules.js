@@ -134,15 +134,6 @@ UI.Rules = {
 	},
 
 	buildRuleList: function (view, ruleList, useTheseRules, keepExpanded) {
-		if (view.is('.ui-view')) {
-			var buildQueue = UI.Rules.views.data('buildQueue') || new Utilities.Queue(0.001);
-
-			buildQueue.clear();
-
-			UI.Rules.views.data('buildQueue', buildQueue);
-		} else
-			var buildQueue = new Utilities.Queue(0.001);
-
 		if (Object._isPlainObject(ruleList)) {
 			var ruleListItem,
 					ruleListItemLI;
@@ -195,16 +186,21 @@ UI.Rules = {
 		var type,
 				typeExpander,
 				ruleGroupType,
-				typeUL,
+				typePaginator,
+				domainItems,
 				domain,
 				domainExpander,
 				domainListItem,
 				domainUL,
+				kindItems,
 				kind,
 				kindExpander,
 				kindListItem,
 				kindHeader,
 				kindUL,
+				rulesNeedPaginating,
+				rulePaginator,
+				ruleItems,
 				rule,
 				ruleListItem;
 
@@ -250,9 +246,14 @@ UI.Rules = {
 				expander: keepExpanded ? 0 : typeExpander
 			});
 			
-			typeUL = ruleGroupType.find('.rule-group-type');
+			typePaginator = new Paginator(ruleGroupType, {
+				pageItemWrapper: $('.rule-group-type', ruleGroupType)
+			});
 
-			ruleGroupType.appendTo(container);
+			typePaginator.appendTo(ruleGroupType);
+			container.append(ruleGroupType);
+
+			domainItems = [];
 
 			for (domain in domainGrouped[type]) {
 				if (domainGrouped[type][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
@@ -268,7 +269,9 @@ UI.Rules = {
 
 				domainUL = $('.rule-group-domain', domainListItem);
 
-				typeUL.append(domainListItem);
+				domainItems.push(domainListItem);
+
+				kindItems = [];
 
 				for (kind in domainGrouped[type][domain]) {
 					if (domainGrouped[type][domain][kind]._isEmpty())
@@ -284,74 +287,76 @@ UI.Rules = {
 
 					kindUL = $('.rule-group-kind', kindListItem);
 
-					domainUL.append(kindListItem);
+					if (rulesNeedPaginating = (Object.keys(domainGrouped[type][domain][kind]).length > 150)) {
+						rulePaginator = new Paginator(kindListItem, {
+							pageItemWrapper: kindUL
+						});
 
-					var ruleKeyChunks = Object.keys(domainGrouped[type][domain][kind])._chunk(100);
-
-					for (var j = 0, b = ruleKeyChunks.length; j < b; j++) {
-						var ruleListItems = [];
-
-						for (var k = 0; k < ruleKeyChunks[j].length; k++) {
-							if (domainGrouped[type][domain][kind][ruleKeyChunks[j][k]].action === globalPage.ACTION.BLOCK_FIRST_VISIT) {
-								domainListItem.remove();
-
-								break;
-							}
-
-							ruleListItems.push(Template.create('rules', 'rule-list-item', {
-								type: type,
-								kind: kind,
-								rule: ruleKeyChunks[j][k],
-								ruleInfo: domainGrouped[type][domain][kind][ruleKeyChunks[j][k]],
-								editable: editable
-							}));
-						}
-
-						buildQueue.push(function (kindUL, ruleListItems) {
-							hasRules = true;
-							kindUL.append(ruleListItems);
-						}, [kindUL, ruleListItems]);
+						rulePaginator.appendTo(kindListItem.children('.rule-group-kind-wrapper'));
 					}
+
+					kindItems.push(kindListItem);
+
+					ruleItems = [];
+
+					for (rule in domainGrouped[type][domain][kind]) {
+						ruleItems.push(Template.create('rules', 'rule-list-item', {
+							type: type,
+							kind: kind,
+							rule: rule,
+							ruleInfo: domainGrouped[type][domain][kind][rule],
+							editable: editable
+						}));
+
+						hasRules = true;
+					}
+
+					if (rulesNeedPaginating)
+						rulePaginator.addItems(ruleItems);
+					else
+						kindUL.append(ruleItems);
 				}
+
+				domainUL.append(kindItems);
 			}
 
-			if (typeUL.is(':empty'))
+			typePaginator.addItems(domainItems);
+
+			if (!domainItems.length)
 				ruleGroupType.remove();
 		}
 
-		buildQueue.push(function (view, container) {			
-			UI.Rules.noRules.toggle(!hasRules);
+		UI.Rules.noRules.toggle(!hasRules);
 
-			UI.Rules.event.trigger('rulesFinishedBuilding', {
-				view: view,
-				hasRules: hasRules
-			});
-		}, [view, container]);
-
-		buildQueue.start();
+		UI.Rules.event.trigger('rulesFinishedBuilding', {
+			view: view,
+			hasRules: hasRules
+		});
 	},
 
 	processRules: function (rules) {
-		var isEditable = rules.attr('data-editable') !== '0';
+		rules.each(function () {
+			var editable = this.getAttribute('data-editable'),
+					isEditable = editable !== '0';
 
-		if (!isEditable)
-			return;
+			if (!isEditable)
+				return;
 
-		var input = $('<input>'),
-				editable = rules.attr('data-editable'),
-				isSnapshot = editable === '2';
+			var input = $('<input>'),
+					isSnapshot = editable === '2';
 
-		input
-			.attr({
-				type: 'button',
-				value: isSnapshot ? _('Restore') : _('Delete')
-			})
-			.addClass((isSnapshot ? 'rule-item-restore' : 'rule-item-delete') + ' blend-in ' + (isSnapshot ? '' : 'double-click jsb-color-blocked'));
+			input
+				.attr({
+					type: 'button',
+					value: isSnapshot ? _('Restore') : _('Delete')
+				})
+				.addClass((isSnapshot ? 'rule-item-restore' : 'rule-item-delete') + ' blend-in ' + (isSnapshot ? '' : 'double-click jsb-color-blocked'));
 
-		rules
-			.addClass('rule-item-processed')
-			.find('.rule-item-action-container')
-			.append(input);
+			$(this)
+				.addClass('rule-item-processed')
+				.find('.rule-item-action-container')
+				.append(input);
+		});
 
 		Poppy.setAllPositions();
 	},
@@ -456,6 +461,24 @@ UI.Rules = {
 						.stayOpenOnPopoverOpen()
 						.linkToOpenPoppy()
 						.show();
+				})
+
+				.on('click', '.rule-group-type-page-controller input', function () {
+					var pageController = $('.rule-group-type-page-controller', this.parentNode.parentNode),
+							activePage = pageController.eq(0).parent().find('.active-page'),
+							advancePage = this.classList.contains('rule-group-type-previous-page') ? activePage.prev() : activePage.next();
+
+					if (advancePage.length) {
+						activePage.removeClass('active-page');
+
+						advancePage.addClass('active-page');
+					}
+
+					$('.rule-group-type-previous-page', pageController)
+						.toggleClass('jsb-hidden', !advancePage.prev().length);
+
+					$('.rule-group-type-next-page', pageController)
+						.toggleClass('jsb-hidden', !advancePage.next().length);
 				})
 
 				.on('click', '.rule-group-type-wrapper[data-editable="1"] .rule-group-type-header', function (event) {

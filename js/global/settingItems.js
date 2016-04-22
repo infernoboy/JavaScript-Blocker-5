@@ -133,6 +133,11 @@ Settings.settings = {
 			type: 'many-number'
 		}
 	}, {
+		store: 'ignoredUpdates',
+		props: {
+			type: 'many-boolean'
+		}
+	},{
 		setting: 'persistDisabled',
 		props: {
 			type: 'boolean',
@@ -341,6 +346,12 @@ Settings.settings = {
 		divider: true
 	}, {
 		header: 'pageHeader'
+	}, {
+		setting: 'createRulesOnClick',
+		props: {
+			type: 'boolean',
+			default: true
+		}
 	}, {
 		setting: 'showPageEditorImmediately',
 		props: {
