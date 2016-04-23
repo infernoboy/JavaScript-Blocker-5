@@ -5,10 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 function Template (template, file) {
-	this.cache = {
-		'true': {},
-		'false': {}
-	};
+	this.cache = {};
 
 	this.name = file;
 	this.template = $(template);
@@ -77,10 +74,8 @@ Template.prototype.create = function (section, data, isHTML, returnString) {
 	if (data !== false && typeof data !== 'object')
 		data = {};
 
-	var cache = this.cache[!!returnString];
-
-	if (section in cache)
-		fn = cache[section];
+	if (section in this.cache)
+		fn = this.cache[section];
 	else if (!isHTML) {
 		var template = this.get(section);
 
@@ -89,9 +84,9 @@ Template.prototype.create = function (section, data, isHTML, returnString) {
 
 		fn = this.create(template.text(), false, true, returnString);
 
-		cache[section] = fn;
+		this.cache[section] = fn;
 	} else
-		fn = cache[section] = new Function('self', "var p=[];p.push('" +
+		fn = this.cache[section] = new Function('self', 'returnString', "var ___=[];___.push('" +
 			section
 				.replace(/[\r\t\n]/g, " ")
 				.replace(/'(?=[^%]*%>)/g, "\t")
@@ -99,12 +94,12 @@ Template.prototype.create = function (section, data, isHTML, returnString) {
 				.replace(/\t/g, "'")
 				.replace(/<%=(.+?)%>/g, "',$1,'")
 				.replace(/<%/g, "');")
-				.replace(/%>/g, "p.push('")
-			+ "');return " + (returnString ? "p.join('');" : "$(p.join(''));"));
+				.replace(/%>/g, "___.push('")
+			+ "');return returnString ? ___.join('') : $(___.join(''));");
 
 	section = undefined;
 
-	return data ? fn(data) : fn;
+	return data ? fn(data, returnString) : fn;
 };
 
 Template.prototype.get = function (section) {
