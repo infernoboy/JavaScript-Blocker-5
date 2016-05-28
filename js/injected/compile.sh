@@ -5,7 +5,8 @@ cd "$MAIN_DIR/js/"
 
 echo -n > injected/compiled.js
 
-# echo "console.time('JSB Injected');" > injected/compiled.js
+echo "if (!window.JSB_INJECTED) { window.JSB_INJECTED =true;" > injected/compiled.js
+echo >> injected/compiled.js
 
 /bin/cat safari.js promise.js utilities.js event.js store.js injected/commands.js injected/blocker.js injected/deepInject.js injected/notification.js injected/special.js injected/specials.js injected/userScript.js >> injected/compiled.js
 
@@ -13,4 +14,4 @@ echo -n > injected/compiled.js
 
 # /Users/Travis/bin/link_directory.sh "$MAIN_DIR" "$BETA_DIR"
 
-# echo "console.timeEnd('JSB Injected');" >> injected/compiled.js
+echo "} else { console.warn('Attempt to inject JSB more than once blocked.'); }" >> injected/compiled.js
