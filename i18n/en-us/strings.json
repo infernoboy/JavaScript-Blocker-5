@@ -84,10 +84,6 @@
 	"view.page.header.via_frame": "Via Frame",
 	"view.page.header.hidden_item": "1 hidden item",
 	"view.page.header.hidden_items": "{0} hidden items",
-	"view.page.header.pending_count_allow": "1 item will be allowed",
-	"view.page.header.pending_count_allows": "{0} items will be allowed",
-	"view.page.header.pending_count_block": "1 item will be blocked",
-	"view.page.header.pending_count_blocks": "{0} items will be blocked",
 	"view.page.header.disable_jsb": "Disable JS Blocker...",
 	"view.page.header.enable_jsb": "Enable JS Blocker...",
 	"view.page.header.all_kinds": "All Kinds...",
@@ -205,6 +201,9 @@
 	"view.page.item.info.show_rules": "Show Rules",
 	"view.page.item.info.show_user_script": "Show User Script",
 	"view.page.item.info.loading": "Loading…",
+
+	"view.page.host.item.will_block": "will be blocked",
+	"view.page.host.item.will_allow": "will be allowed",
 
 	"frame_blocked": "This frame appeared even though you most likely didn't want it to. The page was automatically prevented from loading.",
 	

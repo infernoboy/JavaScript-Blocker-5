@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 UI.Page = {
-	__forceRuleColorTemplate: 'rgba(255, 220, 255, {0})',
+	__forceRuleColorTemplate: 'rgba(255, 243, 255, {0})',
 	__forceRuleColorTemplateDarkMode: 'rgba(105, 70, 105, {0})',
 	__rendering: false,
 
@@ -141,7 +141,7 @@ UI.Page = {
 				loadingPoppy.setContent(_('view.page.item.info.loading')).show(true);
 			});
 		
-		var forceClickPageItems = new ForceClickElement(UI.Page.view, '.page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description');
+		var forceClickPageItems = new ForceClickElement(UI.Page.view, '.page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-will-create-rule');
 
 		forceClickPageItems.setThreshold(0.5, 0.05).modifyNormalizedForce(0, 1);
 
@@ -821,12 +821,12 @@ UI.Page = {
 					poppy.show();
 				})
 
-				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description', function (event) {
+				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-will-create-rule', function (event) {
 					if (Poppy.Menu.event.trigger('pressAndHoldSucceeded') || Poppy.Menu.event.trigger('forceClicked'))
 						return;
 
 					var self = $(this),
-							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description'),
+							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description') || self.is('.page-host-item-will-create-rule'),
 							pageHostItem = self.parents('.page-host-item'),
 							createRulesOnClick = (!event.isTrigger && isItem && Settings.getItem('createRulesOnClick'));
 
@@ -860,23 +860,12 @@ UI.Page = {
 					}
 
 					if (createRulesOnClick) {
-						var pendingBlockCount = $('.page-host-column-blocked .page-host-item-edit-check:checked', section).length,
-								pendingAllowCount = $('.page-host-column-allowed .page-host-item-edit-check:checked', section).length,
-								pendingString = [],
-								colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
+						var colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
 
-						if (pendingBlockCount)
-							pendingString.push(_('view.page.header.pending_count_block'._pluralize(pendingBlockCount), [pendingBlockCount]));
-
-						if (pendingAllowCount)
-							pendingString.push(_('view.page.header.pending_count_allow'._pluralize(pendingAllowCount), [pendingAllowCount]));
-						
-						$('.page-host-pending-rules-wrapper', section)
-							.toggleClass('jsb-hidden', (pendingBlockCount === 0 && pendingAllowCount === 0))
-							.find('span')
-							.text(pendingString.join(', '));
-
-						pageHostItem.css('background', wasChecked ? '' : colorTemplate._format([1]));
+						pageHostItem
+							.css('background', wasChecked ? '' : colorTemplate._format([1]))
+							.find('.page-host-item-will-create-rule')
+							.toggleClass('is-pending', !wasChecked);
 
 						Utilities.Timer.timeout('createRulesOnClick' + section.attr('data-id'), function (section) {
 							UI.Page.section.createRules(section, true);
