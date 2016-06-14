@@ -24,7 +24,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 
 			&:not(:first-child) {
-				border-top: 1px solid darken(#ddd, @darknessLevel);
+				border-top: 1px solid darken(#d8d8d8, @darknessLevel);
 			}
 
 			&:not(:last-child) {
@@ -39,7 +39,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			.page-host-header {
 				position: relative;
 				padding: 5px 3px 6px;
-				background: darken(rgb(250, 250, 250), @darknessLevel);
+				background: darken(rgb(245, 245, 245), @darknessLevel);
 				border-top: 1px solid darken(#fff, @darknessLevel);
 				border-bottom: 1px solid darken(#ddd, @darknessLevel);
 				z-index: 2;
@@ -73,6 +73,13 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 								color: darken(#ddd, @darknessLevel - 22%);
 							}
 						}
+					}
+
+					@-webkit-keyframes expand {
+						0% { -webkit-transform: scale(1); }
+						50% { -webkit-transform: scale(1.5); }
+						70% { -webkit-transform: scale(1.3); }
+						100% { -webkit-transform: scale(1); }
 					}
 
 					&edit {
@@ -113,7 +120,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				z-index: 2;
 				background: darken(#fafafa, @darknessLevel);
 				padding: 4px 4px 2px 2px;
-				border-bottom: 1px solid darken(#e5e5e5, @darknessLevel);
+				border-bottom: 1px solid darken(#eee, @darknessLevel);
 
 				.more-info {
 					position: absolute;
@@ -136,7 +143,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				z-index: 2;
 				padding: 3px 0 1px;
 				background: darken(#fbfbfb, @darknessLevel);
-				border-bottom: 1px solid darken(#e5e5e5, @darknessLevel);
+				border-bottom: 1px solid darken(#eee, @darknessLevel);
 
 				.jsb-info {
 					font-size: 12pt;
@@ -256,6 +263,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 							background-color: @allowColor;
 							border-color: darken(@allowColor, 4%);
 						}
+
+						.page-host-item-will-create-rule .jsb-info {
+							color: @allowColor;
+							font-size: 0.9em;
+						}
 					}
 
 					&-allowed {
@@ -265,6 +277,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						.page-host-kind-select-all:checked {
 							background-color: @blockColor;
 							border-color: darken(@blockColor, 4%);
+						}
+
+						.page-host-item-will-create-rule .jsb-info {
+							color: @blockColor;
+							font-size: 0.9em;
 						}
 					}
 
@@ -589,11 +606,31 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 							padding-bottom: 2px;
 						}
 
-						.page-host-item-description {
+						.page-host-item-description,
+						.page-host-item-will-create-rule {
 							.jsb-info {
 								margin-top: -2px;
 								margin-left: 21px;
 								cursor: pointer;
+							}
+						}
+
+						.page-host-item-will-create-rule {
+							-webkit-transition: height unit(0.2 * @speedMultiplier, s) ease-out;
+							height: 0;
+							overflow: hidden;
+
+							&.is-pending {
+								overflow: auto;
+								height: 18px;
+
+								&::-webkit-scrollbar {
+									width: 0
+								}
+
+								.jsb-large-font& {
+									height: 23px
+								}
 							}
 						}
 

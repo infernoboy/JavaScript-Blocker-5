@@ -202,6 +202,9 @@
 	"view.page.item.info.show_user_script": "Show User Script",
 	"view.page.item.info.loading": "Loading…",
 
+	"view.page.host.item.will_block": "will be blocked",
+	"view.page.host.item.will_allow": "will be allowed",
+
 	"frame_blocked": "This frame appeared even though you most likely didn't want it to. The page was automatically prevented from loading.",
 	
 	"view_toolbar.disable": "Disable",

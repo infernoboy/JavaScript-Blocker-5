@@ -5,7 +5,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 UI.Page = {
-	__forceRuleColorTemplate: 'rgba(255, 220, 255, {0})',
+	__forceRuleColorTemplate: 'rgba(252, 240, 255, {0})',
+	__forceRuleColorTemplateDarkMode: 'rgba(75, 40, 75, {0})',
 	__rendering: false,
 
 	__renderPage: function (page) {
@@ -140,7 +141,7 @@ UI.Page = {
 				loadingPoppy.setContent(_('view.page.item.info.loading')).show(true);
 			});
 		
-		var forceClickPageItems = new ForceClickElement(UI.Page.view, '.page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description');
+		var forceClickPageItems = new ForceClickElement(UI.Page.view, '.page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-will-create-rule');
 
 		forceClickPageItems.setThreshold(0.5, 0.05).modifyNormalizedForce(0, 1);
 
@@ -153,14 +154,15 @@ UI.Page = {
 
 			.addCustomEventListener('forceChange', function (event) {
 				var target = $(event.detail.target),
-						section = target.parents('.page-host-section');
+						section = target.parents('.page-host-section'),
+						colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
 
 				if (section.hasClass('page-host-editing') || globalPage.Rules.isLocked())
 					return;
 				
 				target
 					.parents('.page-host-item')
-					.css('background', event.detail.normalizedForce > 0.6 ? UI.Page.__forceRuleColorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
+					.css('background', event.detail.normalizedForce > 0.6 ? colorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
 
 				if (!Poppy.poppyWithScriptNameExist('force-click-resource')) {
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-resource');
@@ -171,14 +173,15 @@ UI.Page = {
 
 			.addCustomEventListener('forceDown', function (event) {
 				var target = $(event.detail.target),
-						section = target.parents('.page-host-section');
+						section = target.parents('.page-host-section'),
+						colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
 
 				if (section.hasClass('page-host-editing') || globalPage.Rules.isLocked())
 					return;
 
 				target
 					.parents('.page-host-item')
-					.css('background', UI.Page.__forceRuleColorTemplate._format([1]));
+					.css('background', colorTemplate._format([1]));
 
 				Poppy.closeAll();
 
@@ -205,7 +208,8 @@ UI.Page = {
 					return;
 
 				var target = $(event.detail.target),
-						section = target.parents('.page-host-section');
+						section = target.parents('.page-host-section'),
+						colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
 
 				if (section.hasClass('page-host-editing'))
 					return;
@@ -214,7 +218,7 @@ UI.Page = {
 					.parent()
 					.next()
 					.find('.page-host-item')
-					.css('background', event.detail.normalizedForce > 0.6 ? UI.Page.__forceRuleColorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
+					.css('background', event.detail.normalizedForce > 0.6 ? colorTemplate._format([event.detail.normalizedForce - 0.3]) : '');
 
 				if (!Poppy.poppyWithScriptNameExist('force-click-resource')) {
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-resource');
@@ -281,6 +285,9 @@ UI.Page = {
 
 	canRender: function () {
 		if (!UI.Page.view || Settings.RESTART_REQUIRED)
+			return false;
+
+		if (Settings.getItem('createRulesOnClick') && $('.page-host-item-edit-check:checked', UI.Page.view).length)
 			return false;
 
 		return !UI.Page.view.is('.active-view') || (UI.view.views.scrollTop() < 10 && !UI.drag && !Poppy.poppyDisplayed() && $('.page-host-editing', UI.Page.view).length === 0 && $('.advanced-rule-created', UI.Page.view).length === 0);
@@ -493,6 +500,8 @@ UI.Page = {
 
 					Utilities.Timer.timeout(tab, function (tab, ruleWasCreated) {
 						UI.view.toTop(UI.view.views);
+
+						$('.page-host-item-edit-check', UI.Page.view).prop('checked', false);
 
 						MessageTarget({
 							target: tab
@@ -812,12 +821,12 @@ UI.Page = {
 					poppy.show();
 				})
 
-				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description', function (event) {
+				.on('click', '.page-host-edit, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-source, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-description, .page-host-columns .page-host-item:not([data-action="-11"]) .page-host-item-will-create-rule', function (event) {
 					if (Poppy.Menu.event.trigger('pressAndHoldSucceeded') || Poppy.Menu.event.trigger('forceClicked'))
 						return;
 
 					var self = $(this),
-							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description'),
+							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description') || self.is('.page-host-item-will-create-rule'),
 							pageHostItem = self.parents('.page-host-item'),
 							createRulesOnClick = (!event.isTrigger && isItem && Settings.getItem('createRulesOnClick'));
 
@@ -851,7 +860,12 @@ UI.Page = {
 					}
 
 					if (createRulesOnClick) {
-						pageHostItem.css('background', wasChecked ? '' : UI.Page.__forceRuleColorTemplate._format([1]));
+						var colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
+
+						pageHostItem
+							.css('background', wasChecked ? '' : colorTemplate._format([1]))
+							.find('.page-host-item-will-create-rule')
+							.toggleClass('is-pending', !wasChecked);
 
 						Utilities.Timer.timeout('createRulesOnClick' + section.attr('data-id'), function (section) {
 							UI.Page.section.createRules(section, true);
