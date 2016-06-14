@@ -37,6 +37,9 @@ var Update = {
 	},
 
 	checkLatestVersion: function () {
+		if (!Settings.getItem('updateNotify') && Extras.isUnlockedByDonating())
+			return;
+
 		$.get(Update.__versionCheckURL).then(function (plist) {
 			try {
 				var plist = $(plist),
