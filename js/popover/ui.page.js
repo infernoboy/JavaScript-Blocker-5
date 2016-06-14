@@ -5,8 +5,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 "use strict";
 
 UI.Page = {
-	__forceRuleColorTemplate: 'rgba(255, 243, 255, {0})',
-	__forceRuleColorTemplateDarkMode: 'rgba(105, 70, 105, {0})',
+	__forceRuleColorTemplate: 'rgba(252, 240, 255, {0})',
+	__forceRuleColorTemplateDarkMode: 'rgba(75, 40, 75, {0})',
 	__rendering: false,
 
 	__renderPage: function (page) {
