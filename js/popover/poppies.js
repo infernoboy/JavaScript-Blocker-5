@@ -279,7 +279,20 @@ Object._extend(Poppy.scripts, {
 				UI.Locker.showLockerPrompt('settings');
 			})
 
-			.on('click', '#setting-menu-backup', function () {
+			.on('click', '#setting-menu-backup', function (event) {
+				if (event.altKey) {
+					var submittedSettings = prompt('Paste the submitted settings backup.');
+
+					if (submittedSettings && submittedSettings.length)
+						globalPage.Feedback.useSubmittedSettings(submittedSettings);
+
+					poppy.close();
+
+					ToolbarItems.showPopover();
+
+					return;
+				}
+
 				var backupPoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'setting-menu-backup');
 
 				backupPoppy.setContent(Template.create('poppy.settings', 'setting-menu-backup')).show();
