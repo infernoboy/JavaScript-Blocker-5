@@ -25,7 +25,8 @@ FilterList.__addQueue = {};
 FilterList.executeQueue = function () {
 	Utilities.Timer.timeout('addFilterListsRules', function () {
 		for (var listName in FilterList.__addQueue)
-			Rules.list[listName].addMany(FilterList.__addQueue[listName]);
+			if (Rules.list[listName])
+				Rules.list[listName].addMany(FilterList.__addQueue[listName]);
 		
 		FilterList.__addQueue = {};
 	}, 5000);
