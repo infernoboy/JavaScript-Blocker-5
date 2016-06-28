@@ -40,7 +40,7 @@ var Update = {
 		if (!Settings.getItem('updateNotify') && Extras.isUnlockedByDonating())
 			return;
 
-		$.get(Update.__versionCheckURL).then(function (plist) {
+		$.get(Update.__versionCheckURL + '?_' + Date.now()).then(function (plist) {
 			try {
 				var plist = $(plist),
 						jsb = plist.find('string:contains("com.toggleable.JavaScriptBlocker5")');
