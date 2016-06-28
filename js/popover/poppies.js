@@ -970,6 +970,8 @@ Object._extend(Poppy.scripts, {
 				if (!message.length) {
 					this.disabled = false;
 
+					$('#feedback-message', poppy.content).focus().shake();
+
 					return;
 				}
 
