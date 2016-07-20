@@ -54,7 +54,7 @@
 	"update_available": "Update Available - {0}",
 	"update_available.more": "Open Safari preferences to update or <a href=\"{0}\">download it directly</a>.",
 	"update_available.ignore": "Ignore this update",
-	"update_available.if_gallery": "<b>Important:</b> If you downloaded JS Blocker from the Apple extensions gallery, you will not be able to update to the website version. In order to do so, you'll have to uninstall the current version first.",
+	"update_available.if_gallery": "<b>Important:</b> If you downloaded JS Blocker from Apple's extensions gallery, you won't be able to update to the website version; you'll have to uninstall the current version first. If you don't, an error will occur while installing.",
 	
 	"via_frame": "via frame",
 	"open_popover": "Open Popover",
