@@ -1000,12 +1000,15 @@ function LogDebug () {
 		console.log(cleanErrorStack);
 		console.groupEnd();
 
-		if (Utilities.Page.isWebpage)
+		if (Utilities.Page.isWebpage) {
+			var args = Utilities.makeArray(arguments);
+			
 			for (var i = 0; i < args.length; i++)
 				GlobalPage.message('logDebug', {
 					source: document.location.href,
 					message: args[i]
 				});
+		}
 	}
 };
 
