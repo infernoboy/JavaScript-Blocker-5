@@ -927,6 +927,7 @@ var Resource = {
 					Utilities.Timer.resetTimeout('injectStylesheet', 400);
 
 				Object.defineProperty(element, 'jsbBeforeLoadProcessed', {
+					writable: true,
 					value: Utilities.Token.create(source)
 				});
 
