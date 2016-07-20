@@ -900,6 +900,10 @@ var Command = function (type, event) {
 					return this.__userScriptAction(detail);
 				},
 
+				removeItem: function (detail) {
+					return this.__userScriptAction(detail);
+				},
+
 				keys: function (detail) {
 					return this.__userScriptAction(detail);
 				}
