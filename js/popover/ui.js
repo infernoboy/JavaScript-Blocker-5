@@ -237,7 +237,7 @@ var UI = {
 
 			.addCustomEventListener('viewDidSwitch', function (event) {
 				if (event.detail.id._startsWith('#main-views'))
-					$('#full-toggle', UI.view.viewToolbar).toggleClass('poppy-menu-disabled', $('li[data-view=' + event.detail.id + ']', event.detail.switcher).hasClass('view-switcher-collapses'));
+					$('#full-toggle', UI.view.viewToolbar).toggleClass('poppy-menu-disabled', $('li[data-view="' + event.detail.id + '"]', event.detail.switcher).hasClass('view-switcher-collapses'));
 
 				Poppy.closeAll();
 			})
