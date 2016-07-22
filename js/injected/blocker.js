@@ -165,11 +165,8 @@ var Handler = {
 	event: new EventListener,
 
 	checkPageType: function () {
-		if (BLOCKED_ELEMENTS.length === 1 && ['VIDEO', 'EMBED']._contains(BLOCKED_ELEMENTS[0].nodeName.toUpperCase())) {
-			Handler.injectStylesheet();
-
+		if (BLOCKED_ELEMENTS.length === 1 && ['VIDEO', 'EMBED']._contains(BLOCKED_ELEMENTS[0].nodeName.toUpperCase()))
 			Element.restorePlaceholderElement(BLOCKED_ELEMENTS[0].getAttribute('data-jsbPlaceholder'));
-		}
 	},
 
 	setPageLocation: function () {
@@ -220,27 +217,6 @@ var Handler = {
 		globalSetting.contentURLs.BLOBIFIED = true;
 	},
 
-	injectStylesheet: function () {
-		if (STYLESHEET_INJECTED)
-			return;
-
-		STYLESHEET_INJECTED = true;
-
-		var style = Element.createFromObject('link', {
-			rel: 'stylesheet',
-			type: 'text/css',
-			href: globalSetting.contentURLs.stylesheet.url
-		});
-
-		document.documentElement.appendChild(style);
-
-		setTimeout(function () {
-			Handler.visibilityChange();
-
-			Handler.event.trigger('stylesheetLoaded', null, true);
-		}, 50);
-	},
-
 	DOMContentLoaded: function () {
 		var i;
 
@@ -275,10 +251,6 @@ var Handler = {
 					GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
 			}
 		}
-
-		Utilities.Timer.timeout('injectStylesheet', function () {
-			Handler.injectStylesheet();
-		}, 400);
 	},
 
 	resetLocation: function (event) {
@@ -542,11 +514,9 @@ var Element = {
 
 		Utilities.Element.fitFontWithin(placeholder, kindString);
 
-		Handler.event.addCustomEventListener('stylesheetLoaded', function (placeholder) {
-			placeholder.style.setProperty('visibility', 'visible', 'important');
+		placeholder.style.setProperty('visibility', 'visible', 'important');
 
-			Utilities.Element.repaint(placeholder);
-		}.bind(null, placeholder), true);
+		Utilities.Element.repaint(placeholder);
 	},
 
 	restorePlaceholderElement: function (placeholderID) {
@@ -846,11 +816,8 @@ var Resource = {
 		var element = event.target || event,
 				nodeName = element.nodeName.toUpperCase();
 
-		if (nodeName === 'LINK' && !Element.shouldIgnore(element)) {
-			Utilities.Timer.resetTimeout('injectStylesheet', 400);
-
+		if (nodeName === 'LINK' && !Element.shouldIgnore(element))
 			return true;
-		}
 
 		if (!(nodeName in BLOCKABLE) || (nodeName === 'EMBED' && element.parentNode.nodeName.toUpperCase() === 'OBJECT'))
 			return true;
@@ -923,8 +890,6 @@ var Resource = {
 
 				if (!canLoad.isAllowed && event.preventDefault)
 					event.preventDefault();
-				else if (nodeName === 'SCRIPT')
-					Utilities.Timer.resetTimeout('injectStylesheet', 400);
 
 				Object.defineProperty(element, 'jsbBeforeLoadProcessed', {
 					writable: true,
@@ -1055,8 +1020,6 @@ if (!globalSetting.disabled) {
 		document.addEventListener('keyup', Handler.keyUp, true);
 		document.addEventListener('beforeload', Resource.canLoad, true);
 		document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
-
-		window.addEventListener('load', Handler.injectStylesheet, true)
 
 		window.addEventListener('error', function (event) {
 			if (typeof event.filename === 'string' && event.filename._contains('JavaScriptBlocker')) {

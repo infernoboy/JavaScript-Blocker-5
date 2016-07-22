@@ -49,6 +49,10 @@
 				<string>js/injected/compiled.js</string>
 			</array>
 		</dict>
+		<key>Stylesheets</key>
+		<array>
+			<string>css/injected.css</string>
+		</array>
 	</dict>
 	<key>Description</key>
 	<string>Helps to minimize tracking, protect your privacy, and speed up browsing.</string>
