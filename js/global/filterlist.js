@@ -76,7 +76,7 @@ FilterList.prototype.download = function () {
 
 	return $.ajax({
 		url: this.url,
-		timeout: 10000
+		timeout: 15000
 	}).fail(function (error) {
 		FilterList.__updating--;
 
