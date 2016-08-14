@@ -388,6 +388,8 @@
 	"setting.showSynchronousXHRNotification.label": "Show a notification when a synchronous XHR occurs",
 	"setting.filterLists.validate.fail": "Enter a valid URL starting with http:, https:, or ftp:.",
 	"setting.filterLists.description": "Filter lists act as JS Blocker's blacklist and whitelist. They block all of the unwanted content on websites you visit. You can view the rules contained in them from the <b>Rules</b> tab, but you won't be able to edit them.",
+	"setting.filterLists.confirm": "This list is already included in Fanboy's Ultimate filter. Are you sure you want to enable it?",
+	"setting.filterLists.ultimate": "Fanboy's Ultimate filter includes EasyList, EasyPrivacy, and Fanboy's Annoyances. Those filter lists have been individually turned off as they are no longer needed.",
 	"setting.filterListLastUpdate.description": "Filter lists were last updated {0}.<br>The next update will occur in {1} days, {2} hours, {3} minutes.",
 	"setting.updateFilterLists.label": "Update filter lists now",
 	"setting.updateFilterLists.subLabel": "Update Filter Lists",

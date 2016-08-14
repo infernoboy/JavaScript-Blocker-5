@@ -1179,6 +1179,10 @@ Settings.settings = {
 					enabled: true,
 					value: ['https://easylist-downloads.adblockplus.org/malwaredomains_full.txt', 'EasyMalware']
 				},
+				$fanboyUltimate: {
+					enabled: false,
+					value: ['https://www.fanboy.co.nz/r/fanboy-ultimate.txt', 'Fanboy\'s Ultimate']
+				},
 				$fanboyAnnoy: {
 					enabled: false,
 					value: ['https://easylist-downloads.adblockplus.org/fanboy-annoyance.txt', 'Fanboy\'s Annoyances']
@@ -1200,12 +1204,38 @@ Settings.settings = {
 					return (url._startsWith('http:') || url._startsWith('https:') || url._startsWith('ftp:'))
 				}
 			},
-			onChange: function () {
+			onChange: function (filterList) {
 				Utilities.Timer.timeout('filterListsChanged', function () {
 					Rules.attachFilterLists(true);
 
 					FilterList.fetch();
 				}, 5000);
+			},
+			confirm: {
+				prompt: function (settingKey, value, storeKey) {
+					if (storeKey === '$fanboyUltimate' && value.enabled) {
+						var poppy = new Popover.window.Poppy(0.5, 0, 'fanboys-ultimate');
+
+						poppy
+							.modal()
+							.showCloseButton()
+							.setContent(Template.create('poppy.settings', 'fanboys-ultimate'))
+							.show();
+
+						var disableList = Settings.map.filterLists.props.default.$list._clone(),
+								disableMalware = Settings.map.filterLists.props.default.$malware._clone();
+
+						disableList.enabled = false;
+						disableMalware.enabled = false;
+
+						Settings.setItem('filterLists', disableList, '$list');
+						Settings.setItem('filterLists', disableMalware, '$privacy');
+						Settings.setItem('filterLists', Settings.map.filterLists.props.default.$fanboyAnnoy, '$fanboyAnnoy');
+					} else if (['$list', '$privacy', '$fanboyAnnoy']._contains(storeKey) && value.enabled && Settings.getItem('filterLists', '$fanboyUltimate').enabled)
+						return confirm(_('setting.filterLists.confirm'));
+
+					return true;
+				}
 			}
 		}
 	}, {

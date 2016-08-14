@@ -208,10 +208,14 @@ var Settings = {
 			shouldConfirm = Utilities.Group.eval(confirmChange.when, Settings.all());
 		else if (confirmChange.toValues)
 			shouldConfirm = confirmChange.toValues._contains(value);
+		else if (confirmChange.prompt)
+			shouldConfirm = true;
 
 		if (shouldConfirm) {
 			if (confirmChange.prompt) {
-				var confirmed = confirmChange.prompt();
+				var confirmed = confirmChange.prompt(settingKey, value, storeKey);
+
+				setTimeout(ToolbarItems.showPopover);
 
 				if (!confirmed)
 					UI.Settings.repopulateActiveSection();
