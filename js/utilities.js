@@ -1683,7 +1683,7 @@ Object._deepFreeze = function (object) {
 	var props = Object.getOwnPropertyNames(object);
 
 	for (var i = 0; i < props.length; i++)
-		if (object[props[i]] !== null && (typeof object[props[i]] === 'object' || typeof object[props[i]] === 'function'))
+		if (object[props[i]] !== null && Utilities.typeOf(object[props[i]]) === 'object')
 			Object._deepFreeze(object[props[i]]);
 
 	return object;
