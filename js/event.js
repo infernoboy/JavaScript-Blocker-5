@@ -149,7 +149,7 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 			} catch (e) {
 				defaultPrevented = false;
 
-				LogError('Failed to run event: %s', info.fn);
+				LogError('Failed to run event: ' + info.fn, e);
 			}
 
 			afterwards = afterwards.concat(fnInstance.__afterwards);
