@@ -16,6 +16,9 @@ Poppy.Menu = {
 
 		Poppy.Menu.pressAndHold.event
 			.addCustomEventListener('resolve', function (event) {
+				if (!Poppy.Menu.__poppy)
+					return;
+
 				Poppy.Menu.show(event.detail.event.currentTarget.querySelector('.poppy-menu-target'), event.detail.event);
 
 				if (!event.detail.data)
