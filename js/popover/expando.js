@@ -18,7 +18,7 @@ var Expando = {
 			return;
 
 		var groupWrapperHeight = groupWrapper.outerHeight(true),
-				speedMultiplier = groupWrapperHeight > UI.container.height() ? 0.001 : window.globalSetting.speedMultiplier,
+				speedMultiplier = groupWrapperHeight > UI.container.height() + 200 ? 0.001 : window.globalSetting.speedMultiplier,
 				isCollapsed = header.hasClass('group-collapsed'),
 				expandingClass = isCollapsed ? 'group-expanding' : 'group-collapsing';
 
@@ -40,7 +40,7 @@ var Expando = {
 						viewHeight = view.height(),
 						bottom = offset.top + groupWrapperHeight;
 
-				if (bottom > viewHeight + viewOffset.top)
+				if (bottom > viewHeight + viewOffset.top && header.attr('data-noScroll') !== '1')
 					Utilities.setImmediateTimeout(function (view, bottom, viewHeight, viewOffset) {
 						view.animate({
 							scrollTop: '+=' + (bottom - viewHeight - viewOffset.top)
@@ -119,7 +119,16 @@ var Expando = {
 						keepExpanded,
 						headerWrapper,
 						header,
-						headerLabel;
+						headerLabel,
+						expandedState;
+
+				var setHeaderColor = function (header, headerLabel) {
+					UI
+						.executeLessScript('lighten(' + header.css('color') + ', 20%)')
+						.then((function (headerLabel, value) {
+							headerLabel.css('color', value);
+						}).bind(null, headerLabel));
+				};
 
 				var headers = event.detail.querySelectorAll('*[data-expander]:not(.header-expander-ready)'),
 						showExpanderLabels = Settings.getItem('showExpanderLabels');
@@ -132,11 +141,13 @@ var Expando = {
 
 					headers[i].classList.add('header-expander-ready');
 
+					expandedState = Settings.getItem('expander', expander);
+
 					header =
 						headerWrapper
 							.toggleClass('keep-expanded', keepExpanded)
-							.toggleClass('show-label', showExpanderLabels)
-							.toggleClass('group-collapsed', !keepExpanded && !!Settings.getItem('expander', expander))
+							.toggleClass('show-label', showExpanderLabels || headers[i].getAttribute('data-showLabel') === '1')
+							.toggleClass('group-collapsed', !keepExpanded && (expandedState === undefined ? headers[i].getAttribute('data-defaultCollapse') === '1' : expandedState))
 							.children();
 
 					headerLabel =
@@ -152,13 +163,10 @@ var Expando = {
 						.next()
 						.wrapAll('<div class="collapsible-group-wrapper"></div>');
 
-					setTimeout(function (header, headerLabel, headerColor) {
-						UI
-							.executeLessScript('lighten(' + headerColor + ', 20%)')
-							.then((function (headerLabel, value) {
-								headerLabel.css('color', value);
-							}).bind(null, headerLabel));
-					}, 5 * i, header, headerLabel, header.css('color'));
+					if (headers.length > 100)
+						setTimeout(setHeaderColor, 5 * i, header, headerLabel);
+					else
+						setHeaderColor(header, headerLabel);
 				}
 			}
 		}
