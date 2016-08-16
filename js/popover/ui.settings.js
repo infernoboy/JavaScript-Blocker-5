@@ -415,6 +415,7 @@ UI.Settings = {
 				settingElement,
 				listSetting,
 				shouldRender,
+				collapsibleContainer,
 				subContainer,
 				settingRow;
 
@@ -463,20 +464,32 @@ UI.Settings = {
 				if (shouldRender || !setting.when.hide)
 					this.createList(container, setting.settings, !shouldRender || disabled);
 
-			} else if (setting.setting || (setting.store && setting.props && setting.props.isSetting)) {
+			} else if (setting.setting || setting.collapsible || (setting.store && setting.props && setting.props.isSetting)) {
 				if (setting.props) {
 					if (setting.props.remap || setting.props.readOnly)
 						continue;
 
-					settingElement = this.createElementForSetting(setting, null, true);
+					if (setting.collapsible) {
+						collapsibleContainer = Template.create('settings', 'setting-section-collapsible', {
+							header: setting.collapsible
+						});
 
-					listSetting = Template.create('settings', 'setting-section-setting', {
-						setting: setting.setting || setting.store
-					});
+						container.append(collapsibleContainer);
 
-					listSetting.append(settingElement.children());
+						subContainer = collapsibleContainer;
+					} else {
+						subContainer = null;
 
-					container.append(listSetting);
+						settingElement = this.createElementForSetting(setting, null, true);
+
+						listSetting = Template.create('settings', 'setting-section-setting', {
+							setting: setting.setting || setting.store
+						});
+
+						listSetting.append(settingElement.children());
+
+						container.append(listSetting);
+					}
 
 					if (disabled)
 						listSetting
@@ -485,9 +498,11 @@ UI.Settings = {
 							.attr('disabled', true);
 					
 					if (setting.props.subSettings && !disabled) {
-						subContainer = Template.create('settings', 'setting-section-sub-container');
+						if (!subContainer) {
+							subContainer = Template.create('settings', 'setting-section-sub-container');
 
-						container.append(subContainer);
+							container.append(subContainer);
+						}
 
 						this.createList($('ul', subContainer), setting.props.subSettings);
 					}
@@ -514,7 +529,11 @@ UI.Settings = {
 		var container = Template.create('settings', 'setting-section-container'),
 				currentSection = $('> .setting-section', view);
 
-		this.createList(container, Settings.settings[settingSection])
+		this.createList(container, Settings.settings[settingSection]);
+
+		this.events.elementWasAdded({
+			detail: container[0]
+		});
 
 		if (currentSection.length)
 			currentSection.replaceWith(container);

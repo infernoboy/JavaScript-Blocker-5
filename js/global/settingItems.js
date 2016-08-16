@@ -274,341 +274,355 @@ Settings.settings = {
 
 	// General Settings
 	general: [{
-		setting: 'useAnimations',
+		collapsible: 'setting.collapsible.ui',
 		props: {
-			type: 'boolean',
-			default: true,
-			onChange: function () {
-				var useAnimations = Settings.getItem('useAnimations'),
-						useFastAnimations = Settings.getItem('useFastAnimations');
-
-				window.globalSetting.speedMultiplier = useAnimations ? (useFastAnimations ? 0.7 : 1) : 0.001;
-
-				Popover.window.document.body.classList.toggle('jsb-no-animations', !useAnimations);
-
-				UI.setLessVariables();
-			},
 			subSettings: [{
+				setting: 'useAnimations',
+				props: {
+					type: 'boolean',
+					default: true,
+					onChange: function () {
+						var useAnimations = Settings.getItem('useAnimations'),
+								useFastAnimations = Settings.getItem('useFastAnimations');
+
+						window.globalSetting.speedMultiplier = useAnimations ? (useFastAnimations ? 0.7 : 1) : 0.001;
+
+						Popover.window.document.body.classList.toggle('jsb-no-animations', !useAnimations);
+
+						UI.setLessVariables();
+					},
+					subSettings: [{
+						when: {
+							hide: true,
+							settings: {
+								group: 'all',
+								items: [{
+									method: Utilities.Group.IS,
+									key: 'useAnimations',
+									needle: true
+								}]
+							}
+						},
+						settings: [{
+							setting: 'useFastAnimations',
+							props: {
+								type: 'boolean',
+								default: false,
+								onChange: function () {
+									Settings.map.useAnimations.props.onChange();
+								}
+							}
+						}]
+					}]
+				}
+			}, {
+				setting: 'largeFont',
+				props: {
+					type: 'boolean',
+					default: false,
+					onChange: function () {
+						Popover.window.document.documentElement.classList.toggle('jsb-large-font', Settings.getItem('largeFont'));
+					}
+				}
+			}, {
+				setting: 'darkMode',
+				props: {
+					type: 'boolean',
+					default: false,
+					onChange: function () {
+						UI.setLessVariables();
+					}
+				}
+			}, {
+				setting: 'showExpanderLabels',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
+				setting: 'recommendReloadAlways',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
+				divider: true
+			}, {
+				setting: 'baseColor',
+				props: {
+					type: 'option',
+					options: [
+						['#177efb', 'Blue'],
+						['#336699', 'Slate blue'],
+						['#787878', 'Gray'],
+						['#5d5d5d', 'Dark gray'],
+						['#99999f', 'Graphite'],
+						['#ff1fed', 'Pink	'],
+						['#ff7c0c', 'Orange'],
+						['#009e00', 'Green'],
+						['#006100', 'Dark green'],
+						['#00afba', 'Turquoise'],
+						['#876846', 'Brown'],
+						['#7512b2', 'Purple'],
+						['#9734e4', 'Lavender'],
+						['#e50000', 'Red'],
+						['#7a0103', 'Dark red'],
+						['#000000', 'Black']
+					],
+					default: function () {				
+						return Settings.getItem('darkMode') ? '#336699' : '#177efb';
+					},
+					otherOption: {
+						validate: function (value) {
+							return value.match(/^#[a-f0-9]+$/i) && (value.length === 7 || value.length === 4);
+						}
+					},
+					onChange: function () {
+						UI.setLessVariables();
+					}
+				}
+			}, {
+				setting: 'language',
+				props: {
+					type: 'option',
+					options: [
+						['auto', 'setting.language.option.automatic'],
+						['en-us', 'US English']
+					],
+					default: 'auto',
+					onChange: function () {
+						setTimeout(function () {
+							if (!SettingStore.__locked)
+								Popover.window.location.reload()
+						}, 500);
+					}
+				}
+			}, {
+				setting: 'toolbarDisplay',
+				props: {
+					type: 'option-radio',
+					default: 'blocked',
+					options: [
+						['blocked', 'setting.toolbarDisplay.option.blocked'],
+						['allowed', 'setting.toolbarDisplay.option.allowed'],
+						[false, 'setting.toolbarDisplay.option.neither']
+					],
+					onChange: function () {
+						Page.requestPageFromActive();
+					}
+				}
+			}]
+		}
+	}, {
+		divider: true
+	}, {
+		collapsible: 'setting.collapsible.page',
+		props: {
+			subSettings: [{
+				setting: 'createRulesOnClick',
+				props: {
+					type: 'boolean',
+					default: true
+				}
+			}, {
+				setting: 'showPageEditorImmediately',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
+				setting: 'useSimplePageEditor',
+				props: {
+					type: 'boolean',
+					default: true
+				}
+			}, {
+				setting: 'showResourceURLsOnNumberClick',
+				props: {
+					type: 'boolean',
+					default: true
+				}
+			}, {
 				when: {
 					hide: true,
 					settings: {
 						group: 'all',
 						items: [{
 							method: Utilities.Group.IS,
-							key: 'useAnimations',
+							key: 'showUnblockedScripts',
 							needle: true
 						}]
 					}
 				},
 				settings: [{
-					setting: 'useFastAnimations',
+					setting: 'hideInjected',
 					props: {
 						type: 'boolean',
-						default: false,
-						onChange: function () {
-							Settings.map.useAnimations.props.onChange();
-						}
+						default: true
 					}
 				}]
-			}]
-		}
-	}, {
-		setting: 'largeFont',
-		props: {
-			type: 'boolean',
-			default: false,
-			onChange: function () {
-				Popover.window.document.documentElement.classList.toggle('jsb-large-font', Settings.getItem('largeFont'));
-			}
-		}
-	}, {
-		setting: 'darkMode',
-		props: {
-			type: 'boolean',
-			default: false,
-			onChange: function () {
-				UI.setLessVariables();
-			}
-		}
-	}, {
-		setting: 'showExpanderLabels',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		setting: 'recommendReloadAlways',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		divider: true
-	}, {
-		header: 'pageHeader'
-	}, {
-		setting: 'createRulesOnClick',
-		props: {
-			type: 'boolean',
-			default: true
-		}
-	}, {
-		setting: 'showPageEditorImmediately',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		setting: 'useSimplePageEditor',
-		props: {
-			type: 'boolean',
-			default: true
-		}
-	}, {
-		setting: 'showResourceURLsOnNumberClick',
-		props: {
-			type: 'boolean',
-			default: true
-		}
-	}, {
-		when: {
-			hide: true,
-			settings: {
-				group: 'all',
-				items: [{
-					method: Utilities.Group.IS,
-					key: 'showUnblockedScripts',
-					needle: true
-				}]
-			}
-		},
-		settings: [{
-			setting: 'hideInjected',
-			props: {
-				type: 'boolean',
-				default: true
-			}
-		}]
-	}, {
-		setting: 'createRulesOnClose',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		setting: 'quickCyclePageItems',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		setting: 'autoHideWhitelist',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		setting: 'autoHideBlacklist',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		setting: 'autoHideNoRule',
-		props: {
-			type: 'boolean',
-			default: false
-		}
-	}, {
-		divider: true //===================================================================================
-	}, {
-		setting: 'baseColor',
-		props: {
-			type: 'option',
-			options: [
-				['#177efb', 'Blue'],
-				['#336699', 'Slate blue'],
-				['#787878', 'Gray'],
-				['#5d5d5d', 'Dark gray'],
-				['#99999f', 'Graphite'],
-				['#ff1fed', 'Pink	'],
-				['#ff7c0c', 'Orange'],
-				['#009e00', 'Green'],
-				['#006100', 'Dark green'],
-				['#00afba', 'Turquoise'],
-				['#876846', 'Brown'],
-				['#7512b2', 'Purple'],
-				['#9734e4', 'Lavender'],
-				['#e50000', 'Red'],
-				['#7a0103', 'Dark red'],
-				['#000000', 'Black']
-			],
-			default: function () {				
-				return Settings.getItem('darkMode') ? '#336699' : '#177efb';
-			},
-			otherOption: {
-				validate: function (value) {
-					return value.match(/^#[a-f0-9]+$/i) && (value.length === 7 || value.length === 4);
-				}
-			},
-			onChange: function () {
-				UI.setLessVariables();
-			}
-		}
-	}, {
-		setting: 'language',
-		props: {
-			type: 'option',
-			options: [
-				['auto', 'setting.language.option.automatic'],
-				['en-us', 'US English']
-			],
-			default: 'auto',
-			onChange: function () {
-				setTimeout(function () {
-					if (!SettingStore.__locked)
-						Popover.window.location.reload()
-				}, 500);
-			}
-		}
-	}, {
-		setting: 'toolbarDisplay',
-		props: {
-			type: 'option-radio',
-			default: 'blocked',
-			options: [
-				['blocked', 'setting.toolbarDisplay.option.blocked'],
-				['allowed', 'setting.toolbarDisplay.option.allowed'],
-				[false, 'setting.toolbarDisplay.option.neither']
-			],
-			onChange: function () {
-				Page.requestPageFromActive();
-			}
-		}
-	}, {
-		divider: true //===================================================================================
-	}, {
-		header: 'locker'
-	}, {
-		description: 'setLockerPassword.description'
-	}, {
-		setting: 'useLocker',
-		props: {
-			type: 'boolean',
-			default: false,
-			locked: true,
-			onChange: function () {
-				if (Settings.IMPORTING)
-					return;
-
-				if (Locker.isEnabled())
-					UI.Locker
-						.showSetPasswordPrompt()
-						.then(function () {
-							// Success
-						}, function () {
-							Settings.setItem('useLocker', false, null, true, true);
-
-							if (!Settings.getItem('setupComplete'))
-								$('input[data-inlineSetting="useLocker"]', UI.Setup.view).prop('checked', false);
-						});
-			}
-		}
-	}, {
-		when: {
-			hide: true,
-			settings: {
-				group: 'all',
-				items: [{
-					method: Utilities.Group.IS,
-					key: 'useLocker',
-					needle: true
-				}]
-			}
-		},
-		settings: [{
-			asRow: [{
-				setting: 'setLockerPassword',
+			}, {
+				setting: 'createRulesOnClose',
 				props: {
-					type: 'stand-alone-button',
-					onClick: function () {
-						UI.Locker.showSetPasswordPrompt();
-
-						Locker.event.removeCustomEventListener('passwordSet');
-					}
+					type: 'boolean',
+					default: false
+				}
+			}, {
+				setting: 'quickCyclePageItems',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
+				setting: 'autoHideWhitelist',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
+				setting: 'autoHideBlacklist',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
+				setting: 'autoHideNoRule',
+				props: {
+					type: 'boolean',
+					default: false
 				}
 			}]
-		}, {
-			divider: true, //===================================================================================
-			classes: 'transparent short'
-		}, {
-			description: 'lockerAlwaysLocked.description',
-			classes: 'short'
-		}, {
-			store: 'lockerAlwaysLocked',
-			props: {
-				type: 'many-boolean',
-				locked: true
-			}
-		}, {
-			setting: 'lockerAlwaysLocked',
-			props: {
-				readOnly: true,
-				storeKey: 'setting',
-				default: true
-			}
-		}, {
-			setting: 'lockerAlwaysLocked',
-			props: {
-				storeKey: 'clearRules',
-				default: true
-			}
-		}, {
-			setting: 'lockerAlwaysLocked',
-			props: {
-				storeKey: 'importBackupSettings',
-				default: true
-			}
-		}, {
-			setting: 'lockerAlwaysLocked',
-			props: {
-				storeKey: 'console',
-				default: false
-			}
-		}, {
-			setting: 'lockerAlwaysLocked',
-			props: {
-				storeKey: 'disable',
-				default: false
-			}
-		}]
+		}
 	}, {
 		divider: true //===================================================================================
 	}, {
-		when: {
-			settings: {
-				group: 'all',
-				items: [{
-					method: Utilities.Group.IS,
-					key: 'extrasActive',
-					needle: true
+		collapsible: 'setting.collapsible.locker',
+		props: {
+			subSettings: [{
+				description: 'setLockerPassword.description'
+			}, {
+				setting: 'useLocker',
+				props: {
+					type: 'boolean',
+					default: false,
+					locked: true,
+					onChange: function () {
+						if (Settings.IMPORTING)
+							return;
+
+						if (Locker.isEnabled())
+							UI.Locker
+								.showSetPasswordPrompt()
+								.then(function () {
+									// Success
+								}, function () {
+									Settings.setItem('useLocker', false, null, true, true);
+
+									if (!Settings.getItem('setupComplete'))
+										$('input[data-inlineSetting="useLocker"]', UI.Setup.view).prop('checked', false);
+								});
+					}
+				}
+			}, {
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'useLocker',
+							needle: true
+						}]
+					}
+				},
+				settings: [{
+					asRow: [{
+						setting: 'setLockerPassword',
+						props: {
+							type: 'stand-alone-button',
+							onClick: function () {
+								UI.Locker.showSetPasswordPrompt();
+
+								Locker.event.removeCustomEventListener('passwordSet');
+							}
+						}
+					}]
 				}, {
-					method: Utilities.Group.IS,
-					key: 'donationVerified',
-					needle: true
+					divider: true, //===================================================================================
+					classes: 'transparent short'
+				}, {
+					description: 'lockerAlwaysLocked.description',
+					classes: 'short'
+				}, {
+					store: 'lockerAlwaysLocked',
+					props: {
+						type: 'many-boolean',
+						locked: true
+					}
+				}, {
+					setting: 'lockerAlwaysLocked',
+					props: {
+						readOnly: true,
+						storeKey: 'setting',
+						default: true
+					}
+				}, {
+					setting: 'lockerAlwaysLocked',
+					props: {
+						storeKey: 'clearRules',
+						default: true
+					}
+				}, {
+					setting: 'lockerAlwaysLocked',
+					props: {
+						storeKey: 'importBackupSettings',
+						default: true
+					}
+				}, {
+					setting: 'lockerAlwaysLocked',
+					props: {
+						storeKey: 'console',
+						default: false
+					}
+				}, {
+					setting: 'lockerAlwaysLocked',
+					props: {
+						storeKey: 'disable',
+						default: false
+					}
 				}]
-			}
-		},
-		settings: [{
-			header: 'donatorFeatures'
-		}, {
-			setting: 'updateNotify',
-			props: {
-				type: 'boolean',
-				isExtra: true,
-				default: true
-			}
-		}]
+			}]
+		}
+	}, {
+		divider: true //===================================================================================
+	}, {
+		collapsible: 'setting.collapsible.donator',
+		props: {
+			subSettings: [{
+				when: {
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'extrasActive',
+							needle: true
+						}, {
+							method: Utilities.Group.IS,
+							key: 'donationVerified',
+							needle: true
+						}]
+					}
+				},
+				settings: [{
+					setting: 'updateNotify',
+					props: {
+						type: 'boolean',
+						isExtra: true,
+						default: true
+					}
+				}]
+			}]
+		}
 	}],
 
 	// Rule settings
@@ -641,328 +655,190 @@ Settings.settings = {
 			type: 'boolean'
 		}
 	}, {
-		setting: 'ignoreWhitelist',
+		collapsible: 'setting.collapsible.ignore',
 		props: {
-			type: 'boolean',
-			default: false,
-			onChange: function () {
-				Resource.canLoadCache.clear().saveNow();
-			}
-		}
-	}, {
-		setting: 'ignoreBlacklist',
-		props: {
-			type: 'boolean',
-			default: false,
-			onChange: function () {
-				Resource.canLoadCache.clear().saveNow();
-			}
-		}
-	}, {
-		setting: 'ignorePredefined',
-		props: {
-			type: 'boolean',
-			default: false,
-			onChange: function () {
-				Predefined();
-			}
-		}
-	}, {
-		setting: 'secureOnly',
-		props: {
-			type: 'boolean',
-			default: true
-		}
-	}, {
-		setting: 'allowExtensions',
-		props: {
-			type: 'boolean',
-			default: true
+			subSettings: [{
+				setting: 'ignoreWhitelist',
+				props: {
+					type: 'boolean',
+					default: false,
+					onChange: function () {
+						Resource.canLoadCache.clear().saveNow();
+					}
+				}
+			}, {
+				setting: 'ignoreBlacklist',
+				props: {
+					type: 'boolean',
+					default: false,
+					onChange: function () {
+						Resource.canLoadCache.clear().saveNow();
+					}
+				}
+			}, {
+				setting: 'ignorePredefined',
+				props: {
+					type: 'boolean',
+					default: false,
+					onChange: function () {
+						Predefined();
+					}
+				}
+			}]
 		}
 	}, {
 		divider: true, //===================================================================================
 	}, {
-		description: 'defaultRuleDomain.description'
-	}, {
-		setting: 'defaultRuleDomain',
+		collapsible: 'setting.collapsible.ruleDefaults',
 		props: {
-			type: 'option-radio',
-			options: [
-				['host', 'setting.defaultRuleDomain.option.hostname'],
-				['domain', 'setting.defaultRuleDomain.option.domain'],
-				['all', 'setting.defaultRuleDomain.option.all']
-			],
-			default: 'host'
-		}
-	}, {
-		setting: 'defaultRuleList',
-		props: {
-			type: 'option-radio',
-			options: [
-				['last', 'setting.defaultRuleList.option.remember'],
-				['always', 'setting.defaultRuleList.option.always'],
-				['temporary', 'setting.defaultRuleList.option.temporarily']
-			],
-			default: 'last'
-		}
-	}, {
-		divider: true //===================================================================================
-	}, {
-		description: 'blockFirstVisit.description'
-	}, {
-		setting: 'blockFirstVisit',
-		props: {
-			type: 'option-radio',
-			options: [
-				['nowhere', 'setting.blockFirstVisit.option.off'],
-				['host', 'setting.blockFirstVisit.option.hostnames'],
-				['domain', 'setting.blockFirstVisit.option.domains'],
-			],
-			default: 'nowhere',
-			confirm: {
-				when: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.NOT.IS,
-						key: 'blockFirstVisit',
-						needle: 'nowhere'
-					}, {
-						method: Utilities.Group.IS,
-						key: 'setupComplete',
-						needle: true
-					}]
-				}
-			},
-			onChange: function () {
-				Rules.list.firstVisit.clear();
-			}
-		}
-	}, {
-		when: {
-			hide: true,
-			settings: {
-				group: 'all',
-				items: [{
-					method: Utilities.Group.NOT.IS,
-					key: 'blockFirstVisit',
-					needle: 'nowhere'
-				}]
-			}
-		},
-		settings: [{
-			setting: 'showBlockFirstVisitNotification',
-			props: {
-				type: 'boolean',
-				default: true
-			}
-		}]
-	}, {
-		divider: true //===================================================================================
-	}, {
-		setting: 'enabledKinds',
-		props: {
-			readOnly: true,
-			storeKey: 'disable',
-			default: true
-		}
-	}, {
-		setting: 'enabledKinds',
-		props: {
-			readOnly: true,
-			storeKey: 'special',
-			default: true
-		}
-	}, {
-		setting: 'enabledKinds',
-		props: {
-			readOnly: true,
-			storeKey: 'user_script',
-			default: true
-		}
-	}, {
-		setting: 'alwaysBlock',
-		props: {
-			readOnly: true,
-			storeKey: 'disable',
-			default: 'nowhere'
-		}
-	}, {
-		setting: 'alwaysBlock',
-		props: {
-			readOnly: true,
-			storeKey: 'special',
-			default: 'everywhere'
-		}
-	}, {
-		setting: 'alwaysBlock',
-		props: {
-			readOnly: true,
-			storeKey: 'user_script',
-			default: 'everywhere'
-		}
-	}, {
-		setting: 'enabledKinds',
-		props: {
-			storeKey: 'script',
-			default: true
-		}
-	}, {
-		when: {
-			hide: true,
-			settings: {
-				group: 'all',
-				items: [{
-					method: Utilities.Group.NONE,
-					key: 'enabledKinds',
-					needle: {
-						group: 'all',
-						items: [{
-							method: Utilities.Group.IS,
-							key: 'script',
-							needle: true
-						}]
-					}
-				}]
-			}
-		},
-		settings: [{
-			setting: 'alwaysBlock',
-			props: {
-				storeKey: 'script',
-				default: 'blacklist'
-			}
-		}]
-	}, {
-		divider: true //===================================================================================
-	}, {
-		header: 'extraFeatures',
-	}, {
-		when: {
-			settings: {
-				group: 'all',
-				items: [{
-					method: Utilities.Group.IS,
-					key: 'extrasActive',
-					needle: true
-				}]
-			}
-		},
-		settings: [{
-			setting: 'enabledKinds',
-			props: {
-				storeKey: 'frame',
-				isExtra: true,
-				default: function () {
-					return Extras.isActive();
-				}
-			}
-		}, {
-			when: {
-				hide: true,
-				settings: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.NONE,
-						key: 'enabledKinds',
-						needle: {
-							group: 'all',
-							items: [{
-								method: Utilities.Group.IS,
-								key: 'frame',
-								needle: true
-							}]
-						}
-					}]
-				}
-			},
-			settings: [{
-				setting: 'showPlaceholder',
+			subSettings: [{
+				description: 'defaultRuleDomain.description'
+			}, {
+				setting: 'defaultRuleDomain',
 				props: {
-					storeKey: 'frame',
-					default: false
+					type: 'option-radio',
+					options: [
+						['host', 'setting.defaultRuleDomain.option.hostname'],
+						['domain', 'setting.defaultRuleDomain.option.domain'],
+						['all', 'setting.defaultRuleDomain.option.all']
+					],
+					default: 'host'
 				}
 			}, {
-				setting: 'alwaysBlock',
+				setting: 'defaultRuleList',
 				props: {
-					storeKey: 'frame',
-					default: 'blacklist'
+					type: 'option-radio',
+					options: [
+						['last', 'setting.defaultRuleList.option.remember'],
+						['always', 'setting.defaultRuleList.option.always'],
+						['temporary', 'setting.defaultRuleList.option.temporarily']
+					],
+					default: 'last'
 				}
 			}]
-		}, {
-			divider: true //===================================================================================
-		}, {
-			setting: 'enabledKinds',
-			props: {
-				storeKey: 'xhr_get',
-				remap: 'xhr'
-			}
-		}, {
-			setting: 'enabledKinds',
-			props: {
-				storeKey: 'xhr_post',
-				remap: 'xhr'
-			}
-		}, {
-			setting: 'enabledKinds',
-			props: {
-				storeKey: 'xhr_put',
-				remap: 'xhr'
-			}
-		}, {
-			setting: 'enabledKinds',
-			props: {
-				storeKey: 'xhr',
-				isExtra: true,
-				default: function () {
-					return Extras.isActive();
-				}
-			}
-		}, {
-			when: {
-				hide: true,
-				settings: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.NONE,
-						key: 'enabledKinds',
-						needle: {
+		}
+	}, {
+		divider: true //===================================================================================
+	}, {
+		collapsible: 'setting.collapsible.unknownWebsites',
+		props: {
+			subSettings: [{
+				description: 'blockFirstVisit.description'
+			}, {
+				setting: 'blockFirstVisit',
+				props: {
+					type: 'option-radio',
+					options: [
+						['nowhere', 'setting.blockFirstVisit.option.off'],
+						['host', 'setting.blockFirstVisit.option.hostnames'],
+						['domain', 'setting.blockFirstVisit.option.domains'],
+					],
+					default: 'nowhere',
+					confirm: {
+						when: {
 							group: 'all',
 							items: [{
+								method: Utilities.Group.NOT.IS,
+								key: 'blockFirstVisit',
+								needle: 'nowhere'
+							}, {
 								method: Utilities.Group.IS,
-								key: 'xhr',
+								key: 'setupComplete',
 								needle: true
 							}]
 						}
-					}]
-				}
-			},
-			settings: [{
-				setting: 'alwaysBlock',
-				props: {
-					storeKey: 'xhr_get',
-					remap: 'xhr'
-				}
-			}, {
-				setting: 'alwaysBlock',
-				props: {
-					storeKey: 'xhr_post',
-					remap: 'xhr'
-				}
-			}, {
-				setting: 'alwaysBlock',
-				props: {
-					storeKey: 'xhr_put',
-					remap: 'xhr'
-				}
-			}, {
-				setting: 'alwaysBlock',
-				props: {
-					storeKey: 'xhr',
-					extendOptions: [['ask', 'setting.blockFrom.option.ask']],
-					default: 'blacklist',
-					onChange: function () {
-						Special.__enabled = null;
 					},
+					onChange: function () {
+						Rules.list.firstVisit.clear();
+					}
+				}
+			}, {
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.NOT.IS,
+							key: 'blockFirstVisit',
+							needle: 'nowhere'
+						}]
+					}
+				},
+				settings: [{
+					setting: 'showBlockFirstVisitNotification',
+					props: {
+						type: 'boolean',
+						default: true
+					}
+				}]
+			}]
+		}
+	},{
+		divider: true //===================================================================================
+	}, {
+		collapsible: 'setting.collapsible.blockers',
+		props: {
+			subSettings: [{
+				setting: 'secureOnly',
+				props: {
+					type: 'boolean',
+					default: true
+				}
+			}, {
+				setting: 'allowExtensions',
+				props: {
+					type: 'boolean',
+					default: true
+				}
+			}, {
+				divider: true
+			}, {
+				setting: 'enabledKinds',
+				props: {
+					readOnly: true,
+					storeKey: 'disable',
+					default: true
+				}
+			}, {
+				setting: 'enabledKinds',
+				props: {
+					readOnly: true,
+					storeKey: 'special',
+					default: true
+				}
+			}, {
+				setting: 'enabledKinds',
+				props: {
+					readOnly: true,
+					storeKey: 'user_script',
+					default: true
+				}
+			}, {
+				setting: 'alwaysBlock',
+				props: {
+					readOnly: true,
+					storeKey: 'disable',
+					default: 'nowhere'
+				}
+			}, {
+				setting: 'alwaysBlock',
+				props: {
+					readOnly: true,
+					storeKey: 'special',
+					default: 'everywhere'
+				}
+			}, {
+				setting: 'alwaysBlock',
+				props: {
+					readOnly: true,
+					storeKey: 'user_script',
+					default: 'everywhere'
+				}
+			}, {
+				setting: 'enabledKinds',
+				props: {
+					storeKey: 'script',
+					default: true
 				}
 			}, {
 				when: {
@@ -971,307 +847,475 @@ Settings.settings = {
 						group: 'all',
 						items: [{
 							method: Utilities.Group.NONE,
-							key: 'alwaysBlock',
+							key: 'enabledKinds',
 							needle: {
 								group: 'all',
 								items: [{
 									method: Utilities.Group.IS,
-									key: 'xhr',
-									needle: 'ask'
+									key: 'script',
+									needle: true
 								}]
 							}
 						}]
 					}
 				},
 				settings: [{
-					setting: 'synchronousXHRMethod',
+					setting: 'alwaysBlock',
 					props: {
-						type: 'option-radio',
-						options: [
-							[0, 'setting.synchronousXHRMethod.option.allow'],
-							[1, 'setting.synchronousXHRMethod.option.block'],
-							[2, 'setting.synchronousXHRMethod.option.ask']
-						],
-						default: 0,
-						confirm: {
-							toValues: ['2'],
-							prompt: function () {
-								return confirm(_('setting.synchronousXHRMethod.confirm'));
+						storeKey: 'script',
+						default: 'blacklist'
+					}
+				}]
+			}, {
+				divider: true //===================================================================================
+			}, {
+				collapsible: 'setting.collapsible.extraBlockers',
+				props: {
+					subSettings: [{
+						when: {
+							settings: {
+								group: 'all',
+								items: [{
+									method: Utilities.Group.IS,
+									key: 'extrasActive',
+									needle: true
+								}]
 							}
 						},
-						onChange: function () {
-							Special.__enabled = null;
-						},
-						subSettings: [{
+						settings: [{
+							setting: 'enabledKinds',
+							props: {
+								storeKey: 'frame',
+								isExtra: true,
+								default: function () {
+									return Extras.isActive();
+								}
+							}
+						}, {
 							when: {
 								hide: true,
 								settings: {
 									group: 'all',
 									items: [{
-										method: Utilities.Group.NOT.IS,
-										key: 'synchronousXHRMethod',
-										needle: '2'
+										method: Utilities.Group.NONE,
+										key: 'enabledKinds',
+										needle: {
+											group: 'all',
+											items: [{
+												method: Utilities.Group.IS,
+												key: 'frame',
+												needle: true
+											}]
+										}
 									}]
 								}
 							},
 							settings: [{
-								setting: 'showSynchronousXHRNotification',
+								setting: 'showPlaceholder',
 								props: {
-									type: 'boolean',
-									default: true,
+									storeKey: 'frame',
+									default: false
+								}
+							}, {
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'frame',
+									default: 'blacklist'
+								}
+							}]
+						}, {
+							divider: true //===================================================================================
+						}, {
+							setting: 'enabledKinds',
+							props: {
+								storeKey: 'xhr_get',
+								remap: 'xhr'
+							}
+						}, {
+							setting: 'enabledKinds',
+							props: {
+								storeKey: 'xhr_post',
+								remap: 'xhr'
+							}
+						}, {
+							setting: 'enabledKinds',
+							props: {
+								storeKey: 'xhr_put',
+								remap: 'xhr'
+							}
+						}, {
+							setting: 'enabledKinds',
+							props: {
+								storeKey: 'xhr',
+								isExtra: true,
+								default: function () {
+									return Extras.isActive();
+								}
+							}
+						}, {
+							when: {
+								hide: true,
+								settings: {
+									group: 'all',
+									items: [{
+										method: Utilities.Group.NONE,
+										key: 'enabledKinds',
+										needle: {
+											group: 'all',
+											items: [{
+												method: Utilities.Group.IS,
+												key: 'xhr',
+												needle: true
+											}]
+										}
+									}]
+								}
+							},
+							settings: [{
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'xhr_get',
+									remap: 'xhr'
+								}
+							}, {
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'xhr_post',
+									remap: 'xhr'
+								}
+							}, {
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'xhr_put',
+									remap: 'xhr'
+								}
+							}, {
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'xhr',
+									extendOptions: [['ask', 'setting.blockFrom.option.ask']],
+									default: 'blacklist',
 									onChange: function () {
 										Special.__enabled = null;
+									},
+								}
+							}, {
+								when: {
+									hide: true,
+									settings: {
+										group: 'all',
+										items: [{
+											method: Utilities.Group.NONE,
+											key: 'alwaysBlock',
+											needle: {
+												group: 'all',
+												items: [{
+													method: Utilities.Group.IS,
+													key: 'xhr',
+													needle: 'ask'
+												}]
+											}
+										}]
 									}
+								},
+								settings: [{
+									setting: 'synchronousXHRMethod',
+									props: {
+										type: 'option-radio',
+										options: [
+											[0, 'setting.synchronousXHRMethod.option.allow'],
+											[1, 'setting.synchronousXHRMethod.option.block'],
+											[2, 'setting.synchronousXHRMethod.option.ask']
+										],
+										default: 0,
+										confirm: {
+											toValues: ['2'],
+											prompt: function () {
+												return confirm(_('setting.synchronousXHRMethod.confirm'));
+											}
+										},
+										onChange: function () {
+											Special.__enabled = null;
+										},
+										subSettings: [{
+											when: {
+												hide: true,
+												settings: {
+													group: 'all',
+													items: [{
+														method: Utilities.Group.NOT.IS,
+														key: 'synchronousXHRMethod',
+														needle: '2'
+													}]
+												}
+											},
+											settings: [{
+												setting: 'showSynchronousXHRNotification',
+												props: {
+													type: 'boolean',
+													default: true,
+													onChange: function () {
+														Special.__enabled = null;
+													}
+												}
+											}]
+										}]
+									}
+								}]
+							}]
+						}, {
+							divider: true //===================================================================================
+						}, {
+							setting: 'enabledKinds',
+							props: {
+								storeKey: 'embed',
+								isExtra: true,
+								default: function () {
+									return Extras.isActive();
+								}
+							}
+						}, {
+							when: {
+								hide: true,
+								settings: {
+									group: 'all',
+									items: [{
+										method: Utilities.Group.NONE,
+										key: 'enabledKinds',
+										needle: {
+											group: 'all',
+											items: [{
+												method: Utilities.Group.IS,
+												key: 'embed',
+												needle: true
+											}]
+										}
+									}]
+								}
+							},
+							settings: [{
+								setting: 'showPlaceholder',
+								props: {
+									storeKey: 'embed',
+									default: true
+								}
+							}, {
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'embed',
+									default: 'blacklist'
+								}
+							}]
+						}, {
+							divider: true //===================================================================================
+						}, {
+							setting: 'enabledKinds',
+							props: {
+								storeKey: 'video',
+								isExtra: true,
+								default: false
+							}
+						}, {
+							when: {
+								hide: true,
+								settings: {
+									group: 'all',
+									items: [{
+										method: Utilities.Group.NONE,
+										key: 'enabledKinds',
+										needle: {
+											group: 'all',
+											items: [{
+												method: Utilities.Group.IS,
+												key: 'video',
+												needle: true
+											}]
+										}
+									}]
+								}
+							},
+							settings: [{
+								setting: 'showPlaceholder',
+								props: {
+									storeKey: 'video',
+									default: true
+								}
+							}, {
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'video',
+									default: 'everywhere'
+								}
+							}]
+						}, {
+							divider: true //===================================================================================
+						}, {
+							setting: 'enabledKinds',
+							props: {
+								storeKey: 'image',
+								isExtra: true,
+								default: false
+							}
+						}, {
+							when: {
+								hide: true,
+								settings: {
+									group: 'all',
+									items: [{
+										method: Utilities.Group.NONE,
+										key: 'enabledKinds',
+										needle: {
+											group: 'all',
+											items: [{
+												method: Utilities.Group.IS,
+												key: 'image',
+												needle: true
+											}]
+										}
+									}]
+								}
+							},
+							hide: true,
+							settings: [{
+								setting: 'showPlaceholder',
+								props: {
+									storeKey: 'image',
+									default: true
+								}
+							}, {
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'image',
+									default: 'blacklist'
 								}
 							}]
 						}]
-					}
-				}]
-			}]
-		}, {
-			divider: true //===================================================================================
-		}, {
-			setting: 'enabledKinds',
-			props: {
-				storeKey: 'embed',
-				isExtra: true,
-				default: function () {
-					return Extras.isActive();
-				}
-			}
-		}, {
-			when: {
-				hide: true,
-				settings: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.NONE,
-						key: 'enabledKinds',
-						needle: {
-							group: 'all',
-							items: [{
-								method: Utilities.Group.IS,
-								key: 'embed',
-								needle: true
-							}]
-						}
 					}]
 				}
-			},
-			settings: [{
-				setting: 'showPlaceholder',
-				props: {
-					storeKey: 'embed',
-					default: true
-				}
-			}, {
-				setting: 'alwaysBlock',
-				props: {
-					storeKey: 'embed',
-					default: 'blacklist'
-				}
 			}]
-		}, {
-			divider: true //===================================================================================
-		}, {
-			setting: 'enabledKinds',
-			props: {
-				storeKey: 'video',
-				isExtra: true,
-				default: false
-			}
-		}, {
-			when: {
-				hide: true,
-				settings: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.NONE,
-						key: 'enabledKinds',
-						needle: {
-							group: 'all',
-							items: [{
-								method: Utilities.Group.IS,
-								key: 'video',
-								needle: true
-							}]
-						}
-					}]
-				}
-			},
-			settings: [{
-				setting: 'showPlaceholder',
-				props: {
-					storeKey: 'video',
-					default: true
-				}
-			}, {
-				setting: 'alwaysBlock',
-				props: {
-					storeKey: 'video',
-					default: 'everywhere'
-				}
-			}]
-		}, {
-			divider: true //===================================================================================
-		}, {
-			setting: 'enabledKinds',
-			props: {
-				storeKey: 'image',
-				isExtra: true,
-				default: false
-			}
-		}, {
-			when: {
-				hide: true,
-				settings: {
-					group: 'all',
-					items: [{
-						method: Utilities.Group.NONE,
-						key: 'enabledKinds',
-						needle: {
-							group: 'all',
-							items: [{
-								method: Utilities.Group.IS,
-								key: 'image',
-								needle: true
-							}]
-						}
-					}]
-				}
-			},
-			hide: true,
-			settings: [{
-				setting: 'showPlaceholder',
-				props: {
-					storeKey: 'image',
-					default: true
-				}
-			}, {
-				setting: 'alwaysBlock',
-				props: {
-					storeKey: 'image',
-					default: 'blacklist'
-				}
-			}]
-		}]
+		}
 	}, {
 		divider: true //===================================================================================
 	}, {
-		header: 'filterLists',
-	}, {
-		description: 'filterLists.description',
-	}, {
-		store: 'filterLists',
+		collapsible: 'setting.collapsible.filterLists',
 		props: {
-			type: 'dynamic-array',
-			isSetting: true,
-			default: {
-				$list: {
-					enabled: true,
-					value: ['https://easylist-downloads.adblockplus.org/easylist.txt', 'EasyList'],
-				},
-				$privacy: {
-					enabled: true,
-					value: ['https://easylist-downloads.adblockplus.org/easyprivacy.txt', 'EasyPrivacy'],
-				},
-				$malware: {
-					enabled: true,
-					value: ['https://easylist-downloads.adblockplus.org/malwaredomains_full.txt', 'EasyMalware']
-				},
-				$fanboyUltimate: {
-					enabled: false,
-					value: ['https://www.fanboy.co.nz/r/fanboy-ultimate.txt', 'Fanboy\'s Ultimate']
-				},
-				$fanboyAnnoy: {
-					enabled: false,
-					value: ['https://easylist-downloads.adblockplus.org/fanboy-annoyance.txt', 'Fanboy\'s Annoyances']
-				},
-				$fanboySocial: {
-					enabled: false,
-					value: ['https://easylist-downloads.adblockplus.org/fanboy-social.txt', 'Fanboy\'s Anti-social']
-				},
-				$nonIntrusive: {
-					enabled: false,
-					value: ['https://easylist-downloads.adblockplus.org/exceptionrules.txt', 'Non-Intrusive Ads']
-				}
-			},
-			validate: {
-				onFail: 'filterLists.validate.fail',
-				test: function (type, value) {
-					var url = $.trim(value.value[0]).toLowerCase();
+			subSettings: [{
+				description: 'filterLists.description',
+			}, {
+				store: 'filterLists',
+				props: {
+					type: 'dynamic-array',
+					isSetting: true,
+					default: {
+						$list: {
+							enabled: true,
+							value: ['https://easylist-downloads.adblockplus.org/easylist.txt', 'EasyList'],
+						},
+						$privacy: {
+							enabled: true,
+							value: ['https://easylist-downloads.adblockplus.org/easyprivacy.txt', 'EasyPrivacy'],
+						},
+						$malware: {
+							enabled: true,
+							value: ['https://easylist-downloads.adblockplus.org/malwaredomains_full.txt', 'EasyMalware']
+						},
+						$fanboyUltimate: {
+							enabled: false,
+							value: ['https://www.fanboy.co.nz/r/fanboy-ultimate.txt', 'Fanboy\'s Ultimate']
+						},
+						$fanboyAnnoy: {
+							enabled: false,
+							value: ['https://easylist-downloads.adblockplus.org/fanboy-annoyance.txt', 'Fanboy\'s Annoyances']
+						},
+						$fanboySocial: {
+							enabled: false,
+							value: ['https://easylist-downloads.adblockplus.org/fanboy-social.txt', 'Fanboy\'s Anti-social']
+						},
+						$nonIntrusive: {
+							enabled: false,
+							value: ['https://easylist-downloads.adblockplus.org/exceptionrules.txt', 'Non-Intrusive Ads']
+						}
+					},
+					validate: {
+						onFail: 'filterLists.validate.fail',
+						test: function (type, value) {
+							var url = $.trim(value.value[0]).toLowerCase();
 
-					return (url._startsWith('http:') || url._startsWith('https:') || url._startsWith('ftp:'))
-				}
-			},
-			onChange: function (filterList) {
-				Utilities.Timer.timeout('filterListsChanged', function () {
-					Rules.attachFilterLists(true);
+							return (url._startsWith('http:') || url._startsWith('https:') || url._startsWith('ftp:'))
+						}
+					},
+					onChange: function (type, settingKey, value, storeKey) {
+						if (storeKey === '$fanboyUltimate' && value && value.enabled) {
+							var poppy = new Popover.window.Poppy(0.5, 0, 'fanboys-ultimate');
 
-					FilterList.fetch();
-				}, 5000);
-			},
-			confirm: {
-				prompt: function (settingKey, value, storeKey) {
-					if (storeKey === '$fanboyUltimate' && value.enabled) {
-						var poppy = new Popover.window.Poppy(0.5, 0, 'fanboys-ultimate');
+							poppy
+								.modal()
+								.showCloseButton()
+								.setContent(Template.create('poppy.settings', 'fanboys-ultimate'))
+								.show();
 
-						poppy
-							.modal()
-							.showCloseButton()
-							.setContent(Template.create('poppy.settings', 'fanboys-ultimate'))
-							.show();
+							var list = Settings.map.filterLists.props.default.$list._clone(),
+									malware = Settings.map.filterLists.props.default.$malware._clone();
 
-						var disableList = Settings.map.filterLists.props.default.$list._clone(),
-								disableMalware = Settings.map.filterLists.props.default.$malware._clone();
+							list.enabled = false;
+							malware.enabled = false;
 
-						disableList.enabled = false;
-						disableMalware.enabled = false;
+							Settings.setItem('filterLists', list, '$list');
+							Settings.setItem('filterLists', malware, '$privacy');
+							Settings.setItem('filterLists', Settings.map.filterLists.props.default.$fanboyAnnoy, '$fanboyAnnoy');
+						}
 
-						Settings.setItem('filterLists', disableList, '$list');
-						Settings.setItem('filterLists', disableMalware, '$privacy');
-						Settings.setItem('filterLists', Settings.map.filterLists.props.default.$fanboyAnnoy, '$fanboyAnnoy');
-					} else if (['$list', '$privacy', '$fanboyAnnoy']._contains(storeKey) && value.enabled && Settings.getItem('filterLists', '$fanboyUltimate').enabled)
-						return confirm(_('setting.filterLists.confirm'));
+						Utilities.Timer.timeout('filterListsChanged', function () {
+							Rules.attachFilterLists(true);
 
-					return true;
-				}
-			}
-		}
-	}, {
-		divider: true, //===================================================================================
-		classes: 'transparent short'
-	}, {
-		description: 'filterListLastUpdate.description',
-		fill: function () {
-			var lastUpdate = Settings.getItem('FilterListLastUpdate'),
-					nextUpdate = lastUpdate + FilterList.__updateInterval - Date.now(),
-					nextUpdateHuman = Utilities.humanTime(nextUpdate);
+							FilterList.fetch();
+						}, 5000);
+					},
+					confirm: {
+						prompt: function (settingKey, value, storeKey) {
+							if (['$list', '$privacy', '$fanboyAnnoy']._contains(storeKey) && value.enabled && Settings.getItem('filterLists', '$fanboyUltimate').enabled)
+								return confirm(_('setting.filterLists.confirm'));
 
-			return [(new Date(lastUpdate || Date.now())).toLocaleString(), nextUpdateHuman.days, nextUpdateHuman.hours, nextUpdateHuman.minutes];
-		}
-	}, {
-		asRow: [{
-			setting: 'updateFilterLists',
-			props: {
-				type: 'stand-alone-button',
-				validate: {
-					onFail: 'updateFilterLists.validate.fail',
-					test: function () {
-						var lastUpdate = Settings.getItem('FilterListLastUpdate');
-
-						return Date.now() > lastUpdate + (TIME.ONE.MINUTE * 5);
+							return true;
+						}
 					}
-				},
-				onClick: function (button) {
-					FilterList.cancelUpdate();
-
-					FilterList.fetch();
-
-					button.disabled = true;
 				}
-			},
-		}]
+			}, {
+				divider: true, //===================================================================================
+				classes: 'transparent short'
+			}, {
+				description: 'filterListLastUpdate.description',
+				fill: function () {
+					var lastUpdate = Settings.getItem('FilterListLastUpdate'),
+							nextUpdate = lastUpdate + FilterList.__updateInterval - Date.now(),
+							nextUpdateHuman = Utilities.humanTime(nextUpdate);
+
+					return [(new Date(lastUpdate || Date.now())).toLocaleString(), nextUpdateHuman.days, nextUpdateHuman.hours, nextUpdateHuman.minutes];
+				}
+			}, {
+				asRow: [{
+					setting: 'updateFilterLists',
+					props: {
+						type: 'stand-alone-button',
+						validate: {
+							onFail: 'updateFilterLists.validate.fail',
+							test: function () {
+								var lastUpdate = Settings.getItem('FilterListLastUpdate');
+
+								return Date.now() > lastUpdate + (TIME.ONE.MINUTE * 5);
+							}
+						},
+						onClick: function (button) {
+							FilterList.cancelUpdate();
+
+							FilterList.fetch();
+
+							button.disabled = true;
+						}
+					},
+				}]
+			}]
+		}
 	}, {
 		divider: true //===================================================================================
 	}, {
@@ -1705,3 +1749,5 @@ Settings.settings = {
 
 for (var section in Settings.settings)
 	Settings.createMap(Settings.settings[section]);
+
+Object._deepFreeze(Settings.map);
