@@ -581,7 +581,7 @@
 	"rules.list.allow.to": "Allow {0} requests to <strong>{1}</strong>",
 	"rules.list.allow.thirdParty.to": "Allow third-party {0} requests to <strong>{1}</strong>",
 	"rules.list.block.to": "Block {0} requests to <strong>{1}</strong>",
-	"rules.list.block.thirdParty-to": "Block third-party {0} requests to <strong>{1}</strong>",
+	"rules.list.block.thirdParty.to": "Block third-party {0} requests to <strong>{1}</strong>",
 	"rules.list.hide.to": "Hide {0} requests to <strong>{1}</strong>",
 	"rules.list.show.to": "Show {0} requests to <strong>{1}</strong>",
 	"rules.list.special" : "<strong>{1}</strong>",

@@ -169,7 +169,7 @@ Special.specials = {
 			info.canLoad = messageExtensionSync('canLoadResource', info);
 
 			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
-				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [URL]));
+				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [info.source]));
 
 			return info;
 		};
