@@ -81,8 +81,9 @@ UI.Settings = {
 			detail: document.body
 		});
 
-		UI.event.addCustomEventListener('viewAlreadyActive', UI.Settings.events.repopulateActiveSection);
 		Poppy.event.addCustomEventListener('poppyDidShow', UI.Settings.events.poppyDidShow);
+
+		UI.event.addCustomEventListener('viewAlreadyActive', UI.Settings.events.repopulateActiveSection);
 		UI.event.addCustomEventListener('elementWasAdded', UI.Settings.events.elementWasAdded);
 		UI.event.addCustomEventListener('viewWillSwitch', UI.Settings.events.viewWillSwitch);
 	},
