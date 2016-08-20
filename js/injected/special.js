@@ -22,6 +22,9 @@ var Special = {
 
 		var eventCopy = Object._extend(true, {}, event);
 
+		if (!Object._isPlainObject(eventCopy.detail))
+			eventCopy.detail = {};
+
 		eventCopy.detail.sourceID = pieces[1];
 		eventCopy.detail.sourceName = TOKEN.INJECTED[pieces[1]].namespace;
 

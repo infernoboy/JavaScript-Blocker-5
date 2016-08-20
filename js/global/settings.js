@@ -117,9 +117,21 @@ var Settings = {
 		if (event.key === 'settingCurrentView')
 			return;
 
-		if (!event.key || !event.key._startsWith('Storage-') || event.key === 'Storage-StoreSettings')
-			if (window.UI && UI.Settings && UI.Settings.view && UI.Settings.view.is('.active-view'))
-				UI.Settings.repopulateActiveSection();
+
+		if (Settings.isUserEditable(event.key) && window.UI && UI.Settings && UI.Settings.view && UI.Settings.view.is('.active-view'))
+			UI.Settings.repopulateActiveSection();
+	},
+
+	isUserEditable: function (settingKey) {
+		if (Settings.map.hasOwnProperty((settingKey))) {
+			for (var i = Settings.settings.__misc.length; i--;)
+				if (Settings.settings.__misc[i].setting === settingKey || Settings.settings.__misc[i].store === settingKey)
+					return false;
+
+			return true;
+		}
+
+		return false;
 	},
 
 	all: function () {
@@ -208,10 +220,14 @@ var Settings = {
 			shouldConfirm = Utilities.Group.eval(confirmChange.when, Settings.all());
 		else if (confirmChange.toValues)
 			shouldConfirm = confirmChange.toValues._contains(value);
+		else if (confirmChange.prompt)
+			shouldConfirm = true;
 
 		if (shouldConfirm) {
 			if (confirmChange.prompt) {
-				var confirmed = confirmChange.prompt();
+				var confirmed = confirmChange.prompt(settingKey, value, storeKey);
+
+				setTimeout(ToolbarItems.showPopover);
 
 				if (!confirmed)
 					UI.Settings.repopulateActiveSection();
@@ -303,10 +319,10 @@ var Settings = {
 			this.__stores.getStore(settingKey).set(storeKey, value);
 
 			if (setting.props.onChange)
-				setting.props.onChange(value);
+				setting.props.onChange('set', settingKey, value, storeKey);
 
 			if (storeSetting.props.onChange)
-				storeSetting.props.onChange(value);
+				storeSetting.props.onChange('set', settingKey, value, storeKey);
 
 			Settings.anySettingChanged({
 				key: settingKey
@@ -321,7 +337,7 @@ var Settings = {
 			this.__method('setItem', settingKey, value);
 
 			if (setting.props.onChange)
-				setting.props.onChange(value);
+				setting.props.onChange('set', settingKey, value, storeKey);
 
 			Settings.anySettingChanged({
 				key: settingKey
@@ -349,10 +365,10 @@ var Settings = {
 				this.__stores.getStore(settingKey).clear();
 
 			if (setting.props.onChange)
-				setting.props.onChange();
+				setting.props.onChange('remove', settingKey, undefined, storeKey);
 
 			if (storeSetting && storeSetting.props.onChange)
-				storeSetting.props.onChange();
+				storeSetting.props.onChange('remove', settingKey, undefined, storeKey);
 
 			Settings.anySettingChanged({
 				key: settingKey

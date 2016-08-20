@@ -144,7 +144,13 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 
 			Object._extend(fnInstance, EventListener.eventInfo)
 
-			defaultPrevented = fnInstance.__run().defaultPrevented || defaultPrevented;
+			try {
+				defaultPrevented = fnInstance.__run().defaultPrevented || defaultPrevented;
+			} catch (e) {
+				defaultPrevented = false;
+
+				LogError('Failed to run event: ' + info.fn, e);
+			}
 
 			afterwards = afterwards.concat(fnInstance.__afterwards);
 

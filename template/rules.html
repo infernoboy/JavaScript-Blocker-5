@@ -138,7 +138,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 						humanString += '.within';
 					} else {
-						humanString += self.kind._contains('xhr') ? '.to' : '.from';
+						humanString += (self.kind._contains('xhr') || self.kind === 'popup') ? '.to' : '.from';
 					} %>
 				<%=_(humanString, [protocols, domain._escapeHTML()])%>
 			</div>

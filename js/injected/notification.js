@@ -316,30 +316,28 @@ PageNotification.prototype.__remove = function () {
 };
 
 PageNotification.prototype.show = function () {
-	Handler.event.addCustomEventListener('stylesheetLoaded', function () {
-		if (this.removed)
-			return;
+	if (this.removed)
+		return;
 
-		Element.prependTo(PageNotification.__container, this.element);
+	Element.prependTo(PageNotification.__container, this.element);
 
-		PageNotification.removePending(this);
-		PageNotification.add(this);
+	PageNotification.removePending(this);
+	PageNotification.add(this);
 
-		this.bringForward();
+	this.bringForward();
 
-		this.fullyAlignedTop = 0;
-		this.top = 0;
-		this.displayed = true;
+	this.fullyAlignedTop = 0;
+	this.top = 0;
+	this.displayed = true;
 
-		// this.element.classList.remove('jsb-notification-warped');
+	// this.element.classList.remove('jsb-notification-warped');
 
-		this.element.classList.toggle('jsb-notification-high-priority', this.highPriority);
-		this.element.classList.add('jsb-notification-entering');
+	this.element.classList.toggle('jsb-notification-high-priority', this.highPriority);
+	this.element.classList.add('jsb-notification-entering');
 
-		this.element.style.setProperty('right', '0px');
+	this.element.style.setProperty('right', '0px');
 
-		PageNotification.orderByPriority();
-	}.bind(this), true);
+	PageNotification.orderByPriority();
 };
 
 PageNotification.prototype.removeNotificationsWithElementID = function () {

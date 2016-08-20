@@ -148,6 +148,76 @@ Special.specials = {
 		};
 	},
 
+	popups: function () {
+		var windowOpen = window.open,
+				dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
+
+		var canLoadPopup = function (URL) {
+			var a = document.createElement('a');
+
+			a.href = URL;
+
+			var info = {
+				meta: undefined,
+				kind: 'popup',
+				source: a.href,
+				canLoad: {}
+			};
+
+			a = undefined;
+
+			info.canLoad = messageExtensionSync('canLoadResource', info);
+
+			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
+				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [info.source]));
+
+			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification)
+				messageTopExtension('notification', {
+					title: _localize('special.popups.notification.title'),
+					subTitle: document.location.href,
+					body: messageExtensionSync('template.create', {
+						template: 'injected',
+						section: 'javascript-alert',
+						data: {
+							body: _localize('special.popups.notification.body', [info.source])
+						}
+					})
+				});
+
+			return info;
+		};
+
+		window.open = function (URL, name, specs, replace) {
+			var info = canLoadPopup(URL);
+
+			if (name)
+				info.meta = {
+					name: name
+				};
+
+			if (info.canLoad.isAllowed) {
+				messageExtension('page.addAllowedItem', info);
+
+				return windowOpen(URL, name, specs, replace);
+			} else
+				messageExtension('page.addBlockedItem', info);
+		};
+
+		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
+			if (event.type.toLowerCase() === 'click' && ((this.target && this.target.toLowerCase() === '_blank') || !event.isTrusted)) {
+				var info = canLoadPopup(this.href);
+
+				if (info.canLoad.isAllowed) {
+					messageExtension('page.addAllowedItem', info);
+
+					return dispatchEvent.call(this, event);
+				} else
+					messageExtension('page.addBlockedItem', info);
+			} else
+				return dispatchEvent.call(this, event);
+		};
+	},
+
 	contextmenu_overrides: function () {
 		var stopPropagation = function (event) {
 			event.stopImmediatePropagation();
@@ -687,6 +757,7 @@ Special.specials.historyFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.ignoreHelpers = true;
 Special.specials.xhr_intercept.excludeFromPage = true;
+Special.specials.popups.excludeFromPage = true;
 Special.specials.simple_referrer.noInject = true;
 Special.specials.anchor_titles.noInject = true;
 

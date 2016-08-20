@@ -27,7 +27,7 @@ MagicBinder.events = {
 		for (var i = elements.length; i--;)
 			if ($(elements[i]).is(this.element.selector + ' ' + this.selector))
 				for (var eventType in this.__localBind)
-					$(elements[i]).bind(eventType, this.__localBind[eventType]).attr('data-magicBind-' + this.id, '1');
+					$(elements[i]).on(eventType, this.__localBind[eventType]).attr('data-magicBind-' + this.id, '1');
 	}
 };
 
@@ -42,7 +42,7 @@ MagicBinder.prototype.init = function () {
 		})(this.elementEvents[eventType]);
 
 		if (this.useDirectBind)
-			$(this.selector, this.element).bind(eventType, this.__localBind[eventType]).attr('data-magicBind-' + this.id, '1');
+			$(this.selector, this.element).on(eventType, this.__localBind[eventType]).attr('data-magicBind-' + this.id, '1');
 		else
 			this.element.on(eventType, this.selector ? this.selector : this.__localBind[eventType], this.selector ? this.__localBind[eventType] : undefined);
 	}
@@ -55,7 +55,7 @@ MagicBinder.prototype.unbind = function (additionalUndefines) {
 	if (this.__localBind) {
 		for (var eventType in this.__localBind)
 			if (this.useDirectBind && this.selector)
-				$(this.selector, this.element).unbind(eventType, this.__localBind[eventType]);
+				$(this.selector, this.element).off(eventType, this.__localBind[eventType]);
 			else
 				this.element.off(eventType, this.selector ? this.selector : this.__localBind[eventType], this.selector ? this.__localBind[eventType] : undefined);
 

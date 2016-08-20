@@ -748,7 +748,9 @@ var Utilities = {
 		},
 
 		isURL: function (url) {
-			return typeof url === 'string' && (this.__structure.test(url) || this.protocol(url) === 'about:' || this.protocol(url) === 'data:');
+			var proto = this.protocol(url);
+
+			return typeof url === 'string' && (this.__structure.test(url) || proto === 'about:' || proto === 'data:' || proto === 'javascript:');
 		},
 
 		strip: function (url) {
@@ -1000,12 +1002,15 @@ function LogDebug () {
 		console.log(cleanErrorStack);
 		console.groupEnd();
 
-		if (Utilities.Page.isWebpage)
+		if (Utilities.Page.isWebpage) {
+			var args = Utilities.makeArray(arguments);
+			
 			for (var i = 0; i < args.length; i++)
 				GlobalPage.message('logDebug', {
 					source: document.location.href,
 					message: args[i]
 				});
+		}
 	}
 };
 
@@ -1680,7 +1685,7 @@ Object._deepFreeze = function (object) {
 	var props = Object.getOwnPropertyNames(object);
 
 	for (var i = 0; i < props.length; i++)
-		if (object[props[i]] !== null && (typeof object[props[i]] === 'object' || typeof object[props[i]] === 'function'))
+		if (object[props[i]] !== null && Utilities.typeOf(object[props[i]]) === 'object')
 			Object._deepFreeze(object[props[i]]);
 
 	return object;

@@ -786,9 +786,7 @@ var Command = function (type, event) {
 						}.bind(null, detail.originSourceID, detail.meta.closeButtons[i].callbackID));
 					}
 
-				Handler.event.addCustomEventListener('stylesheetLoaded', function () {
-					resolve(notification.element.id);
-				}, true);
+				resolve(notification.element.id);
 			});
 		},
 
@@ -897,6 +895,10 @@ var Command = function (type, event) {
 				},
 
 				setItem: function (detail) {
+					return this.__userScriptAction(detail);
+				},
+
+				removeItem: function (detail) {
 					return this.__userScriptAction(detail);
 				},
 

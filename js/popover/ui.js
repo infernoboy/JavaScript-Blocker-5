@@ -64,6 +64,7 @@ var UI = {
 		Settings.map.useAnimations.props.onChange();
 		Settings.map.largeFont.props.onChange();
 
+		document.documentElement.classList.toggle('sierra', userAgent._contains('10_12'));
 		document.documentElement.classList.toggle('capitan', userAgent._contains('10_11'));
 		document.documentElement.classList.toggle('yosemite', userAgent._contains('10_10'));
 		document.documentElement.classList.toggle('mavericks', userAgent._contains('10_9'));
@@ -236,7 +237,7 @@ var UI = {
 
 			.addCustomEventListener('viewDidSwitch', function (event) {
 				if (event.detail.id._startsWith('#main-views'))
-					$('#full-toggle', UI.view.viewToolbar).toggleClass('poppy-menu-disabled', $('li[data-view=' + event.detail.id + ']', event.detail.switcher).hasClass('view-switcher-collapses'));
+					$('#full-toggle', UI.view.viewToolbar).toggleClass('poppy-menu-disabled', $('li[data-view="' + event.detail.id + '"]', event.detail.switcher).hasClass('view-switcher-collapses'));
 
 				Poppy.closeAll();
 			})
