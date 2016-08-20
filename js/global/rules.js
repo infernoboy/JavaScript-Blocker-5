@@ -852,7 +852,7 @@ var Rules = {
 
 Object.defineProperty(Rules, '__kinds', {
 	value: Object.freeze([
-		'*', 'disable', 'script', 'frame', 'embed', 'video', 'image', 'xhr_get', 'xhr_post', 'xhr_put', 'special', 'user_script'
+		'*', 'disable', 'script', 'frame', 'embed', 'video', 'image', 'xhr_get', 'xhr_post', 'xhr_put', 'popup', 'special', 'user_script',
 	])
 });
 

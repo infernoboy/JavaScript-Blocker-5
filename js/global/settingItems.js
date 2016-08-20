@@ -885,6 +885,47 @@ Settings.settings = {
 						settings: [{
 							setting: 'enabledKinds',
 							props: {
+								storeKey: 'popup',
+								isExtra: true,
+								default: function () {
+									return Extras.isActive();
+								}
+							}
+						}, {
+							when: {
+								hide: true,
+								settings: {
+									group: 'all',
+									items: [{
+										method: Utilities.Group.NONE,
+										key: 'enabledKinds',
+										needle: {
+											group: 'all',
+											items: [{
+												method: Utilities.Group.IS,
+												key: 'popup',
+												needle: true
+											}]
+										}
+									}]
+								}
+							},
+							settings: [{
+								setting: 'alwaysBlock',
+								props: {
+									storeKey: 'popup',
+									extendOptions: [['ask', 'setting.blockFrom.option.ask']],
+									default: 'blacklist',
+									onChange: function () {
+										Special.__enabled = null;
+									},
+								}
+							}]
+						}, {
+							divider: true //===================================================================================
+						}, {
+							setting: 'enabledKinds',
+							props: {
 								storeKey: 'frame',
 								isExtra: true,
 								default: function () {
@@ -1661,9 +1702,14 @@ Settings.settings = {
 			setting: 'enabledSpecials',
 			props: {
 				type: 'boolean',
-				storeKey: 'window_open',
+				storeKey: 'popups',
+				readOnly: true,
 				isExtra: true,
-				default: false
+				default: function () {
+					return Settings.getItem('enabledKinds', 'popup') && {
+						alwaysBlock: Settings.getItem('alwaysBlock', 'popup')
+					};
+				}
 			}
 		}, {
 			setting: 'enabledSpecials',

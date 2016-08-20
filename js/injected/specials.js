@@ -148,26 +148,58 @@ Special.specials = {
 		};
 	},
 
-	window_open: function () {
-		var windowOpen = window.open;
+	popups: function () {
+		var windowOpen = window.open,
+				dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
 
-		window.open = function (URL, name, specs, replace) {
-			var string = _localize('special.window_open.confirm', [URL]);
+		var canLoadPopup = function (URL) {
+			var a = document.createElement('a');
 
-			if (confirm(string))
-				return windowOpen(URL, name, specs, replace);
+			a.href = URL;
 
-			return null;
+			var info = {
+				meta: undefined,
+				kind: 'popup',
+				source: a.href,
+				canLoad: {}
+			};
+
+			a = undefined;
+
+			info.canLoad = messageExtensionSync('canLoadResource', info);
+
+			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
+				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [URL]));
+
+			return info;
 		};
 
-		var dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
+		window.open = function (URL, name, specs, replace) {
+			var info = canLoadPopup(URL);
+
+			if (name)
+				info.meta = {
+					name: name
+				};
+
+			if (info.canLoad.isAllowed) {
+				messageExtension('page.addAllowedItem', info);
+
+				return windowOpen(URL, name, specs, replace);
+			} else
+				messageExtension('page.addBlockedItem', info);
+		};
 
 		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
-			if (this.target && this.target.toLowerCase() === '_blank' && event.type.toLowerCase() === 'click') {
-				var string = _localize('special.window_open.confirm', [this.href]);
+			if (event.type.toLowerCase() === 'click' && ((this.target && this.target.toLowerCase() === '_blank') || !event.isTrusted)) {
+				var info = canLoadPopup(this.href);
 
-				if (confirm(string))
+				if (info.canLoad.isAllowed) {
+					messageExtension('page.addAllowedItem', info);
+
 					return dispatchEvent.call(this, event);
+				} else
+					messageExtension('page.addBlockedItem', info);
 			} else
 				return dispatchEvent.call(this, event);
 		};
@@ -712,6 +744,7 @@ Special.specials.historyFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.ignoreHelpers = true;
 Special.specials.xhr_intercept.excludeFromPage = true;
+Special.specials.popups.excludeFromPage = true;
 Special.specials.simple_referrer.noInject = true;
 Special.specials.anchor_titles.noInject = true;
 
