@@ -171,6 +171,19 @@ Special.specials = {
 			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
 				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [info.source]));
 
+			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification)
+				messageTopExtension('notification', {
+					title: _localize('special.popups.notification.title'),
+					subTitle: document.location.href,
+					body: messageExtensionSync('template.create', {
+						template: 'injected',
+						section: 'javascript-alert',
+						data: {
+							body: _localize('special.popups.notification.body', [info.source])
+						}
+					})
+				});
+
 			return info;
 		};
 

@@ -911,6 +911,15 @@ Settings.settings = {
 								}
 							},
 							settings: [{
+								setting: 'showPopupBlockedNotification',
+								props: {
+									type: 'boolean',
+									default: true,
+									onChange: function () {
+										Special.__enabled = null;
+									}, 
+								}
+							}, {
 								setting: 'alwaysBlock',
 								props: {
 									storeKey: 'popup',
@@ -918,7 +927,7 @@ Settings.settings = {
 									default: 'blacklist',
 									onChange: function () {
 										Special.__enabled = null;
-									},
+									}
 								}
 							}]
 						}, {
@@ -1707,7 +1716,8 @@ Settings.settings = {
 				isExtra: true,
 				default: function () {
 					return Settings.getItem('enabledKinds', 'popup') && {
-						alwaysBlock: Settings.getItem('alwaysBlock', 'popup')
+						alwaysBlock: Settings.getItem('alwaysBlock', 'popup'),
+						showPopupBlockedNotification: Settings.getItem('showPopupBlockedNotification')
 					};
 				}
 			}
