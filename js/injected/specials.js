@@ -148,6 +148,32 @@ Special.specials = {
 		};
 	},
 
+	window_open: function () {
+		var windowOpen = window.open,
+				documentOpen = document.open;
+
+		window.open = function (URL, name, specs, replace) {
+			var string = _localize('special.window_open.confirm', [URL]);
+
+			if (confirm(string))
+				return windowOpen(URL, name, specs, replace);
+
+			return null;
+		};
+
+		var dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
+
+		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
+			if (this.target && this.target.toLowerCase() === '_blank' && event.type.toLowerCase() === 'click') {
+				var string = _localize('special.window_open.confirm', [this.href]);
+
+				if (confirm(string))
+					return dispatchEvent.call(this, event);
+			} else
+				return dispatchEvent.call(this, event);
+		};
+	},
+
 	contextmenu_overrides: function () {
 		var stopPropagation = function (event) {
 			event.stopImmediatePropagation();

@@ -1661,6 +1661,14 @@ Settings.settings = {
 			setting: 'enabledSpecials',
 			props: {
 				type: 'boolean',
+				storeKey: 'window_open',
+				isExtra: true,
+				default: false
+			}
+		}, {
+			setting: 'enabledSpecials',
+			props: {
+				type: 'boolean',
 				storeKey: 'autocomplete_disabler',
 				isExtra: true,
 				default: false
