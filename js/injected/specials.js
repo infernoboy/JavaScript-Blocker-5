@@ -149,8 +149,7 @@ Special.specials = {
 	},
 
 	window_open: function () {
-		var windowOpen = window.open,
-				documentOpen = document.open;
+		var windowOpen = window.open;
 
 		window.open = function (URL, name, specs, replace) {
 			var string = _localize('special.window_open.confirm', [URL]);
