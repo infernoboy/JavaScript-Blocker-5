@@ -748,7 +748,9 @@ var Utilities = {
 		},
 
 		isURL: function (url) {
-			return typeof url === 'string' && (this.__structure.test(url) || this.protocol(url) === 'about:' || this.protocol(url) === 'data:');
+			var proto = this.protocol(url);
+
+			return typeof url === 'string' && (this.__structure.test(url) || proto === 'about:' || proto === 'data:' || proto === 'javascript:');
 		},
 
 		strip: function (url) {
