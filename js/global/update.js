@@ -67,14 +67,14 @@ var Update = {
 									.setContent(Template.create('poppy', 'update-available', {
 										URL: version.URL,
 										changeLog: changeLog,
-										version: Version.display
+										version: version.displayVersion
 									}))
 									.show();
 							}, true);
 						});
 				}
 			} catch (e) {}
-		})
+		});
 	},
 
 	showRequiredPopover: function () {
