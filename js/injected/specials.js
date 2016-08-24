@@ -188,6 +188,9 @@ Special.specials = {
 		};
 
 		window.open = function (URL, name, specs, replace) {
+			if (['_parent', '_self', '_top'].indexOf(name) > -1)
+				return windowOpen(URL, name, specs, replace);
+			
 			var info = canLoadPopup(URL);
 
 			if (name)
