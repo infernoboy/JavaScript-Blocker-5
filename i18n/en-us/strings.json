@@ -486,7 +486,7 @@
 	"recommend_reload.body": "Some resources were forcibly blocked because the page was hidden while it loaded. Reload the page if it isn't functioning as expected.",
 
 	"first_visit.title": "All Resources Blocked",
-	"first_visit.body": "All resources will be kept blocked until you decide to trust this {0}.",
+	"first_visit.body": "All resources will be blocked until you decide to trust this {0}.",
 	"first_visit.blocked.body": "All resources on this {0} are blocked because you deemed it untrustworthy.",
 	"first_visit.blocked.helpLink": "More…",
 	"first_visit.blocked.help": "Clicking <b>Trust</b> will let your settings take over and decide what should be blocked.",

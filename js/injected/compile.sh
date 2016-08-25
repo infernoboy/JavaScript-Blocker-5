@@ -15,3 +15,7 @@ echo >> injected/compiled.js
 # /Users/Travis/bin/link_directory.sh "$MAIN_DIR" "$BETA_DIR"
 
 echo "} else { console.warn('Attempt to inject JSB more than once blocked.'); }" >> injected/compiled.js
+
+cd "$MAIN_DIR/css"
+
+/usr/local/bin/lessc injected.less injected.css
