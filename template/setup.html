@@ -38,7 +38,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				<%
 					var setting = UI.Settings.createElementForSetting(Settings.map.baseColor, null, true).addClass('double-column-flex');
 				%><%=setting[0].outerHTML%>
-				<div class="horizontal-divider horizontal-divider-transparent"></div>
+				<div class="horizontal-divider"></div>
 			</li>
 			<li>
 				<p class="jsb-info"><%=_('setting.blockFirstVisit.description')%></p>
@@ -50,6 +50,17 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 					$('.setting-radio-list', setting).addClass('no-indent');
 				%><%=setting[0].outerHTML%>
+				<div class="horizontal-divider"></div>
+			</li>
+		</ul>
+
+		<h2><%=_('view.page.host.kind.popup')%></h2>
+		<ul class="generic-menu-options">
+			<li>
+				<%
+					var setting = UI.Settings.createElementForSetting(Settings.map.alwaysBlock.storeKeySettings.popup, null, true).addClass('double-column-flex');
+				%><%=setting[0].outerHTML%>
+				<div class="horizontal-divider"></div>
 			</li>
 		</ul>
 
