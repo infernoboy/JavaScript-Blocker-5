@@ -251,6 +251,8 @@ var Handler = {
 					GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
 			}
 		}
+
+		Handler.visibilityChange();
 	},
 
 	resetLocation: function (event) {
