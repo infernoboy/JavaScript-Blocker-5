@@ -319,6 +319,10 @@ PageNotification.prototype.show = function () {
 	if (this.removed)
 		return;
 
+	this.top = this.getTop();
+
+	this.element.style.setProperty('top', this.top);
+
 	Element.prependTo(PageNotification.__container, this.element);
 
 	PageNotification.removePending(this);
@@ -327,10 +331,7 @@ PageNotification.prototype.show = function () {
 	this.bringForward();
 
 	this.fullyAlignedTop = 0;
-	this.top = 0;
-	this.displayed = true;
-
-	// this.element.classList.remove('jsb-notification-warped');
+	this.displayed = true;	
 
 	this.element.classList.toggle('jsb-notification-high-priority', this.highPriority);
 	this.element.classList.add('jsb-notification-entering');
@@ -338,6 +339,24 @@ PageNotification.prototype.show = function () {
 	this.element.style.setProperty('right', '0px');
 
 	PageNotification.orderByPriority();
+};
+
+PageNotification.prototype.getTop = function () {
+	if (this.highPriority)
+		return 0;
+
+	var notification;
+
+	var top = 0;
+
+	for (var notificationID in PageNotification.notifications) {
+		notification = PageNotification.notifications[notificationID];
+
+		if (notification.highPriority)
+			top += notification.fullyAlignedTop + notification.height + PageNotification.__offset;
+	}
+
+	return top;
 };
 
 PageNotification.prototype.removeNotificationsWithElementID = function () {

@@ -395,6 +395,8 @@ var Handler = {
 				this.parentNode.parentNode.appendChild(p);
 
 				this.parentNode.removeChild(this);
+
+				PageNotification.shift();
 			}, true);
 	}
 };
