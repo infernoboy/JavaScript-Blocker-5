@@ -21,7 +21,9 @@ function processFilterList (list) {
 		script: ['script'],
 		image: ['image'],
 		object: ['embed'],
-		xmlhttprequest: ['xhr_get', 'xhr_post', 'xhr_put']
+		xmlhttprequest: ['xhr_get', 'xhr_post', 'xhr_put'],
+		popup: ['popup'],
+		subdocument: ['frame']
 	};
 
 	var rules = {};
@@ -29,8 +31,8 @@ function processFilterList (list) {
 	for (var i = 0, b = lines.length; i < b; i++) {
 		var line = lines[i].trim();
 
-		if (line._contains('##') || line._contains('#@#') || line._contains('$popup') || !line.length)
-			continue; // Ignore element hiding rules, popup rules, and empty lines.
+		if (line._contains('##') || line._contains('#@#') || !line.length)
+			continue; // Ignore element hiding rules, and empty lines.
 
 		var addType;
 
