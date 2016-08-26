@@ -1305,13 +1305,13 @@ Settings.settings = {
 								.show();
 
 							var list = Settings.map.filterLists.props.default.$list._clone(),
-									malware = Settings.map.filterLists.props.default.$malware._clone();
+									privacy = Settings.map.filterLists.props.default.$privacy._clone();
 
 							list.enabled = false;
-							malware.enabled = false;
+							privacy.enabled = false;
 
 							Settings.setItem('filterLists', list, '$list');
-							Settings.setItem('filterLists', malware, '$privacy');
+							Settings.setItem('filterLists', privacy, '$privacy');
 							Settings.setItem('filterLists', Settings.map.filterLists.props.default.$fanboyAnnoy, '$fanboyAnnoy');
 						}
 
