@@ -157,10 +157,12 @@ Special.specials = {
 
 			a.href = URL;
 
+			var displayURL = (URL === undefined || URL === null) ? 'about:blank' : a.href;
+
 			var info = {
 				meta: undefined,
 				kind: 'popup',
-				source: a.href,
+				source: displayURL,
 				canLoad: {}
 			};
 
@@ -169,7 +171,7 @@ Special.specials = {
 			info.canLoad = messageExtensionSync('canLoadResource', info);
 
 			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
-				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [info.source]));
+				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [displayURL]));
 
 			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification)
 				messageTopExtension('notification', {
@@ -179,7 +181,7 @@ Special.specials = {
 						template: 'injected',
 						section: 'javascript-alert',
 						data: {
-							body: _localize('special.popups.notification.body', [info.source])
+							body: _localize('special.popups.notification.body', [displayURL])
 						}
 					})
 				});
