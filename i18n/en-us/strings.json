@@ -214,6 +214,7 @@
 	"frame_blocked": "This frame appeared even though you most likely didn't want it to. The page was automatically prevented from loading.",
 	
 	"view_toolbar.disable": "Disable",
+	"view_toolbar.enable": "Enable",
 	"view_toolbar.menu": "Menu",
 	"view_toolbar.page": "Page",
 	"view_toolbar.resource": "Resource",
