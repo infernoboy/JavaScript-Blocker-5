@@ -29,15 +29,23 @@ function processFilterList (list) {
 	var rules = {};
 
 	for (var i = 0, b = lines.length; i < b; i++) {
-		var line = lines[i].trim();
+		var line = lines[i].trim(),
+				splitLine = line.split(' ');
 
-		if (line._contains('##') || line._contains('#@#') || !line.length)
+		if (splitLine.length === 2 && ['127.0.0.1', '0.0.0.0', '0']._contains(splitLine[0])) {
+			rules
+					._getWithDefault('*', {})
+					._getWithDefault('domain', {})
+					._getWithDefault('*', {})[splitLine[1]] = {
+						action: ACTION.BLACKLIST,
+						thirdParty: false
+					};
+
+			continue;
+		}
+
+		if (line._startsWith('#') || line._contains('##') || line._contains('#@#') || !line.length)
 			continue; // Ignore element hiding rules, and empty lines.
-
-		var addType;
-
-		var action = line._startsWith('@@') ? ACTION.WHITELIST : ACTION.BLACKLIST,
-				line = action === ACTION.WHITELIST ? line.substr(2) : line;
 
 		if (i === 0 && line[0] !== '[') {
 			postMessage({
@@ -50,6 +58,11 @@ function processFilterList (list) {
 
 			break;
 		}
+
+		var addType;
+
+		var action = line._startsWith('@@') ? ACTION.WHITELIST : ACTION.BLACKLIST,
+				line = action === ACTION.WHITELIST ? line.substr(2) : line;
 
 		if (line[0] === '!' || line[0] === '[')
 			continue; // Line is a comment or determines which version of AdBlock is required.
