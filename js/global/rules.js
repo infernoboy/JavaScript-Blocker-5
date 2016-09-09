@@ -672,6 +672,7 @@ var Rules = {
 
 	attachFilterLists: function (clearCache) {
 		var filterLists = Settings.getItem('filterLists'),
+				filterListsKeys = Object.keys(filterLists).sort().reverse(),
 				currentLists = Object.keys(Rules.list).filter(function (value) {
 					return value._startsWith('$');
 				});
@@ -681,14 +682,15 @@ var Rules = {
 				delete Rules.list[currentLists[i]];
 			} catch (e) {}
 
-		for (var filterList in filterLists)
-			if (filterLists[filterList].enabled)
-				Rules.list[filterList] = new Rule(Rules.__FilterRules.getStore(filterList), null, {
+
+		for (var j = filterListsKeys.length; j--;)
+			if (filterLists[filterListsKeys[j]].enabled)
+				Rules.list[filterListsKeys[j]] = new Rule(Rules.__FilterRules.getStore(filterListsKeys[j]), null, {
 					longRuleAllowed: true,
 					ignoreLock: true
 				});
-			else if (Rules.__FilterRules.keyExist(filterList))
-				Rules.__FilterRules.remove(filterList);
+			else if (Rules.__FilterRules.keyExist(filterListsKeys[j]))
+				Rules.__FilterRules.remove(filterListsKeys[j]);
 
 		if (clearCache)
 			Resource.canLoadCache.clear().saveNow();
