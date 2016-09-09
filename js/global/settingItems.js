@@ -1257,6 +1257,10 @@ Settings.settings = {
 					type: 'dynamic-array',
 					isSetting: true,
 					default: {
+						$_peterLowe: {
+							enabled: true,
+							value: ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext', 'Peter Lowe\'s Ad List']
+						},
 						$list: {
 							enabled: true,
 							value: ['https://easylist-downloads.adblockplus.org/easylist.txt', 'EasyList'],
