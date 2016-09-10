@@ -232,7 +232,7 @@ var Settings = {
 				if (!confirmed)
 					UI.Settings.repopulateActiveSection();
 				else
-					Settings.setItem(settingKey, value, storeKey, true, unlocked);
+					return Settings.setItem(settingKey, value, storeKey, true, unlocked);
 
 				return;
 			}
@@ -254,7 +254,7 @@ var Settings = {
 			
 			return false;
 		} else
-			Settings.setItem(settingKey, value, storeKey, true, unlocked);
+			return Settings.setItem(settingKey, value, storeKey, true, unlocked);
 	},
 
 	unlockSettingSet: function (settingKey, value, storeKey) {

@@ -1257,6 +1257,10 @@ Settings.settings = {
 					type: 'dynamic-array',
 					isSetting: true,
 					default: {
+						$_peterLowe: {
+							enabled: true,
+							value: ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext', 'Peter Lowe\'s Ad List']
+						},
 						$list: {
 							enabled: true,
 							value: ['https://easylist-downloads.adblockplus.org/easylist.txt', 'EasyList'],
@@ -1305,13 +1309,13 @@ Settings.settings = {
 								.show();
 
 							var list = Settings.map.filterLists.props.default.$list._clone(),
-									malware = Settings.map.filterLists.props.default.$malware._clone();
+									privacy = Settings.map.filterLists.props.default.$privacy._clone();
 
 							list.enabled = false;
-							malware.enabled = false;
+							privacy.enabled = false;
 
 							Settings.setItem('filterLists', list, '$list');
-							Settings.setItem('filterLists', malware, '$privacy');
+							Settings.setItem('filterLists', privacy, '$privacy');
 							Settings.setItem('filterLists', Settings.map.filterLists.props.default.$fanboyAnnoy, '$fanboyAnnoy');
 						}
 

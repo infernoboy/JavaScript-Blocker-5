@@ -239,3 +239,16 @@ Update.versions[160419] = {
 		});
 	}
 }
+
+// === 5.1.3 ===
+Update.versions[160827] = {
+	blocking: false,
+
+	update: function (updateVersion) {
+		var privacy = Settings.map.filterLists.props.default.$privacy._clone();
+
+		privacy.enabled = !Settings.getItem('filterLists', '$fanboyUltimate').enabled;
+
+		Settings.setItem('filterLists', privacy, '$privacy');
+	}
+};

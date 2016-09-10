@@ -632,6 +632,8 @@ Command.toggleDisabled = function (force, doNotReload) {
 
 				Command.setToolbarImage();
 
+				$('#full-toggle span', Popover.window.UI.view.viewToolbar).text(_('view_toolbar.' + (window.globalSetting.disabled ? 'enable' : 'disable')));
+
 				Settings.setItem('isDisabled', window.globalSetting.disabled);
 
 				Command.event.addCustomEventListener('UIReady', function () {

@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>12602.1.50.0.2</string>
+	<string>12602.1.50.0.8</string>
 	<key>CFBundleDisplayName</key>
 	<string>JS Blocker 5</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5.1.2</string>
+	<string>5.1.3</string>
 	<key>CFBundleVersion</key>
-	<string>160820</string>
+	<string>160909</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
