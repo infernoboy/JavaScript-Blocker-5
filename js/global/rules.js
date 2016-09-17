@@ -920,7 +920,7 @@ Object.defineProperty(Rules, 'list', {
 
 			value: new Rule('FirstVisit', {
 				save: true,
-				saveDelay: TIME.ONE.MINUTE
+				saveDelay: TIME.ONE.SECOND * 30
 			}, {
 				ignoreLock: true
 			})

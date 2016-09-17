@@ -80,6 +80,7 @@ var ToolbarItems = {
 
 var Popover = {
 	popover: null,
+	window: window,
 
 	create: function (id, file, width, height) {
 		this.remove({
@@ -87,6 +88,10 @@ var Popover = {
 		});
 
 		this.popover = safari.extension.createPopover(id, file, width, height);
+
+		setTimeout(function () {
+			Popover.window = Popover.popover.contentWindow;
+		}, 500);
 
 		return this.popover;
 	},
@@ -100,10 +105,7 @@ var Popover = {
 			safari.extension.removePopover(popover.identifier);
 
 		this.popover = null;
-	},
-
-	get window () {
-		return this.popover ? this.popover.contentWindow : window;
+		this.window = window;
 	},
 
 	hide: function () {
