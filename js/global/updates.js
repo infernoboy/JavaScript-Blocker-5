@@ -250,5 +250,7 @@ Update.versions[160827] = {
 		privacy.enabled = !Settings.getItem('filterLists', '$fanboyUltimate').enabled;
 
 		Settings.setItem('filterLists', privacy, '$privacy');
+
+		return true;
 	}
 };
