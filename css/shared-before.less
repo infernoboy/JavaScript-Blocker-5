@@ -441,14 +441,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			background-position: center center;
 			background-image: url(../../image/check.png);
 
-			@media (-webkit-min-device-pixel-ratio: 1.5) {
+			@media (-webkit-min-device-pixel-ratio: 2) {
 				background-image: url(../../image/check@2x.png);
 			}
 
 			&.select-some {
 				background-image: url(../../image/dash.png);
 
-				@media (-webkit-min-device-pixel-ratio: 1.5) {
+				@media (-webkit-min-device-pixel-ratio: 2) {
 					background-image: url(../../image/dash@2x.png);
 				}
 			}
@@ -547,6 +547,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				background: lighten(@baseColor, 7%) url(../../image/select-double-arrow.png) right center no-repeat;
 				background-size: 16px 20px;
 
+				@media (-webkit-min-device-pixel-ratio: 2) {
+					background-image: url(../../image/select-double-arrow@2x.png);
+				}
+
 				.yosemite&,
 				.capitan&,
 				.sierra& {
@@ -596,7 +600,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				+ label {
 					background-image: url(../../image/select-infinity.png);
 
-					@media (-webkit-min-device-pixel-ratio: 1.5) {
+					@media (-webkit-min-device-pixel-ratio: 2) {
 						background-image: url(../../image/select-infinity@2x.png);
 					}
 				}
@@ -641,8 +645,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						top: -3px @important;
 					}
 
-					@media (-webkit-min-device-pixel-ratio: 1.5) {
+					@media (-webkit-min-device-pixel-ratio: 2) {
 						-webkit-mask-image: url(../../image/select-double-arrow-mask@2x.png);
+						-webkit-mask-size: 100%;
 					}
 
 					& when (@darkMode) {
@@ -660,7 +665,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				+ label {
 					-webkit-mask-image: url(../../image/select-infinity-mask.png);
 
-					@media (-webkit-min-device-pixel-ratio: 1.5) {
+					@media (-webkit-min-device-pixel-ratio: 2) {
 						-webkit-mask-image: url(../../image/select-infinity-mask@2x.png);
 					}
 				}
@@ -712,7 +717,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 							+ label {
 								background-image: url(../../image/select-single-arrow.png);
 
-								@media (-webkit-min-device-pixel-ratio: 1.5) {
+								@media (-webkit-min-device-pixel-ratio: 2) {
 									background-image: url(../../image/select-single-arrow@2x.png);
 								}
 							}
