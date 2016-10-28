@@ -428,6 +428,8 @@ var Settings = {
 		if (options.exportSettings)
 			exported = SettingStore.all()._clone(true);
 
+		delete exported.length;
+
 		if (!options.exportFirstVisit)
 			delete exported['Storage-FirstVisit'];
 		else if (!options.exportSettings)
