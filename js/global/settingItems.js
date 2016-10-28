@@ -809,7 +809,8 @@ Settings.settings = {
 						if (!value)
 							SettingStore.removeItem('Storage-ResourceCanLoad');
 						
-						Settings.restartRequired();
+						if (!Settings.IMPORTING)
+							Settings.restartRequired();
 					}
 				}
 			}, {
