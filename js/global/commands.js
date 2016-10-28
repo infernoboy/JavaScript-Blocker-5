@@ -211,6 +211,7 @@ function Command (command, data, event) {
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
 				// blockReferrer: Settings.getItem('blockReferrer'),
+				blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
 				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 				showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
 

@@ -975,35 +975,41 @@ if (!globalSetting.disabled) {
 			}
 		}
 
-		var blockFirstVisitStatus = GlobalCommand('blockFirstVisitStatus', Page.info.host);
+		if (window.globalSetting.blockFirstVisitEnabled) {
+			var blockFirstVisitStatus = GlobalCommand('blockFirstVisitStatus', Page.info.host);
 
-		Page.info.blockFirstVisitStatus = blockFirstVisitStatus;
-
-		setTimeout(function (blockFirstVisitStatus) {
 			Page.info.blockFirstVisitStatus = blockFirstVisitStatus;
 
-			if (blockFirstVisitStatus.blocked) {
-				if (blockFirstVisitStatus.action !== 8 && window.globalSetting.showBlockFirstVisitNotification) {
-					Handler.event.addCustomEventListener('readyForPageNotifications', function () {
-						if (Page.info.isFrame)
-							GlobalPage.message('bounce', {
-								command: 'showBlockedAllFirstVisitNotification',
-								detail: {
-									targetPageID: PARENT.parentPageID,
+			setTimeout(function (blockFirstVisitStatus) {
+				Page.info.blockFirstVisitStatus = blockFirstVisitStatus;
+
+				if (blockFirstVisitStatus.blocked) {
+					if (blockFirstVisitStatus.action !== 8 && window.globalSetting.showBlockFirstVisitNotification) {
+						Handler.event.addCustomEventListener('readyForPageNotifications', function () {
+							if (Page.info.isFrame)
+								GlobalPage.message('bounce', {
+									command: 'showBlockedAllFirstVisitNotification',
+									detail: {
+										targetPageID: PARENT.parentPageID,
+										host: blockFirstVisitStatus.host,
+										domain: blockFirstVisitStatus.domain
+									}
+								});
+							else
+								Handler.showBlockedAllFirstVisitNotification({
+									targetPageID: Page.info.id,
 									host: blockFirstVisitStatus.host,
 									domain: blockFirstVisitStatus.domain
-								}
-							});
-						else
-							Handler.showBlockedAllFirstVisitNotification({
-								targetPageID: Page.info.id,
-								host: blockFirstVisitStatus.host,
-								domain: blockFirstVisitStatus.domain
-							});
-					}, true);
+								});
+						}, true);
+					}
 				}
-			}
-		}, 500, blockFirstVisitStatus);
+			}, 500, blockFirstVisitStatus);
+		} else
+			Page.info.blockFirstVisitStatus = {
+				blocked: false,
+				action: -1
+			};
 
 		var observer = new MutationObserver(function (mutations) {
 			var i,
