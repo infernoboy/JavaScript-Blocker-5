@@ -791,6 +791,28 @@ Settings.settings = {
 					default: true
 				}
 			}, {
+				setting: 'allowCache',
+				props: {
+					type: 'boolean',
+					default: true,
+					confirm: {
+						when: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'setupComplete',
+								needle: true
+							}]
+						}
+					},
+					onChange: function (type, settingKey, value, storeKey) {
+						if (!value)
+							SettingStore.removeItem('Storage-ResourceCanLoad');
+						
+						Settings.restartRequired();
+					}
+				}
+			}, {
 				divider: true
 			}, {
 				setting: 'enabledKinds',

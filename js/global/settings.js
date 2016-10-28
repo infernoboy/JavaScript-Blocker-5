@@ -527,24 +527,28 @@ var Settings = {
 						Settings.setItem('setupComplete', true);
 
 					if (!semi) {
-						Settings.RESTART_REQUIRED = true;
-						
-						SettingStore.lock(true);
-
-						UI.view.switchTo('#main-views-page');
-
-						UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch', 'popoverOpened'], function (event) {
-							event.preventDefault();
-
-							UI.Page.showModalInfo(_('settings.safari_restart'));
-						});
-
-						UI.Page.showModalInfo(_('settings.safari_restart'));
+						Settings.restartRequired();
 
 						SecureSettings.clear();
 					}
 				}, 1000, settings, semi);
 			}.bind(null, settings));
+	},
+
+	restartRequired: function () {
+		Settings.RESTART_REQUIRED = true;
+		
+		SettingStore.lock(true);
+
+		UI.view.switchTo('#main-views-page');
+
+		UI.event.addCustomEventListener(['pageWillRender', 'viewWillSwitch', 'popoverOpened'], function (event) {
+			event.preventDefault();
+
+			UI.Page.showModalInfo(_('settings.safari_restart'));
+		});
+
+		UI.Page.showModalInfo(_('settings.safari_restart'));
 	}
 };
 

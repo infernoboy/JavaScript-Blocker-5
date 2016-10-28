@@ -70,7 +70,7 @@ Resource.USE_CACHE = true;
 Resource.longRegExps = new Store('LongRegExps');
 
 Resource.canLoadCache = new Store('ResourceCanLoad', {
-	save: true,
+	save: Settings.getItem('allowCache'),
 	maxLife: TIME.ONE.HOUR * 36,
 	saveDelay: TIME.ONE.MINUTE
 });
