@@ -165,8 +165,12 @@ var Handler = {
 	event: new EventListener,
 
 	checkPageType: function () {
-		if (BLOCKED_ELEMENTS.length === 1 && ['VIDEO', 'EMBED']._contains(BLOCKED_ELEMENTS[0].nodeName.toUpperCase()))
-			Element.restorePlaceholderElement(BLOCKED_ELEMENTS[0].getAttribute('data-jsbPlaceholder'));
+		if (BLOCKED_ELEMENTS.length === 1) {
+			var nodeType = BLOCKED_ELEMENTS[0].nodeName.toUpperCase();
+
+			if (nodeType === 'VIDEO' || ['application/pdf']._contains(BLOCKED_ELEMENTS[0].type))
+				Element.restorePlaceholderElement(BLOCKED_ELEMENTS[0].getAttribute('data-jsbPlaceholder'));
+		}
 	},
 
 	setPageLocation: function () {
@@ -453,8 +457,7 @@ var Element = {
 			section: 'element-placeholder',
 			data: {
 				kind: kind,
-				nodeName: element.nodeName.toUpperCase(),
-				source: source
+				type: element.type
 			}
 		});
 
@@ -493,12 +496,7 @@ var Element = {
 
 		Element.setCSS(placeholder, true, properties);
 
-		Element.setCSS(kindString, true, {
-			height: '100px',
-			width: '100%'
-		});
-
-		placeholder.title = kind + ' - ' + source;
+		placeholder.title = (element.type || 'unknown type') + ' - ' + source;
 
 		element.setAttribute('data-jsbPlaceholder', placeholderToken);
 		placeholder.setAttribute('data-jsbPlaceholder', placeholderToken);
@@ -823,7 +821,10 @@ var Resource = {
 		if (nodeName === 'LINK' && !Element.shouldIgnore(element))
 			return true;
 
-		if (!(nodeName in BLOCKABLE) || (nodeName === 'EMBED' && element.parentNode.nodeName.toUpperCase() === 'OBJECT'))
+		if (nodeName === 'OBJECT' && element.querySelector('embed'))
+			return true;
+
+		if (!(nodeName in BLOCKABLE))
 			return true;
 
 		var kind = BLOCKABLE[nodeName][0];

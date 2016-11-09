@@ -81,21 +81,17 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 <noscript id="element-placeholder">
 	<div class="jsb-injected-element jsb-element-placeholder">
-		<div class="jsb-element-placeholder-source">
-		<%
-			var host = Utilities.URL.host(self.source);
-
-			self.source = self.source
-				.replace(/</g, '&lt;')
-				.replace(/\//g, '/<wbr />')
-				.replace(/\?/g, '?<wbr />')
-				.replace(/&(?!lt;)/g, '&<wbr />')
-				.replace(/\=/g, '=<wbr />');
-
-			if (host)
-				self.source = self.source.replace(new RegExp('(' + host._escapeRegExp() + ')'), '<span class="jsb-element-placeholder-source-origin">$1</span>');
-		%><%=self.kind + ' - ' + self.source%>
+		<div class="jsb-element-placeholder-container">
+			<%
+				var kinds = {
+					'application/x-shockwave-flash': 'Flash',
+					'application/pdf': 'PDF',
+					'application/x-silverlight-app': 'Silverlight',
+					'application/x-silverlight-2': 'Silverlight',
+					'application/x-silverlight': 'Silverlight'
+				};
+			%>
+			<div class="jsb-element-placeholder-kind"><%=kinds[self.type] || self.kind%></div>
 		</div>
-		<div class="jsb-element-placeholder-kind"><%=self.kind%></div>
 	</div>
 </noscript>
