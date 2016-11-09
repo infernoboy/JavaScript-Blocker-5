@@ -188,6 +188,8 @@ function Command (command, data, event) {
 					info.pageLocation = 'about:blank';
 					info.pageProtocol = 'about:';
 				}
+
+				info.private = this.event.target.private;
 				
 				var resource = new Resource(info);
 
@@ -311,20 +313,20 @@ function Command (command, data, event) {
 			if (host === 'blank')
 				host = Utilities.URL.extractHost(this.event.target.url);
 
-			var	blockFirstVisitStatus = Page.blockFirstVisitStatus(host);
+			var	blockFirstVisitStatus = Page.blockFirstVisitStatus(host, this.event.target.private);
 
 			if (blockFirstVisitStatus.action === -ACTION.BLOCK_FIRST_VISIT)
-				Page.blockFirstVisit(blockFirstVisitStatus.host);
+				Page.blockFirstVisit(blockFirstVisitStatus.host, false, this.event.target.private);
 
 			this.message = blockFirstVisitStatus;
 		},
 
 		unblockFirstVisit: function (host) {
-			Page.unblockFirstVisit(host);
+			Page.unblockFirstVisit(host, this.event.target.private);
 		},
 
 		noFirstVisitNotification: function (host) {
-			Page.blockFirstVisit(host, true);
+			Page.blockFirstVisit(host, true, this.event.target.private);
 		},
 
 		verifyScriptSafety: function (script) {

@@ -626,7 +626,7 @@ Object._extend(Poppy.scripts, {
 						blockedFirstVisitStatus = JSON.parse(section.attr('data-blockedFirstVisitStatus') || '');
 
 				if (this.id === 'edit-untrust') {
-					globalPage.Page.blockFirstVisit(blockedFirstVisitStatus.host, true);
+					globalPage.Page.blockFirstVisit(blockedFirstVisitStatus.host, true, section.data('tab').private);
 
 					section.removeAttr('data-blockedFirstVisitStatus');
 

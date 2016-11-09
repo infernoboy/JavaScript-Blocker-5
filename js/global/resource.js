@@ -36,6 +36,7 @@ function Resource (resource) {
 	this.action = resource.action;
 	this.unblockable = resource.unblockable;
 	this.meta = resource.meta;
+	this.private = resource.private;
 
 	if (this.strict)
 		this.searchKinds = this.isFrame ? [this.framedKind, this.kind] : [this.kind];
@@ -196,7 +197,7 @@ Resource.prototype.rulesForResource = function (isAllowed, excludeLists, include
 			rule,
 			testedRule;
 
-	excludeLists = ['firstVisit'] || excludeLists;
+	excludeLists = ['temporaryFirstVisit', 'firstVisit'] || excludeLists;
 
 	var self = this,
 			matcher = new Rules.SourceMatcher(this.lowerSource, this.source, this.pageHost, this.pageDomain),
@@ -300,7 +301,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	var searchKinds = useHideKinds ? this.hideKinds : this.searchKinds,
 			domainCached = false;
 
-	if (Resource.USE_CACHE) {
+	if (Resource.USE_CACHE && !this.private) {
 		var canUseCache = !detailed && Rules.list.active === Rules.list.user,
 				store = Resource.canLoadCache.getStore(searchKinds.concat(excludeLists).join('-')),
 				pageSources = store.getStore(this.pageLocation),
@@ -334,6 +335,12 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
 
 	Rule.withLocationRules(this.rulesForLocation(null, !!domainCached, useHideKinds, excludeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
+		if (ruleList === Rules.list.temporaryFirstVisit && !self.private)
+			return;
+
+		if (ruleList === Rules.list.firstVisit && self.private)
+			return;
+
 		pageRule = (ruleType === 'page' || ruleType === 'notPage');
 		longAllowed = (!pageRule && Rules.list[ruleListName].longRuleAllowed);
 
@@ -453,11 +460,11 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	self = undefined;
 
 	if (canLoad.action === ACTION.ALLOW_WITHOUT_RULE || canLoad.action === ACTION.ALLOW_AFTER_FIRST_VISIT)
-		canLoad = (Resource.USE_CACHE && domainCached) ? domainCached : this.allowedBySettings(useHideKinds);
+		canLoad = (Resource.USE_CACHE && !this.private && domainCached) ? domainCached : this.allowedBySettings(useHideKinds);
 
 	canLoad.isAllowed = !!(canLoad.action % 2);
 
-	if (Resource.USE_CACHE && !detailed && canLoad.list !== 'temporary' && Rules.list.active === Rules.list.user)
+	if (Resource.USE_CACHE && !this.private && !detailed && canLoad.list !== 'temporary' && Rules.list.active === Rules.list.user)
 		Utilities.setImmediateTimeout(function (canLoad, store, source) {
 			store.set(source, canLoad);
 		}, [canLoad, canLoad.pageRule ? pageSources : hostSources, this.lowerSource]);
