@@ -750,6 +750,7 @@ Settings.settings = {
 					},
 					onChange: function () {
 						Rules.list.firstVisit.clear();
+						Rules.list.temporaryFirstVisit.clear();
 					}
 				}
 			}, {
