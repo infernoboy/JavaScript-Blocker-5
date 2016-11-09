@@ -12,7 +12,7 @@ do {
 	try {
 		globalSetting = GlobalCommand('globalSetting');
 	} catch (e) {
-		throw new Error('content blocker mode.');
+		throw new Error('blocker: content blocker mode?');
 	}
 
 	if (!globalSetting.popoverReady && window === window.top) {
