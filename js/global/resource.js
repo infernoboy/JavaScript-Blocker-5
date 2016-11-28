@@ -73,7 +73,7 @@ Resource.longRegExps = new Store('LongRegExps');
 Resource.canLoadCache = new Store('ResourceCanLoad', {
 	save: Settings.getItem('allowCache'),
 	maxLife: TIME.ONE.HOUR * 36,
-	saveDelay: TIME.ONE.MINUTE
+	saveDelay: TIME.ONE.MINUTE * 10
 });
 
 Resource.canLoadCache.addCustomEventListener('storeDidClear', function () {
