@@ -66,7 +66,7 @@ var SplitView = {
 
 		splitViewElement.style.opacity = 1;
 
-		if (splitViewName)
+		if (splitViewName && !$$.isInitialResize)
 			Utilities.Timer.timeout('splitView-' + splitViewName, function (leftColumnWidth, splitViewName) {
 				Settings.setItem('splitView', leftColumnWidth, splitViewName);
 			}, 100, [leftColumnWidth, splitViewName]);
