@@ -14,6 +14,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		<div class="horizontal-divider horizontal-divider-short"></div>
 	</div>
 	<div id="rule-views-container" class="ui-view-container">
+		<div id="rule-sort-by-container">
+			<label for="rule-sort-by"><%=_('rule.sort_by')%>:</label><q></q>
+			<select id="rule-sort-by">
+				<option value="priority"><%=_('rule.sort_by.priority')%></option>
+				<option value="name"><%=_('rule.sort_by.name')%></option>
+			</select><label></label><q></q>
+			<a id="rule-sort-direction" href="javascript:void(0);" data-sortDirection="desc"><%=_('rule.sort_by.desc')%></a>
+		</div>
 		<div id="rule-views"></div>
 		<p id="rule-views-no-rules" class="jsb-info jsb-centered jsb-embossed"><%=_('rules.no_rules')%></p>
 	</div>

@@ -86,6 +86,26 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			overflow-x: hidden;
 			margin-top: 1px;
 
+			#rule-sort-by-container {
+				margin: 5px 3px;
+
+				#rule-sort-direction {
+					text-decoration: none;
+
+					&::before {
+						margin-right: 4px;
+					}
+
+					&[data-sortDirection="desc"]::before {
+						content: '⬇︎';
+					}
+
+					&[data-sortDirection="asc"]::before {
+						content: '⬆︎';
+					}
+				}
+			}
+
 			#rule-views-no-rules {
 				margin-top: 10px;
 				font-size: 15pt;

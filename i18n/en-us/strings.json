@@ -675,6 +675,11 @@
 	"rule.rule": "Rule",
 	"rule.allow": "Allow",
 	"rule.block": "Block",
+	"rule.sort_by": "Sort by",
+	"rule.sort_by.priority": "Priority",
+	"rule.sort_by.name": "Name",
+	"rule.sort_by.desc": "Descending",
+	"rule.sort_by.asc": "Ascending",
 
 	"user_script": "User Script",
 	"user_script.updated_to_version": "Updated to version {0}.",

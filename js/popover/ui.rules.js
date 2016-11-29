@@ -103,7 +103,7 @@ UI.Rules = {
 			this.setFilterRulesList(filterRules[0], doNotSwitch);
 	},
 
-	groupRulesByDomain: function (rules) {
+	groupRulesByDomain: function (rules, sorter) {
 		var kind,
 				type,
 				domain,
@@ -128,7 +128,7 @@ UI.Rules = {
 		}
 
 		for (type in groupedRules)
-			groupedRules[type] = groupedRules[type]._sort(globalPage.Rules.__prioritize);
+			groupedRules[type] = groupedRules[type]._sort(sorter.fn, sorter.direction === 'desc');
 
 		return groupedRules;
 	},
@@ -204,7 +204,15 @@ UI.Rules = {
 				rule,
 				ruleListItem;
 
-		var domainGrouped = UI.Rules.groupRulesByDomain(useTheseRules ? useTheseRules : ruleList.rules.all()),
+		var sorter = {
+			fn: $('#rule-sort-by', UI.Rules.viewContainer).val() === 'priority' ? globalPage.Rules.__prioritize : null,
+			direction: $('#rule-sort-direction').attr('data-sortDirection')
+		};
+
+		if (sorter.fn === globalPage.Rules.__prioritize)
+			sorter.direction = sorter.direction === 'desc' ? 'asc' : 'desc';
+
+		var domainGrouped = UI.Rules.groupRulesByDomain(useTheseRules ? useTheseRules : ruleList.rules.all(), sorter),
 				container = $('<div>'),
 				editable = 0,
 				hasRules = false;
@@ -369,6 +377,20 @@ UI.Rules = {
 
 					if ($('.active-view', UI.views).is('#main-views-rule'))
 						UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+				})
+
+				.on('change', '#rule-sort-by', function () {
+					UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
+				})
+
+				.on('click', '#rule-sort-direction', function () {
+					var direction = this.getAttribute('data-sortDirection') === 'desc' ? 'asc' : 'desc';
+
+					this.setAttribute('data-sortDirection', direction);
+
+					this.innerText = _('rule.sort_by.'  + (direction === 'desc' ? 'desc' : 'asc'));
+
+					UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
 				})
 
 				.on('click', '#rule-domain-hide-all, #rule-domain-show-all', function () {
