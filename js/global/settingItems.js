@@ -1283,7 +1283,7 @@ Settings.settings = {
 					default: {
 						$_peterLowe: {
 							enabled: true,
-							value: ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext', 'Peter Lowe\'s Ad List']
+							value: ['http://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext', 'Peter Lowe\'s Ad List']
 						},
 						$list: {
 							enabled: true,
