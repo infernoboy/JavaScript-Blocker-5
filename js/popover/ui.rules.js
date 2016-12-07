@@ -388,7 +388,7 @@ UI.Rules = {
 
 					this.setAttribute('data-sortDirection', direction);
 
-					this.innerText = _('rule.sort_by.'  + (direction === 'desc' ? 'desc' : 'asc'));
+					// this.innerText = _('rule.sort_by.'  + (direction === 'desc' ? 'desc' : 'asc'));
 
 					UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
 				})
