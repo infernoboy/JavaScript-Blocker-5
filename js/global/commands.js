@@ -690,7 +690,7 @@ window.globalSetting = {
 	}
 };
 
-Object._extend(window.globalSetting, Command('globalSetting', null, {}));
+// Object._extend(window.globalSetting, Command('globalSetting', null, {}));
 
 if (Settings.getItem('persistDisabled'))
 	Command.toggleDisabled(Settings.getItem('isDisabled'));
