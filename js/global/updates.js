@@ -254,3 +254,18 @@ Update.versions[160827] = {
 		return true;
 	}
 };
+
+// === 5.1.5 ===
+Update.versions[161206] = {
+	blocking: false,
+
+	update: function (updateVersion) {
+		var peterLowe = Settings.getItem('filterLists', '$_peterLowe');
+
+		peterLowe.value = Utilities.makeArray(Settings.map.filterLists.props.default.$_peterLowe.value);
+
+		Settings.setItem('filterLists', peterLowe, '$_peterLowe');
+
+		return true;
+	}
+};
