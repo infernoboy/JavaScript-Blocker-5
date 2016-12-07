@@ -209,7 +209,7 @@ Special.specials = {
 		};
 
 		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
-			if (event.type.toLowerCase() === 'click' && ((this.target && this.target.toLowerCase() === '_blank') || !event.isTrusted)) {
+			if (event.type.toLowerCase() === 'click' && this.getAttribute('href') !== '#' && ((this.target && this.target.toLowerCase() === '_blank') || !event.isTrusted)) {
 				var info = canLoadPopup(this.href);
 
 				if (info.canLoad.isAllowed) {

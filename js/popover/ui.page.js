@@ -22,10 +22,15 @@ UI.Page = {
 		var pageInfo = page.tree(),
 				renderedSections = $('<div>');
 
+		pageInfo.private = page.tab.private;
+
 		renderedSections.append(Template.create('page', 'host-section', pageInfo));
 
-		for (var frameID in pageInfo.frames)
+		for (var frameID in pageInfo.frames) {
+			pageInfo.frames[frameID].private = page.tab.private;
+			
 			renderedSections.append(Template.create('page', 'host-section', pageInfo.frames[frameID]));
+		}
 
 		var sections = renderedSections.children();
 
@@ -58,6 +63,8 @@ UI.Page = {
 				hiddenCountText.text(_('view.page.header.' + (hiddenCount === 1 ? 'hidden_item' : 'hidden_items'), [hiddenCount]));
 			else
 				hiddenCountText.addClass('jsb-hidden');
+
+			$(this).data('tab', page.tab);
 		});
 
 		UI.Page.events.bindSectionEvents(sections, page, pageInfo);
@@ -624,9 +631,9 @@ UI.Page = {
 					$(this).siblings().addBack().prop('disabled', true);
 
 					if (this.className._contains('keep-blocked'))
-						globalPage.Page.blockFirstVisit(thisPageInfo.blockFirstVisitStatus.host, true);
+						globalPage.Page.blockFirstVisit(thisPageInfo.blockFirstVisitStatus.host, true, page.tab.private);
 					else
-						globalPage.Page.unblockFirstVisit(thisPageInfo.blockFirstVisitStatus.host);
+						globalPage.Page.unblockFirstVisit(thisPageInfo.blockFirstVisitStatus.host, page.tab.private);
 
 					UI.Page.section.toggleEditMode(section, false);
 

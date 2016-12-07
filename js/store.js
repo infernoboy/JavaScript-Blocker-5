@@ -32,6 +32,7 @@ var Store = (function () {
 
 	Store = Store._extendClass(EventListener);
 
+	Store.__emptyStoreString = Utilities.decode('4a+h4KGS5IG04L2A4pSl4KKg4rqA4LCC5YCgIA==');
 	Store.__inheritable = ['ignoreSave', 'inheritMaxLife', 'selfDestruct'];
 
 	Store.STORE_STRING = 'Storage-';
@@ -259,7 +260,8 @@ var Store = (function () {
 
 	Store.prototype.load = function () {
 		if (this.save) {
-			var stored = Settings.__method('getItem', this.id, LZString.compressToUTF16('{"STORE":{}}'));
+
+			var stored = Settings.__method('getItem', this.id, Store.__emptyStoreString);
 
 			if (typeof stored === 'string') {
 				try {

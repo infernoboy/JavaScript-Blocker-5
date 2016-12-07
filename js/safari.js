@@ -500,6 +500,6 @@ if (!!GlobalPage.tab && window.location.href.indexOf(ExtensionURL()) === -1) {
 	try {
 		GlobalCommand('contentBlockerMode');
 	} catch (e) {
-		throw new Error('content blocker mode.');
+		throw new Error('safari: content blocker mode?');
 	}
 }

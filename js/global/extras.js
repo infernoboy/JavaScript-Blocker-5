@@ -7,6 +7,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 var Extras = {
 	__verificationURL: 'http://lion.toggleable.com:160/jsblocker/verify.php',
 
+	connectionFailureCount: 0,
+
 	isActive: function () {
 		return Extras.isUnlockedByDonating() || Extras.isUnlockedForFree() || Extras.Trial.isActive();
 	},
@@ -41,7 +43,16 @@ var Extras = {
 				})
 
 				.fail(function (error) {
-					reject(error.status + ': ' + error.statusText);
+					if (error.status === 0) {
+						if (Extras.connectionFailureCount++ > 3) {
+							Extras.unlockWithoutDonating();
+
+							reject('Could not connect to server, but unlocked anyway. Enjoy!');
+						} else
+							reject('Could not connect to server. Check if firewall or router is blocking outgoing connections to port 160.');
+					}
+					else
+						reject(error.status + ': ' + error.statusText);
 				});
 		});
 	},

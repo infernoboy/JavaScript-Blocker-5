@@ -28,7 +28,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 			<div class="jsb-info">
 				<select class="page-host-editor-list" title="<%=_('view.page.editor.list.title')%>">
-					<option value="user"><%=_('view.page.host.editor.always')%></option>
+					<% if (!self.private) { %>
+						<option value="user"><%=_('view.page.host.editor.always')%></option><%
+					} %>
 					<option value="temporary" <%=(Settings.getItem('defaultRuleList') !== 'always' && (Settings.getItem('lastRuleWasTemporary') || Settings.getItem('defaultRuleList') === 'temporary')) ? 'selected="selected"' : ''%>><%=_('view.page.host.editor.temporarily')%></option>
 				</select><label></label>
 

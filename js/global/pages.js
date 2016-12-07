@@ -43,7 +43,8 @@ function Page (page, tab) {
 							isFrame: page.isFrame,
 							action: attributes.action,
 							unblockable: attributes.unblockable,
-							meta: attributes.meta
+							meta: attributes.meta,
+							private: tab.private
 						}));
 					}
 				}
@@ -166,21 +167,25 @@ Page.awaitFromTab = function (awaitTab, done) {
 	}, 600);
 };
 
-Page.blockFirstVisit = function (host, withoutNotification) {
-	return Rules.list.firstVisit.addDomain('*', host, {
+Page.blockFirstVisit = function (host, withoutNotification, isPrivate) {
+	var list = isPrivate ? Rules.list.temporaryFirstVisit : Rules.list.firstVisit;
+
+	return list.addDomain('*', host, {
 		rule: '*',
 		action: withoutNotification ? ACTION.BLOCK_FIRST_VISIT_NO_NOTIFICATION : ACTION.BLOCK_FIRST_VISIT
 	});
 };
 
-Page.unblockFirstVisit = function (host) {
-	Rules.list.firstVisit.addDomain('*', host, {
+Page.unblockFirstVisit = function (host, isPrivate) {
+	var list = isPrivate ? Rules.list.temporaryFirstVisit : Rules.list.firstVisit;
+
+	list.addDomain('*', host, {
 		rule: '*',
 		action: ACTION.ALLOW_AFTER_FIRST_VISIT
 	});
 };
 
-Page.blockFirstVisitStatus = function (host) {
+Page.blockFirstVisitStatus = function (host, isPrivate) {
 	var blockFirstVisit = Settings.getItem('blockFirstVisit');
 
 	if (blockFirstVisit === 'nowhere' || host === 'srcdoc')
@@ -195,8 +200,9 @@ Page.blockFirstVisitStatus = function (host) {
 	if (blockFirstVisit === 'domain')
 		host = domain;
 
-	var rule = Rules.list.firstVisit.kind('*').domain(host).get('*'),
-			rule2 = Rules.list.firstVisit.kind('*').domain(domain).get('*');
+	var list = isPrivate ? Rules.list.temporaryFirstVisit : Rules.list.firstVisit,
+			rule = list.kind('*').domain(host).get('*'),
+			rule2 = list.kind('*').domain(domain).get('*');
 
 	if (!rule && !rule2)
 		return {

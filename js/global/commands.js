@@ -188,6 +188,8 @@ function Command (command, data, event) {
 					info.pageLocation = 'about:blank';
 					info.pageProtocol = 'about:';
 				}
+
+				info.private = this.event.target.private;
 				
 				var resource = new Resource(info);
 
@@ -211,6 +213,7 @@ function Command (command, data, event) {
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
 				// blockReferrer: Settings.getItem('blockReferrer'),
+				blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
 				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 				showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
 
@@ -310,20 +313,20 @@ function Command (command, data, event) {
 			if (host === 'blank')
 				host = Utilities.URL.extractHost(this.event.target.url);
 
-			var	blockFirstVisitStatus = Page.blockFirstVisitStatus(host);
+			var	blockFirstVisitStatus = Page.blockFirstVisitStatus(host, this.event.target.private);
 
 			if (blockFirstVisitStatus.action === -ACTION.BLOCK_FIRST_VISIT)
-				Page.blockFirstVisit(blockFirstVisitStatus.host);
+				Page.blockFirstVisit(blockFirstVisitStatus.host, false, this.event.target.private);
 
 			this.message = blockFirstVisitStatus;
 		},
 
 		unblockFirstVisit: function (host) {
-			Page.unblockFirstVisit(host);
+			Page.unblockFirstVisit(host, this.event.target.private);
 		},
 
 		noFirstVisitNotification: function (host) {
-			Page.blockFirstVisit(host, true);
+			Page.blockFirstVisit(host, true, this.event.target.private);
 		},
 
 		verifyScriptSafety: function (script) {
@@ -687,7 +690,7 @@ window.globalSetting = {
 	}
 };
 
-Object._extend(window.globalSetting, Command('globalSetting', null, {}));
+// Object._extend(window.globalSetting, Command('globalSetting', null, {}));
 
 if (Settings.getItem('persistDisabled'))
 	Command.toggleDisabled(Settings.getItem('isDisabled'));

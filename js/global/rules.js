@@ -647,7 +647,7 @@ var Rules = {
 		if (!ContentBlocker.isSupported)
 			return false;
 
-		var excludeLists = ['description', 'active', 'firstVisit', 'temporary'],
+		var excludeLists = ['description', 'active', 'temporaryFirstVisit', 'firstVisit', 'temporary'],
 				reverseList = Object.keys(Rules.list).reverse(),
 				lists = [];
 
@@ -912,6 +912,14 @@ Object.defineProperty(Rules, 'list', {
 				save: true,
 				snapshot: true,
 				maxUnkeptSnapshots: Settings.getItem('snapshotsLimit')
+			})
+		},
+
+		temporaryFirstVisit: {
+			enumerable: true,
+
+			value: new Rule('TemporaryFirstVisit', {}, {
+				ignoreLock: true
 			})
 		},
 

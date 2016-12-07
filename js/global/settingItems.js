@@ -750,6 +750,7 @@ Settings.settings = {
 					},
 					onChange: function () {
 						Rules.list.firstVisit.clear();
+						Rules.list.temporaryFirstVisit.clear();
 					}
 				}
 			}, {
@@ -789,6 +790,29 @@ Settings.settings = {
 				props: {
 					type: 'boolean',
 					default: true
+				}
+			}, {
+				setting: 'allowCache',
+				props: {
+					type: 'boolean',
+					default: true,
+					confirm: {
+						when: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'setupComplete',
+								needle: true
+							}]
+						}
+					},
+					onChange: function (type, settingKey, value, storeKey) {
+						if (!value)
+							SettingStore.removeItem('Storage-ResourceCanLoad');
+						
+						if (!Settings.IMPORTING)
+							Settings.restartRequired();
+					}
 				}
 			}, {
 				divider: true
@@ -1259,7 +1283,7 @@ Settings.settings = {
 					default: {
 						$_peterLowe: {
 							enabled: true,
-							value: ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext', 'Peter Lowe\'s Ad List']
+							value: ['http://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext', 'Peter Lowe\'s Ad List']
 						},
 						$list: {
 							enabled: true,
