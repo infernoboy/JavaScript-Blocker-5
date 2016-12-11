@@ -90,6 +90,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						padding-right: 5px;
 					}
 
+					&toggle-disable,
 					&create-rules {
 						display: none;
 						position: relative;
@@ -99,6 +100,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						margin-right: 5px;
 					}
 
+					&toggle-disable {
+						display: inline;
+					}
+
 					&type,
 					&hidden-count {
 						color: #888;
@@ -106,9 +111,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				}
 			}
 
-			&.page-host-rules-locked .page-host-edit {
-				opacity: 0.3;
-				pointer-events: none;
+			&.page-host-rules-locked {
+				.page-host-toggle-disable,
+				.page-host-edit {
+					opacity: 0.3;
+					pointer-events: none;
+				}
 			}
 
 			.page-host-editor,
@@ -330,6 +338,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				label {
 					font-weight: 500;
 				}
+			}
+
+			.page-host-items-quick-action-wrapper {
+				text-align: center;
+				margin-top: 2px;
+				margin-bottom: -1px;
+				padding-bottom: 7px;
+				border-bottom: 1px solid darken(#ededed, @darknessLevel);
 			}
 
 			.page-host-items-container {
@@ -644,8 +660,16 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			}
 
 			&.page-host-editing {
-				.page-host-header .page-host-create-rules {
-					display: inline;
+				.page-host-header {
+					.page-host- {
+						&toggle-disable {
+							display: none;
+						}
+
+						&create-rules {
+							display: inline;
+						}
+					}
 				}
 
 				.page-host-columns {

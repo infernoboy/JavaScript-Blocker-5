@@ -106,6 +106,8 @@
 	"view.page.host.editor.checked_kinds": "selected kinds",
 	"view.page.host.editor.create_rules": "Save",
 
+	"view.page.host.quick_allow": "Allow All Resources",
+	"view.page.host.quick_block": "Block All Resources",
 	"view.page.host.rules_locked": "Rules cannot be created or modified while locked.",
 	"view.page.host.disabled": "JS Blocker is disabled on this page.",
 	"view.page.host.done": "Cancel",
@@ -374,6 +376,7 @@
 	"setting.defaultRuleList.option.remember": "Remember last choice",
 	"setting.defaultRuleList.option.always": "Always",
 	"setting.defaultRuleList.option.temporarily": "Temporarily",
+	"setting.quickDisableTemporary.label": "Only temporarily disable when quickly disabling on a page",
 	"setting.defaultRuleDomain.label": "Create rules that apply to",
 	"setting.defaultRuleDomain.help": "When visiting <strong>www.example.com</strong>…<br><br><b>Website hostname</b>: Apply rules only to <strong>www.example.com</strong><br><br><b>Website domain</b>: Apply rules to <strong>example.com</strong> and all subdomains within it.",
 	"setting.defaultRuleDomain.description": "When editing a page…",

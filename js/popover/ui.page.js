@@ -753,9 +753,31 @@ UI.Page = {
 						items.removeClass('page-host-item-disabled');
 				})
 
-				.on('click', '.page-host-create-rules', function (event) {
-					// this.disabled = true;
+				.on('click', '.page-host-toggle-disable', function (event) {
+					this.disabled = true;
 
+					event.stopImmediatePropagation();
+
+					var thisPageInfo = pageInfo,
+							section = $(this).parents('.page-host-section'),
+							pageID = section.attr('data-id'),
+							tab = UI.Page.stateContainer.data('page').tab,
+							ruleList = Settings.getItem('quickDisableTemporary') ? globalPage.Rules.list.temporary : globalPage.Rules.list.user;
+
+					if (pageID !== pageInfo.id)
+						thisPageInfo = pageInfo.frames[pageID];
+
+					ruleList.addDomain('disable', thisPageInfo.host, {
+						rule: '*',
+						action: section.attr('data-disabled') === '1' ? 1 : 0
+					});
+
+					MessageTarget({
+						target: tab
+					}, 'reload');
+				})
+
+				.on('click', '.page-host-create-rules', function (event) {
 					event.stopImmediatePropagation();
 
 					$('.page-host-section.page-host-editing', UI.Page.view).each(function () {

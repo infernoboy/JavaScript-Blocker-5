@@ -692,6 +692,14 @@ Settings.settings = {
 		collapsible: 'setting.collapsible.ruleDefaults',
 		props: {
 			subSettings: [{
+				setting: 'quickDisableTemporary',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
+				divider: true
+			}, {
 				description: 'defaultRuleDomain.description'
 			}, {
 				setting: 'defaultRuleDomain',
