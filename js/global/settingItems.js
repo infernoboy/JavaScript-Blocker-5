@@ -431,11 +431,24 @@ Settings.settings = {
 					default: false
 				}
 			}, {
-				setting: 'simplifiedUI',
-				props: {
-					type: 'boolean',
-					default: false
-				}
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'blockFirstVisit',
+							needle: 'nowhere'
+						}]
+					}
+				},
+				settings: [{
+					setting: 'simplifiedUI',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}]
 			}, {
 				setting: 'useSimplePageEditor',
 				props: {

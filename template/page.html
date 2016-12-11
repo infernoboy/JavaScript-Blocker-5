@@ -7,11 +7,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 		var isLocked = globalPage.Rules.isLocked(),
 				snapshotInUse = globalPage.Rules.snapshotInUse(),
 				useSimplePageEditor = Settings.getItem('useSimplePageEditor') && !self.forceAdvanced,
-				simplifiedUI = Settings.getItem('simplifiedUI'),
-				allResourcesRules = globalPage.Rules.list.allResources.domain(self.host)['*'],
+				simplifiedUI = Settings.getItem('simplifiedUI') && Settings.getItem('blockFirstVisit') === 'nowhere',
+				allResourcesRules = simplifiedUI ? globalPage.Rules.list.allResources.domain(self.host)['*'] : null,
 				allResourcesAction = null;
 
-		if (allResourcesRules) {
+		if (simplifiedUI && allResourcesRules) {
 			allResourcesAction = allResourcesRules.get('*').action === 0 ? 'block' : 'allow';
 		}
 	%>
@@ -154,7 +154,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					</p>
 					<p class="jsb-info jsb-align-right page-host-first-visit-buttons">
 						<% if (self.blockFirstVisitStatus.action !== 8) { %>
-							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" /><q></q><%
+							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" /><%
 						} %>
 						<input type="button" class="page-host-first-visit-unblock jsb-color-allowed" value="<%=_('first_visit.unblock')%>" /><q></q>
 					</p>
@@ -265,19 +265,19 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			<span class="page-host-state-count"><%=itemCount%></span>
 			<span class="page-host-state-count-type"><% if (self.stateType === 'unblocked' || (Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'))) { %><%=_('view.page.host.count_type.item'._pluralize(itemCount))%><% } else { %><%=_('view.page.host.count_type.host'._pluralize(itemCount))%><% } %></span>
 		</span>
+
+		<% if (self.simplifiedUI && self.stateType !== 'unblocked' && !self.snapshotInUse) { 
+			if (!((self.allResourcesAction === 'block' && self.stateType === 'allowed') || (self.allResourcesAction === 'allow' && self.stateType === 'blocked'))) { %>
+				<input type="button" class="page-host-items-quick-action jsb-color-<%=self.stateType === 'blocked' ? 'allowed' : 'blocked'%>" value="<%=_(self.stateType === 'blocked' ? 'view.page.host.quick_allow' : 'view.page.host.quick_block')%>"/><%
+			}
+		} %>
+
 	</div>
 </noscript>
 
 <noscript id="host-items-container">
 	<div class="page-host-items-container" data-stateType="<%=self.stateType%>">
-		<% if (self.simplifiedUI && self.stateType !== 'unblocked' && !self.snapshotInUse) { 
-			if (!((self.allResourcesAction === 'block' && self.stateType === 'allowed') || (self.allResourcesAction === 'allow' && self.stateType === 'blocked'))) { %>
-				<div class="page-host-items-quick-action-wrapper">
-					<input type="button" class="page-host-items-quick-action" value="<%=_(self.stateType === 'blocked' ? 'view.page.host.quick_allow' : 'view.page.host.quick_block')%>"/>
-				</div><%
-			}
-		} 
-		
+		<% 		
 			var kindArray = Object.keys(self.state)._sortUsingArray(globalPage.Rules.__kinds),
 					showItemDescription = Settings.getItem('showItemDescription'),
 					showHiddenItems = Settings.getItem('showHiddenItems'),
