@@ -106,8 +106,8 @@
 	"view.page.host.editor.checked_kinds": "selected kinds",
 	"view.page.host.editor.create_rules": "Save",
 
-	"view.page.host.quick_allow": "Allow All Resources",
-	"view.page.host.quick_block": "Block All Resources",
+	"view.page.host.quick_allow": "Allow All",
+	"view.page.host.quick_block": "Block All",
 	"view.page.host.rules_locked": "Rules cannot be created or modified while locked.",
 	"view.page.host.disabled": "JS Blocker is disabled on this page.",
 	"view.page.host.done": "Cancel",
