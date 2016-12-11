@@ -6,7 +6,15 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	<%
 		var isLocked = globalPage.Rules.isLocked(),
 				snapshotInUse = globalPage.Rules.snapshotInUse(),
-				useSimplePageEditor = Settings.getItem('useSimplePageEditor') && !self.forceAdvanced; %>
+				useSimplePageEditor = Settings.getItem('useSimplePageEditor') && !self.forceAdvanced,
+				simplifiedUI = Settings.getItem('simplifiedUI'),
+				allResourcesRules = globalPage.Rules.list.allResources.domain(self.host)['*'],
+				allResourcesAction = null;
+
+		if (allResourcesRules) {
+			allResourcesAction = allResourcesRules.get('*').action === 0 ? 'block' : 'allow';
+		}
+	%>
 
 	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>" data-blockedFirstVisitStatus="<%=JSON.stringify(self.blockFirstVisitStatus)._entityQuotes()%>">
 		<div class="page-host-header floating-header">
@@ -185,12 +193,18 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				<%=Template.create('page', 'host-column', {
 					stateType: 'allowed',
 					side: 'left',
-					state: self.state.allowed || {}
+					state: self.state.allowed || {},
+					simplifiedUI: simplifiedUI,
+					snapshotInUse: snapshotInUse,
+					allResourcesAction: allResourcesAction
 				}, null, true)%>
 				<%=Template.create('page', 'host-column', {
 					stateType: 'blocked',
 					side: 'right',
-					state: self.state.blocked || {}
+					state: self.state.blocked || {},
+					simplifiedUI: simplifiedUI,
+					snapshotInUse: snapshotInUse,
+					allResourcesAction: allResourcesAction
 				}, null, true)%>
 			</div>
 
@@ -256,7 +270,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 <noscript id="host-items-container">
 	<div class="page-host-items-container" data-stateType="<%=self.stateType%>">
-		<%
+		<% if (self.simplifiedUI && self.stateType !== 'unblocked' && !self.snapshotInUse) { 
+			if (!((self.allResourcesAction === 'block' && self.stateType === 'allowed') || (self.allResourcesAction === 'allow' && self.stateType === 'blocked'))) { %>
+				<div class="page-host-items-quick-action-wrapper">
+					<input type="button" class="page-host-items-quick-action" value="<%=_(self.stateType === 'blocked' ? 'view.page.host.quick_allow' : 'view.page.host.quick_block')%>"/>
+				</div><%
+			}
+		} 
+		
 			var kindArray = Object.keys(self.state)._sortUsingArray(globalPage.Rules.__kinds),
 					showItemDescription = Settings.getItem('showItemDescription'),
 					showHiddenItems = Settings.getItem('showHiddenItems'),

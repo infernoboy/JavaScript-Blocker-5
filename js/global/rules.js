@@ -905,6 +905,14 @@ Object.defineProperty(Rules, 'list', {
 			}
 		},
 
+		allResources: {
+			enumerable: true,
+
+			value: new Rule('AllResourcesRules', {
+				save: true
+			})
+		},
+
 		user: {
 			enumerable: true,
 

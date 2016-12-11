@@ -431,6 +431,12 @@ Settings.settings = {
 					default: false
 				}
 			}, {
+				setting: 'simplifiedUI',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
 				setting: 'useSimplePageEditor',
 				props: {
 					type: 'boolean',

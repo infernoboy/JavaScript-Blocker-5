@@ -267,9 +267,13 @@ Resource.prototype.descriptionsForResource = function (isAllowed) {
 Resource.prototype.shouldHide = function () {
 	var filterHideBlacklist = this.action === ACTION.BLACKLIST && Settings.getItem('autoHideBlacklist'),
 			filterHideWhitelist = this.action === ACTION.WHITELIST && Settings.getItem('autoHideWhitelist'),
-			noRuleHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action < 0 && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideNoRule'));
+			noRuleHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action < 0 && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideNoRule')),
+			shouldHide = (!this.unblockable && (filterHideBlacklist || filterHideWhitelist || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
 
-	return (!this.unblockable && (filterHideBlacklist || filterHideWhitelist || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
+	if (!shouldHide)
+		shouldHide = Settings.getItem('simplifiedUI') && !['special', 'user_script']._contains(this.kind);
+
+	return shouldHide;
 };
 
 Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {

@@ -220,7 +220,7 @@ UI.Rules = {
 		if (!globalPage.Rules.isLockerLocked()) {
 			if (ruleList === globalPage.Rules.list.firstVisit)
 				editable = 3;
-			else if (ruleList === globalPage.Rules.list.temporary)
+			else if (ruleList === globalPage.Rules.list.temporary || ruleList === globalPage.Rules.list.allResources)
 				editable = 1;
 			else if (ruleList == globalPage.Rules.list.active) {
 				if (globalPage.Rules.snapshotInUse())

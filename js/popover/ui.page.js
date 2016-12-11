@@ -982,6 +982,31 @@ UI.Page = {
 					checks.prop('checked', this.checked).change();
 				})
 
+				.on('click', '.page-host-column .page-host-items-quick-action', function (event) {
+					this.disabled = true;
+
+					event.stopImmediatePropagation();
+
+					var thisPageInfo = pageInfo,
+							section = $(this).parents('.page-host-section'),
+							column = $(this).parents('.page-host-column'),
+							state = column.attr('data-state'),
+							pageID = section.attr('data-id'),
+							tab = UI.Page.stateContainer.data('page').tab;
+
+					if (pageID !== pageInfo.id)
+						thisPageInfo = pageInfo.frames[pageID];
+
+					globalPage.Rules.list.allResources.addDomain('*', thisPageInfo.host, {
+						rule: '*',
+						action: state === 'blocked' ? 1 : 0
+					});
+
+					MessageTarget({
+						target: tab
+					}, 'reload');
+				})
+
 				.on('click', '.page-host-column .page-host-kind h4', function (event) {
 					if (event.target.nodeName.toUpperCase() !== 'H4' || event.offsetX > this.offsetWidth)
 						return;
