@@ -954,6 +954,8 @@ if (!globalSetting.disabled) {
 
 		// 	Page.send(true);
 		// }, 0);
+
+		Page.send();
 	} else {
 		if (Page.info.isFrame) {
 			var frameState = GlobalCommand('canLoadResource', {
