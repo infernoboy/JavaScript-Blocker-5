@@ -1002,6 +1002,8 @@ UI.Page = {
 						action: state === 'blocked' ? 1 : 0
 					});
 
+					UI.Page.section.toggleEditMode(section, false);
+
 					MessageTarget({
 						target: tab
 					}, 'reload');

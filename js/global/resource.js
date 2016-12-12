@@ -267,13 +267,10 @@ Resource.prototype.descriptionsForResource = function (isAllowed) {
 Resource.prototype.shouldHide = function () {
 	var filterHideBlacklist = this.action === ACTION.BLACKLIST && Settings.getItem('autoHideBlacklist'),
 			filterHideWhitelist = this.action === ACTION.WHITELIST && Settings.getItem('autoHideWhitelist'),
-			noRuleHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action < 0 && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideNoRule')),
-			shouldHide = (!this.unblockable && (filterHideBlacklist || filterHideWhitelist || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
-
-	if (!shouldHide)
-		shouldHide = Settings.getItem('simplifiedUI') && !['special', 'user_script']._contains(this.kind);
-
-	return shouldHide;
+			ruleHide = (this.kind !== 'special' && this.kind !== 'user_script' && (this.action === 0 || this.action === 1) && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideRule')),
+			noRuleHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action < 0 && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideNoRule'));
+	
+	return (!this.unblockable && (filterHideBlacklist || filterHideWhitelist || ruleHide || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
 };
 
 Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
@@ -336,9 +333,13 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	var self = this,
 			matcher = new Rules.SourceMatcher(this.lowerSource, this.source, this.pageHost, this.pageDomain),
 			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
-			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
+			ignoreWhitelist = Settings.getItem('ignoreWhitelist'),
+			ignoreAllResources = Settings.getItem('blockFirstVisit') !== 'nowhere' && Settings.getItem('simplifiedUI');
 
 	Rule.withLocationRules(this.rulesForLocation(null, !!domainCached, useHideKinds, excludeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
+		if (ruleList === Rules.list.allResources && ignoreAllResources)
+			return;
+
 		if (ruleList === Rules.list.temporaryFirstVisit && !self.private)
 			return;
 

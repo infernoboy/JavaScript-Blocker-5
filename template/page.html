@@ -194,6 +194,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					stateType: 'allowed',
 					side: 'left',
 					state: self.state.allowed || {},
+					isLocked: isLocked,
 					simplifiedUI: simplifiedUI,
 					snapshotInUse: snapshotInUse,
 					allResourcesAction: allResourcesAction
@@ -202,6 +203,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					stateType: 'blocked',
 					side: 'right',
 					state: self.state.blocked || {},
+					isLocked: isLocked,
 					simplifiedUI: simplifiedUI,
 					snapshotInUse: snapshotInUse,
 					allResourcesAction: allResourcesAction
@@ -266,7 +268,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			<span class="page-host-state-count-type"><% if (self.stateType === 'unblocked' || (Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'))) { %><%=_('view.page.host.count_type.item'._pluralize(itemCount))%><% } else { %><%=_('view.page.host.count_type.host'._pluralize(itemCount))%><% } %></span>
 		</span>
 
-		<% if (self.simplifiedUI && self.stateType !== 'unblocked' && !self.snapshotInUse) { 
+		<% if (!self.isLocked && self.simplifiedUI && self.stateType !== 'unblocked' && !self.snapshotInUse) { 
 			if (!((self.allResourcesAction === 'block' && self.stateType === 'allowed') || (self.allResourcesAction === 'allow' && self.stateType === 'blocked'))) { %>
 				<input type="button" class="page-host-items-quick-action jsb-color-<%=self.stateType === 'blocked' ? 'allowed' : 'blocked'%>" value="<%=_(self.stateType === 'blocked' ? 'view.page.host.quick_allow' : 'view.page.host.quick_block')%>"/><%
 			}

@@ -330,6 +330,7 @@
 	"setting.createRulesOnClose.label": "Create rules when closing the popover",
 	"setting.autoHideWhitelist.label": "Hide items allowed by filter lists",
 	"setting.autoHideBlacklist.label": "Hide items blocked by filter lists",
+	"setting.autoHideRule.label": "Hide allowed and blocked items that matched a rule you created",
 	"setting.autoHideNoRule.label": "Hide allowed and blocked items that didn't match a rule",
 	"setting.autoHideNoRule.help": "Cleans up the page UI by only showing you items are blacklisted, whitelisted, or that you created a rule for.",
 	"setting.recommendReloadAlways.label": "When a page has items blocked because it was loaded in the background, reload it automatically",

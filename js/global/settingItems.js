@@ -431,25 +431,6 @@ Settings.settings = {
 					default: false
 				}
 			}, {
-				when: {
-					hide: true,
-					settings: {
-						group: 'all',
-						items: [{
-							method: Utilities.Group.IS,
-							key: 'blockFirstVisit',
-							needle: 'nowhere'
-						}]
-					}
-				},
-				settings: [{
-					setting: 'simplifiedUI',
-					props: {
-						type: 'boolean',
-						default: false
-					}
-				}]
-			}, {
 				setting: 'useSimplePageEditor',
 				props: {
 					type: 'boolean',
@@ -493,23 +474,66 @@ Settings.settings = {
 					default: false
 				}
 			}, {
-				setting: 'autoHideWhitelist',
-				props: {
-					type: 'boolean',
-					default: false
-				}
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'blockFirstVisit',
+							needle: 'nowhere'
+						}]
+					}
+				},
+				settings: [{
+					setting: 'simplifiedUI',
+					props: {
+						type: 'boolean',
+						default: false,
+						onChange: function (type, settingKey, value, storeKey) {
+							Settings.setItem('autoHideWhitelist', value);
+							Settings.setItem('autoHideBlacklist', value);
+							Settings.setItem('autoHideRule', value);
+							Settings.setItem('autoHideNoRule', value);
+						}
+					}
+				}]
 			}, {
-				setting: 'autoHideBlacklist',
-				props: {
-					type: 'boolean',
-					default: false
-				}
-			}, {
-				setting: 'autoHideNoRule',
-				props: {
-					type: 'boolean',
-					default: false
-				}
+				when: {
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'simplifiedUI',
+							needle: false
+						}]
+					}
+				},
+				settings: [{
+					setting: 'autoHideWhitelist',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}, {
+					setting: 'autoHideBlacklist',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}, {
+					setting: 'autoHideRule',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}, {
+					setting: 'autoHideNoRule',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}]
 			}]
 		}
 	}, {
