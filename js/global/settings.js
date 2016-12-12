@@ -435,10 +435,13 @@ var Settings = {
 		else if (!options.exportSettings)
 			exported['Storage-FirstVisit'] = allSettings['Storage-FirstVisit'];
 
-		if (!options.exportRules)
+		if (!options.exportRules) {
+			delete exported['Storage-AllResourcesRules'];
 			delete exported['Storage-Rules'];
-		else if (!options.exportSettings)
+		}	else if (!options.exportSettings) {
+			exported['Storage-AllResourcesRules'] = allSettings['Storage-AllResourcesRules'];
 			exported['Storage-Rules'] = allSettings['Storage-Rules'];
+		}
 
 		if (!options.exportSnapshots)
 			delete exported['Storage-Snapshots'];
