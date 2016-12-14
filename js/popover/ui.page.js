@@ -90,7 +90,7 @@ UI.Page = {
 		UI.Page.modalInfo = $('#page-modal-info', UI.Page.view);
 		UI.Page.stateContainer = $('#page-state-container', UI.Page.view);
 
-		new FloatingHeader(UI.view.views, '.page-host-header', null, -1);
+		new FloatingHeader(UI.view.views, '.page-host-header', null, -1, true);
 
 		$(window)
 			.on('blur', function () {

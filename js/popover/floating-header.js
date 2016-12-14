@@ -4,12 +4,13 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 "use strict";
 
-var FloatingHeader = function (container, selector, related, offset) {
+var FloatingHeader = function (container, selector, related, offset, useOffset) {
 	this.id = Utilities.Token.generate();
 	this.container = container;
 	this.selector = selector;
 	this.related = related;
 	this.offset = offset;
+	this.useOffset = useOffset;
 
 	FloatingHeader.__instances[this.id] = this;
 
@@ -29,12 +30,9 @@ FloatingHeader.adjustAll = function () {
 };
 
 FloatingHeader.readyHeaders = function (event, all) {
-	if (!event.detail.querySelectorAll)
-		return;
-
 	var header;
 
-	var headers = event.detail.querySelectorAll('.floating-header:not(' + (all ? '.null' : '.floating-header-ready') + ')');
+	var headers = document.body.querySelectorAll('.floating-header:not(' + (all ? '.null' : '.floating-header-ready') + ')');
 
 	for (var i = headers.length; i--;) {
 		headers[i].classList.add('floating-header-ready');
@@ -57,9 +55,7 @@ FloatingHeader.prototype.init = function () {
 	UI.event
 		.addCustomEventListener(['popoverOpened', 'pageDidRender'], function () {
 			self.setContainerOffset();
-		})
-
-		.addCustomEventListener('elementWasAdded', FloatingHeader.readyHeaders);
+		});
 };
 
 FloatingHeader.prototype.setContainerOffset = function () {
@@ -95,7 +91,8 @@ FloatingHeader.prototype.requestFrame = function (timestamp) {
 
 FloatingHeader.prototype.adjustPosition = function () {
 	var self = this,
-			offset = (typeof offset === 'function') ? this.offset(this.container, this.selector) : this.offset,
+			offset = (typeof this.offset === 'function') ? this.offset(this.container, this.selector) : this.offset,
+			selfOffset = this.useOffset ? offset : 0,
 			top = this.containerOffsetTop + offset,
 			allHeaders = $(this.selector, this.container),
 			unfloatedHeaders = allHeaders.not('.floated-header');
@@ -105,7 +102,7 @@ FloatingHeader.prototype.adjustPosition = function () {
 			.filter(function () {
 				var me = $(this);
 
-				return me.is(':visible') && me.offset().top <= self.containerOffsetTop + offset;
+				return me.is(':visible') && me.offset().top <= self.containerOffsetTop + selfOffset;
 			})
 			.filter(':last');
 
@@ -169,3 +166,5 @@ FloatingHeader.prototype.adjustPosition = function () {
 		width: currentHeader.data('width')
 	});
 };
+
+UI.event.addCustomEventListener('elementWasAdded', FloatingHeader.readyHeaders);
