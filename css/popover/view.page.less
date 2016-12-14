@@ -119,6 +119,36 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				}
 			}
 
+			&[data-private="1"] {
+				.page-host-header {
+					background: darken(rgb(240, 240, 240), 55);
+					border-top: 1px solid darken(#fff, 55);
+					border-bottom: 1px solid darken(#ddd, 55);
+
+					.page-host- {
+						&type {
+							color: #ccc;
+
+							&:after {
+								color: #888;
+							}
+						}
+
+						&host {
+							color: #fff;
+						}
+
+						&hidden-count {
+							color: #ccc;
+
+							&:before {
+								color: #888;
+							}
+						}
+					}
+				}
+			}
+
 			&.page-host-rules-locked {
 				.page-host-toggle-disable,
 				.page-host-edit {
