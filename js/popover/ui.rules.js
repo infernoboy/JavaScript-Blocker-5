@@ -95,7 +95,7 @@ UI.Rules = {
 			filterViewSwitcher
 				.attr('data-filterList', listName)
 				.find('.view-switcher-item-name')
-				.text(_('rules.filter') + ' − ' + UI.Rules.getFilterListName(listName));
+				.text(_('rules.filter') + ': ' + UI.Rules.getFilterListName(listName));
 
 				if (!doNotSwitch)
 					UI.view.switchTo('#rule-views-filter');
