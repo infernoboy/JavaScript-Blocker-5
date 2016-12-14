@@ -463,7 +463,7 @@ var UserScript = {
 
 			switch (attribute) {
 				case 'customDownloadURL':
-					attributes.set('canBeUpdated', Utilities.URL.isURL(value));
+					attributes.set('canBeUpdated', Utilities.URL.isURL(value) || (!value.length && Utilities.URL.isURL(attributes.get('downloadURL'))));
 				break;
 			}
 
