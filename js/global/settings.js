@@ -316,13 +316,15 @@ var Settings = {
 			if (confirmChange && !changeConfirmed)
 				return Settings.confirmSettingSet(confirmChange, settingKey, value, storeKey, unlocked);
 
+			var prevValue = (setting.props.onChange || storeSetting.props.onChange) ? Settings.getItem(settingKey, storeKey) : undefined;
+
 			this.__stores.getStore(settingKey).set(storeKey, value);
 
 			if (setting.props.onChange)
-				setting.props.onChange('set', settingKey, value, storeKey);
+				setting.props.onChange('set', settingKey, value, storeKey, prevValue);
 
 			if (storeSetting.props.onChange)
-				storeSetting.props.onChange('set', settingKey, value, storeKey);
+				storeSetting.props.onChange('set', settingKey, value, storeKey, prevValue);
 
 			Settings.anySettingChanged({
 				key: settingKey
@@ -334,10 +336,12 @@ var Settings = {
 			if (confirmChange && !changeConfirmed)
 				return Settings.confirmSettingSet(confirmChange, settingKey, value, storeKey, unlocked);
 
+			var prevValue = setting.props.onChange ? Settings.getItem(settingKey, storeKey) : undefined;
+
 			this.__method('setItem', settingKey, value);
 
 			if (setting.props.onChange)
-				setting.props.onChange('set', settingKey, value, storeKey);
+				setting.props.onChange('set', settingKey, value, storeKey, prevValue);
 
 			Settings.anySettingChanged({
 				key: settingKey
@@ -356,6 +360,8 @@ var Settings = {
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
 
 		if (setting.storeKeySettings || setting.store) {
+			var prevValue = (setting.props.onChange || (storeSetting && storeSetting.props.onChange)) ? Settings.getItem(settingKey, storeKey) : undefined;
+
 			if (storeKey) {
 				if (setting.storeKeySettings[storeKey])
 					storeKey = setting.storeKeySettings[storeKey].props.remap || storeKey;
@@ -365,10 +371,10 @@ var Settings = {
 				this.__stores.getStore(settingKey).clear();
 
 			if (setting.props.onChange)
-				setting.props.onChange('remove', settingKey, undefined, storeKey);
+				setting.props.onChange('remove', settingKey, undefined, storeKey, prevValue);
 
 			if (storeSetting && storeSetting.props.onChange)
-				storeSetting.props.onChange('remove', settingKey, undefined, storeKey);
+				storeSetting.props.onChange('remove', settingKey, undefined, storeKey, prevValue);
 
 			Settings.anySettingChanged({
 				key: settingKey

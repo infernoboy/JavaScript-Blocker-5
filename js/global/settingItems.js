@@ -501,11 +501,15 @@ Settings.settings = {
 			}, {
 				when: {
 					settings: {
-						group: 'all',
+						group: 'one',
 						items: [{
 							method: Utilities.Group.IS,
 							key: 'simplifiedUI',
 							needle: false
+						}, {
+							method: Utilities.Group.NOT.IS,
+							key: 'blockFirstVisit',
+							needle: 'nowhere'
 						}]
 					}
 				},
@@ -799,9 +803,12 @@ Settings.settings = {
 							}]
 						}
 					},
-					onChange: function () {
+					onChange: function (type, settingKey, value, storeKey, prevValue) {
 						Rules.list.firstVisit.clear();
 						Rules.list.temporaryFirstVisit.clear();
+
+						if (Settings.getItem('simplifiedUI') && (prevValue === 'nowhere' || value === 'nowhere'))
+							Settings.map.simplifiedUI.props.onChange(null, null, true);
 					}
 				}
 			}, {
