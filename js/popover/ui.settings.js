@@ -586,6 +586,7 @@ UI.Settings = {
 			try {
 				var meta = globalPage.UserScript.getAttribute(userScriptNS, 'meta'),
 						script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
+						downloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'downloadURL'),
 						customDownloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'customDownloadURL'),
 						storage = globalPage.UserScript.getStorageItem(userScriptNS);
 			} catch (error) {
@@ -646,7 +647,8 @@ UI.Settings = {
 				.append(Template.create('settings', 'user-script-attribute-item', {
 					userScript: userScriptNS,
 					key: 'customDownloadURL',
-					value: customDownloadURL
+					value: customDownloadURL,
+					defaultValue: downloadURL
 				}));;
 
 			UI.Settings.disableUserScriptSave();

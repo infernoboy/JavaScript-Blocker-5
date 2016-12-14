@@ -255,6 +255,7 @@
 	"userScript.attribute.description": "Leave an attribute blank to use the script's default value.",
 	"userScript.attribute.customDownloadURL": "Download URL",
 	"userScript.attribute.use_default": "Use script default",
+	"userScript.attribute.none": "None",
 
 	"setting.collapsible.donator": "Donator Features",
 	"setting.collapsible.ignore": "Ignore",

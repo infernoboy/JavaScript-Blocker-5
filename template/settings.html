@@ -280,7 +280,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	<li class="setting-section-setting user-script-attribute-item">
 		<div class="setting-section-setting-left"><%=_('userScript.attribute.' + self.key)%>:<q></q></div>
 		<div class="setting-section-setting-right">
-			<input type="text" class="user-script-attribute-item-value" data-userScript="<%=self.userScript._entityQuotes()%>" data-attributeKey="<%=self.key._entityQuotes()%>" placeholder="<%=_('userScript.attribute.use_default')%>" value="<%=self.value ? self.value : ''%>" /><q></q>
+			<input type="text" class="user-script-attribute-item-value" data-userScript="<%=self.userScript._entityQuotes()%>" data-attributeKey="<%=self.key._entityQuotes()%>" placeholder="<%=self.defaultValue ? _('userScript.attribute.use_default') : _('userScript.attribute.none')%>" value="<%=self.value ? self.value : ''%>" /><q></q>
 		</div>
 	</li>
 </noscript>
