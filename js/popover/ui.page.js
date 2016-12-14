@@ -761,11 +761,12 @@ UI.Page = {
 					var thisPageInfo = pageInfo,
 							section = $(this).parents('.page-host-section'),
 							pageID = section.attr('data-id'),
-							tab = UI.Page.stateContainer.data('page').tab,
-							ruleList = Settings.getItem('quickDisableTemporary') ? globalPage.Rules.list.temporary : globalPage.Rules.list.user;
+							tab = UI.Page.stateContainer.data('page').tab;
 
 					if (pageID !== pageInfo.id)
 						thisPageInfo = pageInfo.frames[pageID];
+
+					var ruleList = thisPageInfo.private || Settings.getItem('quickDisableTemporary') ? globalPage.Rules.list.temporary : globalPage.Rules.list.user;
 
 					ruleList.addDomain('disable', thisPageInfo.host, {
 						rule: '*',
@@ -997,7 +998,9 @@ UI.Page = {
 					if (pageID !== pageInfo.id)
 						thisPageInfo = pageInfo.frames[pageID];
 
-					globalPage.Rules.list.allResources.addDomain('*', thisPageInfo.host, {
+					var ruleList = thisPageInfo.private ? globalPage.Rules.list.temporary : globalPage.Rules.list.allResources;
+
+					ruleList.addDomain('*', thisPageInfo.host, {
 						rule: '*',
 						action: state === 'blocked' ? 1 : 0
 					});
