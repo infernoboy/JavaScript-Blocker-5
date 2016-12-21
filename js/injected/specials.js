@@ -400,7 +400,7 @@ Special.specials = {
 					// There is no way to retrieve the values of a FormData object.
 					meta = {
 						type: 'formdata',
-						data: null
+						data: {}
 					};
 				}
 			}
