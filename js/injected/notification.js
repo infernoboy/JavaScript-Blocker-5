@@ -309,6 +309,9 @@ Object.defineProperties(PageNotification.prototype, {
 });
 
 PageNotification.prototype.__remove = function () {
+	if (!PageNotification.notifications[this.id])
+		return;
+
 	this.element.parentNode.removeChild(this.element);
 
 	PageNotification.remove(this);
