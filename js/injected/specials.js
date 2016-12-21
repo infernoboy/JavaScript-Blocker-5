@@ -152,7 +152,7 @@ Special.specials = {
 		var windowOpen = window.open,
 				dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
 
-		var canLoadPopup = function (URL) {
+		var canLoadPopup = function (URL, untrusted) {
 			var a = document.createElement('a');
 
 			a.href = URL;
@@ -171,7 +171,7 @@ Special.specials = {
 			info.canLoad = messageExtensionSync('canLoadResource', info);
 
 			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
-				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [displayURL]));
+				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm' + (untrusted ? '.untrusted' : ''), [displayURL]));
 
 			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification)
 				messageTopExtension('notification', {
@@ -210,7 +210,7 @@ Special.specials = {
 
 		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
 			if (event.type.toLowerCase() === 'click' && this.getAttribute('href') !== '#' && ((this.target && this.target.toLowerCase() === '_blank') || !event.isTrusted)) {
-				var info = canLoadPopup(this.href);
+				var info = canLoadPopup(this.href, !event.isTrusted);
 
 				if (info.canLoad.isAllowed) {
 					messageExtension('page.addAllowedItem', info);

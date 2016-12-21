@@ -666,7 +666,8 @@
 	"special.window_resize": "Automated window resizing",
 	"special.window_resize.blocked": "Block automated window resizing",
 	"special.window_resize.allowed": "Allow automated window resizing",
-	"special.popups.confirm": "This page is attempting to open a new window to:\n\n{0}",
+	"special.popups.confirm": "This page is attempting to open a new window to:\n\n{0}\n\nOpen this page?",
+	"special.popups.confirm.untrusted": "This page sent a fake click event to open:\n\n{0}\n\nOpen this page?",
 	"special.popups.notification.title": "Pop-up Blocked",
 	"special.popups.notification.body": "Blocked pop-up to: {0}",
 
