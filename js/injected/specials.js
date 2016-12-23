@@ -621,7 +621,7 @@ Special.specials = {
 		var shouldSkipProtectionOnFunction = function (fn) {
 			fn = fn.toString();
 
-			if (/.+((f|h|j|fromCharCode)\(\s?55356,\s?(56812|56806),\s?55356,\s?(56807|56826)\s?\)).+/.test(fn))
+			if (/.+((f|h|j|fromCharCode)\(\s?55356,\s?(56812|56806|56826),\s?55356,\s?(56807|56826|56819)\s?\)).+/.test(fn))
 				return true;
 
 			return false;
