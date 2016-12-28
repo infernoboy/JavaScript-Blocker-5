@@ -17,8 +17,9 @@ var Expando = {
 		if (group.is(':animated'))
 			return;
 
-		var groupWrapperHeight = groupWrapper.outerHeight(true),
-				speedMultiplier = groupWrapperHeight > UI.container.height() + 200 ? 0.001 : window.globalSetting.speedMultiplier,
+		var maxGroupWrapperHeight = UI.container.height(),
+				groupWrapperHeight = groupWrapper.outerHeight(true),
+				isTooLarge = groupWrapperHeight > maxGroupWrapperHeight,
 				isCollapsed = header.hasClass('group-collapsed'),
 				expandingClass = isCollapsed ? 'group-expanding' : 'group-collapsing';
 
@@ -38,26 +39,35 @@ var Expando = {
 				var offset = groupWrapper.offset(),
 						viewOffset = view.offset(),
 						viewHeight = view.height(),
-						bottom = offset.top + groupWrapperHeight;
+						bottom = offset.top + (isTooLarge ? maxGroupWrapperHeight : groupWrapperHeight);
 
 				if (bottom > viewHeight + viewOffset.top && header.attr('data-noScroll') !== '1')
 					Utilities.setImmediateTimeout(function (view, bottom, viewHeight, viewOffset) {
 						view.animate({
 							scrollTop: '+=' + (bottom - viewHeight - viewOffset.top)
-						}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+						}, 310 * window.globalSetting.speedMultiplier, isTooLarge ? 'linear' : 'easeOutQuad', function () {
+							if (isTooLarge)
+								Utilities.setImmediateTimeout(function () {
+									view.animate({
+										scrollTop: '+=' + (groupWrapperHeight - maxGroupWrapperHeight)
+									}, 300 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+								});
+						});
 					}, [view, bottom, viewHeight, viewOffset]);
 			}
 		}
 
 		group
 			.css({
-				marginTop: isCollapsed ? -groupWrapperHeight : 0,
-				opacity: isCollapsed ? 0.3 : 1
+				marginTop: isCollapsed ? (isTooLarge ? -maxGroupWrapperHeight : -groupWrapperHeight) : 0,
+				opacity: isCollapsed ? 0.2 : 1,
+				height: isTooLarge ? maxGroupWrapperHeight : 'auto',
+				overflow: 'hidden'
 			})
 			.animate({
-				marginTop: isCollapsed ? 0 : -groupWrapperHeight,
-				opacity: isCollapsed ? 1 : 0.3
-			}, 310 * speedMultiplier, 'easeOutQuad', function () {
+				marginTop: isCollapsed ? 0 : (isTooLarge ? -maxGroupWrapperHeight : -groupWrapperHeight),
+				opacity: isCollapsed ? 1 : 0.2
+			}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
 				header.removeClass(expandingClass);
 
 				if (!isCollapsed)
@@ -67,7 +77,8 @@ var Expando = {
 
 				group.css({
 					marginTop: 0,
-					opacity: 1
+					opacity: 1,
+					height: 'auto'
 				});
 			});
 	},
