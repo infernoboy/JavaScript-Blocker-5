@@ -621,10 +621,23 @@ Special.specials = {
 		var shouldSkipProtectionOnFunction = function (fn) {
 			fn = fn.toString();
 
-			if (/.+((f|h|j|fromCharCode)\(\s?55356,\s?(56812|56806|56826),\s?55356,\s?(56807|56826|56819)\s?\)).+/.test(fn))
+			if (/.+((f|h|j|(string)?[fF]romCharCode)\(\s?55356,\s?(56812|56806|56826),\s?55356,\s?(56807|56826|56819)\s?\)).+/.test(fn))
 				return true;
 
 			return false;
+		};
+
+		var generateRandomImage = function () {
+			var canvas = document.createElement('canvas'),
+					context = canvas.getContext('2d'),
+					string = ''
+
+			context.textBaseline = 'top';
+			context.font = '100 20px sans-serif';
+
+			context.fillText(Math.random(), 0, 0);
+
+			return toDataURL.apply(canvas);
 		};
 
 		function protection (dataURL) {
@@ -685,7 +698,7 @@ Special.specials = {
 			if (shouldContinue)
 				return dataURL;
 			else
-				return 'data:image/png;base64,' + btoa(Math.random());
+				return generateRandomImage();
 		}
 
 		HTMLCanvasElement.prototype.toDataURL = function () {
