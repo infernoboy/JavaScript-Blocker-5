@@ -347,35 +347,18 @@ var Command = function (type, event) {
 			if (!Page.info.isFrame && !RECOMMEND_PAGE_RELOAD) {
 				RECOMMEND_PAGE_RELOAD = true;
 
-				var autoReload = GlobalCommand('settingStore.getItem', {
-					setting: 'recommendReloadAlways'
+				var notification = new PageNotification({
+					title: _('recommend_reload.title'),
+					subTitle: document.location.href,
+					body: GlobalCommand('template.create', {
+						template: 'injected',
+						section: 'recommend-reload'
+					})
 				});
 
-				if (autoReload)
+				notification.addCloseButton(_('recommend_reload.reload_once'), function (notification) {
 					window.location.reload();
-				else {
-					var notification = new PageNotification({
-						title: _('recommend_reload.title'),
-						subTitle: document.location.href,
-						body: GlobalCommand('template.create', {
-							template: 'injected',
-							section: 'recommend-reload'
-						})
-					});
-
-					var reloadPageButton = notification.addCloseButton(_('recommend_reload.reload_once'), function (notification) {
-						GlobalPage.message('settingStore.setItem', {
-							setting: 'recommendReloadAlways',
-							value: PageNotification.willCloseAll
-						});
-
-						window.location.reload();
-					});
-
-					notification.addCustomEventListener('optionKeyStateChange', function (event) {
-						reloadPageButton.value = event.detail ? _('recommend_reload.reload_always') : _('recommend_reload.reload_once');
-					});
-				}
+				});
 			}
 		},
 

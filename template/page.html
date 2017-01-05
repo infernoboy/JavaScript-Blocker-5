@@ -284,7 +284,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					showItemDescription = Settings.getItem('showItemDescription'),
 					showHiddenItems = Settings.getItem('showHiddenItems'),
 					showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
-					quickCyclePageItems = Settings.getItem('quickCyclePageItems'),
 					createRulesOnClick = Settings.getItem('createRulesOnClick'),
 					actionGroup = {},
 					hiddenCount = 0;
@@ -403,7 +402,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 												<div class="page-host-item-edit-select-wrapper">
 												<%
 													if (useSelect) { %>
-														<select <%=disableEdit%> class="page-host-item-edit-select blend-in <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
+														<select <%=disableEdit%> class="page-host-item-edit-select blend-in <%=hasOptions ? '' : 'select-single'%>"><%
 
 														var sourceDomain,
 																displaySource;
@@ -424,7 +423,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 														</select><label></label><%
 													} else { %>
 														<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="false" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
-														<select <%=disableEdit%> class="page-host-item-edit-select <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%>">
+														<select <%=disableEdit%> class="page-host-item-edit-select">
 														<%
 															var sourceParts = Utilities.URL.pageParts(source),
 																	index = sourceParts.parts.length - 1;

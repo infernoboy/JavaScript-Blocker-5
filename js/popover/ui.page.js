@@ -92,15 +92,6 @@ UI.Page = {
 
 		new FloatingHeader(UI.view.views, '.page-host-header', null, -1, true);
 
-		$(window)
-			.on('blur', function () {
-				if (!Popover.visible() && Settings.getItem('createRulesOnClose')) {
-					$('.page-host-section.page-host-editing', UI.Page.view).each(function () {
-						UI.Page.section.createRules($(this));
-					});
-				}
-			});
-
 		UI.container
 			.on('click', '.show-resource-source', function (event) {
 				var url = this.getAttribute('data-url'),
@@ -946,21 +937,6 @@ UI.Page = {
 						if (!checked.length)
 							selectAll.prop('checked', false);
 					}, 100, [items]);
-				})
-
-				.on('mousedown', '.page-host-item-edit-select', function (event) {
-					if (Settings.getItem('quickCyclePageItems') && !this.classList.contains('select-single')) {
-						event.preventDefault();
-
-						var optionLength = $(this).parent().find('option').length - 1;
-
-						if (this.selectedIndex === optionLength)
-							this.selectedIndex = 0;
-						else
-							this.selectedIndex++;
-
-						$(this).trigger('change');
-					}
 				})
 
 				.on('change input', '.page-host-item-edit-select, .page-host-item-edit-container .select-custom-input', function (event) {

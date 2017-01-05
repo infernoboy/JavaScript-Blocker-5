@@ -159,7 +159,7 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 	var blockFrom = enforceNowhere ? 'nowhere' : Settings.getItem('alwaysBlock', this.kind),
 			sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
 
-	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
+	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || sourceProtocol === 'safari-extension:')
 		return canLoad;
 	else {
 		var pageProtocol = Utilities.URL.protocol(this.pageLocation),
@@ -170,8 +170,7 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 			return canLoad;
 		else if ((blockFrom === 'domain' && pageParts[0] !== sourceParts[0]) || 
 			(blockFrom === 'host' && pageParts[pageParts.length - 1] !== sourceParts[sourceParts.length - 1]) ||
-			(blockFrom === 'everywhere') ||
-			(pageProtocol === 'https:' && (Settings.getItem('secureOnly') && sourceProtocol !== pageProtocol))) {
+			(blockFrom === 'everywhere')) {
 
 			canLoad.action = ACTION.BLOCK_WITHOUT_RULE;
 		}

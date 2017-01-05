@@ -63,9 +63,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				help = Strings.localizationExist(localizationKey + '.help') ? _(localizationKey + '.help') : null;
 
 		var wrapper = {
-			left: self.wrap ? '<div class="setting-section-setting-left double-column-flex-left">' : '',
-			right: self.wrap ? '<div class="setting-section-setting-right double-column-flex-right">' : '',
-			full: self.wrap ? '<div class="setting-section-setting-full  double-column-flex-full">' : '',
+			left: self.wrap ? '<div class="setting-section-setting-left double-column-flex-left ' + (self.disabled ? 'jsb-disabled' : '') + '">' : '',
+			right: self.wrap ? '<div class="setting-section-setting-right double-column-flex-right ' + (self.disabled ? 'jsb-disabled' : '') + '">' : '',
+			full: self.wrap ? '<div class="setting-section-setting-full  double-column-flex-full ' + (self.disabled ? 'jsb-disabled' : '') + '">' : '',
 			close: self.wrap ? '</div>' : ''
 		};
 

@@ -481,7 +481,7 @@ UI.Settings = {
 					} else {
 						subContainer = null;
 
-						settingElement = this.createElementForSetting(setting, null, true);
+						settingElement = this.createElementForSetting(setting, null, true, true);
 
 						listSetting = Template.create('settings', 'setting-section-setting', {
 							setting: setting.setting || setting.store
@@ -512,16 +512,22 @@ UI.Settings = {
 		}
 	},
 
-	createElementForSetting: function (setting, id, wrap) {
-		var mappedSetting = Settings.map[setting.setting],
-				baseProps = (setting.props.storeKey && mappedSetting.storeKeySettings) ? mappedSetting.props : setting.props;
+	createElementForSetting: function (setting, id, wrap, noFullEval) {		
+		var allSettings = noFullEval ? {} : Settings.all(),
+				mappedSetting = Settings.map[setting.setting],
+				baseProps = (setting.props.storeKey && mappedSetting.storeKeySettings) ? mappedSetting.props : setting.props,
+				shouldRender = noFullEval ? true : (mappedSetting.props.when ? Utilities.Group.eval(mappedSetting.props.when.settings, allSettings) : true);
 
-		var element = Template.create('settings', 'setting-element', {
-			id: id || ('setting-element-' + Utilities.Token.generate()),
-			setting: setting,
-			props: baseProps,
-			wrap: wrap
-		}, true);
+		if (!shouldRender && (mappedSetting.props.when && mappedSetting.props.when.hide))
+			var element = $('<div>');
+		else
+			var element = Template.create('settings', 'setting-element', {
+				id: id || ('setting-element-' + Utilities.Token.generate()),
+				setting: setting,
+				props: baseProps,
+				wrap: wrap,
+				disabled: !shouldRender
+			}, true);
 
 		return element;
 	},
@@ -624,7 +630,7 @@ UI.Settings = {
 					}));
 			}
 
-			var element = UI.Settings.createElementForSetting(Settings.map.newUserScriptStorageItem, null, true),
+			var element = UI.Settings.createElementForSetting(Settings.map.newUserScriptStorageItem, null, true, true),
 					wrapper = Template.create('settings', 'setting-section-setting', {
 						setting: 'newUserScriptStorageItem'
 					}, true);
