@@ -78,7 +78,8 @@ var Expando = {
 				group.css({
 					marginTop: 0,
 					opacity: 1,
-					height: 'auto'
+					height: 'auto',
+					overflow: 'visible'
 				});
 			});
 	},
