@@ -390,19 +390,7 @@ Settings.settings = {
 		collapsible: 'setting.collapsible.page',
 		props: {
 			subSettings: [{
-				setting: 'showPageEditorImmediately',
-				props: {
-					type: 'boolean',
-					default: false
-				}
-			}, {
 				setting: 'useSimplePageEditor',
-				props: {
-					type: 'boolean',
-					default: true
-				}
-			}, {
-				setting: 'showResourceURLsOnNumberClick',
 				props: {
 					type: 'boolean',
 					default: true
@@ -470,24 +458,11 @@ Settings.settings = {
 					}
 				},
 				settings: [{
-					when: {
-						hide: true,
-						settings: {
-							group: 'all',
-							items: [{
-								method: Utilities.Group.IS,
-								key: 'showPageEditorImmediately',
-								needle: false
-							}]
-						}
-					},
-					settings: [{
-						setting: 'createRulesOnClick',
-						props: {
-							type: 'boolean',
-							default: true
-						}
-					}]
+					setting: 'createRulesOnClick',
+					props: {
+						type: 'boolean',
+						default: true
+					}
 				}, {
 					setting: 'autoHideWhitelist',
 					props: {
@@ -717,7 +692,7 @@ Settings.settings = {
 				setting: 'quickDisableTemporary',
 				props: {
 					type: 'boolean',
-					default: false
+					default: true
 				}
 			}, {
 				divider: true

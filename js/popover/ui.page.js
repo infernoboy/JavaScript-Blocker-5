@@ -256,7 +256,7 @@ UI.Page = {
 				if (!isShowingResourceURLs && !Poppy.poppyWithScriptNameExist('force-click-host-count')) {
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-host-count');
 
-					poppy.scaleWithForce(foreClickHostCount).setContent(_(Settings.getItem('showResourceURLsOnNumberClick') ? 'force_click_host_count_popup' : 'force_click_host_count_switch')).show();
+					poppy.scaleWithForce(foreClickHostCount).setContent(_('force_click_host_count_switch')).show();
 				}
 			});
 	},
@@ -510,13 +510,6 @@ UI.Page = {
 	},
 
 	events: {
-		pageDidRender: function (event) {
-			if (Settings.getItem('showPageEditorImmediately'))
-				$('.page-host-section', UI.Page.stateContainer).each(function () {
-					UI.Page.section.toggleEditMode($(this), true, true);
-				});
-		},
-
 		openedPopover: function () {
 			if (!Poppy.modalOpen)
 				UI.Page.clear();
@@ -779,7 +772,7 @@ UI.Page = {
 
 				.on('click webkitmouseforcedown', '.page-host-host-count', function (event) {	
 					var isShowingResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
-							showResourceURLsOnNumberClick = Settings.getItem('showResourceURLsOnNumberClick'),
+							showResourceURLsOnNumberClick = false,
 							isForceClick = event.type === 'webkitmouseforcedown';
 
 					if (isForceClick) {
@@ -1003,7 +996,6 @@ UI.Page = {
 	}
 };
 
-UI.event.addCustomEventListener('pageDidRender', UI.Page.events.pageDidRender);
 UI.event.addCustomEventListener('viewAlreadyActive', UI.Page.events.viewAlreadyActive);
 UI.event.addCustomEventListener('viewWillSwitch', UI.Page.events.viewWillSwitch);
 UI.event.addCustomEventListener('viewDidSwitch', UI.Page.events.viewDidSwitch);
