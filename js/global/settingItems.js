@@ -84,7 +84,7 @@ Settings.settings = {
 		setting: 'popoverWidth',
 		props: {
 			type: 'number',
-			default: 516
+			default: 517
 		}
 	}, {
 		setting: 'popoverWidthExpanded',
