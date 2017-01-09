@@ -432,11 +432,16 @@ Settings.settings = {
 						type: 'boolean',
 						default: false,
 						onChange: function (type, settingKey, value, storeKey) {
-							Settings.setItem('createRulesOnClick', value);
-							Settings.setItem('autoHideWhitelist', value);
-							Settings.setItem('autoHideBlacklist', value);
-							Settings.setItem('autoHideRule', value);
-							Settings.setItem('autoHideNoRule', value);
+							var relatedSettings = [
+								'createRulesOnClick', 'autoHideWhitelist', 'autoHideBlacklist',
+								'autoHideRule', 'autoHideNoRule'];
+
+							for (var i = relatedSettings.length; i--;)
+								if (value)
+									Settings.setItem(relatedSettings[i], value);
+								else
+									Settings.removeItem(relatedSettings[i]);
+
 
 							UI.Setup.reinit();
 						}
