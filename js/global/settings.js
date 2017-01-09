@@ -123,7 +123,7 @@ var Settings = {
 			return;
 
 		if (Settings.isUserEditable(event.key) && window.UI && UI.Settings && UI.Settings.view && UI.Settings.view.is('.active-view'))
-			UI.Settings.repopulateActiveSection();
+			setTimeout(UI.Settings.repopulateActiveSection);
 	},
 
 	isUserEditable: function (settingKey) {
