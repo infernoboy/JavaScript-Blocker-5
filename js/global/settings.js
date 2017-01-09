@@ -6,9 +6,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 var Settings = {
 	__method: function (method, setting, value, persist) {
-		if (SettingStore.available)
+		if (SettingStore.available) {
+			if (method === 'setItem' || method === 'removeItem')
+				Settings.anySettingChanged({
+					key: setting
+				});
+
 			return SettingStore[method](setting, value, null, persist);
-		else
+		}	else
 			return GlobalCommand('settingStore.' + method, {
 				setting: setting,
 				value: value
@@ -116,7 +121,6 @@ var Settings = {
 
 		if (event.key === 'settingCurrentView')
 			return;
-
 
 		if (Settings.isUserEditable(event.key) && window.UI && UI.Settings && UI.Settings.view && UI.Settings.view.is('.active-view'))
 			UI.Settings.repopulateActiveSection();
@@ -342,10 +346,6 @@ var Settings = {
 
 			if (setting.props.onChange)
 				setting.props.onChange('set', settingKey, value, storeKey, prevValue);
-
-			Settings.anySettingChanged({
-				key: settingKey
-			});
 		} else
 			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
 
@@ -567,8 +567,5 @@ var Settings = {
 Settings.__stores = new Store('StoreSettings', {
 	save: true
 });
-
-if (Utilities.Page.isGlobal)
-	Events.addSettingsListener(Settings.anySettingChanged);
 
 Locker.event.addCustomEventListener(['locked', 'unlocked'], Settings.onToggleLock);
