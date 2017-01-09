@@ -513,19 +513,20 @@ var Settings = {
 
 						value = settings[setting];
 
-						try {
-							if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE))
+						if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE)) {
+							try {
 								SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= 100000);
-							else {
-
-								try {
-									value = JSON.parse(value);
-								} catch (e) {}
-
-								Settings.setItem(setting, value, null, true, true);
+							} catch (e) {
+								LogError('failed to import store setting - ' + setting, e);
 							}
-						} catch (e) {
-							LogError('failed to import setting - ' + setting, e);
+						} else {
+							try {
+								value = JSON.parse(value);
+							} catch (e) {}
+
+							try {
+								Settings.setItem(setting, value, null, true, true);
+							} catch (e) {}
 						}
 					}
 				}
