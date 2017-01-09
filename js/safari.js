@@ -264,6 +264,8 @@ var SettingStore = {
 		if (SettingStore.__badKeys._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
 
+		clearTimeout(SettingStore.__syncTimeout[key]);
+
 		delete this.__cache[key];
 		
 		if (!noCache)
@@ -274,8 +276,6 @@ var SettingStore = {
 			safari.extension.settings.setItem(key, value);
 		} else {
 			localStorage.setItem(key, JSON.stringify(value));
-
-			clearTimeout(SettingStore.__syncTimeout[key]);
 
 			SettingStore.__syncTimeout[key] = setTimeout(function (key, value) {
 				delete SettingStore.__syncTimeout[key];
@@ -288,6 +288,8 @@ var SettingStore = {
 	removeItem: function (key) {
 		if (this.__locked)
 			return;
+
+		clearTimeout(SettingStore.__syncTimeout[key]);
 		
 		delete this.__cache[key];
 
