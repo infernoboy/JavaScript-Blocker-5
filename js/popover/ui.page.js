@@ -738,28 +738,34 @@ UI.Page = {
 				})
 
 				.on('click', '.page-host-toggle-disable', function (event) {
-					this.disabled = true;
+					var self = this;
 
-					event.stopImmediatePropagation();
+					UI.Locker
+						.showLockerPrompt('disable')
+						.then(function () {
+							self.disabled = true;
 
-					var thisPageInfo = pageInfo,
-							section = $(this).parents('.page-host-section'),
-							pageID = section.attr('data-id'),
-							tab = UI.Page.stateContainer.data('page').tab;
+							event.stopImmediatePropagation();
 
-					if (pageID !== pageInfo.id)
-						thisPageInfo = pageInfo.frames[pageID];
+							var thisPageInfo = pageInfo,
+									section = $(self).parents('.page-host-section'),
+									pageID = section.attr('data-id'),
+									tab = UI.Page.stateContainer.data('page').tab;
 
-					var ruleList = thisPageInfo.private || Settings.getItem('quickDisableTemporary') ? globalPage.Rules.list.temporary : globalPage.Rules.list.user;
+							if (pageID !== pageInfo.id)
+								thisPageInfo = pageInfo.frames[pageID];
 
-					ruleList.addDomain('disable', thisPageInfo.host, {
-						rule: '*',
-						action: section.attr('data-disabled') === '1' ? 1 : 0
-					});
+							var ruleList = thisPageInfo.private || Settings.getItem('quickDisableTemporary') ? globalPage.Rules.list.temporary : globalPage.Rules.list.user;
+					
+							ruleList.addDomain('disable', thisPageInfo.host, {
+								rule: '*',
+								action: section.attr('data-disabled') === '1' ? 1 : 0
+							});
 
-					MessageTarget({
-						target: tab
-					}, 'reload');
+							MessageTarget({
+								target: tab
+							}, 'reload');
+						});
 				})
 
 				.on('click', '.page-host-create-rules', function (event) {
