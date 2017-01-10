@@ -95,7 +95,7 @@ UI.Rules = {
 			filterViewSwitcher
 				.attr('data-filterList', listName)
 				.find('.view-switcher-item-name')
-				.text(_('rules.filter') + ' − ' + UI.Rules.getFilterListName(listName));
+				.text(_('rules.filter') + ': ' + UI.Rules.getFilterListName(listName));
 
 				if (!doNotSwitch)
 					UI.view.switchTo('#rule-views-filter');
@@ -220,7 +220,7 @@ UI.Rules = {
 		if (!globalPage.Rules.isLockerLocked()) {
 			if (ruleList === globalPage.Rules.list.firstVisit)
 				editable = 3;
-			else if (ruleList === globalPage.Rules.list.temporary)
+			else if (ruleList === globalPage.Rules.list.temporary || ruleList === globalPage.Rules.list.allResources)
 				editable = 1;
 			else if (ruleList == globalPage.Rules.list.active) {
 				if (globalPage.Rules.snapshotInUse())

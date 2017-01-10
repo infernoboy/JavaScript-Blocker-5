@@ -25,6 +25,20 @@ UI.Setup = {
 			.on('click', '#mark-setup-complete', UI.Setup.complete);
 	},
 
+	reinit: function () {
+		if (Settings.getItem('setupComplete'))
+			return;
+		
+		UI.event.removeCustomEventListener('viewWillSwitch', UI.Setup.preventViewSwitch);
+		Poppy.Menu.event.removeCustomEventListener('poppyMenuWillShow', UI.Setup.preventPoppyMenus);
+
+		UI.Setup.view.empty();
+
+		UI.Setup.view.off('click', '#mark-setup-complete');
+
+		UI.Setup.init();
+	},
+
 	complete: function () {
 		Settings.setItem('setupComplete', true);
 

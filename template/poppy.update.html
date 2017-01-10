@@ -12,14 +12,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				var setting = UI.Settings.createElementForSetting(Settings.map.useSimplePageEditor, null, true);
 			%><%=setting[0].outerHTML%>
 		</li>
-		<li>
-			<div class="horizontal-divider"></div>
-		</li>
-		<li>
-			<%
-				var setting = UI.Settings.createElementForSetting(Settings.map.showResourceURLsOnNumberClick, null, true);
-			%><%=setting[0].outerHTML%>
-		</li>
 	</ul>
 </noscript>
 
@@ -38,11 +30,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 <noscript id="update-151027-host-count">
 	<h3 class="jsb-centered">Force Click</h3>
 
-	<% if (Settings.getItem('showResourceURLsOnNumberClick')) { %>
-		<p class="jsb-info jsb-readable">Force click item count to show each resource.</p><%
-	} else { %>
-		<p class="jsb-info jsb-readable">Force click item count to temporarily switch to showing all resource URLs.</p><%
-	} %>
+	<p class="jsb-info jsb-readable">Force click item count to temporarily switch to showing all resource URLs.</p>
 </noscript>
 
 <noscript id="update-160419">

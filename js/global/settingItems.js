@@ -84,7 +84,7 @@ Settings.settings = {
 		setting: 'popoverWidth',
 		props: {
 			type: 'number',
-			default: 515
+			default: 517
 		}
 	}, {
 		setting: 'popoverWidthExpanded',
@@ -282,38 +282,14 @@ Settings.settings = {
 					type: 'boolean',
 					default: true,
 					onChange: function () {
-						var useAnimations = Settings.getItem('useAnimations'),
-								useFastAnimations = Settings.getItem('useFastAnimations');
+						var useAnimations = Settings.getItem('useAnimations');
 
-						window.globalSetting.speedMultiplier = useAnimations ? (useFastAnimations ? 0.7 : 1) : 0.001;
+						window.globalSetting.speedMultiplier = useAnimations ? 1 : 0.001;
 
 						Popover.window.document.body.classList.toggle('jsb-no-animations', !useAnimations);
 
 						UI.setLessVariables();
-					},
-					subSettings: [{
-						when: {
-							hide: true,
-							settings: {
-								group: 'all',
-								items: [{
-									method: Utilities.Group.IS,
-									key: 'useAnimations',
-									needle: true
-								}]
-							}
-						},
-						settings: [{
-							setting: 'useFastAnimations',
-							props: {
-								type: 'boolean',
-								default: false,
-								onChange: function () {
-									Settings.map.useAnimations.props.onChange();
-								}
-							}
-						}]
-					}]
+					}
 				}
 			}, {
 				setting: 'largeFont',
@@ -335,12 +311,6 @@ Settings.settings = {
 				}
 			}, {
 				setting: 'showExpanderLabels',
-				props: {
-					type: 'boolean',
-					default: false
-				}
-			}, {
-				setting: 'recommendReloadAlways',
 				props: {
 					type: 'boolean',
 					default: false
@@ -385,6 +355,7 @@ Settings.settings = {
 				setting: 'language',
 				props: {
 					type: 'option',
+					readOnly: true,
 					options: [
 						['auto', 'setting.language.option.automatic'],
 						['en-us', 'US English']
@@ -392,7 +363,7 @@ Settings.settings = {
 					default: 'auto',
 					onChange: function () {
 						setTimeout(function () {
-							if (!SettingStore.__locked)
+							if (!SettingStore.__locked && !Settings.IMPORTING)
 								Popover.window.location.reload()
 						}, 500);
 					}
@@ -419,25 +390,7 @@ Settings.settings = {
 		collapsible: 'setting.collapsible.page',
 		props: {
 			subSettings: [{
-				setting: 'createRulesOnClick',
-				props: {
-					type: 'boolean',
-					default: true
-				}
-			}, {
-				setting: 'showPageEditorImmediately',
-				props: {
-					type: 'boolean',
-					default: false
-				}
-			}, {
 				setting: 'useSimplePageEditor',
-				props: {
-					type: 'boolean',
-					default: true
-				}
-			}, {
-				setting: 'showResourceURLsOnNumberClick',
 				props: {
 					type: 'boolean',
 					default: true
@@ -462,35 +415,83 @@ Settings.settings = {
 					}
 				}]
 			}, {
-				setting: 'createRulesOnClose',
-				props: {
-					type: 'boolean',
-					default: false
-				}
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'blockFirstVisit',
+							needle: 'nowhere'
+						}]
+					}
+				},
+				settings: [{
+					setting: 'simplifiedUI',
+					props: {
+						type: 'boolean',
+						default: false,
+						onChange: function (type, settingKey, value, storeKey) {
+							var relatedSettings = [
+								'createRulesOnClick', 'autoHideWhitelist', 'autoHideBlacklist',
+								'autoHideRule', 'autoHideNoRule'];
+
+							for (var i = relatedSettings.length; i--;)
+								if (value)
+									Settings.setItem(relatedSettings[i], value);
+								else
+									Settings.removeItem(relatedSettings[i]);
+
+							UI.Setup.reinit();
+						}
+					}
+				}]
 			}, {
-				setting: 'quickCyclePageItems',
-				props: {
-					type: 'boolean',
-					default: false
-				}
-			}, {
-				setting: 'autoHideWhitelist',
-				props: {
-					type: 'boolean',
-					default: false
-				}
-			}, {
-				setting: 'autoHideBlacklist',
-				props: {
-					type: 'boolean',
-					default: false
-				}
-			}, {
-				setting: 'autoHideNoRule',
-				props: {
-					type: 'boolean',
-					default: false
-				}
+				when: {
+					settings: {
+						group: 'one',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'simplifiedUI',
+							needle: false
+						}, {
+							method: Utilities.Group.NOT.IS,
+							key: 'blockFirstVisit',
+							needle: 'nowhere'
+						}]
+					}
+				},
+				settings: [{
+					setting: 'createRulesOnClick',
+					props: {
+						type: 'boolean',
+						default: true
+					}
+				}, {
+					setting: 'autoHideWhitelist',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}, {
+					setting: 'autoHideBlacklist',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}, {
+					setting: 'autoHideRule',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}, {
+					setting: 'autoHideNoRule',
+					props: {
+						type: 'boolean',
+						default: false
+					}
+				}]
 			}]
 		}
 	}, {
@@ -692,6 +693,14 @@ Settings.settings = {
 		collapsible: 'setting.collapsible.ruleDefaults',
 		props: {
 			subSettings: [{
+				setting: 'quickDisableTemporary',
+				props: {
+					type: 'boolean',
+					default: true
+				}
+			}, {
+				divider: true
+			}, {
 				description: 'defaultRuleDomain.description'
 			}, {
 				setting: 'defaultRuleDomain',
@@ -748,9 +757,12 @@ Settings.settings = {
 							}]
 						}
 					},
-					onChange: function () {
+					onChange: function (type, settingKey, value, storeKey, prevValue) {
 						Rules.list.firstVisit.clear();
 						Rules.list.temporaryFirstVisit.clear();
+
+						if (Settings.getItem('simplifiedUI') && (prevValue === 'nowhere' || value === 'nowhere'))
+							Settings.map.simplifiedUI.props.onChange(null, null, true);
 					}
 				}
 			}, {
@@ -780,18 +792,6 @@ Settings.settings = {
 		collapsible: 'setting.collapsible.blockers',
 		props: {
 			subSettings: [{
-				setting: 'secureOnly',
-				props: {
-					type: 'boolean',
-					default: true
-				}
-			}, {
-				setting: 'allowExtensions',
-				props: {
-					type: 'boolean',
-					default: true
-				}
-			}, {
 				setting: 'allowCache',
 				props: {
 					type: 'boolean',

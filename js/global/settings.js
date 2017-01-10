@@ -6,9 +6,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 
 var Settings = {
 	__method: function (method, setting, value, persist) {
-		if (SettingStore.available)
+		if (SettingStore.available) {
+			if (method === 'setItem' || method === 'removeItem')
+				Settings.anySettingChanged({
+					key: setting
+				});
+
 			return SettingStore[method](setting, value, null, persist);
-		else
+		}	else
 			return GlobalCommand('settingStore.' + method, {
 				setting: setting,
 				value: value
@@ -117,9 +122,8 @@ var Settings = {
 		if (event.key === 'settingCurrentView')
 			return;
 
-
 		if (Settings.isUserEditable(event.key) && window.UI && UI.Settings && UI.Settings.view && UI.Settings.view.is('.active-view'))
-			UI.Settings.repopulateActiveSection();
+			setTimeout(UI.Settings.repopulateActiveSection);
 	},
 
 	isUserEditable: function (settingKey) {
@@ -316,13 +320,15 @@ var Settings = {
 			if (confirmChange && !changeConfirmed)
 				return Settings.confirmSettingSet(confirmChange, settingKey, value, storeKey, unlocked);
 
+			var prevValue = (setting.props.onChange || storeSetting.props.onChange) ? Settings.getItem(settingKey, storeKey) : undefined;
+
 			this.__stores.getStore(settingKey).set(storeKey, value);
 
 			if (setting.props.onChange)
-				setting.props.onChange('set', settingKey, value, storeKey);
+				setting.props.onChange('set', settingKey, value, storeKey, prevValue);
 
 			if (storeSetting.props.onChange)
-				storeSetting.props.onChange('set', settingKey, value, storeKey);
+				storeSetting.props.onChange('set', settingKey, value, storeKey, prevValue);
 
 			Settings.anySettingChanged({
 				key: settingKey
@@ -334,14 +340,12 @@ var Settings = {
 			if (confirmChange && !changeConfirmed)
 				return Settings.confirmSettingSet(confirmChange, settingKey, value, storeKey, unlocked);
 
+			var prevValue = setting.props.onChange ? Settings.getItem(settingKey, storeKey) : undefined;
+
 			this.__method('setItem', settingKey, value);
 
 			if (setting.props.onChange)
-				setting.props.onChange('set', settingKey, value, storeKey);
-
-			Settings.anySettingChanged({
-				key: settingKey
-			});
+				setting.props.onChange('set', settingKey, value, storeKey, prevValue);
 		} else
 			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
 
@@ -356,6 +360,8 @@ var Settings = {
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
 
 		if (setting.storeKeySettings || setting.store) {
+			var prevValue = (setting.props.onChange || (storeSetting && storeSetting.props.onChange)) ? Settings.getItem(settingKey, storeKey) : undefined;
+
 			if (storeKey) {
 				if (setting.storeKeySettings[storeKey])
 					storeKey = setting.storeKeySettings[storeKey].props.remap || storeKey;
@@ -365,10 +371,10 @@ var Settings = {
 				this.__stores.getStore(settingKey).clear();
 
 			if (setting.props.onChange)
-				setting.props.onChange('remove', settingKey, undefined, storeKey);
+				setting.props.onChange('remove', settingKey, undefined, storeKey, prevValue);
 
 			if (storeSetting && storeSetting.props.onChange)
-				storeSetting.props.onChange('remove', settingKey, undefined, storeKey);
+				storeSetting.props.onChange('remove', settingKey, undefined, storeKey, prevValue);
 
 			Settings.anySettingChanged({
 				key: settingKey
@@ -435,10 +441,13 @@ var Settings = {
 		else if (!options.exportSettings)
 			exported['Storage-FirstVisit'] = allSettings['Storage-FirstVisit'];
 
-		if (!options.exportRules)
+		if (!options.exportRules) {
+			delete exported['Storage-AllResourcesRules'];
 			delete exported['Storage-Rules'];
-		else if (!options.exportSettings)
+		}	else if (!options.exportSettings) {
+			exported['Storage-AllResourcesRules'] = allSettings['Storage-AllResourcesRules'];
 			exported['Storage-Rules'] = allSettings['Storage-Rules'];
+		}
 
 		if (!options.exportSnapshots)
 			delete exported['Storage-Snapshots'];
@@ -504,19 +513,20 @@ var Settings = {
 
 						value = settings[setting];
 
-						try {
-							if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE))
+						if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE)) {
+							try {
 								SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= 100000);
-							else {
-
-								try {
-									value = JSON.parse(value);
-								} catch (e) {}
-
-								Settings.setItem(setting, value, null, true, true);
+							} catch (e) {
+								LogError('failed to import store setting - ' + setting, e);
 							}
-						} catch (e) {
-							LogError('failed to import setting - ' + setting, e);
+						} else {
+							try {
+								value = JSON.parse(value);
+							} catch (e) {}
+
+							try {
+								Settings.setItem(setting, value, null, true, true);
+							} catch (e) {}
 						}
 					}
 				}
@@ -557,8 +567,5 @@ var Settings = {
 Settings.__stores = new Store('StoreSettings', {
 	save: true
 });
-
-if (Utilities.Page.isGlobal)
-	Events.addSettingsListener(Settings.anySettingChanged);
 
 Locker.event.addCustomEventListener(['locked', 'unlocked'], Settings.onToggleLock);

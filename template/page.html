@@ -6,13 +6,22 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	<%
 		var isLocked = globalPage.Rules.isLocked(),
 				snapshotInUse = globalPage.Rules.snapshotInUse(),
-				useSimplePageEditor = Settings.getItem('useSimplePageEditor') && !self.forceAdvanced; %>
+				useSimplePageEditor = Settings.getItem('useSimplePageEditor') && !self.forceAdvanced,
+				simplifiedUI = Settings.getItem('simplifiedUI') && Settings.getItem('blockFirstVisit') === 'nowhere',
+				allResourcesRules = simplifiedUI ? globalPage.Rules.list.allResources.domain(self.host)['*'] : null,
+				allResourcesAction = null;
 
-	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>" data-blockedFirstVisitStatus="<%=JSON.stringify(self.blockFirstVisitStatus)._entityQuotes()%>">
+		if (simplifiedUI && allResourcesRules) {
+			allResourcesAction = allResourcesRules.get('*').action === 0 ? 'block' : 'allow';
+		}
+	%>
+
+	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>" data-blockedFirstVisitStatus="<%=JSON.stringify(self.blockFirstVisitStatus)._entityQuotes()%>" data-private="<%=self.private ? '1' : '0'%>">
 		<div class="page-host-header floating-header">
-			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-host"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
+			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-host jsb-light-scrollbars"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
 			<button class="page-host-edit" data-poppyMenu="edit-page" data-poppyMenuMeta="<%=self.id%>" data-cancelForceBegin="1"><span class="poppy-menu-target no-underline"><%=_('view.page.host.edit')%></span></button>
 			<input type="button" class="page-host-create-rules" value="<%=_('view.page.host.editor.create_rules')%>" />
+			<input type="button" class="page-host-toggle-disable" value="<%=_(self.disabled ? 'view_toolbar.enable' : 'view_toolbar.disable')%>" />
 		</div>
 
 		<div class="jsb-clear-float"></div>
@@ -145,7 +154,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					</p>
 					<p class="jsb-info jsb-align-right page-host-first-visit-buttons">
 						<% if (self.blockFirstVisitStatus.action !== 8) { %>
-							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" /><q></q><%
+							<input type="button" class="page-host-first-visit-keep-blocked jsb-color-blocked" value="<%=_('first_visit.keep_blocked')%>" /><%
 						} %>
 						<input type="button" class="page-host-first-visit-unblock jsb-color-allowed" value="<%=_('first_visit.unblock')%>" /><q></q>
 					</p>
@@ -184,12 +193,20 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 				<%=Template.create('page', 'host-column', {
 					stateType: 'allowed',
 					side: 'left',
-					state: self.state.allowed || {}
+					state: self.state.allowed || {},
+					isLocked: isLocked,
+					simplifiedUI: simplifiedUI,
+					snapshotInUse: snapshotInUse,
+					allResourcesAction: allResourcesAction
 				}, null, true)%>
 				<%=Template.create('page', 'host-column', {
 					stateType: 'blocked',
 					side: 'right',
-					state: self.state.blocked || {}
+					state: self.state.blocked || {},
+					isLocked: isLocked,
+					simplifiedUI: simplifiedUI,
+					snapshotInUse: snapshotInUse,
+					allResourcesAction: allResourcesAction
 				}, null, true)%>
 			</div>
 
@@ -250,17 +267,23 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 			<span class="page-host-state-count"><%=itemCount%></span>
 			<span class="page-host-state-count-type"><% if (self.stateType === 'unblocked' || (Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'))) { %><%=_('view.page.host.count_type.item'._pluralize(itemCount))%><% } else { %><%=_('view.page.host.count_type.host'._pluralize(itemCount))%><% } %></span>
 		</span>
+
+		<% if (!self.isLocked && self.simplifiedUI && self.stateType !== 'unblocked' && !self.snapshotInUse) { 
+			if (!((self.allResourcesAction === 'block' && self.stateType === 'allowed') || (self.allResourcesAction === 'allow' && self.stateType === 'blocked'))) { %>
+				<input type="button" class="page-host-items-quick-action jsb-color-<%=self.stateType === 'blocked' ? 'allowed' : 'blocked'%>" value="<%=_(self.stateType === 'blocked' ? 'view.page.host.quick_allow' : 'view.page.host.quick_block')%>"/><%
+			}
+		} %>
+
 	</div>
 </noscript>
 
 <noscript id="host-items-container">
 	<div class="page-host-items-container" data-stateType="<%=self.stateType%>">
-		<%
+		<% 		
 			var kindArray = Object.keys(self.state)._sortUsingArray(globalPage.Rules.__kinds),
 					showItemDescription = Settings.getItem('showItemDescription'),
 					showHiddenItems = Settings.getItem('showHiddenItems'),
 					showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
-					quickCyclePageItems = Settings.getItem('quickCyclePageItems'),
 					createRulesOnClick = Settings.getItem('createRulesOnClick'),
 					actionGroup = {},
 					hiddenCount = 0;
@@ -379,7 +402,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 												<div class="page-host-item-edit-select-wrapper">
 												<%
 													if (useSelect) { %>
-														<select <%=disableEdit%> class="page-host-item-edit-select blend-in <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%> <%=hasOptions ? '' : 'select-single'%>"><%
+														<select <%=disableEdit%> class="page-host-item-edit-select blend-in <%=hasOptions ? '' : 'select-single'%>"><%
 
 														var sourceDomain,
 																displaySource;
@@ -400,7 +423,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 														</select><label></label><%
 													} else { %>
 														<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="false" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
-														<select <%=disableEdit%> class="page-host-item-edit-select <%=(quickCyclePageItems && !showResourceURLs) ? 'select-cycle' : ''%>">
+														<select <%=disableEdit%> class="page-host-item-edit-select">
 														<%
 															var sourceParts = Utilities.URL.pageParts(source),
 																	index = sourceParts.parts.length - 1;

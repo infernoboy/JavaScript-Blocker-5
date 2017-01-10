@@ -159,7 +159,7 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 	var blockFrom = enforceNowhere ? 'nowhere' : Settings.getItem('alwaysBlock', this.kind),
 			sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
 
-	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || (Settings.getItem('allowExtensions') && sourceProtocol === 'safari-extension:'))
+	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || sourceProtocol === 'safari-extension:')
 		return canLoad;
 	else {
 		var pageProtocol = Utilities.URL.protocol(this.pageLocation),
@@ -170,8 +170,7 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 			return canLoad;
 		else if ((blockFrom === 'domain' && pageParts[0] !== sourceParts[0]) || 
 			(blockFrom === 'host' && pageParts[pageParts.length - 1] !== sourceParts[sourceParts.length - 1]) ||
-			(blockFrom === 'everywhere') ||
-			(pageProtocol === 'https:' && (Settings.getItem('secureOnly') && sourceProtocol !== pageProtocol))) {
+			(blockFrom === 'everywhere')) {
 
 			canLoad.action = ACTION.BLOCK_WITHOUT_RULE;
 		}
@@ -267,9 +266,10 @@ Resource.prototype.descriptionsForResource = function (isAllowed) {
 Resource.prototype.shouldHide = function () {
 	var filterHideBlacklist = this.action === ACTION.BLACKLIST && Settings.getItem('autoHideBlacklist'),
 			filterHideWhitelist = this.action === ACTION.WHITELIST && Settings.getItem('autoHideWhitelist'),
+			ruleHide = (this.kind !== 'special' && this.kind !== 'user_script' && (this.action === 0 || this.action === 1) && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideRule')),
 			noRuleHide = (this.kind !== 'special' && this.kind !== 'user_script' && this.action < 0 && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideNoRule'));
-
-	return (!this.unblockable && (filterHideBlacklist || filterHideWhitelist || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
+	
+	return (!this.unblockable && (filterHideBlacklist || filterHideWhitelist || ruleHide || noRuleHide)) || !this.canLoad(false, true, Special.__excludeLists).isAllowed;
 };
 
 Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
@@ -332,9 +332,13 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 	var self = this,
 			matcher = new Rules.SourceMatcher(this.lowerSource, this.source, this.pageHost, this.pageDomain),
 			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
-			ignoreWhitelist = Settings.getItem('ignoreWhitelist');
+			ignoreWhitelist = Settings.getItem('ignoreWhitelist'),
+			ignoreAllResources = Settings.getItem('blockFirstVisit') !== 'nowhere' && Settings.getItem('simplifiedUI');
 
 	Rule.withLocationRules(this.rulesForLocation(null, !!domainCached, useHideKinds, excludeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
+		if (ruleList === Rules.list.allResources && ignoreAllResources)
+			return;
+
 		if (ruleList === Rules.list.temporaryFirstVisit && !self.private)
 			return;
 

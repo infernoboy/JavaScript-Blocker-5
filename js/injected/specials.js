@@ -152,7 +152,7 @@ Special.specials = {
 		var windowOpen = window.open,
 				dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
 
-		var canLoadPopup = function (URL) {
+		var canLoadPopup = function (URL, untrusted) {
 			var a = document.createElement('a');
 
 			a.href = URL;
@@ -171,7 +171,7 @@ Special.specials = {
 			info.canLoad = messageExtensionSync('canLoadResource', info);
 
 			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
-				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm', [displayURL]));
+				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm' + (untrusted ? '.untrusted' : ''), [displayURL]));
 
 			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification)
 				messageTopExtension('notification', {
@@ -210,7 +210,7 @@ Special.specials = {
 
 		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
 			if (event.type.toLowerCase() === 'click' && this.getAttribute('href') !== '#' && ((this.target && this.target.toLowerCase() === '_blank') || !event.isTrusted)) {
-				var info = canLoadPopup(this.href);
+				var info = canLoadPopup(this.href, !event.isTrusted);
 
 				if (info.canLoad.isAllowed) {
 					messageExtension('page.addAllowedItem', info);
@@ -400,7 +400,7 @@ Special.specials = {
 					// There is no way to retrieve the values of a FormData object.
 					meta = {
 						type: 'formdata',
-						data: null
+						data: {}
 					};
 				}
 			}
@@ -621,10 +621,23 @@ Special.specials = {
 		var shouldSkipProtectionOnFunction = function (fn) {
 			fn = fn.toString();
 
-			if (/.+((f|h|j|fromCharCode)\(\s?55356,\s?(56812|56806),\s?55356,\s?(56807|56826)\s?\)).+/.test(fn))
+			if (/.+((f|h|j|(string)?[fF]romCharCode)\(\s?55356,\s?(56812|56806|56826),\s?55356,\s?(56807|56826|56819)\s?\)).+/.test(fn))
 				return true;
 
 			return false;
+		};
+
+		var generateRandomImage = function () {
+			var canvas = document.createElement('canvas'),
+					context = canvas.getContext('2d'),
+					string = ''
+
+			context.textBaseline = 'top';
+			context.font = '100 20px sans-serif';
+
+			context.fillText(Math.random(), 0, 0);
+
+			return toDataURL.apply(canvas);
 		};
 
 		function protection (dataURL) {
@@ -685,7 +698,7 @@ Special.specials = {
 			if (shouldContinue)
 				return dataURL;
 			else
-				return 'data:image/png;base64,' + btoa(Math.random());
+				return generateRandomImage();
 		}
 
 		HTMLCanvasElement.prototype.toDataURL = function () {

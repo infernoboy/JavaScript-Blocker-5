@@ -588,8 +588,7 @@ var UI = {
 				}, true);
 
 			if (viewContainer.scrollTop() === 0 && viewContainer.scrollLeft() === 0) {
-				if (!Settings.getItem('showPageEditorImmediately'))
-					FloatingHeader.adjustAll();
+				FloatingHeader.adjustAll();
 
 				onComplete();
 			} else {

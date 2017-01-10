@@ -164,8 +164,6 @@ var Upgrade = {
 			updateNotify: true,
 			ignoreWhitelist: true,
 			ignoreBlacklist: true,
-			secureOnly: true,
-			allowExtensions: true,
 			autoSnapshots: true,
 			snapshotsLimit: true,
 

@@ -90,16 +90,7 @@ UI.Page = {
 		UI.Page.modalInfo = $('#page-modal-info', UI.Page.view);
 		UI.Page.stateContainer = $('#page-state-container', UI.Page.view);
 
-		new FloatingHeader(UI.view.views, '.page-host-header', null, -1);
-
-		$(window)
-			.on('blur', function () {
-				if (!Popover.visible() && Settings.getItem('createRulesOnClose')) {
-					$('.page-host-section.page-host-editing', UI.Page.view).each(function () {
-						UI.Page.section.createRules($(this));
-					});
-				}
-			});
+		new FloatingHeader(UI.view.views, '.page-host-header', null, -1, true);
 
 		UI.container
 			.on('click', '.show-resource-source', function (event) {
@@ -265,7 +256,7 @@ UI.Page = {
 				if (!isShowingResourceURLs && !Poppy.poppyWithScriptNameExist('force-click-host-count')) {
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-host-count');
 
-					poppy.scaleWithForce(foreClickHostCount).setContent(_(Settings.getItem('showResourceURLsOnNumberClick') ? 'force_click_host_count_popup' : 'force_click_host_count_switch')).show();
+					poppy.scaleWithForce(foreClickHostCount).setContent(_('force_click_host_count_switch')).show();
 				}
 			});
 	},
@@ -519,13 +510,6 @@ UI.Page = {
 	},
 
 	events: {
-		pageDidRender: function (event) {
-			if (Settings.getItem('showPageEditorImmediately'))
-				$('.page-host-section', UI.Page.stateContainer).each(function () {
-					UI.Page.section.toggleEditMode($(this), true, true);
-				});
-		},
-
 		openedPopover: function () {
 			if (!Poppy.modalOpen)
 				UI.Page.clear();
@@ -753,9 +737,38 @@ UI.Page = {
 						items.removeClass('page-host-item-disabled');
 				})
 
-				.on('click', '.page-host-create-rules', function (event) {
-					// this.disabled = true;
+				.on('click', '.page-host-toggle-disable', function (event) {
+					var self = this;
 
+					UI.Locker
+						.showLockerPrompt('disable')
+						.then(function () {
+							self.disabled = true;
+
+							event.stopImmediatePropagation();
+
+							var thisPageInfo = pageInfo,
+									section = $(self).parents('.page-host-section'),
+									pageID = section.attr('data-id'),
+									tab = UI.Page.stateContainer.data('page').tab;
+
+							if (pageID !== pageInfo.id)
+								thisPageInfo = pageInfo.frames[pageID];
+
+							var ruleList = thisPageInfo.private || Settings.getItem('quickDisableTemporary') ? globalPage.Rules.list.temporary : globalPage.Rules.list.user;
+					
+							ruleList.addDomain('disable', thisPageInfo.host, {
+								rule: '*',
+								action: section.attr('data-disabled') === '1' ? 1 : 0
+							});
+
+							MessageTarget({
+								target: tab
+							}, 'reload');
+						});
+				})
+
+				.on('click', '.page-host-create-rules', function (event) {
 					event.stopImmediatePropagation();
 
 					$('.page-host-section.page-host-editing', UI.Page.view).each(function () {
@@ -765,7 +778,7 @@ UI.Page = {
 
 				.on('click webkitmouseforcedown', '.page-host-host-count', function (event) {	
 					var isShowingResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
-							showResourceURLsOnNumberClick = Settings.getItem('showResourceURLsOnNumberClick'),
+							showResourceURLsOnNumberClick = false,
 							isForceClick = event.type === 'webkitmouseforcedown';
 
 					if (isForceClick) {
@@ -925,21 +938,6 @@ UI.Page = {
 					}, 100, [items]);
 				})
 
-				.on('mousedown', '.page-host-item-edit-select', function (event) {
-					if (Settings.getItem('quickCyclePageItems') && !this.classList.contains('select-single')) {
-						event.preventDefault();
-
-						var optionLength = $(this).parent().find('option').length - 1;
-
-						if (this.selectedIndex === optionLength)
-							this.selectedIndex = 0;
-						else
-							this.selectedIndex++;
-
-						$(this).trigger('change');
-					}
-				})
-
 				.on('change input', '.page-host-item-edit-select, .page-host-item-edit-container .select-custom-input', function (event) {
 					var check = $(this).parents('.page-host-item-edit-container').find('.page-host-item-edit-check');
 
@@ -960,6 +958,35 @@ UI.Page = {
 					checks.prop('checked', this.checked).change();
 				})
 
+				.on('click', '.page-host-column .page-host-items-quick-action', function (event) {
+					this.disabled = true;
+
+					event.stopImmediatePropagation();
+
+					var thisPageInfo = pageInfo,
+							section = $(this).parents('.page-host-section'),
+							column = $(this).parents('.page-host-column'),
+							state = column.attr('data-state'),
+							pageID = section.attr('data-id'),
+							tab = UI.Page.stateContainer.data('page').tab;
+
+					if (pageID !== pageInfo.id)
+						thisPageInfo = pageInfo.frames[pageID];
+
+					var ruleList = thisPageInfo.private ? globalPage.Rules.list.temporary : globalPage.Rules.list.allResources;
+
+					ruleList.addDomain('*', thisPageInfo.host, {
+						rule: '*',
+						action: state === 'blocked' ? 1 : 0
+					});
+
+					UI.Page.section.toggleEditMode(section, false);
+
+					MessageTarget({
+						target: tab
+					}, 'reload');
+				})
+
 				.on('click', '.page-host-column .page-host-kind h4', function (event) {
 					if (event.target.nodeName.toUpperCase() !== 'H4' || event.offsetX > this.offsetWidth)
 						return;
@@ -975,7 +1002,6 @@ UI.Page = {
 	}
 };
 
-UI.event.addCustomEventListener('pageDidRender', UI.Page.events.pageDidRender);
 UI.event.addCustomEventListener('viewAlreadyActive', UI.Page.events.viewAlreadyActive);
 UI.event.addCustomEventListener('viewWillSwitch', UI.Page.events.viewWillSwitch);
 UI.event.addCustomEventListener('viewDidSwitch', UI.Page.events.viewDidSwitch);

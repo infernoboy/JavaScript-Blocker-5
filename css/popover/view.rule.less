@@ -44,16 +44,22 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					margin-top: 1px;
 
 					li {
-						width: 90px;
+						width: 89px;
 
 						.jsb-large-font& {
-							width: 94px;
+							width: 90px;
 						}
 
 						&[data-view="#rule-views-filter"] {
 							width: auto;
 							padding-left: 10px;
 							padding-right: 10px;
+
+							.view-switcher-item-name {
+								max-width: 94px;
+								display: inline-block;
+								overflow: hidden;
+							}
 						}
 					}
 				}
@@ -148,11 +154,25 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	}
 
 	h2 {
-		margin-left: 3px;
+		margin-left: 0px;
 		margin-bottom: 8px;
 		overflow-x: scroll;
 		white-space: nowrap;
-		padding-bottom: 1px;
+		padding: 3px 0;
+		text-indent: 3px;
+		background: darken(rgb(245, 245, 245), @darknessLevel);
+		border-top: 1px solid darken(#fff, @darknessLevel);
+		border-bottom: 1px solid darken(#ddd, @darknessLevel);
+		box-shadow: 0 -1px 0 darken(#dfdfdf, @darknessLevel);
+		display: block;
+		width: 100%;
+
+		&.floated-header {
+			position: absolute;
+			z-index: 3;
+			margin-left: -2px;
+			box-shadow: none;
+		}
 	}
 
 	&-rules {
