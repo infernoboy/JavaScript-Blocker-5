@@ -353,11 +353,11 @@
 	"setting.lockerAlwaysLocked.importBackupSettings.label": "Import settings backup or restore default settings",
 	"setting.lockerAlwaysLocked.console.label": "Open console",
 	"setting.lockerAlwaysLocked.disable.label": "Disable or enable JS Blocker",
-
 	"setting.ignoreWhitelist.label": "Ignore allowing rules in filter lists",
 	"setting.ignoreBlacklist.label": "Ignore blocking rules in filter lists",
 	"setting.ignorePredefined.label": "Ignore built-in filtering rules",
 	"setting.allowCache.label": "Allow persistent rule actions cache for improved performance",
+	"setting.allowCache.help": "Disable this to reduce writes to disk.",
 	"setting.allowCache.confirm": "You have to restart Safari in order for this change to take effect.",
 	"setting.blockFirstVisit.description": "When visiting an unknown hostname or domain, you can choose to have all of its resources blocked until you deem it trustworthy. Once you do, the resource blocking settings will take control over what gets blocked. Turn this off to allow the simplified allowing/blocking UI to be used.",
 	"setting.blockFirstVisit.label": "Block all resources on unknown",
