@@ -363,7 +363,7 @@ Settings.settings = {
 					default: 'auto',
 					onChange: function () {
 						setTimeout(function () {
-							if (!SettingStore.__locked)
+							if (!SettingStore.__locked && !Settings.IMPORTING)
 								Popover.window.location.reload()
 						}, 500);
 					}
@@ -441,7 +441,6 @@ Settings.settings = {
 									Settings.setItem(relatedSettings[i], value);
 								else
 									Settings.removeItem(relatedSettings[i]);
-
 
 							UI.Setup.reinit();
 						}
