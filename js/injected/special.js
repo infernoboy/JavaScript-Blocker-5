@@ -68,7 +68,7 @@ var Special = {
 			if (helpers[helper].semiGlobal)
 				prepend = helperScript.inner();
 			else
-				prepend = helpers[helper].args ? helperScript.executable() : helperScript.asFunction();
+				prepend = helpers[helper].args ? helperScript.executable(true) : helperScript.asFunction();
 
 			cache.unshift(prepend);
 
