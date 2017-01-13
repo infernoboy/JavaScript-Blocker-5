@@ -183,7 +183,7 @@ function Command (command, data, event) {
 				}
 
 				if (typeof info.pageLocation !== 'string') {
-					LogDebug('unable to determine proper resource information', info, this.event.target.url);
+					// LogDebug('unable to determine proper resource information', info._clone(), this.event.target.url);
 
 					info.pageLocation = 'about:blank';
 					info.pageProtocol = 'about:';
@@ -436,12 +436,19 @@ function Command (command, data, event) {
 			};
 
 			meta.error = function (request, status, response) {
-				if (response === 'timeout')
+				if (response === 'timeout') {
+					LogDebug('XHR timeout in user script - ' + detail.sourceID + ' - ' + meta.url);
+
 					eventCallback('ontimeout', response, request);
-				else if (response === 'abort')
+				}	else if (response === 'abort') {
+					LogDebug('XHR abort in user script - ' + detail.sourceID + ' - ' + meta.url);
+
 					eventCallback('onabort', response, request);
-				else
+				} else {
+					LogDebug('XHR error in user script - ' + detail.sourceID + ' - ' + (response.message || response) + ' - ' + meta.url);
+
 					eventCallback('onerror', response.message ? response.message : response, request);
+				}
 			};
 
 			$.ajax(meta);
