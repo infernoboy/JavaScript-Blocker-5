@@ -942,18 +942,6 @@ if (!globalSetting.disabled) {
 		Page.info.disabled = {
 			action: JSBSupport.action
 		};
-		
-		// setTimeout(function () {
-		// 	Page.blocked.pushSource('disable', '*', {
-		// 		action: JSBSupport.action
-		// 	});
-
-		// 	Page.blocked.incrementHost('disable', '*');
-
-		// 	// LogDebug('disabled on this page: ' + Page.info.location);
-
-		// 	Page.send(true);
-		// }, 0);
 
 		Page.send();
 	} else {
