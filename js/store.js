@@ -26,7 +26,11 @@ var Store = (function () {
 
 		if (this.save)
 			this.addCustomEventListener('storeDidSave', function () {
-				LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(this.savedByteSize()));
+				if (window.globalSetting.debugMode) {
+					var bytes = this.savedByteSize();
+
+					LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(bytes) + ' - ' + (bytes < Store.LOCAL_SAVE_SIZE ? 'via localStorage' : 'via Safari settings'));
+				}
 			}.bind(this));
 	};
 
@@ -35,6 +39,7 @@ var Store = (function () {
 	Store.__emptyStoreString = Utilities.decode('4a+h4KGS5IG04L2A4pSl4KKg4rqA4LCC5YCgIA==');
 	Store.__inheritable = ['ignoreSave', 'inheritMaxLife', 'selfDestruct'];
 
+	Store.LOCAL_SAVE_SIZE = 100000;
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
 
@@ -186,7 +191,7 @@ var Store = (function () {
 				}
 
 				var savableStore = JSON.stringify(store),
-						useLocal = savableStore.length < 100000;
+						useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;
 
 				if (useLocal)
 					savableStore = LZString.compressToUTF16(savableStore)
