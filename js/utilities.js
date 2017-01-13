@@ -964,7 +964,7 @@ function Log () {
 	var cleanErrorStack = _cleanErrorStack(stack).join("\n"),
 			messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
 
-	Log.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack.replace(/\n/g, "<br>"));
+	Log.history.unshift(messages.slice(1).join(' ') + "<br>" + cleanErrorStack.replace(/\n/g, "<br>"));
 
 	Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
 
