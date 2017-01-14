@@ -538,12 +538,16 @@ Special.specials = {
 			return Math.floor(Math.random() * (max - min + 1)) + min;
 		}
 
-		var now = Math.random().toString(36),
+		var now = (Math.random() * 1000000000000000000).toString(36),
 				agent = 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/' + randomInteger(20, 50) + '.0';
 
+		var localNavigator = window.navigator;
+
+		delete window.navigator;
+
 		window.navigator = {
-			geoLocation: window.navigator.geoLocation,
-			cookieEnabled: window.navigator.cookieEnabled,
+			geoLocation: localNavigator.geoLocation,
+			cookieEnabled: localNavigator.cookieEnabled,
 			productSub: now,
 			mimeTypes: [],
 			product: now,
@@ -554,7 +558,7 @@ Special.specials = {
 			platform: now,
 			appName: 'Netscape',
 			userAgent: agent,
-			language: window.navigator.language,
+			language: localNavigator.language,
 			plugins: (function () {
 				function PluginArray () {};
 
@@ -564,14 +568,10 @@ Special.specials = {
 
 				return new PluginArray();
 			})(),
-			onLine: window.navigator.onLine,
-			javaEnabled: window.navigator.javaEnabled.bind(window.navigator),
-			getStorageUpdates: window.navigator.getStorageUpdates.bind(window.navigator)
+			onLine: localNavigator.onLine,
+			javaEnabled: localNavigator.javaEnabled.bind(localNavigator),
+			getStorageUpdates: localNavigator.getStorageUpdates.bind(localNavigator)
 		};
-
-		function randomInteger (min, max) {
-			return Math.floor(Math.random() * (max - min)) + min;
-		}
 
 		window.screen = {
 			width: randomInteger(1000, 2000),
