@@ -21,7 +21,7 @@
 		<key>Database Quota</key>
 		<integer>0</integer>
 		<key>Global Page</key>
-		<string>global.html</string>
+		<string>html/global.html</string>
 		<key>Toolbar Items</key>
 		<array>
 			<dict>
