@@ -470,7 +470,7 @@ function AddContentScriptFromURL (url) {
 	};
 
 	if (window.GlobalPage && GlobalPage.window === window) {
-		Popover.create('manager', ExtensionURL('popover.html'), 480, 250);
+		Popover.create('manager', ExtensionURL('html/popover.html'), 480, 250);
 
 		ToolbarItems.setPopover();
 

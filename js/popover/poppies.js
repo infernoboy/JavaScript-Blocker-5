@@ -342,7 +342,7 @@ Object._extend(Poppy.scripts, {
 			.on('click', '#setting-menu-backup-import', function (event) {
 				var shouldClearSettings = $('#clear-existing', poppy.content).is(':checked');
 
-				Tabs.create(ExtensionURL('importBackup.html#' + Utilities.encode(JSON.stringify({
+				Tabs.create(ExtensionURL('html/importBackup.html#' + Utilities.encode(JSON.stringify({
 					title: _('importBackup.title'),
 					instructions: _('importBackup.instructions'),
 					clearBeforeImport: _('settings.clear_before_import'),

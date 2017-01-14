@@ -13,7 +13,7 @@ var Maintenance = {
 	
 	maintainPopover: function () {
 		var popover = Popover.window,
-				popoverURL = ExtensionURL('popover.html');
+				popoverURL = ExtensionURL('html/popover.html');
 
 		if (popover.location.href !== popoverURL)
 			popover.location.href = popoverURL;
