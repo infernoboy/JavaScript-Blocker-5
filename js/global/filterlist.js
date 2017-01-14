@@ -93,7 +93,7 @@ FilterList.prototype.process = function (list) {
 		list: list
 	};
 
-	var filterListWorker = new Worker('js/global/filterlist-worker.js');
+	var filterListWorker = new Worker('../js/global/filterlist-worker.js');
 
 	filterListWorker.addEventListener('message', function (message) {
 		if (message.data.error) {
