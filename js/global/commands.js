@@ -212,7 +212,6 @@ function Command (command, data, event) {
 				enabledKinds: Settings.getItem('enabledKinds'),
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
-				// blockReferrer: Settings.getItem('blockReferrer'),
 				blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
 				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 				showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
@@ -678,7 +677,7 @@ Command.onExecuteMenuCommand = function (event) {
 	if (event.command._startsWith('restorePlaceholderElements:')) {
 		var splitCommand = event.command.split(':');
 
-		Tabs.messageAll('restorePlaceholderElements', {
+		Tabs.messageAll(splitCommand[0], {
 			pageID: splitCommand[1]
 		});
 	}
@@ -696,8 +695,6 @@ window.globalSetting = {
 		Settings.setItem('debugMode', value);
 	}
 };
-
-// Object._extend(window.globalSetting, Command('globalSetting', null, {}));
 
 if (Settings.getItem('persistDisabled'))
 	Command.toggleDisabled(Settings.getItem('isDisabled'));
