@@ -41,19 +41,12 @@ var Expando = {
 						viewHeight = view.height(),
 						bottom = offset.top + (isTooLarge ? maxGroupWrapperHeight : groupWrapperHeight);
 
-				if (bottom > viewHeight + viewOffset.top && header.attr('data-noScroll') !== '1')
-					Utilities.setImmediateTimeout(function (view, bottom, viewHeight, viewOffset) {
+				if (bottom > (viewHeight + viewOffset.top) && header.attr('data-noScroll') !== '1')
+					Utilities.setImmediateTimeout(function (view, bottom, viewHeight, viewOffset, header) {
 						view.animate({
-							scrollTop: '+=' + (bottom - viewHeight - viewOffset.top)
-						}, 310 * window.globalSetting.speedMultiplier, isTooLarge ? 'linear' : 'easeOutQuad', function () {
-							if (isTooLarge)
-								Utilities.setImmediateTimeout(function () {
-									view.animate({
-										scrollTop: '+=' + (groupWrapperHeight - maxGroupWrapperHeight)
-									}, 300 * window.globalSetting.speedMultiplier, 'easeOutQuad');
-								});
-						});
-					}, [view, bottom, viewHeight, viewOffset]);
+							scrollTop: '+=' + (isTooLarge ? (header.offset().top - viewOffset.top - 5) : (bottom - viewHeight - viewOffset.top))
+						}, 310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
+					}, [view, bottom, viewHeight, viewOffset, header]);
 			}
 		}
 
