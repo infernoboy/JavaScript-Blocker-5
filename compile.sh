@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAIN_DIR="$(dirname "$(dirname "$PWD")")"
+MAIN_DIR="$PWD"
 
 cd "$MAIN_DIR/js/"
 
