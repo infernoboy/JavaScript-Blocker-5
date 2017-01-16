@@ -707,7 +707,7 @@ Command.event.addCustomEventListener('popoverReady', function (event) {
 
 		ToolbarItems.showPopover();
 	}
-}, true)
+}, true);
 
 window.addEventListener('error', function (event) {
 	event.preventDefault();

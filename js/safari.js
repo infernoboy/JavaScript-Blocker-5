@@ -298,7 +298,9 @@ var SettingStore = {
 	},
 
 	all: function () {
-		return Object._extend(true, safari.extension.settings, localStorage);
+		while (!SettingStore.__syncTimeout._isEmpty()) {}
+			
+		return Object._extend(true, localStorage, safari.extension.setting);
 	},
 
 	export: function () {
