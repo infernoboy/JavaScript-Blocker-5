@@ -244,7 +244,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		return this;
 	};
 
-	Poppy.prototype.calculatePosition = function () {
+	Poppy.prototype.setPosition = function () {
+		this.poppy.show();
+		
 		this.position = Object._copy(this.originalPosition);
 
 		this.isUpArrow = false;
@@ -362,12 +364,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			WebkitTransformOriginX: this.noArrow ? 'center' : ((((position.arrow.left + halfArrowWidth) / poppyWidth) * 100) + '%'),
 			WebkitTransformOriginY: this.noArrow ? 'center' : ((this.isUpArrow ? -(arrowHeight / 2) : this.poppy.outerHeight() + arrowHeight / 2) + 'px')
 		});
-		
-		return position;
-	};
-
-	Poppy.prototype.setPosition = function () {
-		var position = this.calculatePosition();
 
 		this.poppy.css(position.poppy);
 		this.arrow.css(position.arrow);
@@ -504,6 +500,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 				this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
 			}.bind(this));
+
+		this.poppy.hide();
 
 		Utilities.setImmediateTimeout(function (self) {
 			self.setPosition();
