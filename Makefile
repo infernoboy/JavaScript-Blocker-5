@@ -1,7 +1,6 @@
 INJECTED=js/safari.js js/promise.js js/utilities.js js/event.js js/store.js js/injected/commands.js js/injected/blocker.js js/injected/deepInject.js js/injected/notification.js js/injected/special.js js/injected/specials.js js/injected/userScript.js
 
 LESSC="/usr/local/bin/lessc"
-CD="/bin/cd"
 CAT="/bin/cat"
 RM="/bin/rm"
 
