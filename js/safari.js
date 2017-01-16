@@ -242,7 +242,9 @@ var SettingStore = {
 			}).bind(this, key, value)
 		};
 
-		SettingStore.__syncTimeout[key].timeout = setTimeout(SettingStore.__syncTimeout[key].fn, 3000)
+		var syncDelay = 3000 + (1000 * Object.keys(SettingStore.__syncTimeout).length);
+
+		SettingStore.__syncTimeout[key].timeout = setTimeout(SettingStore.__syncTimeout[key].fn, syncDelay);
 	},
 
 	syncNow: function () {
