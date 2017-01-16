@@ -550,7 +550,7 @@ function Command (command, data, event) {
 			storage: {
 				__storage: function (method, detail) {
 					try {
-						var storage = UserScript.getStorageItem(detail.meta.parentUserScript || detail.namespace);
+						var storage = UserScript.getStorage(detail.meta.parentUserScript || detail.namespace);
 					} catch (error) {
 						this.message = null;
 

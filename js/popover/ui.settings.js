@@ -225,7 +225,7 @@ UI.Settings = {
 				continue;
 
 			try {
-				var storageItem = globalPage.UserScript.getStorageItem(element.attr('data-userScript'), element.attr('data-storageKey'));
+				var storageItem = globalPage.UserScript.getStorage(element.attr('data-userScript'), element.attr('data-storageKey'));
 			} catch (error) {
 				continue;
 			}
@@ -245,7 +245,7 @@ UI.Settings = {
 						var userScriptNS = this.getAttribute('data-userScript');
 
 						try {
-							var storage = globalPage.UserScript.getStorageItem(userScriptNS);
+							var storage = globalPage.UserScript.getStorage(userScriptNS);
 						} catch (error) {
 							return;
 						}
@@ -274,7 +274,7 @@ UI.Settings = {
 							return;
 
 						try {
-							var storage = globalPage.UserScript.getStorageItem(this.getAttribute('data-userScript'));
+							var storage = globalPage.UserScript.getStorage(this.getAttribute('data-userScript'));
 						} catch (error) {
 							return;
 						}
@@ -594,7 +594,7 @@ UI.Settings = {
 						script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
 						downloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'downloadURL'),
 						customDownloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'customDownloadURL'),
-						storage = globalPage.UserScript.getStorageItem(userScriptNS);
+						storage = globalPage.UserScript.getStorage(userScriptNS);
 			} catch (error) {
 				return;
 			}

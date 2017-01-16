@@ -482,7 +482,7 @@ var UserScript = {
 		throw new Error(userScriptNS + ' does not exist.');
 	},
 
-	getStorageItem: function (userScriptNS, key) {
+	getStorage: function (userScriptNS, key) {
 		var userScript = UserScript.exist(userScriptNS);
 
 		if (userScript) {

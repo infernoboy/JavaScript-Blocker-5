@@ -16,7 +16,7 @@ Object._extend(Poppy.scripts, {
 			.on('click', '#extras-unlock-unlock', function () {
 				Utilities
 					.watchdog('unlockExtraFeatures', 1, 1000)
-					.then(function resolved () {
+					.then(function () {
 						var emailAddress = $.trim(unlockEmail.val());
 
 						if (!emailAddress.length) {
@@ -43,7 +43,7 @@ Object._extend(Poppy.scripts, {
 
 								unlockEmail.shake().focus().selectAll();
 							});
-					}, function rejected () {
+					}, function () {
 						unlockEmail.focus();
 					});
 			})
@@ -340,13 +340,11 @@ Object._extend(Poppy.scripts, {
 			})
 
 			.on('click', '#setting-menu-backup-import', function (event) {
-				var shouldClearSettings = $('#clear-existing', poppy.content).is(':checked');
-
 				Tabs.create(ExtensionURL('html/importBackup.html#' + Utilities.encode(JSON.stringify({
 					title: _('importBackup.title'),
 					instructions: _('importBackup.instructions'),
 					clearBeforeImport: _('settings.clear_before_import'),
-					shouldClearSettings: shouldClearSettings
+					shouldClearSettings: $('#clear-existing', poppy.content).is(':checked')
 				}))));
 
 				Popover.hide();
@@ -582,7 +580,7 @@ Object._extend(Poppy.scripts, {
 				var userScriptNS = UI.Settings.userScriptEdit.attr('data-userScriptNS');
 
 				try {
-					var storage = globalPage.UserScript.getStorageItem(userScriptNS);
+					var storage = globalPage.UserScript.getStorage(userScriptNS);
 				} catch (error) {
 					poppy.shake();
 
