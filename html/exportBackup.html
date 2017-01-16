@@ -1,0 +1,47 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
+-->
+
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		
+		<title>Export Backup - JS Blocker</title>
+		
+		<script src="../js/global/jquery.js"></script>
+		<script src="../js/safari.js"></script>
+		<script src="../js/promise.js"></script>
+		<script src="../js/utilities.js"></script>
+		<script src="../js/event.js"></script>
+		<script src="../js/store.js"></script>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				var iframe = document.getElementById('export');
+
+				iframe.src = Utilities.URL.createFromContent(GlobalCommand('exportedBackup'), 'application/zip', true);
+
+				setTimeout(function () {
+					window.close();
+				}, 1500);
+			}, true);
+		</script>
+
+		<style type="text/css">
+			html {
+				font-family: -apple-system;
+			}
+
+			iframe {
+				visibility: hidden;
+			}
+		</style>
+	</head>
+	<body>
+		<p class="jsb-info">Exported JSB backup.</p>
+
+		<iframe id="export"></iframe>
+	</body>
+</html>

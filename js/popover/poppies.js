@@ -316,7 +316,13 @@ Object._extend(Poppy.scripts, {
 					exportUserScripts: $('#setting-menu-backup-export-user-scripts', poppy.content).is(':checked')
 				};
 
-				Tabs.create(Utilities.URL.createFromContent(Settings.export(options), 'application/zip', true));
+				Settings.EXPORTED_BACKUP = Settings.export(options);
+
+				poppy.setContent(Template.create('main', 'jsb-info', {
+					string: _('setting_menu.export.done')
+				}));
+
+				Tabs.create(ExtensionURL('html/exportBackup.html'));
 			})
 
 			.on('drop', '#setting-menu-backup-import', function (event) {

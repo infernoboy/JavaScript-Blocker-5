@@ -244,6 +244,7 @@
 	"setting_menu.export_backup": "Export backup",
 	"setting_menu.export": "Export",
 	"setting_menu.export.description": "A file named <b>Unknown</b> will be saved to your downloads folder. Feel free to rename it.",
+	"setting_menu.export.done": "Exported backup file.",
 	"setting_menu.import_backup": "Backup",
 	"setting_menu.import": "Import",
 	"setting_menu.import.description": "You can drag-and-drop the backup file into the space above. The import will start immediately. Donations must be re-verified if clearing settings.",

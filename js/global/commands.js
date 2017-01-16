@@ -504,6 +504,12 @@ function Command (command, data, event) {
 			Tabs.create(detail);
 		},
 
+		exportedBackup: function (detail) {
+			this.message = Settings.EXPORTED_BACKUP;
+
+			delete Settings.EXPORTED_BACKUP;
+		},
+
 		template: {
 			create: function (detail) {
 				try {
