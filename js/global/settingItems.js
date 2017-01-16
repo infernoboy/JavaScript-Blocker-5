@@ -270,12 +270,6 @@ Settings.settings = {
 				Settings.map.showResourceURLs.props.onChange();
 			}
 		}
-	}, {
-		setting: 'settingsWereImported',
-		props: {
-			type: 'boolean',
-			default: false
-		}
 	}],
 
 	// General Settings

@@ -467,7 +467,6 @@ var Settings = {
 		delete exported['trialStart'];
 		delete exported['updateNotify'];
 		delete exported['installedBundle'];
-		delete exported['settingsWereImported'];
 
 		return JSON.stringify(exported);
 	},
@@ -534,8 +533,6 @@ var Settings = {
 
 				if (!semi)
 					Settings.setItem('showPopoverOnLoad', true);
-
-				Settings.setItem('settingsWereImported', true);
 
 				setTimeout(function (settings, semi) {
 					if (!settings._isEmpty())

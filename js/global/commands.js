@@ -683,19 +683,6 @@ Command.onExecuteMenuCommand = function (event) {
 	}
 };
 
-window.globalSetting = {
-	disabled: false,
-	speedMultiplier: 1,
-
-	get debugMode () {
-		return Settings.getItem('debugMode');
-	},
-
-	set debugMode (value) {
-		Settings.setItem('debugMode', value);
-	}
-};
-
 if (Settings.getItem('persistDisabled'))
 	Command.toggleDisabled(Settings.getItem('isDisabled'));
 

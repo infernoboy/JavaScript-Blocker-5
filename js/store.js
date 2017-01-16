@@ -24,7 +24,7 @@ var Store = (function () {
 				maxUnkept: props.maxUnkeptSnapshots
 			});
 
-		if (this.save)
+		if (this.save) {			
 			this.addCustomEventListener('storeDidSave', function () {
 				if (window.globalSetting.debugMode) {
 					var bytes = this.savedByteSize();
@@ -32,6 +32,11 @@ var Store = (function () {
 					LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(bytes) + ' - ' + (bytes < Store.LOCAL_SAVE_SIZE ? 'via localStorage' : 'via Safari settings'));
 				}
 			}.bind(this));
+
+			setTimeout(function (store) {
+				store.saveNow();
+			}, 3000, this);
+		}
 	};
 
 	Store = Store._extendClass(EventListener);
