@@ -586,7 +586,7 @@ Object._extend(Poppy.scripts, {
 				var userScriptNS = UI.Settings.userScriptEdit.attr('data-userScriptNS');
 
 				try {
-					var storage = globalPage.UserScript.getStorage(userScriptNS);
+					var storage = globalPage.UserScript.getStorageStore(userScriptNS);
 				} catch (error) {
 					poppy.shake();
 
