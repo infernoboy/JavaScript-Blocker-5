@@ -953,9 +953,10 @@ UI.Page = {
 						return $(this).change();
 					}
 
-					var checks = $(this).parent().parent().next().find('.page-host-item-edit-check');
-
-					checks.prop('checked', this.checked).change();
+					$(this).parent().parent().next()
+						.find('.page-host-item-edit-check')
+						.prop('checked', this.checked)
+						.change();
 				})
 
 				.on('click', '.page-host-column .page-host-items-quick-action', function (event) {
@@ -992,11 +993,26 @@ UI.Page = {
 						return;
 
 					var check = $(this).parent().find('.page-host-kind-select-all'),
-							section = $(this).parents('.page-host-section');
+							wasChecked = check.is(':checked'),
+							section = $(this).parents('.page-host-section'),
+							isInEditMode = section.find('.page-host-editor:visible').length;
 
 					check.prop('checked', !check.is(':checked')).change();
 
-					UI.Page.section.toggleEditMode(section, true);
+					if (!isInEditMode && !event.isTrigger && Settings.getItem('createRulesOnClick')) {
+						var colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
+
+						$(this).parent().next()
+							.find('.page-host-item')
+							.css('background', wasChecked ? '' : colorTemplate._format([1]))
+							.find('.page-host-item-will-create-rule')
+							.toggleClass('is-pending', !wasChecked);
+
+						Utilities.Timer.timeout('createRulesOnClick' + section.attr('data-id'), function (section) {
+							UI.Page.section.createRules(section, true);
+						}, 1500, [section]);
+					} else
+						UI.Page.section.toggleEditMode(section, true);
 				});
 		}
 	}
