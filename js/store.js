@@ -35,7 +35,7 @@ var Store = (function () {
 
 			setTimeout(function (store) {
 				store.saveNow();
-			}, 3000, this);
+			}, 5000, this);
 		}
 	};
 
@@ -270,7 +270,6 @@ var Store = (function () {
 
 	Store.prototype.load = function () {
 		if (this.save) {
-
 			var stored = Settings.__method('getItem', this.id, Store.__emptyStoreString);
 
 			if (typeof stored === 'string') {
