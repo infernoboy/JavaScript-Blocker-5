@@ -233,6 +233,36 @@ var SettingStore = {
 		});
 	},
 
+	sync: function (key, value) {
+		SettingStore.__syncTimeout[key] = {
+			fn: (function (key, value) {
+				delete SettingStore.__syncTimeout[key];
+
+				safari.extension.settings.setItem(key, value);
+			}).bind(this, key, value)
+		};
+
+		SettingStore.__syncTimeout[key].timeout = setTimeout(SettingStore.__syncTimeout[key].fn, 3000)
+	},
+
+	syncNow: function () {
+		for (var key in SettingStore.__syncTimeout) {
+			clearTimeout(SettingStore.__syncTimeout[key].timeout);
+
+			SettingStore.__syncTimeout[key].fn();			
+		}
+
+		SettingStore.__syncTimeout = {};
+	},
+
+	syncCancel: function (key) {
+		if (SettingStore.__syncTimeout[key]) {
+			clearTimeout(SettingStore.__syncTimeout[key]);
+
+			delete SettingStore.__syncTimeout[key];
+		}
+	},
+
 	lock: function (lock) {
 		this.__locked = lock;
 	},
@@ -264,7 +294,7 @@ var SettingStore = {
 		if (SettingStore.__badKeys._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
 
-		clearTimeout(SettingStore.__syncTimeout[key]);
+		SettingStore.syncCancel(key);
 
 		delete this.__cache[key];
 		
@@ -277,11 +307,7 @@ var SettingStore = {
 		} else {
 			localStorage.setItem(key, JSON.stringify(value));
 
-			SettingStore.__syncTimeout[key] = setTimeout(function (key, value) {
-				delete SettingStore.__syncTimeout[key];
-
-				safari.extension.settings.setItem(key, value);
-			}, 3000, key, value);
+			SettingStore.sync(key, value);
 		}
 	},
 
@@ -289,7 +315,7 @@ var SettingStore = {
 		if (this.__locked)
 			return;
 
-		clearTimeout(SettingStore.__syncTimeout[key]);
+		SettingStore.syncCancel(key);
 		
 		delete this.__cache[key];
 
@@ -297,10 +323,10 @@ var SettingStore = {
 		localStorage.removeItem(key);
 	},
 
-	all: function () {
-		while (!SettingStore.__syncTimeout._isEmpty()) {}
+	all: function (now) {
+		SettingStore.syncNow();
 			
-		return Object._extend(true, localStorage, safari.extension.setting);
+		return Object._extend(true, {}, localStorage, safari.extension.settings);
 	},
 
 	export: function () {
