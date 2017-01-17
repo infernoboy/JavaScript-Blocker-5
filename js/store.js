@@ -189,22 +189,24 @@ var Store = (function () {
 
 		if (this.save) {
 			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
-				if (window.globalSetting.debugMode) {
-					var timeNow = new Date;
+				var startTime = window.globalSetting.debugMode ? new Date : 0;
 
-					console.time(timeNow.toLocaleTimeString() + ' - SAVED ' + store.id);
-				}
+				if (window.globalSetting.debugMode)
+					console.time(startTime.toLocaleTimeString() + ' - SAVED ' + store.id);
 
 				var savableStore = JSON.stringify(store),
-						useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;
+						useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;				
 
 				if (useLocal)
 					savableStore = LZString.compressToUTF16(savableStore)
 
 				Settings.__method('setItem', store.id, savableStore, !useLocal);
 
-				if (window.globalSetting.debugMode)
-					console.timeEnd(timeNow.toLocaleTimeString() + ' - SAVED ' + store.id);
+				if (window.globalSetting.debugMode) {
+					console.timeEnd(startTime.toLocaleTimeString() + ' - SAVED ' + store.id);
+
+					LogDebug('SAVED ' + store.id + ': ' + (Date.now() - startTime.getTime()) + 'ms');
+				}
 
 				store.triggerEvent('storeDidSave');
 			}, saveNow ? 0 : this.saveDelay, [this]);
