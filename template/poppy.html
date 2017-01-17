@@ -76,7 +76,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	<div id="page-menu" class="generic-menu">
 		<ul class="generic-menu-options">
 			<%
-				var settings = ['showResourceURLs', 'showItemDescription', 'showUnblockedScripts', 'showHiddenItems'];
+				var settings = ['showUnblockedScripts', 'showResourceURLs', 'showItemDescription', 'showHiddenItems'];
 
 				for (var i = settings.length; i--;) { %>
 					<li><%=UI.Settings.createElementForSetting(Settings.map[settings[i]]).html()%></li><%

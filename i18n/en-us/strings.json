@@ -307,6 +307,7 @@
 	"setting.showResourceURLs.label": "Show resource URLs",
 	"setting.showHiddenItems.label": "Show hidden items",
 	"setting.showUnblockedScripts.label": "Show scripts that can't be blocked",
+	"setting.showUnblockedScripts.help": "Only pages loaded after this setting was enabled will show its unblockable scripts.",
 	"setting.hideInjected.label": "Hide injected helper scripts",
 	"setting.showItemDescription.label": "Show item description",
 	"setting.disableTime.label": "Disable for",
