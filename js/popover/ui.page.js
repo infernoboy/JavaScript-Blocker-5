@@ -256,7 +256,7 @@ UI.Page = {
 				if (!isShowingResourceURLs && !Poppy.poppyWithScriptNameExist('force-click-host-count')) {
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-host-count');
 
-					poppy.scaleWithForce(foreClickHostCount).setContent(_('force_click_host_count_switch')).show();
+					poppy.scaleWithForce(foreClickHostCount).setContent(_(Settings.getItem('showResourceURLsOnNumberClick') ? 'force_click_host_count_popup' : 'force_click_host_count_switch')).show();
 				}
 			});
 	},
@@ -778,7 +778,7 @@ UI.Page = {
 
 				.on('click webkitmouseforcedown', '.page-host-host-count', function (event) {	
 					var isShowingResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
-							showResourceURLsOnNumberClick = false,
+							showResourceURLsOnNumberClick = Settings.getItem('showResourceURLsOnNumberClick'),
 							isForceClick = event.type === 'webkitmouseforcedown';
 
 					if (isForceClick) {

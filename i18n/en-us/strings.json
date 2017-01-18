@@ -326,6 +326,7 @@
 	"setting.simplifiedUI.help": "All resources will be hidden by default when enabled. Open the Page menu to show hidden items. Cannot be used while blocking <b>Unknown Websites</b>.",
 	"setting.useSimplePageEditor.label": "Use simplified page editor",
 	"setting.useSimplePageEditor.help": "Hides the advanced options of the page editor until you need them.",
+	"setting.showResourceURLsOnNumberClick.label": "Temporarily show URLs when clicking number next to item",
 	"setting.autoHideWhitelist.label": "Hide items allowed by filter lists",
 	"setting.autoHideBlacklist.label": "Hide items blocked by filter lists",
 	"setting.autoHideRule.label": "Hide allowed and blocked items that matched a rule you created",

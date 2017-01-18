@@ -270,6 +270,12 @@ Settings.settings = {
 				Settings.map.showResourceURLs.props.onChange();
 			}
 		}
+	}, {
+		setting: 'showResourceURLsOnNumberClick',
+		props: {
+			type: 'boolean',
+			default: false
+		}
 	}],
 
 	// General Settings

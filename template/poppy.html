@@ -76,7 +76,19 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	<div id="page-menu" class="generic-menu">
 		<ul class="generic-menu-options">
 			<%
-				var settings = ['showUnblockedScripts', 'showResourceURLs', 'showItemDescription', 'showHiddenItems'];
+				var showResourceURLs = Settings.getItem('showResourceURLs'),
+						showResourceURLsOnNumberClick = Settings.getItem('showResourceURLsOnNumberClick'),
+						settings = ['showItemDescription', 'showHiddenItems'];
+
+				if (showResourceURLs || !showResourceURLsOnNumberClick) {
+					settings.unshift('showResourceURLs');
+				}
+
+				if (!showResourceURLs) {
+					settings.unshift('showResourceURLsOnNumberClick');
+				}
+
+				settings.unshift('showUnblockedScripts');
 
 				for (var i = settings.length; i--;) { %>
 					<li><%=UI.Settings.createElementForSetting(Settings.map[settings[i]]).html()%></li><%
