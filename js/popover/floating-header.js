@@ -73,12 +73,10 @@ FloatingHeader.prototype.requestFrame = function (timestamp) {
 	if (!Popover.visible())
 		return;
 
-	if (this.container.data('requestScrollTop') === this.container[0].scrollTop) {
-
+	if (this.container.data('requestScrollTop') === this.container[0].scrollTop)
 		return setTimeout(function (self) {
 			window.requestAnimationFrame(self.requestFrame.bind(self));
 		}, 1000 / 5, this);
-	}
 
 	this.container.data('requestScrollTop', this.container[0].scrollTop);
 

@@ -188,7 +188,9 @@ var Store = (function () {
 			return;
 
 		if (this.save) {
-			Utilities.Timer.timeout('StoreSave' + this.id, function (store) {
+			clearTimeout(this.__saveTimeout);
+
+			this.__saveTimeout = setTimeout(function (store) {
 				var startTime = window.globalSetting.debugMode ? new Date : 0;
 
 				if (window.globalSetting.debugMode)
@@ -209,10 +211,7 @@ var Store = (function () {
 				}
 
 				store.triggerEvent('storeDidSave');
-			}, saveNow ? 0 : this.saveDelay, [this]);
-
-			if (saveNow === 2)
-				Utilities.Timer.timeoutNow('StoreSave' + this.id);
+			}, saveNow ? 0 : this.saveDelay, this);
 		} else
 			this.triggerEvent('storeWouldHaveSaved');
 
@@ -716,11 +715,13 @@ var Store = (function () {
 		if (this.lock)
 			return;
 
-		var value;
+		var value,
+				now;
 
-		var now = Date.now();
-
-		for (var key in this.data)
+		for (var key in this.data) {
+			if (!now)
+				now = Date.now();
+		
 			Utilities.setImmediateTimeout(function (store, key, now) {
 				if (store.lock)
 					return;
@@ -735,6 +736,7 @@ var Store = (function () {
 				} else if (value instanceof Store)
 					value.removeExpired();
 			}, [this, key, now]);
+		}
 	};
 
 	Store.prototype.replaceWith = function (store) {
