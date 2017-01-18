@@ -56,6 +56,8 @@ FloatingHeader.prototype.init = function () {
 		.addCustomEventListener(['popoverOpened', 'pageDidRender'], function () {
 			self.setContainerOffset();
 		});
+
+	this.requestFrame();
 };
 
 FloatingHeader.prototype.setContainerOffset = function () {
@@ -65,26 +67,17 @@ FloatingHeader.prototype.setContainerOffset = function () {
 		else
 			return Utilities.Timer.timeout('setContainerOffset-' + this.id, this.setContainerOffset.bind(this), 1000);
 	}
-
-	this.requestFrame();
 };
 
-FloatingHeader.prototype.requestFrame = function (timestamp) {
-	if (!Popover.visible())
-		return;
+FloatingHeader.prototype.requestFrame = function (previousScrollTop, timestamp) {
+	if (this.container[0].scrollTop !== previousScrollTop)
+		Utilities.setImmediateTimeout(function (self) {
+			self.adjustPosition();	
+		}, [this]);
 
-	if (this.container.data('requestScrollTop') === this.container[0].scrollTop)
-		return setTimeout(function (self) {
-			window.requestAnimationFrame(self.requestFrame.bind(self));
-		}, 1000 / 5, this);
-
-	this.container.data('requestScrollTop', this.container[0].scrollTop);
-
-	this.adjustPosition();
-
-	setTimeout(function (self) {
-		window.requestAnimationFrame(self.requestFrame.bind(self));
-	}, 1000 / 30, this);
+	setTimeout(function (self, scrollTop) {
+		window.requestAnimationFrame(self.requestFrame.bind(self, scrollTop));
+	}, 1000 / 10, this, this.container[0].scrollTop);
 };
 
 FloatingHeader.prototype.adjustPosition = function () {
