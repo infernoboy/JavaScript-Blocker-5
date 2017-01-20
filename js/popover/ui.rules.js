@@ -630,11 +630,8 @@ UI.Rules = {
 
 		viewWillSwitch: function (event) {
 			event.afterwards(function (event) {
-				if (!event.defaultPrevented && (event.detail.to.id === '#main-views-rule' || event.detail.to.id === '#main-views-page')) {
-					$('#rule-domain-search', UI.Rules.view).val('').trigger('search');
-
+				if (!event.defaultPrevented && event.detail.to.id === '#main-views-rule')
 					$('li[data-view="#rule-views-firstVisit"]', UI.Rules.viewSwitcher).toggle(Settings.getItem('blockFirstVisit') !== 'nowhere');
-				}
 			});
 
 			var activeView = $('.active-view', UI.Rules.views);
@@ -649,12 +646,20 @@ UI.Rules = {
 
 			$('.ui-view', UI.Rules.views).empty();
 
-			var ruleList,
-					useTheseRules;
 
 			var isMainSwitch = (event.detail.id === '#main-views-rule'),
-					toView = isMainSwitch ? $('.active-view', UI.Rules.views) : event.detail.view,
-					toID = isMainSwitch ? '#' + toView.attr('id') : event.detail.id;
+					toView = isMainSwitch ? $('.active-view', UI.Rules.views) : event.detail.view;
+
+			if (!toView.length)
+				return;
+
+			var toID = isMainSwitch ? '#' + toView.attr('id') : event.detail.id;
+
+			if (!isMainSwitch && !toID._startsWith('#rule-views'))
+				return;
+
+			var ruleList,
+					useTheseRules;
 
 			switch (toID) {
 				case '#rule-views-page':
