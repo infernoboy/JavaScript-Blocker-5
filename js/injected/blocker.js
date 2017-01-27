@@ -245,17 +245,6 @@ var Handler = {
 		for (i = frames.length; i--;)
 			Element.handle.frame(frames[i]);
 
-		if (globalSetting.blockReferrer && false) {
-			var method;
-
-			for (var i = forms.length; i--;) {
-				method = forms[y].getAttribute('method');
-
-				if (method && method.toLowerCase() === 'post')
-					GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
-			}
-		}
-
 		Handler.visibilityChange();
 	},
 
@@ -739,19 +728,7 @@ var Element = {
 							anchor.setAttribute('rel', 'noreferrer');
 				}
 
-				if (globalSetting.blockReferrer && false)
-					if (href && href[0] === '#')
-						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
-					else
-						anchor.addEventListener('mousedown', function (event) {
-							var key = /Win/.test(window.navigator.platform) ? event.ctrlKey : event.metaKey;
-
-							GlobalPage.message('anonymousNewTab', key || event.which === 2 ? 1 : 0);
-
-							setTimeout(function () {
-								GlobalPage.message('anonymousNewTab', 0);
-							}, 1000);
-						}, true);
+				anchor.removeAttribute('ping');
 			}
 		},
 
@@ -1019,7 +996,6 @@ if (!globalSetting.disabled) {
 
 		document.addEventListener('contextmenu', Handler.contextMenu, true);
 		document.addEventListener('keyup', Handler.keyUp, true);
-		document.addEventListener('beforeload', Resource.canLoad, true);
 		document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
 
 		window.addEventListener('error', function (event) {
