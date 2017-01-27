@@ -210,8 +210,10 @@
 	"view.page.item.info.show_user_script": "Show User Script",
 	"view.page.item.info.loading": "Loading…",
 
-	"view.page.host.item.will_block": "will be blocked",
-	"view.page.host.item.will_allow": "will be allowed",
+	"view.page.host.item.will_block.always": "will always be blocked",
+	"view.page.host.item.will_block.temporarily": "will temporarily be blocked",
+	"view.page.host.item.will_allow.always": "will always be allowed",
+	"view.page.host.item.will_allow.temporarily": "will temporarily be allowed",
 
 	"frame_blocked": "This frame appeared even though you most likely didn't want it to. The page was automatically prevented from loading.",
 	
