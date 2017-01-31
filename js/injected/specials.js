@@ -206,6 +206,8 @@ Special.specials = {
 				return windowOpen(URL, name, specs, replace);
 			} else
 				messageExtension('page.addBlockedItem', info);
+
+			return {};
 		};
 
 		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
