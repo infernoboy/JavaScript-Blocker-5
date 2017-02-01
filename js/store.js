@@ -239,12 +239,6 @@ var Store = (function () {
 
 		this.name = name;
 		this.props = props;
-
-		if (this.maxLife < Infinity) {
-			this.cleanupName = 'StoreCleanup' + this.id;
-
-			Utilities.Timer.interval(this.cleanupName, this.removeExpired.bind(this), this.maxLife * .85);
-		}
 	};
 
 	Store.prototype.savedByteSize = function () {
@@ -561,6 +555,11 @@ var Store = (function () {
 			else
 				this.__save();
 
+		if (this.maxLife < Infinity)
+			setTimeout(function (store, key) {
+				Utilities.Timer.timeout('StoreCleanup-' + store.name + '$' + key, store.removeExpired.bind(store), store.maxLife);
+			}, 100, this, key);
+
 		if (value instanceof Store)
 			return this.data[key].value;
 
@@ -689,8 +688,11 @@ var Store = (function () {
 			return this;
 		}
 
-		if (this.data.hasOwnProperty(key))
+		if (this.data.hasOwnProperty(key)) {
 			delete this.data[key];
+
+			this.clearTimers(key);
+		}
 
 		this.__save();
 
@@ -733,6 +735,9 @@ var Store = (function () {
 						value.destroy();
 
 					store.remove(key);
+
+					if (store.name._startsWith('TemporaryRules'))
+						Log('REMOVE', key);
 				} else if (value instanceof Store)
 					value.removeExpired();
 			}, [this, key, now]);
@@ -766,6 +771,8 @@ var Store = (function () {
 
 		this.triggerEvent('storeDidClear');
 
+		this.clearTimers();
+
 		return this;
 	};
 
@@ -775,8 +782,7 @@ var Store = (function () {
 
 		this.destroyed = true;
 
-		if (this.cleanupName)
-			Utilities.Timer.remove('interval', this.cleanupName);
+		this.clearTimers();
 
 		var child;
 
@@ -799,6 +805,15 @@ var Store = (function () {
 				store.destroy();
 			}, this.selfDestruct, this);
 		}
+	};
+
+	Store.prototype.clearTimers = function (key) {
+		if (!key)
+			key = '';
+
+		var timerIDPrefix = 'StoreCleanup-' + this.name;
+
+		Utilities.Timer.removeStartingWith('timeout', timerIDPrefix + '$' + key, timerIDPrefix + ',' + key + (key.length ? '$' : ''));
 	};
 
 	Store.prototype.all = function () {

@@ -573,6 +573,23 @@ var Utilities = {
 			}
 
 			return existed;
+		},
+
+		removeStartingWith: function () {
+			var timerID;
+
+			var args = Utilities.makeArray(arguments),
+					type = args.shift();
+
+			if (!args.length)
+				return;
+
+			for (var i = 0; i < args.length; i++)
+				for (timerID in this.timers[type])
+					if (timerID._startsWith(args[i]))
+						this.remove(type, timerID);
+
+			return;
 		}
 	},
 
