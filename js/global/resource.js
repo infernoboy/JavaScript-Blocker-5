@@ -80,6 +80,10 @@ Resource.canLoadCache.addCustomEventListener('storeDidClear', function () {
 	Rule.listCache.clear();
 });
 
+Maintenance.event.addCustomEventListener('idle', function () {
+	Resource.canLoadCache.clear();
+});
+
 Resource.__many = function (action, resources, domain, rule, framed, temporary) {
 	if (!Array.isArray(resources))
 		throw new TypeError(resources + ' is not an array');

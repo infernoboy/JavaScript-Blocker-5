@@ -23,6 +23,17 @@ window.$$ = function (selector, context) {
 
 var Maintenance = {
 	event: new EventListener,
+	idleTimer: null,
+
+	resetIdleTimer: function () {
+		clearTimeout(Maintenance.idleTimer);
+
+		Maintenance.idleTimer = setTimeout(function () {
+			Maintenance.event.trigger('idle');
+
+			Maintenance.resetIdleTimer();
+		}, TIME.ONE.HOUR);
+	},
 	
 	maintainPopover: function () {
 		var popover = Popover.window,
@@ -37,6 +48,8 @@ var Maintenance = {
 			if (event.target.browserWindow) {
 				if (!event.target.browserWindow.activeTab || !event.target.browserWindow.activeTab.page)
 					ToolbarItems.badge(0, event.target.browserWindow.activeTab);
+
+				Maintenance.resetIdleTimer();
 			}
 		}
 	},
@@ -49,6 +62,8 @@ var Maintenance = {
 
 $(function () {
 	window.GlobalPageReady = true;
+
+	Maintenance.resetIdleTimer();
 
 	Maintenance.event.trigger('globalPageReady', true);
 });
