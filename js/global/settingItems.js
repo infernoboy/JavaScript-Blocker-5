@@ -730,6 +730,47 @@ Settings.settings = {
 					],
 					default: 'last'
 				}
+			}, {
+				divider: true
+			}, {
+				setting: 'temporaryRuleTime',
+				props: {
+					type: 'option',
+					options: [
+						[60000, 'one minute'],
+						[600000, 'setting.temporaryRuleTime.option.tenMinutes'],
+						[1800000, 'setting.temporaryRuleTime.option.thirtyMinutes'],
+						[3600000, 'setting.temporaryRuleTime.option.oneHour'],
+						[18000000, 'setting.temporaryRuleTime.option.fiveHours'],
+						[43200000, 'setting.temporaryRuleTime.option.twelveHours'],
+						[0, 'setting.temporaryRuleTime.option.restart']
+					],
+					default: '18000000',
+					confirm: {
+						when: {
+							group: 'all',
+							items: [{
+								method: Utilities.Group.IS,
+								key: 'setupComplete',
+								needle: true
+							}]
+						}
+					},
+					onChange: function (type, settingKey, value, storeKey) {
+						Rules.list.temporary.rules.clear();
+						Rules.list.temporaryFirstVisit.rules.clear();
+
+						Rules.list.temporary.rules = new Store('TemporaryRules', {
+							maxLife: Number(value === '0' ? Infinity : value)
+						});
+
+						Rules.list.temporaryFirstVisit.rules = new Store('TemporaryFirstVisit', {
+							maxLife: Number(value === '0' ? Infinity : value)
+						});
+
+						Resource.canLoadCache.clear().saveNow();
+					}
+				}
 			}]
 		}
 	}, {

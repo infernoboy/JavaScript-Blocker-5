@@ -870,7 +870,13 @@ Object.defineProperty(Rules, 'list', {
 
 		temporary: {
 			enumerable: true,
-			value: new Rule('TemporaryRules')
+			value: new Rule('TemporaryRules', {
+				maxLife: (function () {
+					var temporaryRuleTime = Settings.getItem('temporaryRuleTime');
+
+					return Number(temporaryRuleTime === '0' ? Infinity : temporaryRuleTime);
+				})()
+			})
 		},
 
 		__active: {
@@ -926,7 +932,13 @@ Object.defineProperty(Rules, 'list', {
 		temporaryFirstVisit: {
 			enumerable: true,
 
-			value: new Rule('TemporaryFirstVisit', {}, {
+			value: new Rule('TemporaryFirstVisit', {
+				maxLife: (function () {
+					var temporaryRuleTime = Settings.getItem('temporaryRuleTime');
+
+					return temporaryRuleTime === '0' ? Infinity : temporaryRuleTime
+				})()
+			}, {
 				ignoreLock: true
 			})
 		},
