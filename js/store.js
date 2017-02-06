@@ -735,9 +735,6 @@ var Store = (function () {
 						value.destroy();
 
 					store.remove(key);
-
-					if (store.name._startsWith('TemporaryRules'))
-						Log('REMOVE', key);
 				} else if (value instanceof Store)
 					value.removeExpired();
 			}, [this, key, now]);
