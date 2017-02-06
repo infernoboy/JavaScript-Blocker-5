@@ -9,7 +9,7 @@ var Feedback = {
 	__lastSubmissionTime: 0,
 
 	getSubmittableSettings: function () {
-		return Utilities.encode(Settings.export({ exportSettings: true }));
+		return Utilities.encode(Settings.export({ exportSettings: true }, ['Storage-StoreSettings']));
 	},
 
 	useSubmittedSettings: function (settings) {

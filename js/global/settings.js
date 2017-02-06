@@ -427,7 +427,7 @@ var Settings = {
 		return Settings.map;
 	},
 
-	export: function (options) {
+	export: function (options, deleteProps) {
 		var allSettings = SettingStore.all(),
 				exported = {};
 
@@ -467,6 +467,10 @@ var Settings = {
 		delete exported['trialStart'];
 		delete exported['updateNotify'];
 		delete exported['installedBundle'];
+
+		if (Array.isArray(deleteProps))
+			for (var i = deleteProps.length; i--;)
+				delete exported[deleteProps[i]];
 
 		return JSON.stringify(exported);
 	},
