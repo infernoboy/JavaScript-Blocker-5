@@ -172,8 +172,8 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 				
 		if (sourceProtocol === 'about:' && blockFrom !== 'everywhere')
 			return canLoad;
-		else if ((blockFrom === 'domain' && pageParts[0] !== sourceParts[0]) || 
-			(blockFrom === 'host' && pageParts[pageParts.length - 1] !== sourceParts[sourceParts.length - 1]) ||
+		else if ((blockFrom === 'host' && pageParts[0] !== sourceParts[0]) || 
+			(blockFrom === 'domain' && pageParts[pageParts.length - 1] !== sourceParts[sourceParts.length - 1]) ||
 			(blockFrom === 'everywhere')) {
 
 			canLoad.action = ACTION.BLOCK_WITHOUT_RULE;

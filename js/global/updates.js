@@ -269,3 +269,21 @@ Update.versions[161206] = {
 		return true;
 	}
 };
+
+// === 5.1.6 ===
+Update.versions[170206] = {
+	blocking: false,
+
+	update: function (updateVersion) {
+		var alwaysBlocks = Settings.getItem('alwaysBlock');
+
+		for (var key in alwaysBlocks) {
+			if (alwaysBlocks[key] === 'host')
+				Settings.setItem('alwaysBlock', 'domain', key);
+			else if (alwaysBlocks[key] === 'domain')
+				Settings.setItem('alwaysBlock', 'host', key);
+		}
+
+		return true;
+	}
+};

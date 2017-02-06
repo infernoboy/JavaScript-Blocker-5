@@ -470,12 +470,12 @@
 	"setting.enabledSpecials.zoom.label": "Webpage zoom",
 	"setting.enabledSpecials.zoom.option.default": "Default",
 
-	"setting.blockFrom.option.nowhere": "Nowhere",
-	"setting.blockFrom.option.blacklist": "Filter lists only",
-	"setting.blockFrom.option.anywhere": "Anywhere",
-	"setting.blockFrom.option.hostnames": "Different hostnames",
-	"setting.blockFrom.option.domains": "Different domains",
-	"setting.blockFrom.option.ask": "Rules and ask when needed",
+	"setting.alwaysBlock.option.nowhere": "Nowhere",
+	"setting.alwaysBlock.option.blacklist": "Filter lists only",
+	"setting.alwaysBlock.option.anywhere": "Anywhere",
+	"setting.alwaysBlock.option.hostnames": "Different hostnames",
+	"setting.alwaysBlock.option.domains": "Different domains",
+	"setting.alwaysBlock.option.ask": "Rules and ask when needed",
 
 	"locker.locking": "Locking",
 	"locker.unlocking": "Unlocking",

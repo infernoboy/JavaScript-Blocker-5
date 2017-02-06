@@ -646,11 +646,11 @@ Settings.settings = {
 		props: {
 			type: 'option',
 			options: [
-				['nowhere', 'setting.blockFrom.option.nowhere'],
-				['blacklist', 'setting.blockFrom.option.blacklist'],
-				['everywhere', 'setting.blockFrom.option.anywhere'],
-				['host', 'setting.blockFrom.option.hostnames'],
-				['domain', 'setting.blockFrom.option.domains'],
+				['nowhere', 'setting.alwaysBlock.option.nowhere'],
+				['blacklist', 'setting.alwaysBlock.option.blacklist'],
+				['everywhere', 'setting.alwaysBlock.option.anywhere'],
+				['host', 'setting.alwaysBlock.option.hostnames'],
+				['domain', 'setting.alwaysBlock.option.domains'],
 			],
 			onChange: function () {
 				Resource.canLoadCache.clear().saveNow();
@@ -994,7 +994,7 @@ Settings.settings = {
 								setting: 'alwaysBlock',
 								props: {
 									storeKey: 'popup',
-									extendOptions: [['ask', 'setting.blockFrom.option.ask']],
+									extendOptions: [['ask', 'setting.alwaysBlock.option.ask']],
 									default: 'blacklist',
 									onChange: function () {
 										Special.__enabled = null;
@@ -1114,7 +1114,7 @@ Settings.settings = {
 								setting: 'alwaysBlock',
 								props: {
 									storeKey: 'xhr',
-									extendOptions: [['ask', 'setting.blockFrom.option.ask']],
+									extendOptions: [['ask', 'setting.alwaysBlock.option.ask']],
 									default: 'blacklist',
 									onChange: function () {
 										Special.__enabled = null;
