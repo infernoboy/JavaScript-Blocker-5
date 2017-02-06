@@ -538,10 +538,14 @@ var Store = (function () {
 			return LogError(['ERROR IN SET - locked:', this.lock, 'destroyed:', this.destroyed, 'data:', this.data, 'key:', key, 'value:', value, 'store:', this], e);
 		}
 
+		var accessed = this.data[key] ? this.data[key].accessed : (this.maxLife < Infinity ? Date.now() : -1);
+
 		this.data[key] = {
-			accessed: this.data[key] ? this.data[key].accessed : (this.maxLife < Infinity ? Date.now() : -1),
 			value: value
 		};
+
+		if (accessed > -1)
+			this.data[key].accessed = accessed;
 
 		if (value instanceof Store)
 			value.parent = parent || this;
@@ -599,14 +603,17 @@ var Store = (function () {
 
 						Store.inherit(value.props, this);
 
-						var promoted = Store.promote(value);
+						var promoted = Store.promote(value),
+								accessed = this.maxLife < Infinity ? Date.now() : -1
 
 						promoted.parent = this;
 
 						this.data[key] = {
-							accessed: this.maxLife < Infinity ? Date.now() : -1,
 							value: promoted
 						};
+
+						if (accessed > -1)
+							this.data[key] = accessed;
 
 						return promoted;
 					} else if (asReference)
@@ -730,7 +737,7 @@ var Store = (function () {
 
 				value = store.get(key, null, null, true);
 
-				if (store.data[key] && now - store.data[key].accessed > store.maxLife) {
+				if (store.data[key] && store.data[key].accessed && now - store.data[key].accessed > store.maxLife) {
 					if (value instanceof Store)
 						value.destroy();
 
