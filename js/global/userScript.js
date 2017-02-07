@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 "use strict";
 
 var UserScript = {
-	__updateInterval: TIME.ONE.DAY * 5,
+	__updateInterval: TIME.ONE.DAY * 2,
 
 	scripts: new Store('UserScripts', {
 		save: true
@@ -216,13 +216,13 @@ var UserScript = {
 	},
 
 	download: function (url, async, urlIsScript) {
-		if (!Utilities.URL.isURL(url))
-			throw new TypeError(url + ' is not a url.');
-
 		if (urlIsScript)
 			return new Promise(function (resolve, reject) {
 				resolve(url);
 			});
+
+		if (!Utilities.URL.isURL(url))
+			throw new TypeError(url + ' is not a url.');
 
 		return $.ajax({
 			cache: false,
