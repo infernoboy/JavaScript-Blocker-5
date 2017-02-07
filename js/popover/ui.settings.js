@@ -689,6 +689,32 @@ UI.Settings = {
 
 		elementWasAdded: function (event) {
 			if (event.detail.querySelectorAll) {
+				// ===== Custom Selects =====
+				var customSelects = event.detail.querySelectorAll('.select-custom-input + select:not(.select-custom-ready)');
+
+				for (var i = customSelects.length; i--;) {
+					if (customSelects[i].classList.contains('select-single')) {
+						$(customSelects[i]).prev().hide();
+
+						continue;
+					}
+
+					customSelects[i].classList.add('select-custom-ready');
+
+					customSelects[i].previousElementSibling.value = customSelects[i].value;
+
+					$(customSelects[i])
+						.append('<option class="select-custom-option">Custom Option</option>')
+						.next()
+						.addBack()
+						.wrapAll('<div class="select-wrapper"></div>')
+						.end()
+						.parent()
+						.prev()
+						.addBack()
+						.wrapAll('<div class="select-custom-wrapper"></div>');
+				}
+				
 				UI.Settings.bindInlineSettings(event.detail.querySelectorAll('*[data-inlineSetting]'));
 				UI.Settings.bindUserScriptSettings(event.detail.querySelectorAll('*[data-attribute]'));
 				UI.Settings.bindUserScriptStorageEdit(event.detail.querySelectorAll('*[data-storageKey]'));
