@@ -1675,45 +1675,7 @@ Settings.settings = {
 			}
 		}, {
 			header: 'extraFeatures'
-		}, /*{
-			setting: 'blockReferrer',
-			props: {
-				type: 'boolean',
-				default: false,
-				confirm: {
-					when: {
-						group: 'all',
-						items: [{
-							method: Utilities.Group.IS,
-							key: 'blockReferrer',
-							needle: false
-						}]
-					}
-				},
-				subSettings: [{
-					when: {
-						hide: true,
-						settings: {
-							group: 'all',
-							items: [{
-								method: Utilities.Group.IS,
-								key: 'blockReferrer',
-								needle: true
-							}]
-						}
-					},
-					settings: [{
-						setting: 'focusNewTab',
-						props: {
-							type: 'boolean',
-							default: true
-						}
-					}]
-				}]
-			}
 		}, {
-			divider: true //===================================================================================
-		},*/ {
 			description: 'enabledSpecials.description'
 		}, {
 			setting: 'enabledSpecials',
