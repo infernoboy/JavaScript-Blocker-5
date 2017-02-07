@@ -25,10 +25,10 @@ var Settings = {
 			throw new Error('missing setting type');
 
 		if (type._startsWith('dynamic'))
-			return ((typeof value === 'object' && (value.hasOwnProperty('enabled') && value.hasOwnProperty('value'))) && this.__validate(type.substr(8), value.value));
+			return ((typeof value === 'object' && (value.hasOwnProperty('enabled') && value.hasOwnProperty('value'))) && this.__validate(type.substr(8), value.value, options, otherOption, extendOptions));
 
 		if (type._startsWith('many'))
-			return this.__validate(type.substr(5), value);
+			return this.__validate(type.substr(5), value, options, otherOption, extendOptions);
 
 		switch (type) {
 			case 'boolean':
@@ -66,6 +66,9 @@ var Settings = {
 			break;
 
 			case 'mixed':
+				if (otherOption)
+					return otherOption.validate ? otherOption.validate(value) : true;
+				
 				return true;
 			break;
 

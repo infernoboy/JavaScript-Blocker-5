@@ -1840,7 +1840,7 @@ Settings.settings = {
 				default: false,
 				otherOption: {
 					validate: function (value) {
-						return /^[0-9]+$/g.test(value);
+						return /^(false|[0-9]+)$/g.test(value);
 					}
 				}
 			}
