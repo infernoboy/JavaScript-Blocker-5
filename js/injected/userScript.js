@@ -139,6 +139,37 @@ var UserScript = {
 		}
 	},
 
+	showInstallScriptPrompt: function (url) {
+		var promptNotification = new PageNotification({
+			highPriority: true,
+			title: _('user_script'),
+			subTitle: url,
+			body: GlobalCommand('template.create', {
+				template: 'injected',
+				section: 'install-user-script-prompt'
+			})
+		});
+
+		var installButton = promptNotification.addCloseButton(_('user_script.add_script'), function (promptNotification) {
+			var result = GlobalCommand('installUserScriptFromURL', url);
+
+			new PageNotification({
+				highPriority: true,
+				title: _('user_script'),
+				subTitle: url,
+				body: GlobalCommand('template.create', {
+					template: 'injected',
+					section: 'javascript-alert',
+					data: {
+						body: typeof result === 'string' ? _('user_script.add_success') : result
+					}
+				})
+			});
+		});
+
+		installButton.classList.add('jsb-color-allowed');
+	},
+
 	helpers: {
 		GM_getValue: function (key, defaultValue) {
 			var result = messageExtensionSync('userScript.storage.getItem', {

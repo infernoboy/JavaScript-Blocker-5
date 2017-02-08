@@ -31,42 +31,6 @@ Special.specials = {
 		document.dispatchEvent(myEvent);
 	},
 
-	installUserScriptPrompt: function () {
-		messageTopExtension('notification', {
-			title: _localize('user_script'),
-			subTitle: document.location.href,
-			body: messageExtensionSync('template.create', {
-				template: 'injected',
-				section: 'install-user-script-prompt'
-			}),
-			closeButtons: [{
-				title: _localize('user_script.add_script'),
-				callbackID: registerCallback(function () {
-					messageExtension('installUserScriptFromURL', {
-						url: document.location.href
-					}, function (result) {
-						messageTopExtension('notification', {
-							title: _localize('user_script'),
-							subTitle: document.location.href,
-							body: messageExtensionSync('template.create', {
-								template: 'injected',
-								section: 'javascript-alert',
-								data: {
-									body: typeof result === 'string' ? _localize('user_script.add_success') : result
-								}
-							})
-						});
-					});
-				})
-			}]
-		}, function (detail) {
-			var notification = document.getElementById(detail.result),
-					addScriptButton = notification.querySelectorAll('.jsb-notification-close')[1];
-
-			addScriptButton.classList.add('jsb-color-allowed');
-		});
-	},
-
 	historyFixer: function () {
 		var localHistory = {
 			pushState: window.history.pushState,
@@ -772,7 +736,6 @@ Special.specials.canvas_data_url.data = {
 
 Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
-Special.specials.installUserScriptPrompt.excludeFromPage = true;
 Special.specials.historyFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.ignoreHelpers = true;

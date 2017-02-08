@@ -171,7 +171,9 @@ var Special = {
 		}
 
 		if (Utilities.Page.isUserScript)
-			this.inject('installUserScriptPrompt');
+			setTimeout(function (url) {
+				UserScript.showInstallScriptPrompt(url);
+			}, 500, document.location.href);
 
 		this.enabled = GlobalCommand('specialsForLocation', {
 			pageLocation: Page.info.location,

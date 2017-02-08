@@ -848,13 +848,6 @@ var Command = function (type, event) {
 			};
 		},
 
-		installUserScriptFromURL: function (detail) {
-			return {
-				callbackID: detail.callbackID,
-				result: GlobalCommand('installUserScriptFromURL', detail.meta.url)
-			};
-		},
-
 		refreshPopover: function (detail) {
 			Page.send();
 			
@@ -916,7 +909,6 @@ var Command = function (type, event) {
 	Commands.injected.inlineScriptsAllowed.private = true;
 	Commands.injected.historyStateChange.private = true;
 	Commands.injected.addResourceRule.private = true;
-	Commands.injected.installUserScriptFromURL.private = true;
 
 	var command = new InternalCommand(detail, event);
 
