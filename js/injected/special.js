@@ -7,6 +7,7 @@ TOKEN.REGISTERED = {};
 
 var Special = {
 	__injected: [],
+	injectable: true,
 
 	enabled: {},
 
@@ -124,7 +125,9 @@ var Special = {
 		if (useURL === undefined && this.__injected._contains(name))
 			return;
 
-		if (useURL === undefined && !this.specials[name].excludeFromPage)
+		var injectable = Special.injectable || this.specials[name].uninjectableCompatible;
+
+		if (injectable && useURL === undefined && !this.specials[name].excludeFromPage)
 			Page.blocked.pushSource('special', name, {
 				action: this.enabled[name].action
 			});
@@ -147,7 +150,18 @@ var Special = {
 			private: !!this.specials[name].private
 		};
 
-		special.inject(useURL);
+		if (!Special.injectable) {
+			if (this.specials[name].uninjectableCompatible) {
+				var args = [];
+
+				for (var key in special.pieces.args)
+					args.push(special.pieces.args[key]);
+
+				special.script.apply(null, args);
+			} else
+				LogDebug('Cannot inject special "' + name + '" due to page\'s Content-Security-Policy.');
+		} else
+			special.inject(useURL);
 
 		return special;
 	},
@@ -159,16 +173,25 @@ var Special = {
 		if (Utilities.Page.isXML)
 			return LogDebug('refusing to inject helper scripts into XML page.');
 
-		var preparation = this.inject('prepareScript', false);
+		var CSPToken = Utilities.Token.generate();
 
-		Utilities.Token.expire(Special.specials.prepareScript.commandToken);
+		var CSPDetect = new DeepInject('CSPScriptDetection', function (CSPToken) {
+			document.documentElement.setAttribute('data-JSB-CSP-SCRIPTS-ALLOWED', CSPToken)
+		});
+
+		CSPDetect.setArguments({ CSPToken: CSPToken }).inject(false);
+
+		if (document.documentElement.getAttribute('data-JSB-CSP-SCRIPTS-ALLOWED') !== CSPToken) {
+			CSPDetect.inject(true);
+
+			if (document.documentElement.getAttribute('data-JSB-CSP-SCRIPTS-ALLOWED') !== CSPToken)
+				Special.injectable = false;
+		} else
+			DeepInject.useURL = false;
+
+		var preparation = this.inject('prepareScript', DeepInject.useURL);
+
 		Utilities.Token.expire(preparation.id);
-
-		if (DeepInject.useURL) {
-			preparation = this.inject('prepareScript', true);
-
-			Utilities.Token.expire(preparation.id);
-		}
 
 		if (Utilities.Page.isUserScript)
 			setTimeout(function (url) {

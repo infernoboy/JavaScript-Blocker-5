@@ -548,13 +548,6 @@ var Command = function (type, event) {
 			}
 		},
 
-		inlineScriptsAllowed: function (detail) {
-			if (TOKEN.INJECTED[detail.sourceID].usedURL)
-				return;
-
-			DeepInject.useURL = false;
-		},
-
 		registerMenuCommand: function (detail) {
 			if (typeof detail.meta !== 'string' || !detail.meta.length)
 				return LogError(Error('caption is not a valid string'), detail.meta);
@@ -906,7 +899,6 @@ var Command = function (type, event) {
 	Commands.injected.notification.topCallbackOnly = true;
 	Commands.injected.showXHRPrompt.topCallbackOnly = true;
 
-	Commands.injected.inlineScriptsAllowed.private = true;
 	Commands.injected.historyStateChange.private = true;
 	Commands.injected.addResourceRule.private = true;
 

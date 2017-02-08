@@ -12,6 +12,9 @@ var UserScript = {
 	},
 
 	inject: function (script, parentUserScript, parentUserScriptName) {
+		if (!Special.injectable)
+			return LogDebug('Cannot inject user script "' + script.attributes.meta.name + '" due to page\'s Content-Security-Policy.');
+
 		var isSafe = false,
 				attributes = script.attributes,
 				requirementScripts = [];

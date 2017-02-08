@@ -3,7 +3,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
 Special.specials = {
-	prepareScript: function () {
+	prepareScript: function (JSB) {
 		if (window[JSB.eventToken])
 			return;
 		
@@ -20,15 +20,6 @@ Special.specials = {
 				document$dispatchEvent: document.dispatchEvent.bind(document)
 			})
 		});
-
-		var myEvent = document.createEvent('CustomEvent');
-
-		myEvent.initCustomEvent('JSBCommander:' + JSB.sourceID + ':' + JSB.eventToken, false, false, {
-			commandToken: JSB.commandToken,
-			command: 'inlineScriptsAllowed'
-		});
-
-		document.dispatchEvent(myEvent);
 	},
 
 	historyFixer: function () {
@@ -85,7 +76,7 @@ Special.specials = {
 		};
 	},
 
-	zoom: function () {
+	zoom: function (JSB) {
 		document.addEventListener('DOMContentLoaded', function () {
 			document.body.style.setProperty('zoom', JSB.value.value + '%', 'important');
 		}, true);
@@ -189,7 +180,7 @@ Special.specials = {
 		};
 	},
 
-	contextmenu_overrides: function () {
+	contextmenu_overrides: function (JSB) {
 		var stopPropagation = function (event) {
 			event.stopImmediatePropagation();
 			event.stopPropagation();
@@ -690,7 +681,8 @@ Special.specials = {
 	page_blocker: function () {
 		window.stop();
 
-		messageExtension('refreshPopover');
+		if (typeof messageExtension !== 'undefined')
+			messageExtension('refreshPopover');
 
 		document.documentElement.innerHTML = '<head><style type="text/css">* {text-align:center;}</style><body>' + _localize('setting.enabledSpecials.page_blocker.blocked') + '</body>';
 
@@ -735,7 +727,6 @@ Special.specials.canvas_data_url.data = {
 };
 
 Special.specials.prepareScript.ignoreHelpers = true;
-Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
 Special.specials.historyFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.ignoreHelpers = true;
@@ -743,5 +734,10 @@ Special.specials.xhr_intercept.excludeFromPage = true;
 Special.specials.popups.excludeFromPage = true;
 Special.specials.simple_referrer.noInject = true;
 Special.specials.anchor_titles.noInject = true;
+Special.specials.prepareScript.uninjectableCompatible = true;
+Special.specials.zoom.uninjectableCompatible = true;
+Special.specials.autocomplete_disabler.uninjectableCompatible = true;
+Special.specials.page_blocker.uninjectableCompatible = true;
+Special.specials.contextmenu_overrides.uninjectableCompatible = true;
 
 Special.init();
