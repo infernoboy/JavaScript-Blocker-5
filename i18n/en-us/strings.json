@@ -29,7 +29,7 @@
 	"importBackup.instructions": "The backup will be imported after selecting the file. Donations must be re-verified if clearing settings.",
 
 	"extras.will_unlock_free": "Do you wish to unlock JS Blocker without making a donation?",
-	"extras.email_address": "Email Address",
+	"extras.email_address": "Your Email",
 	"extras.required": "You need to unlock extra features in order to do that.",
 	"extras.what": "What extra features are there?",
 	"extras.trial.remaining_time": "You have {0} left to use JS Blocker's extra features.",
@@ -738,7 +738,7 @@
 	"feedback.email": "Send an email instead",
 	"feedback.submit": "Submit",
 	"feedback.error.offline": "The feedback server appears to be offline right now. Please try again later.",
-	"feedback.optional": "optional",
+	"feedback.optional": "optional, used to reply",
 	"feedback.console_attached": "Your console report is ready to be submitted.",
 
 	"description.recaptcha": "ReCAPTCHA",
