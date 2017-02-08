@@ -151,14 +151,9 @@ var Special = {
 		};
 
 		if (!Special.injectable) {
-			if (this.specials[name].uninjectableCompatible) {
-				var args = [];
-
-				for (var key in special.pieces.args)
-					args.push(special.pieces.args[key]);
-
-				special.script.apply(null, args);
-			} else
+			if (this.specials[name].uninjectableCompatible)
+				special.execute();
+			else
 				LogDebug('Cannot inject special "' + name + '" due to page\'s Content-Security-Policy.');
 		} else
 			special.inject(useURL);

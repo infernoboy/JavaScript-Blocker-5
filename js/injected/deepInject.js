@@ -173,3 +173,7 @@ DeepInject.prototype.inject = function (useURL) {
 		injectable.removeAttribute(attributes[i].nodeName);
 	}
 };
+
+DeepInject.prototype.execute = function () {
+	(new Function('return function () {' + this.executable() + '}'))()();
+};
