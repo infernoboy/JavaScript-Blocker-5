@@ -169,32 +169,21 @@ function Command (command, data, event) {
 		},
 
 		canLoadResource: function (info) {
-			if (false && info.kind !== 'disable') {
-				MessageTarget(this.event, 'showJSBUpdatePrompt');
-
-				this.message = {
-					isAllowed: false,
-					action: ACTION.BLOCKED_ATTENTION_REQUIRED
-				};
-			} else {
-				if (info.pageProtocol === 'about:' || info.getPageLocationFromTab) {
-					info.pageLocation = this.event.target.url || info.pageLocation;
-					info.pageProtocol = Utilities.URL.protocol(this.event.target.url || info.pageLocation);
-				}
-
-				if (typeof info.pageLocation !== 'string') {
-					// LogDebug('unable to determine proper resource information', info._clone(), this.event.target.url);
-
-					info.pageLocation = 'about:blank';
-					info.pageProtocol = 'about:';
-				}
-
-				info.private = this.event.target.private;
-				
-				var resource = new Resource(info);
-
-				this.message = resource.canLoad();
+			if (info.pageProtocol === 'about:' || info.getPageLocationFromTab) {
+				info.pageLocation = this.event.target.url || info.pageLocation;
+				info.pageProtocol = Utilities.URL.protocol(this.event.target.url || info.pageLocation);
 			}
+
+			if (typeof info.pageLocation !== 'string') {
+				info.pageLocation = 'about:blank';
+				info.pageProtocol = 'about:';
+			}
+
+			info.private = this.event.target.private;
+			
+			var resource = new Resource(info);
+
+			this.message = resource.canLoad();
 		},
 
 		refreshPopover: function (info) {
