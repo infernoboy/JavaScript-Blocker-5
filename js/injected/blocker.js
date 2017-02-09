@@ -16,11 +16,20 @@ do {
 	}
 
 	if (!globalSetting.popoverReady && window === window.top) {
+		if (window.localStorage.getItem('JSB-RELOAD-COUNT') === '3')
+			throw new Error('JSB failed to load');
+
+		window.localStorage.setItem('JSB-RELOAD-COUNT', Number(window.localStorage.getItem('JSB-RELOAD-COUNT') || 0) + 1);
+
 		window.location.reload();
 
 		throw new Error('...');
 	}
 } while (globalSetting.command || !globalSetting.popoverReady);
+
+setTimeout(function () {
+	window.localStorage.removeItem('JSB-RELOAD-COUNT');
+}, 1000);
 
 if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
