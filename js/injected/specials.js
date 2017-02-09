@@ -6,6 +6,8 @@ Special.specials = {
 	prepareScript: function (JSB) {
 		if (window[JSB.eventToken])
 			return;
+
+		document.documentElement.removeAttribute('data-JSB-CSP-SCRIPTS-ALLOWED');
 		
 		Object.defineProperty(window, JSB.eventToken, {
 			value: Object.freeze({
