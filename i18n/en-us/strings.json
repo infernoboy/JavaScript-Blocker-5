@@ -675,6 +675,7 @@
 	"special.popups.confirm.untrusted": "This page sent a fake click event to open:\n\n{0}\n\nOpen this page?",
 	"special.popups.notification.title": "Pop-up Blocked",
 	"special.popups.notification.body": "Blocked pop-up to: {0}",
+	"special.popups.notification.body.further_suppressed": "Suppressing further notifications.<br><br>Blocked pop-up to: {0}",
 
 	"special.canvas_data_url.prompt": "This page may be attempting to use canvas fingerprinting to track you. If there is an image displayed that looks suspicious or out of place, click Cancel. If there isn't, use your best judgement. If you see the Union Flag or UN, click OK.",
 	"special.canvas_data_url.prompt_old": "This page may be attempting to use canvas fingerprinting to identify you. If this is unexpected and you are not on a site you trust, click Cancel.",

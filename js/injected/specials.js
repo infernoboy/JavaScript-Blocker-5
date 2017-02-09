@@ -106,7 +106,8 @@ Special.specials = {
 	},
 
 	popups: function () {
-		var windowOpen = window.open,
+		var popupCount = 0,
+				windowOpen = window.open,
 				dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
 
 		var canLoadPopup = function (URL, untrusted) {
@@ -130,7 +131,9 @@ Special.specials = {
 			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
 				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm' + (untrusted ? '.untrusted' : ''), [displayURL]));
 
-			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification)
+			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification && popupCount < 4) {
+				popupCount++;
+
 				messageTopExtension('notification', {
 					title: _localize('special.popups.notification.title'),
 					subTitle: document.location.href,
@@ -138,10 +141,11 @@ Special.specials = {
 						template: 'injected',
 						section: 'javascript-alert',
 						data: {
-							body: _localize('special.popups.notification.body', [displayURL])
+							body: _localize('special.popups.notification.body' + (popupCount === 4 ? '.further_suppressed' : ''), [displayURL])
 						}
 					})
 				});
+			}
 
 			return info;
 		};
