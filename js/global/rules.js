@@ -105,12 +105,12 @@ Rule.prototype.__add = function (type, kind, domain, rule, isViaMany) {
 	} else if (typeof rule.rule !== 'string')
 		throw new TypeError(rule.rule + ' is not a valid rule');
 
-	if (!Rules.kindSupported(kind))
+	if (!isViaMany && !Rules.kindSupported(kind))
 		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
 
 	var types = this.kind(kind);
 
-	if (!types.hasOwnProperty(type))
+	if (!isViaMany && !types.hasOwnProperty(type))
 		throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
 
 	if (type.toLowerCase()._endsWith('page')) {
@@ -212,12 +212,14 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 };
 
 Rule.prototype.fixCanLoadCache = function (type, kind, domain) {
-	if (domain === '*' || type._startsWith('not'))
-		Resource.canLoadCache.clear();
-	else {		
-		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind._escapeRegExp() + '-?'));
-		Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind._escapeRegExp() + '-?'));
-	}
+	Utilities.Timer.timeout('fixCanLoadCache-' + type + kind + domain, function (type, kind, domain) {
+		if (domain === '*' || type._startsWith('not'))
+			Resource.canLoadCache.clear();
+		else {		
+			Resource.canLoadCache.removeMatching(new RegExp('-?' + kind._escapeRegExp() + '-?'));
+			Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind._escapeRegExp() + '-?'));
+		}
+	}, 1000, [type, kind, domain]);
 };
 
 Rule.prototype.clear = function () {
@@ -369,7 +371,7 @@ Rule.prototype.addMany = function (kinds) {
 
 	var kind,
 			types,
-			type,
+			ruleType,
 			domain,
 			rule;
 
@@ -382,21 +384,21 @@ Rule.prototype.addMany = function (kinds) {
 
 		types = this.kind(kind);
 
-		for (type in kinds[kind]) {
-			if (!types.hasOwnProperty(type)) {
-				LogError(Error(Rules.ERROR.TYPE.NOT_SUPPORTED + ' - ' + type));
+		for (ruleType in kinds[kind]) {
+			if (!types.hasOwnProperty(ruleType)) {
+				LogError(Error(Rules.ERROR.TYPE.NOT_SUPPORTED + ' - ' + ruleType));
 
 				continue;
 			}
 
-			for (domain in kinds[kind][type])
-				for (rule in kinds[kind][type][domain]) {
-					if (!(kinds[kind][type][domain][rule] instanceof Object))
+			for (domain in kinds[kind][ruleType])
+				for (rule in kinds[kind][ruleType][domain]) {
+					if (!(kinds[kind][ruleType][domain][rule] instanceof Object))
 						continue;
 
-					kinds[kind][type][domain][rule].rule = rule;
+					kinds[kind][ruleType][domain][rule].rule = rule;
 
-					this.__add(type, kind, domain, kinds[kind][type][domain][rule], true);
+					this.__add(ruleType, kind, domain, kinds[kind][ruleType][domain][rule], true);
 				}
 		}
 	}
@@ -444,16 +446,16 @@ Rule.prototype.forLocation = function (params) {
 	};
 
 	if (typeof params.isAllowed === 'boolean')
-		for (var type in rules)
-			rules[type] = rules[type].map(function (domain, rules, domainStore) {
+		for (var ruleType in rules)
+			rules[ruleType] = rules[ruleType].map(function (domain, rules, domainStore) {
 				return rules.filter(function (rule, value, ruleStore) {
 					return (!!(value.action % 2) === params.isAllowed);
 				});
 			});
 
 	if (params.all === true)
-		for (var type in rules)
-			rules[type] = rules[type].all();
+		for (var ruleType in rules)
+			rules[ruleType] = rules[ruleType].all();
 
 	Object.defineProperty(rules, 'rule', {
 		value: this
