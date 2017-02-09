@@ -302,6 +302,11 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 		return canLoad;
 	}
 
+	var shouldBlockFirstVisit = Settings.getItem('blockFirstVisit') !== 'nowhere';
+
+	if (!shouldBlockFirstVisit)
+		excludeLists._pushMissing(['temporaryFirstVisit', 'firstVisit']);
+
 	var searchKinds = useHideKinds ? this.hideKinds : this.searchKinds,
 			domainCached = false;
 
@@ -337,7 +342,7 @@ Resource.prototype.canLoad = function (detailed, useHideKinds, excludeLists) {
 			matcher = new Rules.SourceMatcher(this.lowerSource, this.source, this.pageHost, this.pageDomain),
 			ignoreBlacklist = Settings.getItem('ignoreBlacklist'),
 			ignoreWhitelist = Settings.getItem('ignoreWhitelist'),
-			ignoreAllResources = Settings.getItem('blockFirstVisit') !== 'nowhere' && Settings.getItem('simplifiedUI');
+			ignoreAllResources = shouldBlockFirstVisit && Settings.getItem('simplifiedUI');
 
 	Rule.withLocationRules(this.rulesForLocation(null, !!domainCached, useHideKinds, excludeLists), function (ruleList, ruleListName, ruleKind, ruleType, domain, rules) {
 		if (ruleList === Rules.list.allResources && ignoreAllResources)
