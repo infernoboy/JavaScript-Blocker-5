@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 UI.Snapshots = {
 	__compareQueue: new Utilities.Queue(50),
@@ -30,10 +30,10 @@ UI.Snapshots = {
 					event = forceClickEvent;
 
 				var self = $(this),
-						kept = self.parents('.snapshot-list').is('#snapshot-kept-list'),
-						snapshotID = self.parents('li').attr('data-snapshotID'),
-						snapshots = self.parents('.snapshot-list').data('snapshots'),
-						poppy = new Poppy(event.pageX, event.pageY, true, 'snapshot-item');
+					kept = self.parents('.snapshot-list').is('#snapshot-kept-list'),
+					snapshotID = self.parents('li').attr('data-snapshotID'),
+					snapshots = self.parents('.snapshot-list').data('snapshots'),
+					poppy = new Poppy(event.pageX, event.pageY, true, 'snapshot-item');
 
 				poppy.scaleWithForce(forceClick);
 
@@ -56,21 +56,21 @@ UI.Snapshots = {
 
 			.on('click', '.snapshot-item-preview', function () {
 				var self = $(this),
-						snapshotID = self.parents('li').attr('data-snapshotID'),
-						snapshots = self.parents('.snapshot-list').data('snapshots');
+					snapshotID = self.parents('li').attr('data-snapshotID'),
+					snapshots = self.parents('.snapshot-list').data('snapshots');
 
 				UI.Snapshots.useSnapshot(snapshotID, snapshots);
 			})
 
 			.on('click', '.snapshot-item-delete', function () {
 				var self = $(this),
-						snapshotID = self.parents('li').attr('data-snapshotID'),
-						snapshots = self.parents('.snapshot-list').data('snapshots');
+					snapshotID = self.parents('li').attr('data-snapshotID'),
+					snapshots = self.parents('.snapshot-list').data('snapshots');
 
 				snapshots.remove(snapshotID);
 
 				UI.Snapshots.buildSnapshots();
-			})
+			});
 	},
 
 	useSnapshot: function (snapshotID, snapshots, comparison) {
@@ -102,7 +102,7 @@ UI.Snapshots = {
 
 	buildList: function (listContainer, list) {
 		var name,
-				snapshotItem;
+			snapshotItem;
 
 		var snapshotIDs = list.keys().sort();
 
@@ -120,8 +120,8 @@ UI.Snapshots = {
 
 			UI.Snapshots.__compareQueue.push(function (name, list, snapshotID, snapshotItem) {
 				var snapshot = list.get(snapshotID),
-						snapshotStore = Store.promote(snapshot.snapshot),
-						compare = Store.compare(UI.Snapshots.current, snapshotStore);
+					snapshotStore = Store.promote(snapshot.snapshot),
+					compare = Store.compare(UI.Snapshots.current, snapshotStore);
 
 				snapshotStore.destroy();
 				compare.store.destroy();
@@ -133,11 +133,11 @@ UI.Snapshots = {
 
 	buildSnapshots: function () {
 		var storageInfo = $('#snapshot-storage-info', UI.Snapshots.container),
-				keptList = $('#snapshot-kept-list', UI.Snapshots.container).empty(),
-				unkeptList = $('#snapshot-unkept-list', UI.Snapshots.container).empty(),
-				snapshotInfo = globalPage.Snapshot.storageInfo(),
-				kept = UI.Snapshots.snapshot.kept,
-				unkept = UI.Snapshots.snapshot.unkept;
+			keptList = $('#snapshot-kept-list', UI.Snapshots.container).empty(),
+			unkeptList = $('#snapshot-unkept-list', UI.Snapshots.container).empty(),
+			snapshotInfo = globalPage.Snapshot.storageInfo(),
+			kept = UI.Snapshots.snapshot.kept,
+			unkept = UI.Snapshots.snapshot.unkept;
 
 		storageInfo.text(_('snapshots.count_size'._pluralize(snapshotInfo.count), [snapshotInfo.count, Utilities.byteSize(snapshotInfo.size)]));
 

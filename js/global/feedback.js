@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Feedback = {
 	__feedbackURL: 'http://lion.toggleable.com:160/jsblocker/feedback.php',
@@ -19,7 +19,7 @@ var Feedback = {
 	getConsoleMessages: function () {
 		var messageHistory = Utilities.messageHistory();
 		
-		var errors = messageHistory.error.map(function (value, i) {
+		var errors = messageHistory.error.map(function (value) {
 			return value.message.join(' ').replace(/<br>/g, "\n") + (value.stack ? "\n\t\tStack:" + value.stack : '');
 		});
 

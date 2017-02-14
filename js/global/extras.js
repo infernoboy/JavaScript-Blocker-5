@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Extras = {
 	__verificationURL: 'http://lion.toggleable.com:160/jsblocker/verify.php',
@@ -32,7 +32,7 @@ var Extras = {
 				}
 			})
 				.done(function (result) {
-					var result = parseInt(result, 10);
+					result = parseInt(result, 10);
 
 					if (result >= 0) {
 						Settings.setItem('donationVerified', true);
@@ -43,14 +43,13 @@ var Extras = {
 				})
 
 				.fail(function (error) {
-					if (error.status === 0) {
+					if (error.status === 0)
 						if (Extras.connectionFailureCount++ > 3) {
 							Extras.unlockWithoutDonating();
 
 							reject('Could not connect to server, but unlocked anyway. Enjoy!');
 						} else
 							reject('Could not connect to server. Check if firewall or router is blocking outgoing connections to port 160.');
-					}
 					else
 						reject(error.status + ': ' + error.statusText);
 				});
@@ -81,7 +80,7 @@ var Extras = {
 
 		isActive: function () {
 			var startTime = Settings.getItem('trialStart'),
-					isActive = Date.now() < Settings.getItem('trialStart') + Extras.Trial.__length;
+				isActive = Date.now() < Settings.getItem('trialStart') + Extras.Trial.__length;
 
 			if (!isActive && startTime > 0)
 				Settings.setItem('trialStart', -2);

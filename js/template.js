@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function Template (template, file) {
 	this.cache = {};
@@ -11,7 +11,7 @@ function Template (template, file) {
 	this.template = $(template);
 
 	// document.createDocumentFragment();
-};
+}
 
 Template.__templates = {};
 Template.__autoLoaded = [];

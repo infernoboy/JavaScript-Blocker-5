@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 window.localConsole = console;
 
@@ -39,20 +39,19 @@ globalPage.Template = Template;
 			$[key] = jQuery[key];
 
 	$.fn.selectAll = function () {
-		if (this.length) {
+		if (this.length)
 			this.each(function () {
 				this.selectionStart = 0;
 				this.selectionEnd = 1e10;
 			});
-		}
 
 		return this;
 	};
 
 	$.fn.transitionEnd = function () {
 		var nextSibling,
-				parent,
-				self;
+			parent,
+			self;
 
 		this.each(function () {
 			self = $(this);

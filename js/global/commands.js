@@ -2,17 +2,17 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function Command (command, data, event) {
 	function InternalCommand () {
 		var part;
 
 		var commands = this.commands,
-				commandParts = command.split(/\./g);	
+			commandParts = command.split(/\./g);	
 
-		if (commandParts.length > 1) {
-			while (true) {
+		if (commandParts.length > 1)
+			for (;;) {
 				if (commands.hasOwnProperty((part = commandParts.shift())))
 					commands = commands[part];
 
@@ -22,7 +22,6 @@ function Command (command, data, event) {
 				if (commandParts.length === 1)
 					break;
 			}
-		}
 
 		if (!commands.hasOwnProperty(commandParts[0]))
 			throw new Error('command not found - ' + command);
@@ -37,7 +36,7 @@ function Command (command, data, event) {
 		this.commands = commands;
 
 		commands[commandParts[0]].apply(this, Array.isArray(data) ? data : [data]);
-	};
+	}
 
 	Object.defineProperty(InternalCommand.prototype, 'message', {
 		get: function () {
@@ -124,7 +123,7 @@ function Command (command, data, event) {
 		editResourceIDs: function (detail) {
 			UI.event.addCustomEventListener('pageDidRender', function () {
 				var item,
-						section;
+					section;
 
 				for (var i = detail.resourceIDs.length; i--;) {
 					item = $('.page-host-item[data-resourceids*="' + detail.resourceIDs[i] + '"]', UI.Page.view);
@@ -186,11 +185,11 @@ function Command (command, data, event) {
 			this.message = resource.canLoad();
 		},
 
-		refreshPopover: function (info) {
+		refreshPopover: function () {
 			Page.requestPageFromActive();
 		},
 
-		globalSetting: function (setting) {
+		globalSetting: function () {
 			this.message = {
 				disabled: window.globalSetting.disabled,
 				debugMode: window.globalSetting.debugMode,
@@ -235,8 +234,8 @@ function Command (command, data, event) {
 
 		receivePage: function (thePage) {
 			var tab = this.event.target,
-					popoverVisible = Popover.visible(),
-					activeTab = Tabs.active();
+				popoverVisible = Popover.visible(),
+				activeTab = Tabs.active();
 
 			if (!Page.protocolSupported(thePage.protocol)) {
 				ToolbarItems.badge(0, activeTab);
@@ -251,10 +250,10 @@ function Command (command, data, event) {
 			}
 
 			var page = new Page(thePage, tab),
-					renderPage = page;
+				renderPage = page;
 
 			if (thePage.isFrame) {
-				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
+				var pageParent = Page.pages.findLast(function (pageID, parent) {
 					if (parent.info.state.data && parent.isTop && parent.tab === tab) {
 						parent.addFrame(page);
 
@@ -329,7 +328,7 @@ function Command (command, data, event) {
 
 		XMLHttpRequest: function (detail) {
 			var self = this,
-					meta = detail.meta;
+				meta = detail.meta;
 
 			meta.type = meta.method || meta.type || 'GET';
 			meta.mimeType = meta.overrideMimeType;
@@ -351,7 +350,7 @@ function Command (command, data, event) {
 							var line;
 
 							var lines = headers.split(/\n/),
-									headerMap = {};
+								headerMap = {};
 
 							for (var i = 0; i < lines.length; i++) {
 								line = lines[i].split(': ');
@@ -372,7 +371,7 @@ function Command (command, data, event) {
 					self.sendCallback(detail.sourceID, detail.callbackID, result);
 				else
 					self.message = result;
-			};
+			}
 
 			meta.xhr = function () {
 				var xhr = new XMLHttpRequest();
@@ -391,21 +390,21 @@ function Command (command, data, event) {
 
 				xhr.upload.addEventListener('progress', onProgress.bind(null, true));
 
-				xhr.upload.addEventListener('load', function (event) {
+				xhr.upload.addEventListener('load', function () {
 					eventCallback('upload.onload', xhr.responseText, {});
 				});
 
-				xhr.upload.addEventListener('error', function (event) {
+				xhr.upload.addEventListener('error', function () {
 					eventCallback('upload.onerror', xhr.responseText, xhr);
 				});
 
-				xhr.upload.addEventListener('abort', function (event) {
+				xhr.upload.addEventListener('abort', function () {
 					eventCallback('upload.onabort', xhr.responseText, xhr);
 				});
 
 				xhr.addEventListener('progress', onProgress.bind(null, false));
 
-				xhr.addEventListener('loadend', function (event) {
+				xhr.addEventListener('loadend', function () {
 					eventCallback('XHRComplete', '', xhr);
 				});
 
@@ -493,7 +492,7 @@ function Command (command, data, event) {
 			Tabs.create(detail);
 		},
 
-		exportedBackup: function (detail) {
+		exportedBackup: function () {
 			this.message = Settings.EXPORTED_BACKUP;
 
 			delete Settings.EXPORTED_BACKUP;
@@ -587,10 +586,10 @@ function Command (command, data, event) {
 
 	var result = new InternalCommand();
 
-	InternalCommand = command = data = event = undefined;
+	command = data = event = undefined;
 
 	return result.message;
-};
+}
 
 Command.event = new EventListener;
 
@@ -621,7 +620,7 @@ Command.toggleDisabled = function (force, doNotReload) {
 	if (Command.event.trigger('willDisable', window.globalSetting.disabled))
 		return;
 
-	Command.event.addCustomEventListener('UIReady', function (event) {
+	Command.event.addCustomEventListener('UIReady', function () {
 		UI.Locker
 			.showLockerPrompt('disable', typeof force === 'boolean')
 			.then(function () {
@@ -683,7 +682,7 @@ if (Settings.getItem('persistDisabled'))
 
 Command.setupContentURLs();
 
-Command.event.addCustomEventListener('popoverReady', function (event) {
+Command.event.addCustomEventListener('popoverReady', function () {
 	if (Settings.getItem('showPopoverOnLoad')) {
 		Settings.setItem('showPopoverOnLoad', false);
 

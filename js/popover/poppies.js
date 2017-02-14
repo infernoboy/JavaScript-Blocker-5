@@ -2,13 +2,13 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 Object._extend(Poppy.scripts, {
 	'extras-unlock-prompt': function (poppy) {
 		var errorContainer = $('#extras-unlock-error-container', poppy.content),
-				errorString = $('#extras-unlock-error', errorContainer),
-				unlockEmail = $('#extras-unlock-email', poppy.content);
+			errorString = $('#extras-unlock-error', errorContainer),
+			unlockEmail = $('#extras-unlock-email', poppy.content);
 
 		unlockEmail.focus();
 
@@ -27,7 +27,7 @@ Object._extend(Poppy.scripts, {
 
 						Extras
 							.unlockUsingEmail(emailAddress)
-							.then(function (success) {
+							.then(function () {
 								var thanksPoppy = new Poppy(0.5, 0, true);
 
 								thanksPoppy.setContent(Template.create('main', 'jsb-readable', {
@@ -88,8 +88,8 @@ Object._extend(Poppy.scripts, {
 
 	'set-lock-password': function (poppy) {
 		var previousPassword = $('#lock-password-previous', poppy.content),
-				newPassword = $('#lock-password', poppy.content),
-				verifyPassword = $('#lock-password-verify', poppy.content);
+			newPassword = $('#lock-password', poppy.content),
+			verifyPassword = $('#lock-password-verify', poppy.content);
 
 		if (previousPassword.length)
 			previousPassword.focus();
@@ -97,7 +97,7 @@ Object._extend(Poppy.scripts, {
 			newPassword.focus();
 
 		poppy.content
-			.on('click', '#lock-password-forgot', function (event) {
+			.on('click', '#lock-password-forgot', function () {
 				Tabs.create(Utilities.URL.createFromContent(Template.create('poppy.settings', 'forgot-locker-password', {}, null, true), 'text/html', true));
 
 				Popover.hide();
@@ -111,8 +111,8 @@ Object._extend(Poppy.scripts, {
 
 			.on('click', '#lock-password-save', function () {
 				var previousPasswordVal = previousPassword.val(),
-						newPasswordVal = newPassword.val(),
-						verifyPasswordVal = verifyPassword.val();
+					newPasswordVal = newPassword.val(),
+					verifyPasswordVal = verifyPassword.val();
 
 				if (newPasswordVal !== verifyPasswordVal) {
 					verifyPassword.val('');
@@ -135,7 +135,7 @@ Object._extend(Poppy.scripts, {
 		var password = $('#lock-password', poppy.content).focus();
 
 		poppy.content
-			.on('click', '#lock-password-forgot', function (event) {
+			.on('click', '#lock-password-forgot', function () {
 				Tabs.create(Utilities.URL.createFromContent(Template.create('poppy.settings', 'forgot-locker-password', {}, null, true), 'text/html', true));
 
 				Popover.hide();
@@ -241,7 +241,7 @@ Object._extend(Poppy.scripts, {
 				UI.view.switchTo('#main-views-page');
 
 				globalPage.Page.requestPageFromActive();
-			})
+			});
 	},
 
 	'rule-menu': function (poppy) {
@@ -298,7 +298,7 @@ Object._extend(Poppy.scripts, {
 				backupPoppy.setContent(Template.create('poppy.settings', 'setting-menu-backup')).show();
 			})
 
-			.on('click', '#setting-menu-restore-defaults', function (event) {
+			.on('click', '#setting-menu-restore-defaults', function () {
 				Settings.import({}, true);
 
 				poppy.close();
@@ -307,7 +307,7 @@ Object._extend(Poppy.scripts, {
 
 	'setting-menu-backup': function (poppy) {
 		poppy.content
-			.on('click', '#setting-menu-backup-export', function (event) {
+			.on('click', '#setting-menu-backup-export', function () {
 				var options = {
 					exportSettings: $('#setting-menu-backup-export-settings', poppy.content).is(':checked'),
 					exportFirstVisit: $('#setting-menu-backup-export-first-visit', poppy.content).is(':checked'),
@@ -345,7 +345,7 @@ Object._extend(Poppy.scripts, {
 				}, 0, event);
 			})
 
-			.on('click', '#setting-menu-backup-import', function (event) {
+			.on('click', '#setting-menu-backup-import', function () {
 				Tabs.create(ExtensionURL('html/importBackup.html#' + Utilities.encode(JSON.stringify({
 					title: _('importBackup.title'),
 					instructions: _('importBackup.instructions'),
@@ -356,7 +356,7 @@ Object._extend(Poppy.scripts, {
 				Popover.hide();
 			})
 
-			.on('click', '#setting-menu-backup-import-alternative', function (event) {
+			.on('click', '#setting-menu-backup-import-alternative', function () {
 				var alternativePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'backup-import-alternative');
 
 				alternativePoppy.setContent(Template.create('poppy.settings', 'backup-import-alternative')).show();
@@ -390,7 +390,7 @@ Object._extend(Poppy.scripts, {
 
 	'temporary-rules-menu': function (poppy) {
 		poppy.content
-			.on('click', '#temporary-menu-new', function (event) {
+			.on('click', '#temporary-menu-new', function () {
 				var newPoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'create-rule');
 
 				newPoppy.setContent(Template.create('poppy.rules', 'create-rule', {
@@ -408,37 +408,37 @@ Object._extend(Poppy.scripts, {
 					.show();
 			})
 
-			.on('click', '#temporary-menu-clear', function (event) {
+			.on('click', '#temporary-menu-clear', function () {
 				globalPage.Rules.list.temporary.clear();
 			})
 
-			.on('click', '#temporary-menu-make-always', function (event) {
+			.on('click', '#temporary-menu-make-always', function () {
 				globalPage.Rules.list.user.rules.merge(globalPage.Rules.list.temporary.rules, true);
 
 				globalPage.Rules.list.temporary.clear();
 			})
 
-			.on('click', '#temporary-menu-clear, #temporary-menu-make-always', function (event) {
+			.on('click', '#temporary-menu-clear, #temporary-menu-make-always', function () {
 				poppy.close();
 
 				UI.view.switchTo('#rule-views-temporary', true);
-			})
+			});
 	},
 
 	'firstVisit-rules-menu': function (poppy) {
 		poppy.content
-			.on('click', '#firstVisit-menu-clear', function (event) {
+			.on('click', '#firstVisit-menu-clear', function () {
 				poppy.close();
 
 				globalPage.Rules.list.firstVisit.clear();
 
 				UI.view.switchTo('#rule-views-firstVisit', true);
-			})
+			});
 	},
 
 	'active-rules-menu': function (poppy) {
 		poppy.content
-			.on('click', '#active-menu-new', function (event) {
+			.on('click', '#active-menu-new', function () {
 				var newPoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'create-rule');
 
 				newPoppy.setContent(Template.create('poppy.rules', 'create-rule', {
@@ -456,7 +456,7 @@ Object._extend(Poppy.scripts, {
 					.show();
 			})
 
-			.on('click', '#active-menu-clear', function (event) {
+			.on('click', '#active-menu-clear', function () {
 				Poppy.event.addCustomEventListener('poppyDidClose', function () {
 					UI.Locker
 						.showLockerPrompt('clearRules')
@@ -468,7 +468,7 @@ Object._extend(Poppy.scripts, {
 				}, true);
 
 				poppy.close();
-			})
+			});
 	},
 
 	'snapshot-rules-menu': function (poppy) {
@@ -501,7 +501,7 @@ Object._extend(Poppy.scripts, {
 
 	'filter-rules-menu': function (poppy) {
 		poppy.content
-			.on('click', 'a', function (event) {
+			.on('click', 'a', function () {
 				var filterList = this.parentNode.getAttribute('data-filterList');
 
 				poppy.close();
@@ -529,11 +529,11 @@ Object._extend(Poppy.scripts, {
 				var ruleListItems = $('<ul class="page-rules-container">');
 
 				var resources = poppy.resources,
-						rulePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true);
+					rulePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true);
 
 				poppy.setContent(_('view.page.item.info.loading'));
 
-				UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function (event) {
+				UI.Rules.event.addCustomEventListener('multiListRulesFinishedBuilding', function () {
 					rulePoppy.setContent(ruleListItems).show();
 
 					setTimeout(function () {
@@ -543,10 +543,10 @@ Object._extend(Poppy.scripts, {
 
 				setTimeout(function () {
 					var resourceID,
-							rules,
-							ruleLists,
-							resourceListItem,
-							listName;
+						rules,
+						ruleLists,
+						resourceListItem,
+						listName;
 
 					for (resourceID in resources) {
 						rules = resources[resourceID].rulesForResource(poppy.isAllowed);
@@ -567,12 +567,12 @@ Object._extend(Poppy.scripts, {
 
 	'user-script-storage-add': function (poppy) {
 		var key = $('.user-script-storage-add-key', poppy.content).focus(),
-				value = $('.user-script-storage-add-value', poppy.content);
+			value = $('.user-script-storage-add-value', poppy.content);
 
 		poppy.content
 			.on('click', '.user-script-storage-add-add', function () {
 				var keyValue = $.trim(key.val()),
-						valueValue = $.trim(value.val());
+					valueValue = $.trim(value.val());
 
 				if (!keyValue.length || !valueValue.length)
 					return keyValue.length ? value.shake().focus() : key.shake().focus();
@@ -600,7 +600,7 @@ Object._extend(Poppy.scripts, {
 
 					UI.event.addCustomEventListener('viewWillScrollToTop', function (event) {
 						event.preventDefault();
-					}, true)
+					}, true);
 
 					UI.Settings.editUserScript(userScriptNS);
 
@@ -626,8 +626,8 @@ Object._extend(Poppy.scripts, {
 		poppy.content
 			.on('click', 'input', function () {
 				var sectionID = poppy.poppy.attr('data-poppyMenuMeta'),
-						section = $('.page-host-section[data-id="' + sectionID + '"]', UI.Page.view),
-						blockedFirstVisitStatus = JSON.parse(section.attr('data-blockedFirstVisitStatus') || '');
+					section = $('.page-host-section[data-id="' + sectionID + '"]', UI.Page.view),
+					blockedFirstVisitStatus = JSON.parse(section.attr('data-blockedFirstVisitStatus') || '');
 
 				if (this.id === 'edit-untrust') {
 					globalPage.Page.blockFirstVisit(blockedFirstVisitStatus.host, true, section.data('tab').private);
@@ -644,9 +644,9 @@ Object._extend(Poppy.scripts, {
 				}
 
 				var action = this.getAttribute('data-action'),
-						which = this.getAttribute('data-which'),
-						editorKind = $('.page-host-editor-kind', section),
-						editorWhichItems = $('.page-host-editor-which-items', section);
+					which = this.getAttribute('data-which'),
+					editorKind = $('.page-host-editor-kind', section),
+					editorWhichItems = $('.page-host-editor-which-items', section);
 
 				UI.Page.section.toggleEditMode(section, true, false, true);
 
@@ -672,12 +672,12 @@ Object._extend(Poppy.scripts, {
 
 	'create-rule': function (poppy) {
 		var list = $('#create-rule-list', poppy.content),
-				type = $('#create-rule-type', poppy.content),
-				kind = $('#create-rule-kind', poppy.content),
-				kinds = $('#create-rule-kinds', poppy.content),
-				domain = $('#create-rule-domain', poppy.content),
-				whichItem = $('#create-rule-which-item', poppy.content),
-				ruleContainer = $('#create-rule-rule-container', poppy.content);
+			type = $('#create-rule-type', poppy.content),
+			kind = $('#create-rule-kind', poppy.content),
+			kinds = $('#create-rule-kinds', poppy.content),
+			domain = $('#create-rule-domain', poppy.content),
+			whichItem = $('#create-rule-which-item', poppy.content),
+			ruleContainer = $('#create-rule-rule-container', poppy.content);
 
 		poppy.content
 			.on('change', '#create-rule-type', function () {
@@ -736,32 +736,31 @@ Object._extend(Poppy.scripts, {
 				poppy.setContent(template);
 			})
 
-			.on('click', '#create-rule-save', function (event) {
+			.on('click', '#create-rule-save', function () {
 				var self = $(this),
-						container = $('#create-rule', poppy.content),
-						editing = container.attr('data-editing') === '1';
+					container = $('#create-rule', poppy.content),
+					editing = container.attr('data-editing') === '1';
 
-				if (editing) {
+				if (editing)
 					var originalListName = container.attr('data-listName'),
-							originalType = container.attr('data-type'),
-							originalDomain = container.attr('data-domain'),
-							originalKind = container.attr('data-kind'),
-							originalRule = container.attr('data-rule'),
-							originalAction = parseInt(container.attr('data-action'), 10),
-							originalList = globalPage.Rules.list[originalListName];
-				}
+						originalType = container.attr('data-type'),
+						originalDomain = container.attr('data-domain'),
+						originalKind = container.attr('data-kind'),
+						originalRule = container.attr('data-rule'),
+						originalAction = parseInt(container.attr('data-action'), 10),
+						originalList = globalPage.Rules.list[originalListName];
 
 				var newListName = list.val(),
-						newKindAction = kind.val(),
-						newType = type.val(),
-						newDomain = $.trim(domain.val()),
-						whichItemVal = whichItem.val(),
-						newRule = $.trim($('#create-rule-rule', ruleContainer).val()),
-						isHide = (newKindAction === 'hide' || newKindAction === 'show'),
-						isDisable = (newKindAction === 'enable' || newKindAction === 'disable'),
-						newAction = (newKindAction === 'show' || newKindAction === 'enable' || newKindAction === 'allow') ? 1 : 0,
-						newKindPrefix = '',
-						newKinds = [];
+					newKindAction = kind.val(),
+					newType = type.val(),
+					newDomain = $.trim(domain.val()),
+					whichItemVal = whichItem.val(),
+					newRule = $.trim($('#create-rule-rule', ruleContainer).val()),
+					isHide = (newKindAction === 'hide' || newKindAction === 'show'),
+					isDisable = (newKindAction === 'enable' || newKindAction === 'disable'),
+					newAction = (newKindAction === 'show' || newKindAction === 'enable' || newKindAction === 'allow') ? 1 : 0,
+					newKindPrefix = '',
+					newKinds = [];
 
 				if (!newRule.length)
 					newRule = '*';
@@ -820,7 +819,7 @@ Object._extend(Poppy.scripts, {
 								UI.view.switchTo(UI.Rules.viewContainer.attr('data-activeView'));
 						} catch (error) {
 							var offset = self.offset(),
-									errorPoppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
+								errorPoppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
 
 							errorPoppy.setContent(Template.create('main', 'jsb-readable', {
 								string: error.message
@@ -882,7 +881,7 @@ Object._extend(Poppy.scripts, {
 
 			.on('click', '#snapshot-item-name-save', function () {
 				var name = $('#snapshot-item-name', poppy.content),
-						nameVal = name.val();
+					nameVal = name.val();
 
 				if (UI.Snapshots.snapshot.setName(poppy.snapshotID, nameVal)) {
 					Poppy.event.addCustomEventListener('poppyDidClose', function () {
@@ -908,7 +907,7 @@ Object._extend(Poppy.scripts, {
 				}, true);
 
 				poppy.close();
-			})
+			});
 	},
 
 	'snapshot-item-compare': function (poppy) {
@@ -917,8 +916,8 @@ Object._extend(Poppy.scripts, {
 				var side;
 
 				var snapshot = poppy.snapshots.get(poppy.snapshotID),
-						snapshotStore = Store.promote(snapshot.snapshot),
-						compare = Store.compare(UI.Snapshots.current, snapshotStore);
+					snapshotStore = Store.promote(snapshot.snapshot),
+					compare = Store.compare(UI.Snapshots.current, snapshotStore);
 
 				if (this.id._contains('left'))
 					side = 'left';
@@ -948,7 +947,7 @@ Object._extend(Poppy.scripts, {
 		poppy.content
 			.on('click', '#feedback-send-email', function () {
 				var feedbackData = globalPage.Feedback.createFeedbackData(messageElement.val(), ''),
-						emailableFeedback = "\n\n";
+					emailableFeedback = "\n\n";
 
 				for (var key in feedbackData)
 					if (key !== 'email')
@@ -969,7 +968,7 @@ Object._extend(Poppy.scripts, {
 				this.disabled = true;
 
 				var message = $.trim($('#feedback-message', poppy.content).val()),
-						email = $.trim($('#feedback-email', poppy.content).val());
+					email = $.trim($('#feedback-email', poppy.content).val());
 
 				if (!message.length) {
 					this.disabled = false;
@@ -983,7 +982,7 @@ Object._extend(Poppy.scripts, {
 
 				globalPage.Feedback
 					.submitFeedback(message, email)
-					.then(function (result) {
+					.then(function () {
 						UI.Feedback.lastValue = '';
 
 						poppy

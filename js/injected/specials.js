@@ -47,7 +47,7 @@ Special.specials = {
 		var meta = document.createElement('meta');
 		
 		meta.setAttribute('http-equiv', 'content-security-policy');
-		meta.setAttribute('content', "script-src *");
+		meta.setAttribute('content', 'script-src *');
 		
 		if (document.documentElement.firstChild)
 			document.documentElement.insertBefore(meta, document.documentElement.firstChild);
@@ -107,8 +107,8 @@ Special.specials = {
 
 	popups: function () {
 		var popupCount = 0,
-				windowOpen = window.open,
-				dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
+			windowOpen = window.open,
+			dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
 
 		var canLoadPopup = function (URL, untrusted) {
 			var a = document.createElement('a');
@@ -250,21 +250,20 @@ Special.specials = {
 		};
 
 		var SYNCHRONOUS_ALLOW = '0',
-				SYNCHRONOUS_BLOCK = '1',
-				SYNCHRONOUS_ASK = '2';
+			SYNCHRONOUS_ASK = '2';
 
 		var shouldShowPrompt = JSB.value.value.alwaysBlock === 'ask',
-				supportedMethods = ['get', 'post', 'put'],
-				openToken = Math.random(),
-				openArguments = {};
+			supportedMethods = ['get', 'post', 'put'],
+			openToken = Math.random(),
+			openArguments = {};
 
 		function performAction (request, info, args, sendData, awaitPromptResourceID, postParams) {
 			var xhrError;
 
 			var detail = openArguments[request[openToken]],
-					pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
+				pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
 
-			if (sendData) {
+			if (sendData)
 				if (detail.method === 'post')
 					args[0] = sendData;
 				else if (detail.method === 'get') {
@@ -278,15 +277,13 @@ Special.specials = {
 
 					XHR.open.call(request, 'GET', newPath);
 				}
-			}
 
-			if (info.canLoad.isAllowed) {
+			if (info.canLoad.isAllowed)
 				try {
 					XHR.send.apply(request, args);
 				} catch (error) {
 					xhrError = error;
 				}
-			}
 
 			setTimeout(function (pageAction, info, detail, postParams) {
 				if (info.meta === undefined)
@@ -308,7 +305,7 @@ Special.specials = {
 				
 				throw xhrError;
 			}
-		};
+		}
 
 		function createMetaData (detail, postParams) {
 			var meta;
@@ -323,8 +320,8 @@ Special.specials = {
 					};
 
 					var splitParam,
-							paramName,
-							paramValue;
+						paramName,
+						paramValue;
 
 					var params = toSend.split(/&/g);
 
@@ -359,21 +356,20 @@ Special.specials = {
 							type: 'blob',
 							data: URL.createObjectURL(toSend)
 						};
-				} else if (toSend instanceof window.FormData) {
+				} else if (toSend instanceof window.FormData)
 					// There is no way to retrieve the values of a FormData object.
 					meta = {
 						type: 'formdata',
 						data: {}
 					};
-				}
 			}
 
 			return meta;
-		};
+		}
 
 		XMLHttpRequest.prototype.open = function () {
 			var openID = Math.random(),
-					path = arguments[1];
+				path = arguments[1];
 
 			this[openToken] = openID;
 
@@ -401,14 +397,14 @@ Special.specials = {
 				return XHR.send.apply(this, arguments);
 
 			var kind = 'xhr_' + detail.method,
-					postParams = arguments[0],
-					awaitPromptResourceID = null,
-					info = {
-						meta: undefined,
-						kind: kind,
-						source: detail.path,
-						canLoad: {}
-					};
+				postParams = arguments[0],
+				awaitPromptResourceID = null,
+				info = {
+					meta: undefined,
+					kind: kind,
+					source: detail.path,
+					canLoad: {}
+				};
 
 			var canLoad = messageExtensionSync('canLoadResource', info);
 
@@ -425,8 +421,10 @@ Special.specials = {
 
 			info.canLoad = canLoad;
 
+			var isAllowed;
+
 			var self = this,
-					args = arguments;
+				args = arguments;
 
 			var shouldPerformAction = (function () {
 				if (canLoad.action !== -8 && canLoad.action < 0 && shouldShowPrompt) {
@@ -457,15 +455,15 @@ Special.specials = {
 
 						return false;
 					} else {
-						if (JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ASK) {
-							var isAllowed = confirm(_localize('xhr.sync.prompt', [
+						if (JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ASK)
+							isAllowed = confirm(_localize('xhr.sync.prompt', [
 								_localize(kind + '.prompt.title') + ' - ' + _localize('xhr.synchronous'),
 								document.location.href,
 								info.source.substr(0, info.source.indexOf('?')),
 								info.meta ? JSON.stringify(info.meta.data, null, 1) : ''
 							]));
-						} else {
-							var isAllowed = JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ALLOW;
+						else {
+							isAllowed = JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ALLOW;
 
 							if (JSB.value.value.showSynchronousXHRNotification)
 								setTimeout(function (isAllowed, onXHRPromptInput, info, detail, postParams) {
@@ -499,10 +497,10 @@ Special.specials = {
 	environmental_information: function () {
 		var randomInteger = function (min, max) {
 			return Math.floor(Math.random() * (max - min + 1)) + min;
-		}
+		};
 
 		var now = (Math.random() * 1000000000000000000).toString(36),
-				agent = 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/' + randomInteger(20, 50) + '.0';
+			agent = 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/' + randomInteger(20, 50) + '.0';
 
 		var localNavigator = window.navigator;
 
@@ -523,7 +521,7 @@ Special.specials = {
 			userAgent: agent,
 			language: localNavigator.language,
 			plugins: (function () {
-				function PluginArray () {};
+				function PluginArray () {}
 
 				PluginArray.prototype.refresh = function () {};
 				PluginArray.prototype.item = function () {};
@@ -566,16 +564,15 @@ Special.specials = {
 		}
 
 		var ASK_COUNTER = 0,
-				ASK_LIMIT = 3,
-				ALWAYS_ASK = '1',
-				ASK_ONCE = '2',
-				ASK_ONCE_SESSION = '3',
-				ALWAYS_BLOCK = '4';
+			ASK_LIMIT = 3,
+			ASK_ONCE = '2',
+			ASK_ONCE_SESSION = '3',
+			ALWAYS_BLOCK = '4';
 
 		var toDataURL = HTMLCanvasElement.prototype.toDataURL,
-				toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
-				autoContinue = {},
-				alwaysContinue = false;
+			toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
+			autoContinue = {},
+			alwaysContinue = false;
 
 		var baseURL = messageExtensionSync('extensionURL', {
 			path: 'html/canvasFingerprinting.html#'
@@ -592,8 +589,7 @@ Special.specials = {
 
 		var generateRandomImage = function () {
 			var canvas = document.createElement('canvas'),
-					context = canvas.getContext('2d'),
-					string = ''
+				context = canvas.getContext('2d');
 
 			context.textBaseline = 'top';
 			context.font = '100 20px sans-serif';
@@ -607,9 +603,9 @@ Special.specials = {
 			var shouldContinue;
 
 			var useSimplifiedMethod = document.hidden,
-					shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION || ++ASK_COUNTER > ASK_LIMIT),
-					confirmString = _localize(useSimplifiedMethod ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt'),
-					url = baseURL + dataURL;
+				shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION || ++ASK_COUNTER > ASK_LIMIT),
+				confirmString = _localize(useSimplifiedMethod ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt'),
+				url = baseURL + dataURL;
 
 			if (shouldAskOnce)
 				confirmString += "\n\n" + _localize(JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent', [window.location.host]);
@@ -630,9 +626,9 @@ Special.specials = {
 					shouldContinue = confirm(confirmString);
 				else {
 					var activeTabIndex = messageExtensionSync('activeTabIndex'),
-							newTabIndex = messageExtensionSync('openTabWithURL', url);
+						newTabIndex = messageExtensionSync('openTabWithURL', url);
 
-					var shouldContinue = messageExtensionSync('confirm', document.location.href + "\n\n" + confirmString);
+					shouldContinue = messageExtensionSync('confirm', document.location.href + "\n\n" + confirmString);
 
 					messageExtension('activateTabAtIndex', activeTabIndex);
 					messageExtension('closeTabAtIndex', newTabIndex);
@@ -668,7 +664,7 @@ Special.specials = {
 			try {
 				if (typeof this.toDataURL.caller === 'function' && shouldSkipProtectionOnFunction(this.toDataURL.caller))
 					return toDataURL.apply(this, arguments);
-			} catch (e) {}
+			} catch (e) { /*do nothing*/ }
 
 			return protection(toDataURL.apply(this, arguments));
 		};
@@ -678,7 +674,7 @@ Special.specials = {
 				try {
 					if (typeof this.toDataURLHD.caller === 'function' && shouldSkipProtectionOnFunction(this.toDataURLHD.caller))
 						return toDataURLHD.apply(this, arguments);
-				} catch (e) {}
+				} catch (e) { /* do nothing */ }
 
 				return protection(toDataURLHD.apply(this, arguments));
 			};
@@ -695,7 +691,7 @@ Special.specials = {
 		var meta = document.createElement('meta');
 		
 		meta.setAttribute('http-equiv', 'content-security-policy');
-		meta.setAttribute('content', "script-src *");
+		meta.setAttribute('content', 'script-src *');
 		
 		if (document.documentElement.firstChild)
 			document.documentElement.insertBefore(meta, document.documentElement.firstChild);
@@ -713,7 +709,7 @@ Special.specials = {
 			var meta = document.createElement('meta');
 
 			meta.setAttribute('http-equiv', 'content-security-policy');
-			meta.setAttribute('content', "script-src " + (frameSandbox.indexOf('allow-same-origin') > -1 ? 'self' : 'none'));
+			meta.setAttribute('content', 'script-src ' + (frameSandbox.indexOf('allow-same-origin') > -1 ? 'self' : 'none'));
 			
 			if (document.documentElement.firstChild)
 				document.documentElement.insertBefore(meta, document.documentElement.firstChild);
@@ -725,7 +721,8 @@ Special.specials = {
 
 (function () {
 	for (var special in Special.specials)
-		Special.specials[special].private = true;
+		if (Special.specials.hasOwnProperty(special))
+			Special.specials[special].private = true;
 })();
 
 Special.specials.canvas_data_url.data = {

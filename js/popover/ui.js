@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var UI = {
 	__popoverWidthSetting: 'popoverWidth',
@@ -76,11 +76,11 @@ var UI = {
 		$('body').empty().append(UI.container);
 
 		var i18n,
-				i18nArgs,
-				localized,
-				attribute;
+			i18nArgs,
+			localized,
+			attribute;
 
-		$('*[data-i18n]').each(function (index) {
+		$('*[data-i18n]').each(function () {
 			attribute = null;
 			i18n = this.getAttribute('data-i18n');
 			i18nArgs = this.getAttribute('data-i18n-args');
@@ -115,31 +115,32 @@ var UI = {
 			})
 
 			.on('mousemove', function (event) {
-				if (UI.drag && UI.drag.classList.contains('popover-resize')) {
+				if (UI.drag && UI.drag.classList.contains('popover-resize'))
 					if (UI.drag.classList.contains('popover-resize-bottom')) {
 						var resizeStartY = parseInt(UI.drag.getAttribute('data-resizeStartY'), 10),
-								resizeStartHeight = parseInt(UI.drag.getAttribute('data-resizeStartHeight'), 10),
-								height = (event.screenY > resizeStartY) ? resizeStartHeight + (event.screenY - resizeStartY) : resizeStartHeight - (resizeStartY - event.screenY);
+							resizeStartHeight = parseInt(UI.drag.getAttribute('data-resizeStartHeight'), 10),
+							height = (event.screenY > resizeStartY) ? resizeStartHeight + (event.screenY - resizeStartY) : resizeStartHeight - (resizeStartY - event.screenY);
 
 						UI.resizePopover(Popover.popover.width, height);
 					} else {
 						var resizeStartX = parseInt(UI.drag.getAttribute('data-resizeStartX'), 10),
-								resizeStartWidth = parseInt(UI.drag.getAttribute('data-resizeStartWidth'), 10);
+							resizeStartWidth = parseInt(UI.drag.getAttribute('data-resizeStartWidth'), 10);
+
+						var width;
 
 						if (UI.drag.classList.contains('popover-resize-left'))
-							var width = (event.screenX < resizeStartX) ? resizeStartWidth - (event.screenX - resizeStartX) : resizeStartWidth + (resizeStartX - event.screenX);
+							width = (event.screenX < resizeStartX) ? resizeStartWidth - (event.screenX - resizeStartX) : resizeStartWidth + (resizeStartX - event.screenX);
 						else
-							var width = (event.screenX < resizeStartX) ? resizeStartWidth + (event.screenX - resizeStartX) : resizeStartWidth - (resizeStartX - event.screenX);
+							width = (event.screenX < resizeStartX) ? resizeStartWidth + (event.screenX - resizeStartX) : resizeStartWidth - (resizeStartX - event.screenX);
 
 						var widthDifference = Popover.popover.width - width;
 
 						if (!(widthDifference % 2))
 							UI.resizePopover(width, Popover.popover.height);
 					}
-				}
 			})
 
-			.on('mouseup', function (event) {
+			.on('mouseup', function () {
 				if (UI.drag) {
 					UI.drag = false;
 
@@ -172,16 +173,16 @@ var UI = {
 
 			.on('click', '.select-custom-input + .select-wrapper select:not(.select-cycle)', function (event) {
 				var self = $(this),
-						input = $(this.parentNode).prev(),
-						poppy = new Poppy(event.pageX, event.pageY, false),
-						options = $('option:not(.select-custom-option)', this);
+					input = $(this.parentNode).prev(),
+					poppy = new Poppy(event.pageX, event.pageY, false),
+					options = $('option:not(.select-custom-option)', this);
 
 				var optionsTemplate = Template.create('poppy', 'select-custom-options', {
 					options: options,
 					value: self.val()
 				});
 
-				$('li', optionsTemplate).click(function (event) {
+				$('li', optionsTemplate).click(function () {
 					input.val(this.getAttribute('data-value')).focus().trigger('input');
 
 					poppy.close();
@@ -192,11 +193,11 @@ var UI = {
 				poppy.setContent(optionsTemplate).show();
 			})
 
-			.on('change', '.select-custom-input + .select-wrapper select.select-cycle', function (event) {
+			.on('change', '.select-custom-input + .select-wrapper select.select-cycle', function () {
 				$(this.parentNode).prev().val(this.value).focus();
 			})
 
-			.on('focus', 'select', function (event) {
+			.on('focus', 'select', function () {
 				this.setAttribute('data-currentIndex', this.selectedIndex);
 			})
 
@@ -223,7 +224,7 @@ var UI = {
 				}
 			})
 
-			.on('input', 'textarea.render-as-input', function (event) {
+			.on('input', 'textarea.render-as-input', function () {
 				this.value = this.value.replace(/\n/g, '');
 			});
 
@@ -297,8 +298,8 @@ var UI = {
 		height = Math.max(Settings.map[UI.__popoverHeightSetting].props.default, height);
 
 		var popover = Popover.popover,
-				originalWidth = parseInt(popover.width, 10),
-				originalHeight = parseInt(popover.height, 10);
+			originalWidth = parseInt(popover.width, 10),
+			originalHeight = parseInt(popover.height, 10);
 
 		popover.width = width;
 		popover.height = height;
@@ -373,12 +374,12 @@ var UI = {
 			}
 
 			var metaKey = Utilities.OSXVersion ? event.metaKey : event.ctrlKey,
-					metaShift = metaKey && event.shiftKey;
+				metaShift = metaKey && event.shiftKey;
 
 			var key = String.fromCharCode(event.which).toLowerCase();
 
 			if (event.type === 'keypress') {
-				if (metaShift) {
+				if (metaShift)
 					switch (key) {
 						case 'c':
 							event.preventDefault();
@@ -393,16 +394,15 @@ var UI = {
 										.stayOpenOnScroll()
 										.show();
 								});
-						break;
+							break;
 
 						case 's':
 							event.preventDefault();
 
 							$('.page-host-create-rules', UI.Page.view).click();
-						break;
+							break;
 					}
-				}
-			} else {
+			} else
 				if (event.which === UI.events.__keys.SHIFT) {
 					// window.globalSetting.speedMultiplier = 20;
 
@@ -426,15 +426,14 @@ var UI = {
 					else if (event.which === UI.events.__keys.RIGHT)
 						UI.resizePopover(Popover.popover.width + 6, Popover.popover.height);
 				}
-			}
 		},
 
-		keyup: function (event) {
+		keyup: function () {
 			// if (event.which === UI.events.__keys.SHIFT)
 			// 	Settings.map.useAnimations.props.onChange();
 		},
 
-		anchor: function (event) {
+		anchor: function () {
 			if (this.href._startsWith('http')) {
 				Tabs.create(this.href);
 
@@ -519,7 +518,7 @@ var UI = {
 
 				.on('click', '.view-switcher li', function () {
 					UI.view.switchTo(this.getAttribute('data-view'));
-				})
+				});
 
 			Poppy.event
 				.addCustomEventListener('poppyDidShow', function () {
@@ -590,11 +589,11 @@ var UI = {
 					UI.event.trigger('viewAlreadyActive', {
 						view: switchToView,
 						id: activeID
-					})
+					});
 				});
 
 			var previousView = viewContainer.find(activeID),
-					viewSwitcher = $('.view-switcher[data-container="#' + viewContainer.attr('id') + '"]');
+				viewSwitcher = $('.view-switcher[data-container="#' + viewContainer.attr('id') + '"]');
 
 			var defaultPrevented = UI.event.trigger('viewWillSwitch', {
 				switcher: viewSwitcher,
@@ -614,8 +613,8 @@ var UI = {
 				return;
 
 			var viewSwitcherItems =	$('li', viewSwitcher),
-					previousViewSwitcherItem = viewSwitcherItems.filter('.active-view').removeClass('active-view'),
-					activeViewSwitcherItem = viewSwitcherItems.filter('[data-view="' + viewID + '"]').addClass('active-view');
+				previousViewSwitcherItem = viewSwitcherItems.filter('.active-view').removeClass('active-view'),
+				activeViewSwitcherItem = viewSwitcherItems.filter('[data-view="' + viewID + '"]').addClass('active-view');
 
 			document.activeElement.blur();
 

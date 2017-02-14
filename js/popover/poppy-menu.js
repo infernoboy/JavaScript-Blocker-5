@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 Poppy.Menu = {
 	__poppy: null,
@@ -27,7 +27,7 @@ Poppy.Menu = {
 			.modifyNormalizedForce(0, 0.85, 0.1);
 
 		Poppy.Menu.forceClick.event
-			.addCustomEventListener('firstForceChange', function (event) {
+			.addCustomEventListener('firstForceChange', function () {
 				Poppy.Menu.pressAndHold.now(true);
 			})
 
@@ -39,7 +39,7 @@ Poppy.Menu = {
 					Poppy.Menu.__poppy.cancelScaleWithForce();
 			})
 
-			.addCustomEventListener('forceDown', function (event) {
+			.addCustomEventListener('forceDown', function () {
 				if (!Poppy.Menu.__poppy)
 					return;
 
@@ -56,8 +56,8 @@ Poppy.Menu = {
 
 	show: function (element, event) {
 		var self = $(element),
-				menuHolder = self.parents('*[data-poppyMenu]'),
-				poppyName = menuHolder.attr('data-poppyMenu');
+			menuHolder = self.parents('*[data-poppyMenu]'),
+			poppyName = menuHolder.attr('data-poppyMenu');
 
 		if (!poppyName)
 			return;
@@ -72,9 +72,6 @@ Poppy.Menu = {
 
 		event.stopPropagation();
 
-		var pageX = event.pageX,
-				pageY = event.pageY;
-
 		Poppy.closeAll();
 
 		var poppy = new Poppy(event.pageX, event.pageY, true, poppyName);
@@ -84,7 +81,7 @@ Poppy.Menu = {
 		poppy.scaleWithForce(Poppy.Menu.forceClick);
 
 		Poppy.event
-			.addCustomEventListener('poppyIsFullyShown', function (event) {
+			.addCustomEventListener('poppyIsFullyShown', function () {
 				poppy.cancelScaleWithForce();
 			}, true)
 
@@ -119,16 +116,16 @@ Poppy.Menu = {
 
 				$(poppyTargets[i]).click(function (event) {
 					var self = $(event.currentTarget),
-							menuHolder = self.parents('*[data-poppyMenu]'),
-							poppyName = menuHolder.attr('data-poppyMenu');
+						menuHolder = self.parents('*[data-poppyMenu]'),
+						poppyName = menuHolder.attr('data-poppyMenu');
 
 					if (Poppy.poppyWithScriptNameExist(poppyName))
 						return event.stopImmediatePropagation();
 
 					var width = self.outerWidth(),
-							offset = self.offset().left,
-							rightOffset = offset + width,
-							inRange = (event.pageX > rightOffset - 12 && event.pageX < rightOffset);
+						offset = self.offset().left,
+						rightOffset = offset + width,
+						inRange = (event.pageX > rightOffset - 12 && event.pageX < rightOffset);
 
 					if (inRange) {
 						event.stopImmediatePropagation();

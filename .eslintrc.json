@@ -1,0 +1,138 @@
+{
+	"env": {
+		"es6": true,
+		"jquery": true,
+		"browser": true,
+		"worker": true,
+		"greasemonkey": true
+	},
+	"extends": "eslint:recommended",
+	"rules": {
+		"guard-for-in": "off",
+		"curly": ["error", "multi"],
+		"class-methods-use-this": "error",
+		"dot-location": ["error", "property"],
+		"eqeqeq": ["error", "always"],
+		"indent": ["error",
+			"tab", {
+				"SwitchCase": 1
+			}
+		],
+		"linebreak-style": [
+			"error",
+			"unix"
+		],
+		"quotes": [
+			"error",
+			"single"
+		],
+		"semi": [
+			"error",
+			"always"
+		],
+		"no-unused-vars": ["error", {
+			"varsIgnorePattern": "^_",
+			"argsIgnorePattern": "^_"
+		}],
+		"no-console": ["error", {
+			"allow": ["log", "error"]
+		}],
+		"keyword-spacing": ["error", {
+			"before": true,
+			"after": true
+		}],
+		"no-console": "off"
+	},
+	"parserOptions": {
+		"ecmaVersion": 6
+	},
+	"globals": {
+		"safari": false,
+		"Settings": false,
+		"SecureSettings": false,
+		"Popover": false,
+		"Utilities": false,
+		"GlobalPage": false,
+		"CryptoJS": false,
+		"JSB": false,
+		"Special": false,
+		"_localize": false,
+		"messageExtension": false,
+		"messageExtensionSync": false,
+		"messageTopExtension": false,
+		"TOKEN": false,
+		"LogDebug": false,
+		"LogError": false,
+		"Log": false,
+		"registerCallback": false,
+		"executeLocalCallback": false,
+		"GlobalCommand": false,
+		"UI": false,
+		"Template": false,
+		"_": false,
+		"Poppy": true,
+		"globalPage": false,
+		"SettingStore": false,
+		"Locker": false,
+		"Update": false,
+		"Upgrade": false,
+		"Extras": false,
+		"ToolbarItems": false,
+		"TIME": false,
+		"Store": false,
+		"Rules": false,
+		"Rule": false,
+		"Predefined": false,
+		"EventListener": false,
+		"Resource": false,
+		"punycode": false,
+		"ContentBlocker": false,
+		"RemoveContentScripts": false,
+		"AddContentScriptFromURL": false,
+		"MessageTarget": false,
+		"globalSetting": true,
+		"Tabs": false,
+		"Page": false,
+		"UserScript": false,
+		"ACTION": false,
+		"ExtensionURL": false,
+		"BrowserWindow": true,
+		"Events": false,
+		"PARENT": false,
+		"DeepInject": false,
+		"FRAMED_PAGES": false,
+		"RECOMMEND_PAGE_RELOAD": true,
+		"PageNotification": true,
+		"SHOWED_UPDATE_PROMPT": true,
+		"Handler": false,
+		"Maintenance": false,
+		"Command": true,
+		"COMMAND": true,
+		"deepFreezeObject": true,
+		"JSBCommander": true,
+		"JSBCallbackSetup": true,
+		"JSBCallbackHandler": true,
+		"JSBCustomEvent": true,
+		"FilterList": true,
+		"less": true,
+		"FloatingHeader": true,
+		"ForceClickElement": true,
+		"Version": true,
+		"BrowserTab": true,
+		"RESOURCE": true,
+		"BrowserWindows": true,
+		"Snapshots": true,
+		"MagicBinder": true,
+		"PressAndHoldElement": true,
+		"Paginator": true,
+		"SafariBrowserTab": false,
+		"SafariBrowserWindow": false,
+		"Snapshot": true,
+		"LZString": false,
+		"js_beautify": true,
+		"hljs": true,
+		"EffectiveTLDs": true,
+		"SimpleTLDs": true,
+		"SyncClient": true
+	}
+}

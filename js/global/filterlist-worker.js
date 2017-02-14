@@ -2,9 +2,11 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
+/* eslint-disable */
 var window = self;
+/* eslint-enable */
 
 importScripts('../global/tlds.js');
 importScripts('../utilities.js');
@@ -30,7 +32,7 @@ function processFilterList (list) {
 
 	for (var i = 0, b = lines.length; i < b; i++) {
 		var line = lines[i].trim(),
-				splitLine = line.split(' ');
+			splitLine = line.split(' ');
 
 		if (splitLine.length === 2 && ['127.0.0.1', '0.0.0.0', '0']._contains(splitLine[0])) {
 			rules
@@ -61,19 +63,20 @@ function processFilterList (list) {
 
 		var addType;
 
-		var action = line._startsWith('@@') ? ACTION.WHITELIST : ACTION.BLACKLIST,
-				line = action === ACTION.WHITELIST ? line.substr(2) : line;
+		var action = line._startsWith('@@') ? ACTION.WHITELIST : ACTION.BLACKLIST;
+		
+		line = action === ACTION.WHITELIST ? line.substr(2) : line;
 
 		if (line[0] === '!' || line[0] === '[')
 			continue; // Line is a comment or determines which version of AdBlock is required.
 
 		var dollar = line.indexOf('$'),
-				subLine = line.substr(0, ~dollar ? dollar : line.length),
-				argCheck = line.split(/\$/),
-				useKind = false,
-				args = [],
-				exceptionHosts = {},
-				domains = ['*'];
+			subLine = line.substr(0, ~dollar ? dollar : line.length),
+			argCheck = line.split(/\$/),
+			useKind = false,
+			args = [],
+			exceptionHosts = {},
+			domains = ['*'];
 
 		var rule = subLine.replace(/\//g, '\\/')
 			.replace(/\(/g, '\\(')
@@ -108,14 +111,13 @@ function processFilterList (list) {
 		if (argCheck[1]) {
 			args = argCheck[1].split(',');
 
-			for (var j = 0; j < args.length; j++) {
+			for (var j = 0; j < args.length; j++)
 				if (args[j]._startsWith('domain='))
 					domains = args[j].substr(7).split('|').map(function (domain) {
 						return '.' + domain;
 					});
 				else if (args[j] in kindMap)
 					useKind = kindMap[args[j]];
-			}
 		}
 
 		var exclusivelyExceptions = domains.every(function (domain) {
@@ -126,15 +128,15 @@ function processFilterList (list) {
 			domains.push('*');
 
 		var topDomain,
-				domainSubstr;
+			domainSubstr;
 
 		var skipDomains = [];
 
-		for (var g = 0; g < domains.length; g++) {
+		for (var g = 0; g < domains.length; g++)
 			if (domains[g]._startsWith('.~')) {
 				domainSubstr = domains[g].substr(2);
 
-				var topDomain = Utilities.URL.hostParts(domainSubstr).reverse()[0]
+				topDomain = Utilities.URL.hostParts(domainSubstr).reverse()[0];
 
 				if (topDomain !== domainSubstr && domains._contains('.' + topDomain)) {
 					skipDomains.push(domainSubstr);
@@ -142,9 +144,8 @@ function processFilterList (list) {
 					exceptionHosts._getWithDefault(topDomain, []).push(domainSubstr);
 				}
 			}
-		}
 
-		for (var g = 0; g < domains.length; g++) {
+		for (g = 0; g < domains.length; g++) {
 			if (domains[g]._startsWith('.~')) {
 				domainSubstr = domains[g].substr(2);
 
@@ -158,7 +159,7 @@ function processFilterList (list) {
 				addType = 'domain';
 
 			if (useKind)
-				for (var h = 0; h < useKind.length; h++) {
+				for (var h = 0; h < useKind.length; h++)
 					rules
 						._getWithDefault(useKind[h], {})
 						._getWithDefault(addType, {})
@@ -167,7 +168,6 @@ function processFilterList (list) {
 							thirdParty: args._contains('third-party'),
 							exceptionHosts: exceptionHosts[domains[g].substr(1)]
 						};
-				}
 			else
 				rules
 						._getWithDefault('*', {})
@@ -184,7 +184,7 @@ function processFilterList (list) {
 		error: false,
 		message: rules
 	});
-};
+}
 
 self.addEventListener('message', function (message) {
 	processFilterList(message.data);

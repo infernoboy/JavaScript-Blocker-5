@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function Page (page, tab) {
 	if (!Page.isPage(page))
@@ -11,15 +11,15 @@ function Page (page, tab) {
 	page.state = Store.promote(page.state);
 
 	var state,
-			kinds,
-			kind,
-			sources,
-			location,
-			source,
-			sourceName,
-			items,
-			itemID,
-			attributes;
+		kinds,
+		kind,
+		sources,
+		location,
+		source,
+		sourceName,
+		items,
+		itemID,
+		attributes;
 
 	for (state in page.state.data) {
 		kinds = page.state.get(state);
@@ -62,7 +62,7 @@ function Page (page, tab) {
 	Page.pages.set(page.state.name, this);
 
 	this.frames = Page.frames.getStore(page.state.name);
-};
+}
 
 Object.defineProperty(Page, '__protocols', {
 	value: Object.freeze(['http:', 'https:', 'ftp:', 'file:', 'safari-extension:', 'about:', 'data:', 'javascript:', 'blob:'])
@@ -84,7 +84,7 @@ Page.protocolSupported = function (protocol) {
 Page.withActive = function (callback) {
 	var activeTab = Tabs.active();
 
-	var activePage = Page.pages.findLast(function (pageID, page, store) {
+	var activePage = Page.pages.findLast(function (pageID, page) {
 		return (page.isTop && page.tab === activeTab);
 	});
 
@@ -110,15 +110,15 @@ Page.removePagesWithTab = function (event) {
 	});
 };
 
-Page.removeMissingPages = function (event) {
+Page.removeMissingPages = function () {
 	setTimeout(function () {
 		var currentTabs = Tabs.array();
 
-		Page.pages.only(function (pageID, page, store) {
+		Page.pages.only(function (pageID, page) {
 			return currentTabs._contains(page.tab);
 		});
 
-		Page.frames.only(function (pageID, page, store) {
+		Page.frames.only(function (pageID) {
 			return Page.pages.keyExist(pageID);
 		});
 	}, 50);
@@ -138,7 +138,7 @@ Page.requestPage = function (event) {
 	}
 };
 
-Page.requestPageFromActive = function (event) {
+Page.requestPageFromActive = function () {
 	if (window.globalSetting.disabled)
 		return;
 
@@ -201,8 +201,8 @@ Page.blockFirstVisitStatus = function (host, isPrivate) {
 		host = domain;
 
 	var list = isPrivate ? Rules.list.temporaryFirstVisit : Rules.list.firstVisit,
-			rule = list.kind('*').domain(host).get('*'),
-			rule2 = list.kind('*').domain(domain).get('*');
+		rule = list.kind('*').domain(host).get('*'),
+		rule2 = list.kind('*').domain(domain).get('*');
 
 	if (!rule && !rule2)
 		return {
@@ -221,8 +221,6 @@ Page.blockFirstVisitStatus = function (host, isPrivate) {
 		host: host,
 		domain: domain
 	};
-
-	return false;
 };
 
 Page.lastPageForTab = function (tab) {
@@ -248,29 +246,28 @@ Page.prototype.addFrame = function (frame) {
 
 	if (protoMerge || this.info.host === frame.info.host)
 		mergeInto = this;
-	else {
-		this.frames.forEach(function (frameID, framePage, frameStore) {
+	else
+		this.frames.forEach(function (frameID, framePage) {
 			if (framePage.info.host === frame.info.host) {
 				mergeInto = framePage;
 
 				return Store.BREAK;
 			}
 		});
-	}
 
 	if (mergeInto && ((!mergeInto.info.disabled && !frame.info.disabled) || (mergeInto.info.disabled && frame.info.disabled)) && !frame.info.frameBlocked) {
 		frame.merged = true;
 
 		var myState,
-				myResources,
-				myHosts;
+			myResources,
+			myHosts;
 
 		mergeInto.info.locations._pushMissing(frame.info.location);			
 
-		frame.info.state.forEach(function (state, kinds, stateStore) {
+		frame.info.state.forEach(function (state, kinds) {
 			myState = mergeInto.info.state.getStore(state);
 
-			kinds.forEach(function (kind, resources, kindStore) {
+			kinds.forEach(function (kind, resources) {
 				if (!myState.keyExist(kind))
 					myState.set(kind, resources);
 				else {
@@ -279,7 +276,7 @@ Page.prototype.addFrame = function (frame) {
 
 					myResources.getStore('source').merge(resources.getStore('source'), true);
 
-					resources.getStore('hosts').forEach(function (host, count, hostStore) {
+					resources.getStore('hosts').forEach(function (host, count) {
 						myHosts.increment(host, count);
 					});
 				}
@@ -299,27 +296,25 @@ Page.prototype.badgeState = function (state) {
 		var pageHost;
 
 		var showResourceURLs = Settings.getItem('showResourceURLs'),
-				tree = self.tree(),
-				count = 0;
+			tree = self.tree(),
+			count = 0;
 
 		for (var kind in tree.state[state])
-			if (Rules.kindShouldBadge(kind)) {
+			if (Rules.kindShouldBadge(kind))
 				if (showResourceURLs) {
 					for (pageHost in tree.state[state][kind].hosts)
 						count += tree.state[state][kind].hosts[pageHost];
 				} else
-					count += Object.keys(tree.state[state][kind].hosts || []).length
-			}
+					count += Object.keys(tree.state[state][kind].hosts || []).length;
 
 		for (var frame in tree.frames) 
 			for (kind in tree.frames[frame].state[state])
-				if (Rules.kindShouldBadge(kind)) {
+				if (Rules.kindShouldBadge(kind))
 					if (showResourceURLs) {
 						for (pageHost in tree.frames[frame].state[state][kind].hosts)
 							count += tree.frames[frame].state[state][kind].hosts[pageHost];
 					} else
-						count += Object.keys(tree.frames[frame].state[state][kind].hosts || []).length
-				}
+						count += Object.keys(tree.frames[frame].state[state][kind].hosts || []).length;
 
 		ToolbarItems.badge(count, self.tab);
 

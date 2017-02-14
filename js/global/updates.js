@@ -93,7 +93,7 @@ Update.versions[151104] = {
 					forceClickDetectionPoppy.close();
 
 					var kindHeaderPosition = kindHeader.offset(),
-							poppy = new Popover.window.Poppy(Math.floor(kindHeaderPosition.left), Math.floor(kindHeaderPosition.top + 10), true);
+						poppy = new Popover.window.Poppy(Math.floor(kindHeaderPosition.left), Math.floor(kindHeaderPosition.top + 10), true);
 
 					poppy
 						.setContent(Template.create('poppy.update', 'update-151027-kind-headers'))
@@ -150,7 +150,7 @@ Update.versions[151104.1] = {
 Update.versions[151105] = {
 	blocking: false,
 
-	update: function (updateVersion) {
+	update: function () {
 		// Settings.import(SettingStore.export(), true, true);
 
 		return true;
@@ -161,7 +161,7 @@ Update.versions[151105] = {
 Update.versions[151212] = {
 	blocking: false,
 
-	update: function (updateVersion) {
+	update: function () {
 		Settings.import(SettingStore.export(), true, true);
 
 		return true;
@@ -172,7 +172,7 @@ Update.versions[151212] = {
 Update.versions[160219] = {
 	blocking: false,
 
-	update: function (updateVersion) {
+	update: function () {
 		var userScripts = UserScript.scripts.all();
 
 		for (var userScriptNS in userScripts)
@@ -186,7 +186,7 @@ Update.versions[160219] = {
 Update.versions[160315] = {
 	blocking: false,
 
-	update: function (updateVersion) {
+	update: function () {
 		return true;
 	}
 };
@@ -195,7 +195,7 @@ Update.versions[160315] = {
 Update.versions[160320] = {
 	blocking: false,
 
-	update: function (updateVersion) {		
+	update: function () {		
 		return true;
 	}
 };
@@ -204,10 +204,10 @@ Update.versions[160320] = {
 Update.versions[160410] = {
 	blocking: false,
 
-	update: function (updateVersion) {		
+	update: function () {		
 		Predefined();
 
-		UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function (event) {
+		UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
 			UI.Feedback.showIntroPoppy();
 		}, true);
 
@@ -238,13 +238,13 @@ Update.versions[160419] = {
 			}
 		});
 	}
-}
+};
 
 // === 5.1.3 ===
 Update.versions[160827] = {
 	blocking: false,
 
-	update: function (updateVersion) {
+	update: function () {
 		var privacy = Settings.map.filterLists.props.default.$privacy._clone();
 
 		privacy.enabled = !Settings.getItem('filterLists', '$fanboyUltimate').enabled;
@@ -259,7 +259,7 @@ Update.versions[160827] = {
 Update.versions[161206] = {
 	blocking: false,
 
-	update: function (updateVersion) {
+	update: function () {
 		var peterLowe = Settings.getItem('filterLists', '$_peterLowe');
 
 		peterLowe.value = Utilities.makeArray(Settings.map.filterLists.props.default.$_peterLowe.value);
@@ -274,15 +274,14 @@ Update.versions[161206] = {
 Update.versions[170206] = {
 	blocking: false,
 
-	update: function (updateVersion) {
+	update: function () {
 		var alwaysBlocks = Settings.getItem('alwaysBlock');
 
-		for (var key in alwaysBlocks) {
+		for (var key in alwaysBlocks)
 			if (alwaysBlocks[key] === 'host')
 				Settings.setItem('alwaysBlock', 'domain', key);
 			else if (alwaysBlocks[key] === 'domain')
 				Settings.setItem('alwaysBlock', 'host', key);
-		}
 
 		return true;
 	}

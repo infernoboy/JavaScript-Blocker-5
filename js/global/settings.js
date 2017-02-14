@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Settings = {
 	__method: function (method, setting, value, persist) {
@@ -33,7 +33,6 @@ var Settings = {
 		switch (type) {
 			case 'boolean':
 				return typeof value === 'boolean';
-			break;
 
 			case 'option':
 			case 'option-radio':
@@ -47,34 +46,27 @@ var Settings = {
 					return otherOption.validate ? otherOption.validate(value) : true;
 
 				return false;
-			break;
 
 			case 'string':
 				return typeof value === 'string';
-			break;
 
 			case 'number':
 				return typeof value === 'number';
-			break;
 
 			case 'range':
 				return (isNaN(value) || value % 1 !== 0) ? false : (value >= options[0] && value <= options[1]);
-			break;
 
 			case 'array':
 				return Array.isArray(value);
-			break;
 
 			case 'mixed':
 				if (otherOption)
 					return otherOption.validate ? otherOption.validate(value) : true;
 				
 				return true;
-			break;
 
 			default:
 				throw new Error('failed to validate type - ' + type);
-			break;
 		}
 	},
 
@@ -89,13 +81,12 @@ var Settings = {
 
 	map: {},
 
-	onToggleLock: function (event, doNotSwitch) {
-		if (event.detail.key === 'settings') {
+	onToggleLock: function (event) {
+		if (event.detail.key === 'settings')
 			if (event.detail.locked)
 				UI.view.switchTo('#main-views-page');
 			else
 				UI.view.switchTo('#main-views-setting');
-		}
 	},
 
 	isLocked: function () {
@@ -145,7 +136,8 @@ var Settings = {
 		var all = {};
 
 		for (var setting in Settings.map)
-			all[setting] = Settings.getItem(setting);
+			if (Settings.map.hasOwnProperty(setting))
+				all[setting] = Settings.getItem(setting);
 
 		return all;
 	},
@@ -160,12 +152,12 @@ var Settings = {
 		}
 
 		var value,
-				defaultValue,
-				isExtra;
+			defaultValue,
+			isExtra;
 
 		if (setting.storeKeySettings || setting.store) {
 			var hasOwnDefaults = setting.props.default,
-					defaultStorage = hasOwnDefaults ? setting.props.default : setting.storeKeySettings;
+				defaultStorage = hasOwnDefaults ? setting.props.default : setting.storeKeySettings;
 
 			if (storeKey && !defaultStorage[storeKey])
 				defaultStorage = ({})._setWithDefault(storeKey, {
@@ -174,7 +166,7 @@ var Settings = {
 
 			if (!storeKey) {
 				var storedValues = {},
-						storeKeys = Object.keys(defaultStorage).concat(this.__stores.getStore(settingKey).keys());
+					storeKeys = Object.keys(defaultStorage).concat(this.__stores.getStore(settingKey).keys());
 
 				for (var i = storeKeys.length; i--;)
 					storedValues[storeKeys[i]] = Settings.getItem(settingKey, storeKeys[i]);
@@ -281,10 +273,12 @@ var Settings = {
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
 
 		var type = setting.props.type,
-				options = setting.props.options,
-				otherOption = setting.props.otherOption,
-				confirmChange = setting.props.confirm,
-				locked = setting.props.locked;
+			options = setting.props.options,
+			otherOption = setting.props.otherOption,
+			confirmChange = setting.props.confirm,
+			locked = setting.props.locked;
+
+		var prevValue;
 
 		if (setting.storeKeySettings) {
 			var storeSetting = setting.storeKeySettings[storeKey];
@@ -295,21 +289,21 @@ var Settings = {
 				storeSetting = setting.storeKeySettings[storeKey];
 			}
 
-			if (!storeSetting) {
+			if (!storeSetting)
 				if (setting.props.type._startsWith('dynamic') || setting.props.type._startsWith('many'))
 					storeSetting = {
 						props: {}
 					};
 				else
 					throw new Error(Settings.ERROR.STORE_KEY_NOT_FOUND._format([settingKey, storeKey]));
-			}
 
-			var type = type || storeSetting.props.type,
-					options = options || storeSetting.props.options,
-					otherOption = otherOption || storeSetting.props.otherOption,
-					customValidate = setting.props.validate || storeSetting.props.validate,
-					confirmChange = confirmChange || storeSetting.props.confirm,
-					locked = locked || storeSetting.props.locked;
+			type = type || storeSetting.props.type;
+			options = options || storeSetting.props.options;
+			otherOption = otherOption || storeSetting.props.otherOption;
+			confirmChange = confirmChange || storeSetting.props.confirm;
+			locked = locked || storeSetting.props.locked;
+
+			var customValidate = setting.props.validate || storeSetting.props.validate;
 
 			if (locked && !unlocked)
 				return Settings.unlockSettingSet(settingKey, value, storeKey);
@@ -323,7 +317,7 @@ var Settings = {
 			if (confirmChange && !changeConfirmed)
 				return Settings.confirmSettingSet(confirmChange, settingKey, value, storeKey, unlocked);
 
-			var prevValue = (setting.props.onChange || storeSetting.props.onChange) ? Settings.getItem(settingKey, storeKey) : undefined;
+			prevValue = (setting.props.onChange || storeSetting.props.onChange) ? Settings.getItem(settingKey, storeKey) : undefined;
 
 			this.__stores.getStore(settingKey).set(storeKey, value);
 
@@ -343,7 +337,7 @@ var Settings = {
 			if (confirmChange && !changeConfirmed)
 				return Settings.confirmSettingSet(confirmChange, settingKey, value, storeKey, unlocked);
 
-			var prevValue = setting.props.onChange ? Settings.getItem(settingKey, storeKey) : undefined;
+			prevValue = setting.props.onChange ? Settings.getItem(settingKey, storeKey) : undefined;
 
 			this.__method('setItem', settingKey, value);
 
@@ -357,7 +351,7 @@ var Settings = {
 
 	removeItem: function (settingKey, storeKey) {
 		var setting = Settings.map[settingKey],
-				storeSetting = setting.storeKeySettings ? setting.storeKeySettings[storeKey] : null;
+			storeSetting = setting.storeKeySettings ? setting.storeKeySettings[storeKey] : null;
 
 		if (!setting)
 			throw new Error(Settings.ERROR.NOT_FOUND._format([settingKey]));
@@ -395,7 +389,7 @@ var Settings = {
 			else {
 				settingKey = settings[i].setting ? settings[i].setting : settings[i].store;
 
-				if (settingKey) {
+				if (settingKey)
 					if (settings[i].store) {
 						if (when)
 							settings[i].props.when = when;
@@ -417,7 +411,6 @@ var Settings = {
 
 						Settings.map[settingKey] = settings[i];
 					}
-				}
 			}
 
 			if (settings[i].props && settings[i].props.subSettings)
@@ -432,7 +425,7 @@ var Settings = {
 
 	export: function (options, deleteProps) {
 		var allSettings = SettingStore.all(),
-				exported = {};
+			exported = {};
 
 		if (options.exportSettings)
 			exported = SettingStore.all()._clone(true);
@@ -520,20 +513,20 @@ var Settings = {
 
 						value = settings[setting];
 
-						if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE)) {
+						if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE))
 							try {
 								SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= 100000);
 							} catch (e) {
 								LogError('failed to import store setting - ' + setting, e);
 							}
-						} else {
+						else {
 							try {
 								value = JSON.parse(value);
-							} catch (e) {}
+							} catch (e) { /* do nothing */ }
 
 							try {
 								Settings.setItem(setting, value, null, true, true);
-							} catch (e) {}
+							} catch (e) { /* do nothing */ }
 						}
 					}
 				}

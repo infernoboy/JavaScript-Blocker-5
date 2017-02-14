@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var PressAndHoldElement = function (element, selector, useDirectBind, holdTime) {
 	this.__successPreventsClick = false;
@@ -40,10 +40,10 @@ PressAndHoldElement.elementEvents = {
 		event.preventDefault();
 	},
 
-	webkitmouseforcedown: function (self, event) {
+	webkitmouseforcedown: function (self) {
 		Utilities.Timer.timeoutNow(self);
 	},
-	webkitmouseforceup: function (self, event) {
+	webkitmouseforceup: function (self) {
 		Utilities.Timer.timeoutNow(self);
 	}
 };

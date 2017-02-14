@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Upgrade = {
 	__specialMap: {
@@ -14,7 +14,7 @@ var Upgrade = {
 
 	importRulesFromJSB4: function (rules) {
 		try {
-			var rules = Object._isPlainObject(rules) ? rules : JSON.parse(rules);
+			rules = Object._isPlainObject(rules) ? rules : JSON.parse(rules);
 		} catch (e) {
 			return false;
 		}
@@ -33,14 +33,14 @@ var Upgrade = {
 		}
 
 		var kind,
-				newKind,
-				domain,
-				newDomain,
-				addRule,
-				rule,
-				newRule,
-				ruleProto,
-				newRuleProto;
+			newKind,
+			domain,
+			newDomain,
+			addRule,
+			rule,
+			newRule,
+			ruleProto,
+			newRuleProto;
 
 		for (kind in rules) {
 			newKind = kind.replace(/ajax_/, 'xhr_').replace(/hide_/, 'hide:');
@@ -92,10 +92,10 @@ var Upgrade = {
 			Upgrade.importRulesFromJSB4(settings.simpleRules);
 
 		var settingMapRef,
-				settingConversion,
-				settingKey,
-				storeKey,
-				value;
+			settingConversion,
+			settingKey,
+			storeKey,
+			value;
 
 		if (Object._isPlainObject(settings.settings)) {
 			for (var setting in settings.settings) {
@@ -121,7 +121,7 @@ var Upgrade = {
 
 			try {
 				var userScriptNS,
-						userScript;
+					userScript;
 
 				var userScripts = JSON.parse(Utilities.decode(settings.settings.userScripts));
 
@@ -178,7 +178,7 @@ var Upgrade = {
 				return {
 					key: 'defaultRuleList',
 					value: value ? 'temporary' : 'last'
-				}
+				};
 			},
 
 			quickAddType: function (value) {
@@ -187,14 +187,14 @@ var Upgrade = {
 				return {
 					key: 'defaultRuleDomain',
 					value: value === 0 ? 'host' : (value === 1 ? 'domain' : 'all')
-				}
+				};
 			},
 
 			language: function (value) {
 				return {
 					key: 'language',
 					value: value === 'Automatic' ? 'auto' : value
-				}
+				};
 			},
 			
 			simpleMode: function (value) {
@@ -249,7 +249,7 @@ var Upgrade = {
 					key: 'enabledKinds',
 					storeKey: 'xhr',
 					value: value
-				}
+				};
 			},
 
 			alwaysBlockajax: function (value) {
@@ -257,7 +257,7 @@ var Upgrade = {
 					key: 'alwaysBlock',
 					storeKey: 'xhr',
 					value: Upgrade.settings.mapAlwaysBlock(value)
-				}
+				};
 			},
 
 			enablevideo: function (value) {
@@ -265,7 +265,7 @@ var Upgrade = {
 					key: 'enabledKinds',
 					storeKey: 'video',
 					value: value
-				}
+				};
 			},
 
 			alwaysBlockvideo: function (value) {
@@ -273,7 +273,7 @@ var Upgrade = {
 					key: 'alwaysBlock',
 					storeKey: 'video',
 					value: Upgrade.settings.mapAlwaysBlock(value)
-				}
+				};
 			},
 
 			showPlaceholdervideo: function (value) {
@@ -289,7 +289,7 @@ var Upgrade = {
 					key: 'enabledKinds',
 					storeKey: 'image',
 					value: value
-				}
+				};
 			},
 
 			alwaysBlockimage: function (value) {
@@ -297,7 +297,7 @@ var Upgrade = {
 					key: 'alwaysBlock',
 					storeKey: 'image',
 					value: Upgrade.settings.mapAlwaysBlock(value)
-				}
+				};
 			},
 
 			showPlaceholderimage: function (value) {
@@ -313,7 +313,7 @@ var Upgrade = {
 					key: 'enabledKinds',
 					storeKey: 'embed',
 					value: value
-				}
+				};
 			},
 
 			alwaysBlockembed: function (value) {
@@ -321,7 +321,7 @@ var Upgrade = {
 					key: 'alwaysBlock',
 					storeKey: 'embed',
 					value: Upgrade.settings.mapAlwaysBlock(value)
-				}
+				};
 			},
 
 			showPlaceholderembed: function (value) {
@@ -337,7 +337,7 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'simple_referrer',
 					value: value
-				}
+				};
 			},
 
 			enable_special_alert_dialogs: function (value) {
@@ -345,7 +345,7 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'alert_dialogs',
 					value: value
-				}
+				};
 			},
 
 			enable_special_contextmenu_overrides: function (value) {
@@ -353,7 +353,7 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'contextmenu_overrides',
 					value: value
-				}
+				};
 			},
 
 			enable_special_window_resize: function (value) {
@@ -361,7 +361,7 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'window_resize',
 					value: value
-				}
+				};
 			},
 
 			enable_special_autocomplete_disabler: function (value) {
@@ -369,7 +369,7 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'autocomplete_disabler',
 					value: value
-				}
+				};
 			},
 
 			enable_special_inline_scripts: function (value) {
@@ -377,7 +377,7 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'inline_script_execution',
 					value: value
-				}
+				};
 			},
 
 			enable_special_navigator_override: function (value) {
@@ -385,10 +385,10 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'environmental_information',
 					value: value
-				}
+				};
 			},
 
-			enable_special_canvas_fingerprinting: function (value) {;
+			enable_special_canvas_fingerprinting: function (value) {
 				value = parseInt(value, 10);
 
 				if (value === 0)
@@ -402,10 +402,10 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'canvas_data_url',
 					value: value
-				}
+				};
 			},
 
-			enable_special_font: function (value) {;
+			enable_special_font: function (value) {
 				value = parseInt(value, 10);
 
 				if (value === 0 || value === '0')
@@ -415,10 +415,10 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'font',
 					value: value
-				}
+				};
 			},
 
-			enable_special_zoom: function (value) {;
+			enable_special_zoom: function (value) {
 				value = parseInt(value, 10);
 
 				if (value === 0 || value === '0')
@@ -428,7 +428,7 @@ var Upgrade = {
 					key: 'enabledSpecials',
 					storeKey: 'zoom',
 					value: value
-				}
+				};
 			}
 		}
 	}

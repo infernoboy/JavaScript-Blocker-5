@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 window.globalSetting = {
 	disabled: false,
@@ -37,21 +37,20 @@ var Maintenance = {
 	
 	maintainPopover: function () {
 		var popover = Popover.window,
-				popoverURL = ExtensionURL('html/popover.html');
+			popoverURL = ExtensionURL('html/popover.html');
 
 		if (popover.location.href !== popoverURL)
 			popover.location.href = popoverURL;
 	},
 
 	validate: function (event) {
-		if (event && event.target) {
+		if (event && event.target)
 			if (event.target.browserWindow) {
 				if (!event.target.browserWindow.activeTab || !event.target.browserWindow.activeTab.page)
 					ToolbarItems.badge(0, event.target.browserWindow.activeTab);
 
 				Maintenance.resetIdleTimer();
 			}
-		}
 	},
 
 	shouldOpenPopover: function (event) {

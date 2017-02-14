@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Paginator = function (element, options) {
 	if (!Object._isPlainObject(options))
@@ -39,9 +39,9 @@ Paginator.elementEvents = {
 
 Paginator.prototype.__updateController = function () {
 	var self = this,
-			activePage = this.activePage(),
-			from = (parseInt(activePage.attr('data-paginatorPageNumber'), 10) - 1) * this.itemsPerPage,
-			to = Math.min(from + this.itemsPerPage, this.itemCount);
+		activePage = this.activePage(),
+		from = (parseInt(activePage.attr('data-paginatorPageNumber'), 10) - 1) * this.itemsPerPage,
+		to = Math.min(from + this.itemsPerPage, this.itemCount);
 
 	this.controller.toggleClass('jsb-hidden', this.pagesContainer.children().length < 2);
 
@@ -71,7 +71,7 @@ Paginator.prototype.hasPages = function () {
 
 Paginator.prototype.createPage = function (setActive, ignoreController) {
 	var isFirstPage = !this.__lastPage,
-			pageItemWrapper = this.pageItemWrapper.clone().attr('data-paginatorPageNumber', ++this.pageCount);
+		pageItemWrapper = this.pageItemWrapper.clone().attr('data-paginatorPageNumber', ++this.pageCount);
 
 	this.pagesContainer.append(pageItemWrapper);
 
@@ -84,11 +84,11 @@ Paginator.prototype.createPage = function (setActive, ignoreController) {
 	}
 
 	if (!isFirstPage && !ignoreController) {
-		clearTimeout(this.__updateControllerTimeout)
+		clearTimeout(this.__updateControllerTimeout);
 
 		this.__updateControllerTimeout = setTimeout(function (self) {
 			self.__updateController();
-		}, 100, this)
+		}, 100, this);
 	}
 
 	return pageItemWrapper;
@@ -111,8 +111,8 @@ Paginator.prototype.addItem = function (item) {
 
 Paginator.prototype.addItems = function (items) {
 	var remainingItemSpace = this.__lastPage ? this.itemsPerPage - this.__lastPage.children().length : 0,
-			fillCurrentPageItems = items.splice(0, remainingItemSpace),
-			chunkedItems = items._chunk(this.itemsPerPage);
+		fillCurrentPageItems = items.splice(0, remainingItemSpace),
+		chunkedItems = items._chunk(this.itemsPerPage);
 
 	if (remainingItemSpace)
 		chunkedItems.unshift([fillCurrentPageItems]);		
@@ -134,7 +134,7 @@ Paginator.prototype.addItems = function (items) {
 
 Paginator.prototype.nextPage = function () {
 	var activePage = this.activePage(),
-			nextPage = activePage.next();
+		nextPage = activePage.next();
 
 	if (nextPage.length) {
 		activePage.removeClass('paginator-active');
@@ -148,7 +148,7 @@ Paginator.prototype.nextPage = function () {
 
 Paginator.prototype.previousPage = function () {
 	var activePage = this.activePage(),
-			previousPage = activePage.prev();
+		previousPage = activePage.prev();
 
 	if (previousPage.length) {
 		activePage.removeClass('paginator-active');

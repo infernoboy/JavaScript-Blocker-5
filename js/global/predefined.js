@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function Predefined () {
 	Rules.list['$predefined'].clear();
@@ -11,8 +11,8 @@ function Predefined () {
 		return;
 	
 	var kind,
-			domain,
-			i;
+		domain,
+		i;
 
 	var whitelistValue = {
 		action: 5
@@ -216,4 +216,4 @@ function Predefined () {
 					action: 4,
 					thirdParty: true
 				});
-};
+}

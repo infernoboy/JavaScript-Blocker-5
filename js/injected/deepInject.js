@@ -17,7 +17,7 @@ function DeepInject (name, script, noToken) {
 		this.scriptString = 'function () {' + this.scriptString + '}';
 
 	this.prepare();
-};
+}
 
 DeepInject.useURL = true;
 DeepInject.fnHeaderRegExp = /^(function +)(\(([^\)]+)?\)) +{/;
@@ -30,8 +30,8 @@ DeepInject.prototype.anonymize = function () {
 
 DeepInject.prototype.prepare = function () {
 	var self = this,
-			header =  this.scriptString.substr(0, this.scriptString.indexOf('{') + 1),
-			inner = this.scriptString.substring(header.length, this.scriptString.lastIndexOf('}'));
+		header =  this.scriptString.substr(0, this.scriptString.indexOf('{') + 1),
+		inner = this.scriptString.substring(header.length, this.scriptString.lastIndexOf('}'));
 
 	header = header.replace(DeepInject.fnHeaderRegExp, function (complete, fn, argString) {
 		return 'function ' + self.fnName + ' ' + argString + ' {';
@@ -88,7 +88,7 @@ DeepInject.prototype.executable = function (noSourceURL) {
 
 	var args = [];
 
-	for (var arg in this.pieces.args) {
+	for (var arg in this.pieces.args)
 		try {
 			str = JSON.stringify(this.pieces.args[arg]);
 
@@ -99,7 +99,6 @@ DeepInject.prototype.executable = function (noSourceURL) {
 		} catch (error) {
 			args.push(this.pieces.args[arg]);
 		}
-	}
 
 	return (!noSourceURL ? ('//@ sourceURL=JSB5:' + this.cleanName + "\n") : '') + '(' + this.asFunction() + ')(' + args.join(', ') + ')';
 };
@@ -169,9 +168,8 @@ DeepInject.prototype.inject = function (useURL) {
 
 	var attributes = injectable.attributes;
 
-	for (var i = attributes.length; i--;) {
+	for (var i = attributes.length; i--;)
 		injectable.removeAttribute(attributes[i].nodeName);
-	}
 };
 
 DeepInject.prototype.execute = function () {

@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 UI.Help = {
 	__sections: ['contact', 'faq', 'about'],
@@ -30,7 +30,7 @@ UI.Help = {
 
 		UI.Help.viewSwitcher = $('.view-switcher', UI.Help.view);
 
-		for (var i = 0; i < UI.Help.__sections.length; i++) {
+		for (i = 0; i < UI.Help.__sections.length; i++) {
 			UI.view.create('help-views', UI.Help.__sections[i], UI.Help.views);
 
 			$('#help-views-' + UI.Help.__sections[i], UI.Help.views).append(Template.create('help', 'help-' + UI.Help.__sections[i]));
@@ -65,7 +65,7 @@ UI.Help = {
 
 			UI.Help.FAQ.viewSwitcher = $('.view-switcher', UI.Help.FAQ.view);
 
-			for (var i = 0; i < UI.Help.FAQ.__sections.length; i++) {
+			for (i = 0; i < UI.Help.FAQ.__sections.length; i++) {
 				UI.view.create('help-faq-views', UI.Help.FAQ.__sections[i], UI.Help.FAQ.views);
 
 				$('#help-faq-views-' + UI.Help.FAQ.__sections[i], UI.Help.FAQ.views).append(Template.create('help', 'help-faq-' + UI.Help.FAQ.__sections[i]));

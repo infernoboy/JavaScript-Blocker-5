@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Store = (function () {
 	function Store (name, props) {
@@ -37,7 +37,7 @@ var Store = (function () {
 				store.saveNow();
 			}, 5000, this);
 		}
-	};
+	}
 
 	Store = Store._extendClass(EventListener);
 
@@ -47,10 +47,6 @@ var Store = (function () {
 	Store.LOCAL_SAVE_SIZE = 100000;
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
-
-	Store.exist = function (storeName) {
-		return (storeName in data);
-	};
 
 	Store.promote = function (object) {
 		if (object instanceof Store)
@@ -86,11 +82,11 @@ var Store = (function () {
 			throw new TypeError('left or right is not an instance of Store');
 
 		var key,
-				thisValue,
-				oppositeValue,
-				compared,
-				comparedSide,
-				inside;
+			thisValue,
+			oppositeValue,
+			compared,
+			comparedSide,
+			inside;
 
 		var swap = {
 			left: 'right',
@@ -115,13 +111,13 @@ var Store = (function () {
 			both: store.getStore('both')
 		};
 
-		for (var side in compare) {
+		for (var side in compare)
 			for (key in compare[side].data) {
 				thisValue = compare[side].get(key, null, null, true);
 				oppositeValue = compare[swap[side]].get(key, null, null, true);
 
 				if (thisValue === undefined && oppositeValue === undefined)
-					sides.both.set(key, undefined)
+					sides.both.set(key, undefined);
 
 				else if (oppositeValue === undefined)
 					sides[side].set(key, thisValue);
@@ -142,7 +138,6 @@ var Store = (function () {
 				else if (thisValue !== undefined)
 					sides[side].set(key, thisValue);
 			}
-		}
 
 		sides.left = sides.left.readyJSON(null, true);
 		sides.right = sides.right.readyJSON(null, true);
@@ -170,11 +165,11 @@ var Store = (function () {
 			if (hasParent && newParent !== null)
 				this.parent = null;
 
-			if (newParent instanceof Store) {
+			if (newParent instanceof Store)
 				this.__parent = newParent;
-			} else if (newParent === null) {
+			else if (newParent === null)
 				this.__parent = undefined;
-			} else
+			else
 				throw new Error('parent is not null or an instance of Store');
 		}
 	});
@@ -183,7 +178,7 @@ var Store = (function () {
 
 	Store.prototype.__parent = undefined;
 
-	Store.prototype.__save = function (bypassIgnore, saveNow, notModified) {
+	Store.prototype.__save = function (bypassIgnore, saveNow) {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
@@ -197,10 +192,10 @@ var Store = (function () {
 					console.time(startTime.toLocaleTimeString() + ' - SAVED ' + store.id);
 
 				var savableStore = JSON.stringify(store),
-						useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;				
+					useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;				
 
 				if (useLocal)
-					savableStore = LZString.compressToUTF16(savableStore)
+					savableStore = LZString.compressToUTF16(savableStore);
 
 				Settings.__method('setItem', store.id, savableStore, !useLocal);
 
@@ -267,14 +262,16 @@ var Store = (function () {
 		if (this.save) {
 			var stored = Settings.__method('getItem', this.id, Store.__emptyStoreString);
 
+			var decompressed;
+
 			if (typeof stored === 'string') {
 				try {
-					var decompressed = LZString.decompressFromUTF16(stored);
+					decompressed = LZString.decompressFromUTF16(stored);
 
 					if (!decompressed.length || decompressed.charAt(0) === '@')
 						decompressed = stored;
 				} catch (e) {
-					var decompressed = stored;
+					decompressed = stored;
 				}
 
 				try {
@@ -282,7 +279,7 @@ var Store = (function () {
 				} catch (e) {
 					LogError(e, decompressed);
 
-					stored = {}
+					stored = {};
 				}
 			}
 
@@ -323,7 +320,7 @@ var Store = (function () {
 		var value;
 
 		var store = new Store(prefix ? (prefix + ',' + this.name) : this.name, props),
-				newData = {};
+			newData = {};
 
 		for (var key in this.data) {
 			value = this.get(key, null, null, true);
@@ -350,7 +347,7 @@ var Store = (function () {
 			throw new TypeError(store + ' is not an instance of Store');
 
 		var currentValue,
-				storeValue;
+			storeValue;
 
 		for (var key in store.data) {
 			currentValue = this.get(key, null, null, true);
@@ -390,7 +387,7 @@ var Store = (function () {
 		var value;
 
 		var keys = this.keys(),
-				found = false;
+			found = false;
 
 		for (var i = keys.length; i--;) {
 			value = this.get(keys[i], null, null, true);
@@ -436,7 +433,7 @@ var Store = (function () {
 
 	Store.prototype.forEach = function (fn) {
 		var value,
-				result;
+			result;
 
 		var results = [];
 
@@ -596,7 +593,7 @@ var Store = (function () {
 
 				var value = this.data[key].value;
 
-				if (value !== null && !(value instanceof Store)) {
+				if (value !== null && !(value instanceof Store))
 					if (Store.isStore(value)) {
 						value.name = (this.name || this.id) + ',' + key;
 						value.props = {};
@@ -604,7 +601,7 @@ var Store = (function () {
 						Store.inherit(value.props, this);
 
 						var promoted = Store.promote(value),
-								accessed = this.maxLife < Infinity ? Date.now() : -1
+							accessed = this.maxLife < Infinity ? Date.now() : -1;
 
 						promoted.parent = this;
 
@@ -620,7 +617,7 @@ var Store = (function () {
 						return value;
 					else
 						return Object._copy(value, defaultValue);
-				} else if (value === null || !value.destroyed)
+				else if (value === null || !value.destroyed)
 					return value;
 			} else if (defaultValue !== undefined && defaultValue !== null)
 				return this.set(key, defaultValue).get(key, null, asReference);
@@ -637,8 +634,8 @@ var Store = (function () {
 
 	Store.prototype.getStore = function (key, defaultProps, parent) {
 		var store = this.get(key),
-				hasDefaultProps = !!defaultProps,
-				requiredName = (this.name || this.id) + ',' + key;
+			hasDefaultProps = !!defaultProps,
+			requiredName = (this.name || this.id) + ',' + key;
 
 		if (!(defaultProps instanceof Object)) 
 			defaultProps = {};
@@ -648,13 +645,12 @@ var Store = (function () {
 		if (!(store instanceof Store) || !store.data || store.destroyed)
 			store = this.set(key, new Store(requiredName, defaultProps), null, parent);
 		else if (hasDefaultProps)
-			for (var i = Store.__inheritable.length; i--;) {
+			for (var i = Store.__inheritable.length; i--;)
 				if (defaultProps[Store.__inheritable[i]] !== store.props[Store.__inheritable[i]]) {
 					store.setProperties(requiredName, defaultProps);
 
 					break;
 				}
-			}
 
 		return store;
 	};
@@ -710,7 +706,7 @@ var Store = (function () {
 		if (this.lock)
 			return;
 
-		var keys = Object.keys(this.data).filter(function (value, i) {
+		var keys = Object.keys(this.data).filter(function (value) {
 			return regexp.test(value);
 		});
 
@@ -725,7 +721,7 @@ var Store = (function () {
 			return;
 
 		var value,
-				now;
+			now;
 
 		for (var key in this.data) {
 			if (!now)
@@ -764,7 +760,7 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.clear = function (ignoreSave, selfOnly) {
+	Store.prototype.clear = function (ignoreSave) {
 		if (this.lock)
 			return;
 
@@ -787,8 +783,6 @@ var Store = (function () {
 		this.destroyed = true;
 
 		this.clearTimers();
-
-		var child;
 
 		var self = this;
 
@@ -822,15 +816,15 @@ var Store = (function () {
 
 	Store.prototype.all = function () {
 		var key,
-				value,
-				finalValue;
+			value,
+			finalValue;
 
 		var object = {};
 
-		for (var key in this.data) {
+		for (key in this.data) {
 			value = this.get(key, null, null, true);
 
-			if (value instanceof Store) {
+			if (value instanceof Store)
 				if (value.isEmpty())
 					continue;
 				else {
@@ -839,7 +833,7 @@ var Store = (function () {
 					if (finalValue._isEmpty())
 						continue;
 				}
-			} else
+			else
 				finalValue = value;
 
 			if (finalValue === undefined)
@@ -857,7 +851,7 @@ var Store = (function () {
 
 	Store.prototype.readyJSON = function (swapPrefix, noProps) {
 		var value,
-				finalValue;
+			finalValue;
 
 		var name = (this.name && !this.parent) ? this.name.toString() : null;
 
@@ -882,7 +876,7 @@ var Store = (function () {
 		for (var key in this.data) {
 			value = this.get(key, null, null, true);
 
-			if (value instanceof Store) {
+			if (value instanceof Store)
 				if (value.isEmpty())
 					continue;
 				else {
@@ -891,18 +885,17 @@ var Store = (function () {
 					if (finalValue.STORE._isEmpty())
 						continue;
 				}
-			} else
+			else
 				finalValue = value;
 
-			if (finalValue !== undefined) {
+			if (finalValue !== undefined)
 				stringable.STORE[key] = {
 					accessed: this.data[key].accessed,
 					value: finalValue
 				};
-			}
 		}
 
-		for (var key in stringable.props)
+		for (key in stringable.props)
 			if (stringable.props[key] === false)
 				stringable.props[key] = undefined;
 
@@ -912,12 +905,6 @@ var Store = (function () {
 	Store.prototype.toJSON = function () {
 		return this.readyJSON();
 	};
-
-	Store.prototype.dump = function  () {
-		Log(data);
-
-		return data;
-	};
-
+	
 	return Store;
 })();

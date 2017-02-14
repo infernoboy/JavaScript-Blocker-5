@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 Settings.settings = {
 	// Misc settings that are not user editable
@@ -188,26 +188,26 @@ Settings.settings = {
 			default: true
 		}
 	}, {
-			setting: 'showResourceURLs',
-			props: {
-				type: 'boolean',
-				default: false,
-				onChange: function () {
-					var showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs');
+		setting: 'showResourceURLs',
+		props: {
+			type: 'boolean',
+			default: false,
+			onChange: function () {
+				var showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs');
 
-					Popover.window.document.documentElement.classList.toggle('popover-expanded', showResourceURLs);
+				Popover.window.document.documentElement.classList.toggle('popover-expanded', showResourceURLs);
 
-					UI.__popoverWidthSetting = 'popoverWidth' + (showResourceURLs ? 'Expanded' : '');
-					UI.__popoverHeightSetting = 'popoverHeight' + (showResourceURLs ? 'Expanded' : '');
+				UI.__popoverWidthSetting = 'popoverWidth' + (showResourceURLs ? 'Expanded' : '');
+				UI.__popoverHeightSetting = 'popoverHeight' + (showResourceURLs ? 'Expanded' : '');
 
-					UI.resizePopover(Settings.getItem(UI.__popoverWidthSetting), Settings.getItem(UI.__popoverHeightSetting));
+				UI.resizePopover(Settings.getItem(UI.__popoverWidthSetting), Settings.getItem(UI.__popoverHeightSetting));
 
-					if (Popover.visible())
-						setTimeout(function () {
-							Page.requestPageFromActive();
-						}, 300);
-				}
+				if (Popover.visible())
+					setTimeout(function () {
+						Page.requestPageFromActive();
+					}, 300);
 			}
+		}
 	}, {
 		setting: 'newUserScriptStorageItem',
 		props: {
@@ -215,7 +215,7 @@ Settings.settings = {
 			classes: 'user-script-storage-new',
 			onClick: function (button) {
 				var offset = $(button).offset(),
-						poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'user-script-storage-add');
+					poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'user-script-storage-add');
 
 				poppy
 					.setContent(Template.create('poppy.settings', 'user-script-storage-add'))
@@ -252,7 +252,7 @@ Settings.settings = {
 			type: 'button',
 			onClick: function (button) {
 				var offset = $(button).offset(),
-						backupPoppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'setting-menu-backup');
+					backupPoppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'setting-menu-backup');
 
 				backupPoppy
 					.setContent(Template.create('poppy.settings', 'setting-menu-backup', {
@@ -370,7 +370,7 @@ Settings.settings = {
 					onChange: function () {
 						setTimeout(function () {
 							if (!SettingStore.__locked && !Settings.IMPORTING)
-								Popover.window.location.reload()
+								Popover.window.location.reload();
 						}, 500);
 					}
 				}
@@ -437,7 +437,7 @@ Settings.settings = {
 					props: {
 						type: 'boolean',
 						default: false,
-						onChange: function (type, settingKey, value, storeKey) {
+						onChange: function (type, settingKey, value) {
 							var relatedSettings = [
 								'createRulesOnClick', 'autoHideWhitelist', 'autoHideBlacklist',
 								'autoHideRule', 'autoHideNoRule'];
@@ -756,7 +756,7 @@ Settings.settings = {
 							}]
 						}
 					},
-					onChange: function (type, settingKey, value, storeKey) {
+					onChange: function (type, settingKey, value) {
 						Rules.list.temporary.rules.clear();
 						Rules.list.temporaryFirstVisit.rules.clear();
 
@@ -853,7 +853,7 @@ Settings.settings = {
 							}]
 						}
 					},
-					onChange: function (type, settingKey, value, storeKey) {
+					onChange: function (type, settingKey, value) {
 						if (!value)
 							SettingStore.removeItem('Storage-ResourceCanLoad');
 						
@@ -1366,7 +1366,7 @@ Settings.settings = {
 						test: function (type, value) {
 							var url = $.trim(value.value[0]).toLowerCase();
 
-							return (url._startsWith('http:') || url._startsWith('https:') || url._startsWith('ftp:'))
+							return (url._startsWith('http:') || url._startsWith('https:') || url._startsWith('ftp:'));
 						}
 					},
 					onChange: function (type, settingKey, value, storeKey) {
@@ -1380,7 +1380,7 @@ Settings.settings = {
 								.show();
 
 							var list = Settings.map.filterLists.props.default.$list._clone(),
-									privacy = Settings.map.filterLists.props.default.$privacy._clone();
+								privacy = Settings.map.filterLists.props.default.$privacy._clone();
 
 							list.enabled = false;
 							privacy.enabled = false;
@@ -1412,8 +1412,8 @@ Settings.settings = {
 				description: 'filterListLastUpdate.description',
 				fill: function () {
 					var lastUpdate = Settings.getItem('FilterListLastUpdate'),
-							nextUpdate = lastUpdate + FilterList.__updateInterval - Date.now(),
-							nextUpdateHuman = Utilities.humanTime(nextUpdate);
+						nextUpdate = lastUpdate + FilterList.__updateInterval - Date.now(),
+						nextUpdateHuman = Utilities.humanTime(nextUpdate);
 
 					return [(new Date(lastUpdate || Date.now())).toLocaleString(), nextUpdateHuman.days, nextUpdateHuman.hours, nextUpdateHuman.minutes];
 				}
@@ -1450,7 +1450,7 @@ Settings.settings = {
 				type: 'stand-alone-button',
 				onClick: function (button) {
 					var offset = $(button).offset(),
-							poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'import-rules-from-four');
+						poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true, 'import-rules-from-four');
 
 					poppy
 						.setContent(Template.create('poppy.settings', 'import-rules-from-four'))
@@ -1537,14 +1537,14 @@ Settings.settings = {
 				setting: 'newUserScript',
 				props: {
 					type: 'stand-alone-button',
-					onClick: function (button) {
+					onClick: function () {
 						var scriptName;
 
 						var scriptNameTemplate = 'My User Script {0}',
-								scriptNamespace = Settings.getItem('installID'),
-								scriptIndex = 0;
+							scriptNamespace = Settings.getItem('installID'),
+							scriptIndex = 0;
 
-						while (UserScript.scripts.keyExist((scriptName = scriptNameTemplate._format([++scriptIndex])) + ':' + scriptNamespace)) {}
+						while (UserScript.scripts.keyExist((scriptName = scriptNameTemplate._format([++scriptIndex])) + ':' + scriptNamespace)) { /* do nothing */ }
 
 						var defaultUserScript =
 							"// ==UserScript==\n" +
@@ -1555,7 +1555,7 @@ Settings.settings = {
 							"// @domain *\n" +
 							"// ==/UserScript==\n\n\n";
 
-						UI.event.addCustomEventListener('customSettingViewCreated', function (event) {
+						UI.event.addCustomEventListener('customSettingViewCreated', function () {
 							$('.user-script-content', UI.Settings.userScriptEdit).val(defaultUserScript).focus()[0].selectionStart = defaultUserScript.length;
 						}, true);
 
@@ -1608,7 +1608,7 @@ Settings.settings = {
 				container
 					.on('click', '.user-script-delete', function () {
 						var self = this,
-								userScriptItem = $(this).parents('.user-script-item');
+							userScriptItem = $(this).parents('.user-script-item');
 
 						userScriptItem.collapse(225 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
 							UserScript.remove(self.getAttribute('data-userScript'));

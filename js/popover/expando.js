@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Expando = {
 	init: function () {
@@ -12,16 +12,16 @@ var Expando = {
 
 	toggleGroupByHeader: function (header) {
 		var groupWrapper = header.next(),
-				group = groupWrapper.children(':first-child');
+			group = groupWrapper.children(':first-child');
 
 		if (group.is(':animated'))
 			return;
 
 		var maxGroupWrapperHeight = UI.container.height(),
-				groupWrapperHeight = groupWrapper.outerHeight(true),
-				isTooLarge = groupWrapperHeight > maxGroupWrapperHeight,
-				isCollapsed = header.hasClass('group-collapsed'),
-				expandingClass = isCollapsed ? 'group-expanding' : 'group-collapsing';
+			groupWrapperHeight = groupWrapper.outerHeight(true),
+			isTooLarge = groupWrapperHeight > maxGroupWrapperHeight,
+			isCollapsed = header.hasClass('group-collapsed'),
+			expandingClass = isCollapsed ? 'group-expanding' : 'group-collapsing';
 
 		header.addClass(expandingClass);
 
@@ -37,9 +37,9 @@ var Expando = {
 
 			if (view.length) {
 				var offset = groupWrapper.offset(),
-						viewOffset = view.offset(),
-						viewHeight = view.height(),
-						bottom = offset.top + (isTooLarge ? maxGroupWrapperHeight : groupWrapperHeight);
+					viewOffset = view.offset(),
+					viewHeight = view.height(),
+					bottom = offset.top + (isTooLarge ? maxGroupWrapperHeight : groupWrapperHeight);
 
 				if (bottom > (viewHeight + viewOffset.top) && header.attr('data-noScroll') !== '1')
 					Utilities.setImmediateTimeout(function (view, bottom, viewHeight, viewOffset, header) {
@@ -82,16 +82,16 @@ var Expando = {
 			Expando.toggleGroupByHeader($(this.parentNode.parentNode));
 		},
 
-		rulesChanged: function (event) {
+		rulesChanged: function () {
 			Utilities.Timer.timeout('expandoRulesChanged', function () {
 				var expander = Settings.__stores.get('expander'),
-						expanderCopy = expander.clone('rulesChanged'),
-						lists = globalPage.Rules.list,
-						listLength = Object.keys(globalPage.Rules.list).filter(function (listName) {
-							return !listName._startsWith('$');
-						}).length;
+					expanderCopy = expander.clone('rulesChanged'),
+					lists = globalPage.Rules.list,
+					listLength = Object.keys(globalPage.Rules.list).filter(function (listName) {
+						return !listName._startsWith('$');
+					}).length;
 
-				expanderCopy.forEach(function (key, value, store) {
+				expanderCopy.forEach(function (key) {
 					var split = key.split('ruleGroupDomain,');
 
 					if (split[1]) {
@@ -121,11 +121,11 @@ var Expando = {
 		elementWasAdded: function (event) {
 			if (event.detail.querySelectorAll) {
 				var expander,
-						keepExpanded,
-						headerWrapper,
-						header,
-						headerLabel,
-						expandedState;
+					keepExpanded,
+					headerWrapper,
+					header,
+					headerLabel,
+					expandedState;
 
 				var setHeaderColor = function (header, headerLabel) {
 					UI
@@ -136,7 +136,7 @@ var Expando = {
 				};
 
 				var headers = event.detail.querySelectorAll('*[data-expander]:not(.header-expander-ready)'),
-						showExpanderLabels = Settings.getItem('showExpanderLabels');
+					showExpanderLabels = Settings.getItem('showExpanderLabels');
 
 				for (var i = headers.length; i--;) {
 					headerWrapper = $(headers[i]);

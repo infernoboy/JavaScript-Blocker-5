@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Locker = {
 	__temporaryUnlock: null,
@@ -30,8 +30,8 @@ var Locker = {
 
 	lock: function (key, value) {
 		var isLocked = Locker.isLocked(key),
-				alwaysLocked = Locker.isAlwaysLocked(key),
-				newValue = alwaysLocked ? true : !!value;
+			alwaysLocked = Locker.isAlwaysLocked(key),
+			newValue = alwaysLocked ? true : !!value;
 
 		if (typeof alwaysLocked === 'undefined')
 			Settings.setItem('locker', newValue, key);

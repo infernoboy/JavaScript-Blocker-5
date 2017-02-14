@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 if (!window.safari || !window.safari.extension)
 	throw new Error('JS Blocker cannot run ' + (window === window.top ? 'on' : 'in a frame on' ) + ' this page because the required safari object is unavailable.');
@@ -16,11 +16,13 @@ var Version = {
 	bundle: parseFloat(safari.extension.bundleVersion)
 };
 
+var BrowserTab, BrowserWindow;
+
 try {
-	var BrowserTab = SafariBrowserTab,
-			BrowserWindow = SafariBrowserWindow;
+	BrowserTab = SafariBrowserTab;
+	BrowserWindow = SafariBrowserWindow;
 } catch (e) {
-	var BrowserTab = BrowserWindow = null;
+	BrowserTab = BrowserWindow = null;
 }
 
 var ToolbarItems = {
@@ -157,7 +159,7 @@ var Tabs = {
 	},
 	create: function (url, autoClose) {
 		var activeWindow = BrowserWindows.active(),
-				activeTabIndex = Tabs.array().indexOf(Tabs.active());
+			activeTabIndex = Tabs.array().indexOf(Tabs.active());
 
 		var tab = activeWindow ? activeWindow.openTab() : BrowserWindows.open().activeTab;
 
@@ -274,7 +276,7 @@ var SettingStore = {
 			return this.__cache[key];
 
 		var localValue = localStorage.getItem(key),
-				value = (typeof localValue === 'string') ? JSON.parse(localValue) : safari.extension.settings.getItem(key);
+			value = (typeof localValue === 'string') ? JSON.parse(localValue) : safari.extension.settings.getItem(key);
 
 		if (value === null)
 			return defaultValue === undefined ? value : defaultValue;
@@ -325,7 +327,7 @@ var SettingStore = {
 		localStorage.removeItem(key);
 	},
 
-	all: function (now) {
+	all: function () {
 		SettingStore.syncNow();
 			
 		return Object._extend(true, {}, localStorage, safari.extension.settings);
@@ -337,7 +339,7 @@ var SettingStore = {
 
 	import: function (settings) {
 		try {
-			var settings = Object._isPlainObject(settings) ? settings : JSON.parse(settings);
+			settings = Object._isPlainObject(settings) ? settings : JSON.parse(settings);
 		} catch (e) {
 			LogError(e);
 			
@@ -397,36 +399,29 @@ var Events = {
 		tab: {}
 	},
 
-	__addReference: function (kind, type, callback) {
+	__addReference: function () {
 		return;
-		
-		var ref = Events.__references[kind];
-
-		if (!ref[type])
-			ref[type] = [];
-
-		ref[type].push(callback);
 	},
 
 	__unbindAll: function () {
 		var which,
-				base,
-				type,
-				i;
+			base,
+			type,
+			i;
 
 		for (which in Events.__references) {
 			switch (which) {
 				case 'application':
 					base = safari.application;
-				break;
+					break;
 
 				case 'settings':
 					base = safari.extension.settings;
-				break;
+					break;
 
 				case 'tab':
 					base = safari.self;
-				break;
+					break;
 			}
 
 			for (type in Events.__references[which])
@@ -463,34 +458,34 @@ var Events = {
 function MessageTarget (event, name, data) {
 	if (event.target.page)
 		event.target.page.dispatchMessage(name, data);
-};
+}
 
 function PrivateBrowsing () {
 	return (safari.application.privateBrowsing && safari.application.privateBrowsing.enabled);
-};
+}
 
 function ExtensionURL (path) {
 	return safari.extension.baseURI + (path || '');
-};
+}
 
 function ResourceCanLoad (beforeLoad, data) {
 	return GlobalPage.tab.canLoad(beforeLoad, data);
-};
+}
 
 function GlobalCommand (command, data) {
 	return GlobalPage.tab.canLoad(beforeLoad, {
 		command: command,
 		data: data
 	});
-};
+}
 
 function RemoveContentScripts () {
 	safari.extension.removeContentScripts();
-};
+}
 
 function AddContentScriptFromURL (url) {
 	safari.extension.addContentScriptFromURL(ExtensionURL(url));
-};
+}
 
 
 (function () {
@@ -528,10 +523,9 @@ function AddContentScriptFromURL (url) {
 })();
 
 
-if (!!GlobalPage.tab && window.location.href.indexOf(ExtensionURL()) === -1) {
+if (!!GlobalPage.tab && window.location.href.indexOf(ExtensionURL()) === -1)
 	try {
 		GlobalCommand('contentBlockerMode');
 	} catch (e) {
 		throw new Error('safari: content blocker mode?');
 	}
-}

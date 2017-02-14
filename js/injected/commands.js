@@ -14,30 +14,32 @@ var COMMAND = {
 COMMAND._createReverseMap();
 
 var Command = function (type, event) {
+	var detail;
+
 	switch (type) {
 		case 'global':
-			var detail = {
+			detail = {
 				sourceName: 'Page',
 				sourceID: Page.info.id,
 				commandToken: Command.requestToken(event.name),
 				command: event.name,
 				data: event.message
 			};
-		break;
+			break;
 
 		case 'window':
-			var detail = {
+			detail = {
 				sourceName: 'Page',
 				sourceID: Page.info.id,
 				commandToken: Command.requestToken(event.data.command),
 				command: event.data.command,
 				data: event.data.data
 			};
-		break;
+			break;
 
 		case 'injected':
-			var detail = event.detail;
-		break;
+			detail = event.detail;
+			break;
 	}
 
 	detail.type = type;
@@ -68,8 +70,8 @@ var Command = function (type, event) {
 
 		var commandParts = detail.command.split(/\./g);
 
-		if (commandParts.length > 1) {
-			while (true) {
+		if (commandParts.length > 1)
+			for (;;) {
 				if (commands.hasOwnProperty((part = commandParts.shift())))
 					commands = commands[part];
 
@@ -82,7 +84,6 @@ var Command = function (type, event) {
 				if (commandParts.length === 1)
 					break;
 			}
-		}
 
 		if (commands !== Commands[detail.type])
 			commands.__proto__ = Commands[detail.type];
@@ -127,7 +128,7 @@ var Command = function (type, event) {
 	var Commands = {};
 
 	Commands.global = {
-		getFrameInfoWithID: function (detail, event) {
+		getFrameInfoWithID: function (detail) {
 			if (!Page.info.isFrame && (!detail.data.targetPageID || detail.data.targetPageID === Page.info.id))
 				GlobalPage.message('bounce', {
 					command: 'getFrameInfo',
@@ -152,12 +153,12 @@ var Command = function (type, event) {
 			Utilities.nextImmediateTimeout();
 		},
 
-		messageTopExtension: function (detail, event) {
+		messageTopExtension: function (detail) {
 			if (Page.info.isFrame)
 				return;
 
 			var data = detail.data.meta,
-					foundSourceID = false;
+				foundSourceID = false;
 
 			for (var token in TOKEN.INJECTED)
 				if (TOKEN.INJECTED[token].namespace === data.originSourceName) {
@@ -183,14 +184,16 @@ var Command = function (type, event) {
 			});
 
 			if (data.callback) {
+				var promise;
+
 				if (result && typeof result.then === 'function')
-					var promise = result;
+					promise = result;
 				else
-					var promise = Promise.resolve(result);
+					promise = Promise.resolve(result);
 
 				promise.then(function (result) {
 					var name = 'TopCallback$' + data.originSourceName + '$' + Utilities.Token.generate(),
-							script = new DeepInject(name, data.callback);
+						script = new DeepInject(name, data.callback);
 
 					script.setArguments({
 						detail: {
@@ -200,7 +203,7 @@ var Command = function (type, event) {
 						}
 					});
 
-					var callback = UserScript.inject({
+					UserScript.inject({
 						private: TOKEN.INJECTED[foundSourceID].private,
 
 						attributes: {
@@ -281,13 +284,13 @@ var Command = function (type, event) {
 				Utilities.Token.expire(frame.getAttribute('data-jsbAllowLoad'));
 
 				var locationURL,
-						locationURLStore,
-						frameURL,
-						frameURLStore,
-						frameItemID;
+					locationURLStore,
+					frameURL,
+					frameURLStore,
+					frameItemID;
 
 				var frameSources = Page.allowed.getStore('frame').getStore('source'),
-						allFrameSources = frameSources.all();
+					allFrameSources = frameSources.all();
 
 				for (locationURL in allFrameSources) {
 					locationURLStore = frameSources.getStore(locationURL);
@@ -295,19 +298,18 @@ var Command = function (type, event) {
 					for (frameURL in allFrameSources[locationURL]) {
 						frameURLStore = locationURLStore.getStore(frameURL);
 
-						for (frameItemID in allFrameSources[locationURL][frameURL]) {
+						for (frameItemID in allFrameSources[locationURL][frameURL])
 							if (allFrameSources[locationURL][frameURL][frameItemID].meta && allFrameSources[locationURL][frameURL][frameItemID].meta.waiting && allFrameSources[locationURL][frameURL][frameItemID].meta.id === message.id) {
 								frameURLStore.remove(frameItemID);
 
 								Page.allowed.decrementHost('frame', Utilities.URL.extractHost(frameURL));
 							}
-						}
 					}
 				}
 			}
 
 			var previousURL = frame ? frame.jsbFrameURL : 'about:blank',
-					previousURLTokenString = previousURL + 'FrameURL';
+				previousURLTokenString = previousURL + 'FrameURL';
 
 			if (frame && !Utilities.Token.valid(frame.jsbFrameURLToken, previousURLTokenString))
 				return;
@@ -356,13 +358,13 @@ var Command = function (type, event) {
 					})
 				});
 
-				notification.addCloseButton(_('recommend_reload.reload_once'), function (notification) {
+				notification.addCloseButton(_('recommend_reload.reload_once'), function () {
 					window.location.reload();
 				});
 			}
 		},
 
-		showJSBUpdatePrompt: function (detail) {
+		showJSBUpdatePrompt: function () {
 			if (Page.info.isFrame || SHOWED_UPDATE_PROMPT)
 				return;
 
@@ -399,7 +401,7 @@ var Command = function (type, event) {
 	};
 
 	Commands.window = {
-		requestFrameURL: function (detail, event) {
+		requestFrameURL: function (detail) {
 			PARENT.frameID = detail.data.id;
 			PARENT.pageID = detail.data.pageID;
 			PARENT.parentPageID = detail.data.parentPageID || PARENT.pageID;
@@ -432,7 +434,7 @@ var Command = function (type, event) {
 
 		__addPageItem: function (isAllowed, detail) {
 			var info = detail.meta,
-					actionStore = isAllowed ? Page.allowed : Page.blocked;
+				actionStore = isAllowed ? Page.allowed : Page.blocked;
 
 			info.source = Utilities.URL.getAbsolutePath(info.source);
 			info.host = Utilities.URL.extractHost(info.source);
@@ -455,8 +457,8 @@ var Command = function (type, event) {
 
 		__modifyPageItem: function (isAllowed, detail) {
 			var info = detail.meta,
-					actionStore = isAllowed ? Page.allowed : Page.blocked,
-					found = actionStore.deepFindKey(info.resourceID);
+				actionStore = isAllowed ? Page.allowed : Page.blocked,
+				found = actionStore.deepFindKey(info.resourceID);
 
 			found.store.set(info.resourceID, {
 				action: info.canLoad.action,
@@ -467,7 +469,7 @@ var Command = function (type, event) {
 			Page.send();
 		},
 
-		historyStateChange: function (detail, event) {
+		historyStateChange: function () {
 			Handler.setPageLocation();
 
 			if (Page.info.isFrame)
@@ -494,7 +496,7 @@ var Command = function (type, event) {
 			};
 		},
 
-		registerDeepInjectedScript: function (detail, event) {
+		registerDeepInjectedScript: function (detail) {
 			if (TOKEN.REGISTERED[detail.sourceID])
 				throw new Error('cannot register a script more than once - ' + TOKEN.INJECTED[detail.sourceID].namespace);
 
@@ -553,7 +555,7 @@ var Command = function (type, event) {
 				return LogError(Error('caption is not a valid string'), detail.meta);
 
 			var ref = TOKEN.INJECTED[detail.sourceID],
-					name = ref.parentUserScript ? ref.parentUserScriptName : ref.name;
+				name = ref.parentUserScript ? ref.parentUserScriptName : ref.name;
 
 			detail.meta = name + ' - ' + detail.meta;
 
@@ -584,7 +586,7 @@ var Command = function (type, event) {
 
 		showXHRPrompt: function (detail) {
 			var self = this,
-					meta = detail.meta.meta;
+				meta = detail.meta.meta;
 
 			var response = {
 				meta: {
@@ -647,10 +649,10 @@ var Command = function (type, event) {
 
 						if (response.meta.result.send) {
 							var send = [],
-									query = notification.element.querySelectorAll('.jsb-xhr-query-view');
+								query = notification.element.querySelectorAll('.jsb-xhr-query-view');
 
 							for (var i = 0; i < query.length; i++)
-								send.push(query[i].querySelector('.jsb-xhr-query-param').getAttribute('data-param') + '=' + query[i].querySelector('.jsb-xhr-query-value').getAttribute('data-value'))
+								send.push(query[i].querySelector('.jsb-xhr-query-param').getAttribute('data-param') + '=' + query[i].querySelector('.jsb-xhr-query-value').getAttribute('data-value'));
 
 							response.meta.result.send = send.join('&');
 						}
@@ -674,7 +676,7 @@ var Command = function (type, event) {
 
 						try {
 							queryModify.querySelector('.' + event.target.classList[0] + '-modify').focus();
-						} catch (error) {}
+						} catch (error) { /* do nothing */ }
 
 						PageNotification.totalShift();
 					})
@@ -686,10 +688,10 @@ var Command = function (type, event) {
 							response.meta.result.send = true;
 
 							var queryPartFor,
-									queryPart;
+								queryPart;
 
 							var inputs = this.parentNode.querySelectorAll('input'),
-									queryView = this.parentNode.previousElementSibling;
+								queryView = this.parentNode.previousElementSibling;
 
 							for (var i = 0; i < inputs.length; i++) {
 								queryPartFor = inputs[i].getAttribute('data-for');
@@ -724,7 +726,7 @@ var Command = function (type, event) {
 					notification.trigger('blockXHR');
 			});
 
-			notification.addEventListener('click', '.jsb-xhr-create-rule', function (notification) {
+			notification.addEventListener('click', '.jsb-xhr-create-rule', function () {
 				GlobalPage.message('editResourceIDs', {
 					resourceIDs: [meta.awaitPromptResourceID]
 				});
@@ -738,7 +740,7 @@ var Command = function (type, event) {
 		},
 
 		notification: function (detail) {
-			return new Promise(function (resolve, reject) {				
+			return new Promise(function (resolve) {				
 				var info = TOKEN.INJECTED[detail.sourceID];
 
 				if (info.isUserScript)
@@ -750,8 +752,8 @@ var Command = function (type, event) {
 				var notification = new PageNotification(detail.meta);
 
 				if (detail.meta.closeButtons)
-					for (var i = 0; i < detail.meta.closeButtons.length; i++) {
-						notification.addCloseButton(detail.meta.closeButtons[i].title, function (sourceID, callbackID, notification) {
+					for (var i = 0; i < detail.meta.closeButtons.length; i++)
+						notification.addCloseButton(detail.meta.closeButtons[i].title, function (sourceID, callbackID) {
 							Commands.injected.executeCommanderCallback({
 								meta: {
 									sourceID: sourceID,
@@ -760,7 +762,6 @@ var Command = function (type, event) {
 								}
 							});
 						}.bind(null, detail.originSourceID, detail.meta.closeButtons[i].callbackID));
-					}
 
 				resolve(notification.element.id);
 			});
@@ -780,7 +781,7 @@ var Command = function (type, event) {
 			};
 		},
 
-		testCommand: function (detail) {
+		testCommand: function () {
 			return 3;
 		},
 
@@ -938,7 +939,7 @@ Command.global = function (event) {
 	if (event.message)
 		try {
 			event.message = JSON.parse(event.message);
-		} catch (error) {}
+		} catch (error) { /* do nothing */ }
 
 	Command('global', event);
 };

@@ -56,7 +56,7 @@ var Special = {
 			return deepInject.prepend(helpers.__cache);
 
 		var helperScript,
-				prepend;
+			prepend;
 
 		var cache = [];
 
@@ -84,13 +84,15 @@ var Special = {
 	},
 
 	setup: function (deepInject) {
+		var JSB;
+
 		if (deepInject.script.ignoreHelpers)
-			var JSB = {
+			JSB = {
 				eventToken: TOKEN.EVENT,
 				sourceID: deepInject.id
 			};
 		else
-			var JSB = {
+			JSB = {
 				eventCallback: {},
 				commandGeneratorToken: Command.requestToken('commandGeneratorToken'),
 				eventToken: TOKEN.EVENT,
@@ -107,8 +109,10 @@ var Special = {
 		});
 
 		var specialSetup = new DeepInject(null, function () {
+			/* eslint-disable */
 			if (window[JSB.eventToken])
 				var console = window[JSB.eventToken].console;
+			/* eslint-enable */
 		}, true);
 
 		deepInject.prepend([specialSetup.inner()]);
@@ -150,12 +154,12 @@ var Special = {
 			private: !!this.specials[name].private
 		};
 
-		if (!Special.injectable) {
+		if (!Special.injectable)
 			if (this.specials[name].uninjectableCompatible)
 				special.execute();
 			else
 				LogDebug('Cannot inject special "' + name + '" due to page\'s Content-Security-Policy.');
-		} else
+		else
 			special.inject(useURL);
 
 		return special;
@@ -171,7 +175,7 @@ var Special = {
 		var CSPToken = Utilities.Token.generate();
 
 		var CSPDetect = new DeepInject('CSPScriptDetection', function (CSPToken) {
-			document.documentElement.setAttribute('data-JSB-CSP-SCRIPTS-ALLOWED', CSPToken)
+			document.documentElement.setAttribute('data-JSB-CSP-SCRIPTS-ALLOWED', CSPToken);
 		});
 
 		CSPDetect.setArguments({ CSPToken: CSPToken }).inject(false);
@@ -205,7 +209,7 @@ var Special = {
 				action: -14
 			};
 
-		for (var special in this.enabled) {
+		for (var special in this.enabled)
 			if (!this.enabled[special].enabled) {
 				if (!this.specials[special].excludeFromPage)
 					Page.allowed.pushSource('special', special, {
@@ -216,7 +220,6 @@ var Special = {
 
 				this.inject(special);
 			}
-		}
 	},
 
 	helpers: {
@@ -286,7 +289,7 @@ var Special = {
 			JSB.eventCallback[id] = {
 				fn: fn,
 				preserve: preserve
-			}
+			};
 
 			return id;
 		},
@@ -339,7 +342,7 @@ var Special = {
 			return evt;
 		},
 
-		JSBCallbackSetup: function (event) {
+		JSBCallbackSetup: function () {
 			if (!window[JSB.eventToken])
 				return console.error('frame disappeared?');
 

@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 UI.Setup = {
 	init: function () {
@@ -55,7 +55,7 @@ UI.Setup = {
 	},
 
 	preventViewSwitch: function (event) {
-		if (event.detail.to.id._startsWith('#main-views')) {
+		if (event.detail.to.id._startsWith('#main-views'))
 			if (!Settings.getItem('setupComplete')) {
 				event.preventDefault();
 
@@ -68,7 +68,6 @@ UI.Setup = {
 				poppy.show();
 			}	else
 				event.unbind();
-		}
 	},
 
 	preventPoppyMenus: function (event) {

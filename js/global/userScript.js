@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var UserScript = {
 	__updateInterval: TIME.ONE.DAY * 2,
@@ -18,18 +18,20 @@ var UserScript = {
 			if (resources.hasOwnProperty(resourceName))
 				Utilities.setImmediateTimeout(function (self, store, resources, resourceName) {
 					var xhr = new XMLHttpRequest(),
-							resourceURL = resources[resourceName],
-							bypassCache = (resourceURL._contains('?') ? '&' : '?') + Date.now(),
-							isURL = Utilities.URL.isURL(resourceURL);
+						resourceURL = resources[resourceName],
+						bypassCache = (resourceURL._contains('?') ? '&' : '?') + Date.now(),
+						isURL = Utilities.URL.isURL(resourceURL);
 
 					if (!isURL) {
 						var sourceURL = attributes.get('customDownloadURL') || attributes.get('downloadURL');
 
+						var pathname;
+
 						if (sourceURL) {
 							if (resourceURL._startsWith('/'))
-								var pathname = resourceURL;
+								pathname = resourceURL;
 							else {
-								var pathname = Utilities.URL.pathname(sourceURL).split('/');
+								pathname = Utilities.URL.pathname(sourceURL).split('/');
 
 								pathname.pop();
 
@@ -49,7 +51,7 @@ var UserScript = {
 							return LogError(Error('resource not found - ' + store.name), resourceName);
 
 						var data = '',
-								array = new Uint8Array(this.response);
+							array = new Uint8Array(this.response);
 
 						for (var i = 0, b = array.length; i < b; i++)
 							data += String.fromCharCode(array[i]);
@@ -100,7 +102,7 @@ var UserScript = {
 			return {};
 		
 		var script,
-				attributes;
+			attributes;
 
 		var scripts = Special.__forLocation(this.scripts.data, 'user_script', location, isFrame);
 
@@ -138,8 +140,8 @@ var UserScript = {
 		var domain;
 
 		var removeAction = [ACTION.AUTO_BLOCK_USER_SCRIPT, ACTION.AUTO_ALLOW_USER_SCRIPT],
-				types = Rules.list.user.kind('user_script'),
-				allTypes = types.all();
+			types = Rules.list.user.kind('user_script'),
+			allTypes = types.all();
 
 		if (includeUserDefined)
 			removeAction.push(ACTION.ALLOW, ACTION.BLOCK);
@@ -152,24 +154,24 @@ var UserScript = {
 
 	canBeUpdated: function (meta, customDownloadURL) {
 		var updateURLisURL = Utilities.URL.isURL(meta.updateURL),
-				downloadURLisURL = Utilities.URL.isURL(customDownloadURL || meta.downloadURL),
-				installURLisURL = Utilities.URL.isURL(meta.installURL);
+			downloadURLisURL = Utilities.URL.isURL(customDownloadURL || meta.downloadURL),
+			installURLisURL = Utilities.URL.isURL(meta.installURL);
 
 		return !!(meta.version.length && (updateURLisURL || downloadURLisURL || installURLisURL));
 	},
 
 	update: function (namespace) {
 		var currentMeta,
-				updateMeta;
+			updateMeta;
 
 		var self = this,
-				now = Date.now(),
-				userScript = this.scripts.get(namespace),
-				attributes = userScript.get('attributes'),
-				updateURL = attributes.get('updateURL'),
-				downloadURL = attributes.get('downloadURL'),
-				customDownloadURL = attributes.get('customDownloadURL'),
-				isDeveloperMode = !!attributes.get('developerMode');
+			now = Date.now(),
+			userScript = this.scripts.get(namespace),
+			attributes = userScript.get('attributes'),
+			updateURL = attributes.get('updateURL'),
+			downloadURL = attributes.get('downloadURL'),
+			customDownloadURL = attributes.get('customDownloadURL'),
+			isDeveloperMode = !!attributes.get('developerMode');
 
 		if (customDownloadURL)
 			updateURL = downloadURL = customDownloadURL;
@@ -190,7 +192,7 @@ var UserScript = {
 				updateMeta = self.parse(update).parsed;
 
 				if (currentMeta.trueNamespace === updateMeta.trueNamespace) {
-					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && self.canBeUpdated(updateMeta, customDownloadURL))) {
+					if (isDeveloperMode || (Utilities.isNewerVersion(currentMeta.version, updateMeta.version) && self.canBeUpdated(updateMeta, customDownloadURL)))
 						self.download(downloadURL === updateURL ? update : downloadURL, true, downloadURL === updateURL).done(function (script) {
 							self.add(script, true);
 
@@ -208,7 +210,6 @@ var UserScript = {
 								}, 4000);
 							}
 						});
-					}
 				} else
 					LogError(Error('attempted to update user script, but updated name is not equal to current name: ' + currentMeta.trueNamespace + ' - ' + updateMeta.trueNamespace));
 			});
@@ -217,7 +218,7 @@ var UserScript = {
 
 	download: function (url, async, urlIsScript) {
 		if (urlIsScript)
-			return new Promise(function (resolve, reject) {
+			return new Promise(function (resolve) {
 				resolve(url);
 			});
 
@@ -240,13 +241,13 @@ var UserScript = {
 			return null;
 
 		var localKey,
-				localValue;
+			localValue;
 
 		var lines = script.split(/\n/g),
-				lineMatch = /\/\/\s@([a-z:0-9-]+)(\s+[^\n]+)?/i,
-				parseLine = false,
-				resource = null,
-				metaStr = '';
+			lineMatch = /\/\/\s@([a-z:0-9-]+)(\s+[^\n]+)?/i,
+			parseLine = false,
+			resource = null,
+			metaStr = '';
 
 		var parsed = {
 			name: null,
@@ -271,18 +272,18 @@ var UserScript = {
 
 		var requireIndex = 0;
 
-		for (var line = 0; line < lines.length; line++) {
+		for (var line = 0; line < lines.length; line++)
 			if (!parseLine && /\/\/\s==UserScript==/.test(lines[line]))
 				parseLine = true;
 			else if (parseLine && /\/\/\s==\/UserScript==/.test(lines[line]))
 				parseLine = false;
-			else if (parseLine) {
+			else if (parseLine)
 				lines[line].replace(lineMatch, function (fullLine, key, value) {
 					value = $.trim(value);
 
 					metaStr += fullLine + "\n";
 
-					if (parsed.hasOwnProperty(key) && value.length) {
+					if (parsed.hasOwnProperty(key) && value.length)
 						if (typeof parsed[key] === 'string' || parsed[key] === null)
 							parsed[key] = value;
 
@@ -306,7 +307,7 @@ var UserScript = {
 									parsed[localKey]._pushMissing(localValue);
 
 								parsed[key]._pushMissing(value);
-							} else if (key === 'domain') {
+							} else if (key === 'domain')
 								if (value._contains('.tld')) {
 									localValue = '^https?:\\/\\/';
 
@@ -321,15 +322,12 @@ var UserScript = {
 									parsed.matchJSB._pushMissing(localValue);
 								} else
 									parsed[key]._pushMissing(value);
-							}
 						}
-					} else if (value.length)
+					else if (value.length)
 						parsed[key] = value;
 					else if (key === 'noframes')
 						parsed[key] = true;
 				});
-			}
-		}
 
 		if (parsed.name && parsed.namespace) {
 			parsed.name = parsed.name.replace(/\|/g, '￨');
@@ -357,9 +355,9 @@ var UserScript = {
 		});
 	},
 
-	add: function (script, isAutoUpdate) {
+	add: function (script) {
 		var parsed = this.parse(script),
-				detail = parsed.parsed;
+			detail = parsed.parsed;
 
 		if (detail.name === null || detail.namespace === null) {
 			LogDebug('unable to add user script because it does not have a name or namespace');
@@ -368,10 +366,10 @@ var UserScript = {
 		}
 
 		var namespace = detail.trueNamespace,
-				userScript = this.scripts.getStore(namespace),
-				attributes = userScript.getStore('attributes'),
-				customDownloadURL = attributes.get('customDownloadURL', false),
-				canBeUpdated = this.canBeUpdated(detail, customDownloadURL);
+			userScript = this.scripts.getStore(namespace),
+			attributes = userScript.getStore('attributes'),
+			customDownloadURL = attributes.get('customDownloadURL', false),
+			canBeUpdated = this.canBeUpdated(detail, customDownloadURL);
 
 		var newAttributes = {
 			enabled: attributes.get('enabled', true),
@@ -390,7 +388,7 @@ var UserScript = {
 		};
 
 		var allowPages = detail.matchJSB.concat(detail.includeJSB),
-				allowDomains = detail.domain;
+			allowDomains = detail.domain;
 
 		if (!Rules.snapshotInUse()) {
 			this.removeRules(namespace);
@@ -401,13 +399,13 @@ var UserScript = {
 					action: ACTION.AUTO_ALLOW_USER_SCRIPT
 				});
 
-			for (var i = 0; i < allowDomains.length; i++)
+			for (i = 0; i < allowDomains.length; i++)
 				Rules.list.user.addDomain('user_script', allowDomains[i], {
 					rule: namespace,
 					action: ACTION.AUTO_ALLOW_USER_SCRIPT
 				});
 
-			for (var i = 0; i < detail.excludeJSB.length; i++)
+			for (i = 0; i < detail.excludeJSB.length; i++)
 				Rules.list.user.addPage('user_script', detail.excludeJSB[i], {
 					rule: namespace,
 					action: ACTION.AUTO_BLOCK_USER_SCRIPT
@@ -464,7 +462,7 @@ var UserScript = {
 			switch (attribute) {
 				case 'customDownloadURL':
 					attributes.set('canBeUpdated', Utilities.URL.isURL(value) || (!value.length && Utilities.URL.isURL(attributes.get('downloadURL'))));
-				break;
+					break;
 			}
 
 			return attributes.set(attribute, value);
@@ -486,7 +484,7 @@ var UserScript = {
 		var userScript = UserScript.exist(userScriptNS);
 
 		if (userScript) {
-			var storage = userScript.getStore('storage')
+			var storage = userScript.getStore('storage');
 
 			if (key)
 				return storage.get(key);

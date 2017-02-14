@@ -2,18 +2,16 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 (function () {
 	var poppies = {};
 
 	window.Poppy = function Poppy (x, y, closeExisting, scriptName) {
 		if (typeof x !== 'number' || typeof y !== 'number') {
-			console.trace()
+			console.trace();
 			throw new TypeError('x or y is not a number');
 		}
-
-		var self = this;
 
 		if (closeExisting)
 			window.Poppy.closeAll();
@@ -132,9 +130,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 	Poppy.createArrow = function (poppy) {
 		var	arrowStyle = window.getComputedStyle(poppy.isUpArrow ? poppy.arrowSettingsUp[0] : poppy.arrowSettings[0]),
-				shadowColor = 'rgba(1, 0, 1, ' + (Settings.getItem('darkMode') ? 1 : 0.26) + ')',
-				arrowBackgroundColor = arrowStyle.backgroundColor,
-				arrowContext = document.getCSSCanvasContext('2d', poppy.isUpArrow ? 'poppy-arrow-up' : 'poppy-arrow', 30, 20);
+			shadowColor = 'rgba(1, 0, 1, ' + (Settings.getItem('darkMode') ? 1 : 0.26) + ')',
+			arrowBackgroundColor = arrowStyle.backgroundColor,
+			arrowContext = document.getCSSCanvasContext('2d', poppy.isUpArrow ? 'poppy-arrow-up' : 'poppy-arrow', 30, 20);
 
 		arrowContext.clearRect(0, 0, 30, 20);
 
@@ -142,7 +140,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		arrowContext.shadowOffsetY = poppy.isUpArrow ? -1 : 1;
 		arrowContext.shadowBlur = 6;
 		arrowContext.shadowColor = shadowColor;
-		arrowContext.fillStyle = arrowBackgroundColor
+		arrowContext.fillStyle = arrowBackgroundColor;
 
 		if (poppy.isUpArrow) {
 			arrowContext.beginPath();
@@ -176,7 +174,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		return loadingPoppy;
 	};
 
-	Poppy.prototype.__firstForceChange = function (event) {
+	Poppy.prototype.__firstForceChange = function () {
 		if (this.poppy.hasClass('poppy-fully-shown'))
 			return;
 
@@ -195,9 +193,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		});
 	};
 
-	Poppy.prototype.__viewDidScroll = function (event) {
+	Poppy.prototype.__viewDidScroll = function () {
 		var scrollTop = this.view.scrollTop(),
-				scrollLeft = this.view.scrollLeft();
+			scrollLeft = this.view.scrollLeft();
 
 		this.originalPosition.y -= scrollTop - this.lastScroll.top;
 		this.originalPosition.x -= scrollLeft - this.lastScroll.left;
@@ -282,11 +280,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		poppyAndContent.css('height', '');
 
 		var containerWidth = Poppy.__container.width(),
-				containerHeight = Poppy.__container.height(),
-				poppyWidth = this.poppy.outerWidth(),
-				poppyHeight = this.poppy.outerHeight(),
-				halfArrowWidth = Math.floor(this.arrow.outerWidth() / 2),
-				arrowHeight = this.arrow.outerHeight();
+			containerHeight = Poppy.__container.height(),
+			poppyWidth = this.poppy.outerWidth(),
+			poppyHeight = this.poppy.outerHeight(),
+			halfArrowWidth = Math.floor(this.arrow.outerWidth() / 2),
+			arrowHeight = this.arrow.outerHeight();
 				
 		if (this.position.x - poppyWidth / 2 <= -Poppy.__offset) { // If overflow on left side
 			position.poppy.left = -Poppy.__offset;
@@ -306,8 +304,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			position.poppy.left = this.position.x - Math.floor(poppyWidth / 2);
 			position.arrow.left = Math.floor(poppyWidth / 2) - halfArrowWidth;
 		}
-		
-		if (this.position.y - poppyHeight - arrowHeight <= 0) {
+
+		var currentHeightTotal;
+
+		if (this.position.y - poppyHeight - arrowHeight <= 0)
 			if (this.position.y < containerHeight / 2) {
 				this.poppy.addClass('poppy-up');
 
@@ -319,9 +319,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 				position.arrow.bottom = 'auto';
 				position.arrow.top = -arrowHeight;
 				
-				if (position.poppy.top + poppyHeight + arrowHeight > containerHeight) { // If overflow on bottom side
-					var currentHeightTotal;
-
+				if (position.poppy.top + poppyHeight + arrowHeight > containerHeight) // If overflow on bottom side
 					while ((currentHeightTotal = position.poppy.top + this.poppy.outerHeight() + 5 - Poppy.__offset) > containerHeight) {
 						this.noArrow = true;
 
@@ -334,11 +332,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 							break;
 						}
 					}
-				}
 			} else {
-				if (poppyHeight + arrowHeight > this.position.y) { // If overflow on top side
-					var currentHeightTotal;
-
+				if (poppyHeight + arrowHeight > this.position.y) // If overflow on top side
 					while ((currentHeightTotal = this.poppy.outerHeight() + arrowHeight + 5) > this.position.y) {
 						this.noArrow = true;
 
@@ -351,9 +346,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 							break;
 						}
 					}
-				}
 			}
-		}
 
 		this.poppy.toggleClass('poppy-no-arrow', this.noArrow);
 
@@ -373,7 +366,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		return this;
 	};
 
-	Poppy.prototype.setContent = function (content, script) {
+	Poppy.prototype.setContent = function (content) {
 		this.content.off().empty().append(content);
 
 		if (this.displayed) {
@@ -495,7 +488,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			.toggleClass('poppy-open-quick', !!quick)
 			.toggleClass('poppy-open-instant', !!instant)
 			.addClass('poppy-open poppy-displayed')
-			.one('webkitAnimationEnd', function (event) {
+			.one('webkitAnimationEnd', function () {
 				Poppy.event.trigger('poppyIsFullyShown', this);
 
 				this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
@@ -525,7 +518,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	};
 
 	Poppy.prototype.close = function (immediate, doNotCheckEvent) {
-		return new Promise(function (resolve, reject) {
+		return new Promise(function (resolve) {
 			if (this.closed || (!doNotCheckEvent && Poppy.event.trigger('poppyWillClose', this)))
 				return this;
 
@@ -546,7 +539,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			Poppy.closeLinksTo(this);
 
 			var self = this,
-					keepModalOpen = false;
+				keepModalOpen = false;
 
 			this.closed = true;
 
@@ -574,7 +567,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 				this.remove();
 
 				resolve(this);
-			} else {
+			} else
 				this.poppy
 					.addClass('poppy-closed')
 					.fadeOut(100 * window.globalSetting.speedMultiplier, 'easeOutQuad', function () {
@@ -582,7 +575,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 						resolve(self);
 					});
-			}
 
 			return this;
 		}.bind(this));
@@ -609,7 +601,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		return this;
 	};
 
-	Poppy.prototype.cancelScaleWithForce = function (event) {
+	Poppy.prototype.cancelScaleWithForce = function () {
 		if (this.forceClickElement && this.forceClickElement.event)
 			this.forceClickElement.event
 				.removeCustomEventListener('firstForceChange', this.__firstForceChange)
@@ -658,9 +650,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 					return Poppy.closeAll();
 
 				var poppyID = poppyElement.attr('data-id'),
-						poppy = poppies[poppyID],
-						zIndex = poppy ? poppy.zIndex : 0,
-						linkTree = poppy ? poppy.linkTree() : [];
+					poppy = poppies[poppyID],
+					zIndex = poppy ? poppy.zIndex : 0,
+					linkTree = poppy ? poppy.linkTree() : [];
 
 				for (var otherPoppyID in poppies)
 					if (otherPoppyID !== poppyID && poppies[otherPoppyID].zIndex > zIndex && (!poppy.linkedTo || !linkTree._contains(otherPoppyID)))

@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function FilterList (listName, listURL) {
 	if (!Rules.list[listName])
@@ -15,7 +15,7 @@ function FilterList (listName, listURL) {
 	this.valid = true;
 
 	this.download().done(this.process.bind(this));
-};
+}
 
 FilterList.__cancel = 0;
 FilterList.__updating = 0;

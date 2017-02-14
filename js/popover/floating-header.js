@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var FloatingHeader = function (container, selector, related, offset, useOffset) {
 	this.id = Utilities.Token.generate();
@@ -61,15 +61,14 @@ FloatingHeader.prototype.init = function () {
 };
 
 FloatingHeader.prototype.setContainerOffset = function () {
-	if (!this.containerOffsetTop) {
+	if (!this.containerOffsetTop)
 		if (this.container.is(':visible'))
 			this.containerOffsetTop = this.container.offset().top;
 		else
 			return Utilities.Timer.timeout('setContainerOffset-' + this.id, this.setContainerOffset.bind(this), 1000);
-	}
 };
 
-FloatingHeader.prototype.requestFrame = function (previousScrollTop, timestamp) {
+FloatingHeader.prototype.requestFrame = function (previousScrollTop) {
 	if (this.container[0].scrollTop !== previousScrollTop)
 		Utilities.setImmediateTimeout(function (self) {
 			self.adjustPosition();	
@@ -82,11 +81,11 @@ FloatingHeader.prototype.requestFrame = function (previousScrollTop, timestamp) 
 
 FloatingHeader.prototype.adjustPosition = function () {
 	var self = this,
-			offset = (typeof this.offset === 'function') ? this.offset(this.container, this.selector) : this.offset,
-			selfOffset = this.useOffset ? offset : 0,
-			top = this.containerOffsetTop + offset,
-			allHeaders = $(this.selector, this.container),
-			unfloatedHeaders = allHeaders.not('.floated-header');
+		offset = (typeof this.offset === 'function') ? this.offset(this.container, this.selector) : this.offset,
+		selfOffset = this.useOffset ? offset : 0,
+		top = this.containerOffsetTop + offset,
+		allHeaders = $(this.selector, this.container),
+		unfloatedHeaders = allHeaders.not('.floated-header');
 
 	var currentHeader =
 		unfloatedHeaders
@@ -118,17 +117,19 @@ FloatingHeader.prototype.adjustPosition = function () {
 
 	var relatedElementCache = currentHeader.data('relatedElement');
 
+	var relatedElement;
+
 	if (relatedElementCache)
-		var relatedElement = relatedElementCache;
+		relatedElement = relatedElementCache;
 	else {
-		var relatedElement = (typeof this.related === 'function') ? this.related(this.container, currentHeader) : null;
+		relatedElement = (typeof this.related === 'function') ? this.related(this.container, currentHeader) : null;
 
 		if (relatedElement && relatedElement.saveToCache)
 			currentHeader.data('relatedElement', relatedElement);
 	}
 	
 	var relatedShifted = false,
-			currentHeaderMarginHeight = currentHeader.data('outerHeightMargin');
+		currentHeaderMarginHeight = currentHeader.data('outerHeightMargin');
 
 	if (relatedElement) {
 		var offsetTop = relatedElement.offset().top + relatedElement.outerHeight() + currentHeaderMarginHeight - currentHeader.data('outerHeight');
@@ -142,7 +143,7 @@ FloatingHeader.prototype.adjustPosition = function () {
 	}
 
 	if (nextHeader.length && !relatedShifted) {
-		var offsetTop = nextHeader.offset().top + offset - currentHeader.data('innerHeight') - this.containerOffsetTop;
+		offsetTop = nextHeader.offset().top + offset - currentHeader.data('innerHeight') - this.containerOffsetTop;
 
 		if (offsetTop < 0) {
 			top += offsetTop;

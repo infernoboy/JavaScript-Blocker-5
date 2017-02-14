@@ -2,7 +2,7 @@
 JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 UI.Rules = {
 	__domainFilter: '',
@@ -64,7 +64,7 @@ UI.Rules = {
 
 		$('.active-view', UI.Rules.views).removeClass('active-view');
 
-		$('li[data-view="#rule-views-firstVisit"]', UI.Rules.viewSwitcher).toggle(Settings.getItem('blockFirstVisit') !== 'nowhere')
+		$('li[data-view="#rule-views-firstVisit"]', UI.Rules.viewSwitcher).toggle(Settings.getItem('blockFirstVisit') !== 'nowhere');
 
 		UI.Rules.setFilterRulesList(null, true);
 	},
@@ -89,7 +89,7 @@ UI.Rules = {
 
 	setFilterRulesList: function (listName, doNotSwitch) {
 		var filterViewSwitcher = $('li[data-view="#rule-views-filter"]', UI.Rules.viewSwitcher),
-				filterRules = UI.Rules.getFilterLists();
+			filterRules = UI.Rules.getFilterLists();
 
 		if (filterRules._contains(listName)) {
 			filterViewSwitcher
@@ -97,52 +97,52 @@ UI.Rules = {
 				.find('.view-switcher-item-name')
 				.text(_('rules.filter') + ': ' + UI.Rules.getFilterListName(listName));
 
-				if (!doNotSwitch)
-					UI.view.switchTo('#rule-views-filter');
+			if (!doNotSwitch)
+				UI.view.switchTo('#rule-views-filter');
 		} else if (filterRules.length)
 			this.setFilterRulesList(filterRules[0], doNotSwitch);
 	},
 
 	groupRulesByDomain: function (rules, sorter) {
 		var kind,
-				type,
-				domain,
-				rule,
-				typeGroup,
-				domainSorted,
-				domainGroup;
+			ruleType,
+			domain,
+			rule,
+			typeGroup,
+			domainGroup;
 
 		var groupedRules = {};
 
-		for (kind in rules) {
-			for (type in rules[kind]) {
-				typeGroup = groupedRules._getWithDefault(type, {});
+		for (kind in rules)
+			for (ruleType in rules[kind]) {
+				typeGroup = groupedRules._getWithDefault(ruleType, {});
 
-				for (domain in rules[kind][type]) {
+				for (domain in rules[kind][ruleType]) {
 					domainGroup = typeGroup._getWithDefault(domain, {});
 
-					for (rule in rules[kind][type][domain])
-						domainGroup._getWithDefault(kind, {})[rule] = rules[kind][type][domain][rule];
+					for (rule in rules[kind][ruleType][domain])
+						domainGroup._getWithDefault(kind, {})[rule] = rules[kind][ruleType][domain][rule];
 				}
 			}
-		}
 
-		for (type in groupedRules)
-			groupedRules[type] = groupedRules[type]._sort(sorter.fn, sorter.direction === 'desc');
+		for (ruleType in groupedRules)
+			groupedRules[ruleType] = groupedRules[ruleType]._sort(sorter.fn, sorter.direction === 'desc');
 
 		return groupedRules;
 	},
 
 	buildRuleList: function (view, ruleList, useTheseRules, keepExpanded) {
-		if (Object._isPlainObject(ruleList)) {
-			var ruleListItem,
-					ruleListItemLI;
+		var ruleListItem,
+			container,
+			ruleListItemLI;
 
-			var container = $('<div>'),
-					excludeLists = useTheseRules ? [] : globalPage.Special.__excludeLists._clone(),
-					buildListCount = 0,
-					builtListCount = 0,
-					ruleListContainer = Template.create('rules', 'multi-list-container');
+		if (Object._isPlainObject(ruleList)) {
+			container = $('<div>');
+
+			var excludeLists = useTheseRules ? [] : globalPage.Special.__excludeLists._clone(),
+				buildListCount = 0,
+				builtListCount = 0,
+				ruleListContainer = Template.create('rules', 'multi-list-container');
 
 			excludeLists._pushMissing(['description', 'temporaryFirstVisit', 'firstVisit']);
 
@@ -184,25 +184,23 @@ UI.Rules = {
 		}
 
 		var type,
-				typeExpander,
-				ruleGroupType,
-				typePaginator,
-				domainItems,
-				domain,
-				domainExpander,
-				domainListItem,
-				domainUL,
-				kindItems,
-				kind,
-				kindExpander,
-				kindListItem,
-				kindHeader,
-				kindUL,
-				rulesNeedPaginating,
-				rulePaginator,
-				ruleItems,
-				rule,
-				ruleListItem;
+			typeExpander,
+			ruleGroupType,
+			typePaginator,
+			domainItems,
+			domain,
+			domainExpander,
+			domainListItem,
+			domainUL,
+			kindItems,
+			kind,
+			kindExpander,
+			kindListItem,
+			kindUL,
+			rulesNeedPaginating,
+			rulePaginator,
+			ruleItems,
+			rule;
 
 		var sorter = {
 			fn: $('#rule-sort-by', UI.Rules.viewContainer).val() === 'priority' ? globalPage.Rules.__prioritize : null,
@@ -213,22 +211,22 @@ UI.Rules = {
 			sorter.direction = sorter.direction === 'desc' ? 'asc' : 'desc';
 
 		var domainGrouped = UI.Rules.groupRulesByDomain(useTheseRules ? useTheseRules : ruleList.rules.all(), sorter),
-				container = $('<div>'),
-				editable = 0,
-				hasRules = false;
+			editable = 0,
+			hasRules = false;
 
-		if (!globalPage.Rules.isLockerLocked()) {
+		container = $('<div>');			
+
+		if (!globalPage.Rules.isLockerLocked())
 			if (ruleList === globalPage.Rules.list.firstVisit)
 				editable = 3;
 			else if (ruleList === globalPage.Rules.list.temporary || ruleList === globalPage.Rules.list.allResources)
 				editable = 1;
-			else if (ruleList == globalPage.Rules.list.active) {
+			else if (ruleList === globalPage.Rules.list.active) {
 				if (globalPage.Rules.snapshotInUse())
 					editable = (!globalPage.Rules.list.active.snapshot.comparison || globalPage.Rules.list.active.snapshot.comparison.side === 'right') ? 2 : 0;
 				else
 					editable = 1;
 			}
-		}
 
 		UI.Rules.noRules.hide();
 
@@ -295,7 +293,9 @@ UI.Rules = {
 
 					kindUL = $('.rule-group-kind', kindListItem);
 
-					if (rulesNeedPaginating = (Object.keys(domainGrouped[type][domain][kind]).length > 150)) {
+					rulesNeedPaginating = (Object.keys(domainGrouped[type][domain][kind]).length > 150);
+
+					if (rulesNeedPaginating) {
 						rulePaginator = new Paginator(kindListItem, {
 							pageItemWrapper: kindUL
 						});
@@ -345,13 +345,13 @@ UI.Rules = {
 	processRules: function (rules) {
 		rules.each(function () {
 			var editable = this.getAttribute('data-editable'),
-					isEditable = editable !== '0';
+				isEditable = editable !== '0';
 
 			if (!isEditable)
 				return;
 
 			var input = $('<input>'),
-					isSnapshot = editable === '2';
+				isSnapshot = editable === '2';
 
 			input
 				.attr({
@@ -395,7 +395,7 @@ UI.Rules = {
 
 				.on('click', '#rule-domain-hide-all, #rule-domain-show-all', function () {
 					var isHide = this.id === 'rule-domain-hide-all',
-							domainExpanders = $('.rule-group-domain-wrapper > header', UI.Rules.view);
+						domainExpanders = $('.rule-group-domain-wrapper > header', UI.Rules.view);
 
 					domainExpanders.each(function () {
 						Settings.setItem('expander', isHide, this.getAttribute('data-expander'));
@@ -404,18 +404,18 @@ UI.Rules = {
 					});
 				})
 
-				.on('click', '.rule-item-delete', function (event) {
+				.on('click', '.rule-item-delete', function () {
 					var self = $(this),
-							view = self.parents('*[data-ruleListItems]'),
-							ruleList = view.data('ruleList'),
-							typeWrapper = self.parents('.rule-group-type-wrapper'),
-							type = typeWrapper.attr('data-type'),
-							kindWrapper = self.parents('.rule-group-kind-wrapper'),
-							kind = kindWrapper.attr('data-kind'),
-							domainWrapper = self.parents('.rule-group-domain-wrapper'),
-							domain = domainWrapper.attr('data-domain'),
-							ruleContainer = self.parents('.rule-item-container'),
-							rule = ruleContainer.attr('data-rule');
+						view = self.parents('*[data-ruleListItems]'),
+						ruleList = view.data('ruleList'),
+						typeWrapper = self.parents('.rule-group-type-wrapper'),
+						type = typeWrapper.attr('data-type'),
+						kindWrapper = self.parents('.rule-group-kind-wrapper'),
+						kind = kindWrapper.attr('data-kind'),
+						domainWrapper = self.parents('.rule-group-domain-wrapper'),
+						domain = domainWrapper.attr('data-domain'),
+						ruleContainer = self.parents('.rule-item-container'),
+						rule = ruleContainer.attr('data-rule');
 
 					ruleList.__remove(false, type, kind, domain, rule);
 
@@ -441,17 +441,17 @@ UI.Rules = {
 					});
 				})
 
-				.on('click', '.rule-item-restore', function (event) {
+				.on('click', '.rule-item-restore', function () {
 					var self = $(this),
-							typeWrapper = self.parents('.rule-group-type-wrapper'),
-							type = typeWrapper.attr('data-type'),
-							kindWrapper = self.parents('.rule-group-kind-wrapper'),
-							kind = kindWrapper.attr('data-kind'),
-							domainWrapper = self.parents('.rule-group-domain-wrapper'),
-							domain = domainWrapper.attr('data-domain'),
-							ruleContainer = self.parents('.rule-item-container'),
-							rule = ruleContainer.attr('data-rule'),
-							action = parseInt(ruleContainer.attr('data-action'), 10);
+						typeWrapper = self.parents('.rule-group-type-wrapper'),
+						type = typeWrapper.attr('data-type'),
+						kindWrapper = self.parents('.rule-group-kind-wrapper'),
+						kind = kindWrapper.attr('data-kind'),
+						domainWrapper = self.parents('.rule-group-domain-wrapper'),
+						domain = domainWrapper.attr('data-domain'),
+						ruleContainer = self.parents('.rule-item-container'),
+						rule = ruleContainer.attr('data-rule'),
+						action = parseInt(ruleContainer.attr('data-action'), 10);
 
 					globalPage.Rules.list.user.__add(type, kind, domain, {
 						rule: rule,
@@ -467,7 +467,7 @@ UI.Rules = {
 						return;
 
 					var ruleList = globalPage.Rules.list[this.parentNode.parentNode.getAttribute('data-listName')],
-							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
+						poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy.rules', 'create-rule', {
 						editing: false,
@@ -487,8 +487,8 @@ UI.Rules = {
 
 				.on('click', '.rule-group-type-page-controller input', function () {
 					var pageController = $('.rule-group-type-page-controller', this.parentNode.parentNode),
-							activePage = pageController.eq(0).parent().find('.active-page'),
-							advancePage = this.classList.contains('rule-group-type-previous-page') ? activePage.prev() : activePage.next();
+						activePage = pageController.eq(0).parent().find('.active-page'),
+						advancePage = this.classList.contains('rule-group-type-previous-page') ? activePage.prev() : activePage.next();
 
 					if (advancePage.length) {
 						activePage.removeClass('active-page');
@@ -508,10 +508,10 @@ UI.Rules = {
 						return;
 
 					var self = $(this),
-							view = self.parents('*[data-ruleListItems]'),
-							ruleList = view.data('ruleList'),
-							type = this.parentNode.parentNode.getAttribute('data-type'),
-							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
+						view = self.parents('*[data-ruleListItems]'),
+						ruleList = view.data('ruleList'),
+						type = this.parentNode.parentNode.getAttribute('data-type'),
+						poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy.rules', 'create-rule', {
 						editing: false,
@@ -534,11 +534,11 @@ UI.Rules = {
 						return;
 
 					var self = $(this),
-							view = self.parents('*[data-ruleListItems]'),
-							ruleList = view.data('ruleList'),
-							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
-							domain = this.parentNode.parentNode.getAttribute('data-domain'),
-							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
+						view = self.parents('*[data-ruleListItems]'),
+						ruleList = view.data('ruleList'),
+						type = self.parents('.rule-group-type-wrapper').attr('data-type'),
+						domain = this.parentNode.parentNode.getAttribute('data-domain'),
+						poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy.rules', 'create-rule', {
 						editing: false,
@@ -561,12 +561,12 @@ UI.Rules = {
 						return;
 
 					var self = $(this),
-							view = self.parents('*[data-ruleListItems]'),
-							ruleList = view.data('ruleList'),
-							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
-							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
-							kind = this.parentNode.parentNode.getAttribute('data-kind'),
-							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
+						view = self.parents('*[data-ruleListItems]'),
+						ruleList = view.data('ruleList'),
+						type = self.parents('.rule-group-type-wrapper').attr('data-type'),
+						domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
+						kind = this.parentNode.parentNode.getAttribute('data-kind'),
+						poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					poppy.setContent(Template.create('poppy.rules', 'create-rule', {
 						editing: false,
@@ -586,14 +586,14 @@ UI.Rules = {
 
 				.on('click', '.rule-item-container[data-editable="1"] .rule-item-rule', function (event) {
 					var self = $(this),
-							view = self.parents('*[data-ruleListItems]'),
-							ruleList = view.data('ruleList'),
-							type = self.parents('.rule-group-type-wrapper').attr('data-type'),
-							kind = self.parents('.rule-group-kind-wrapper').attr('data-kind'),
-							domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
-							rule = self.parents('.rule-item-container').attr('data-rule'),
-							action = parseInt(self.prev().attr('data-action'), 10),
-							poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
+						view = self.parents('*[data-ruleListItems]'),
+						ruleList = view.data('ruleList'),
+						type = self.parents('.rule-group-type-wrapper').attr('data-type'),
+						kind = self.parents('.rule-group-kind-wrapper').attr('data-kind'),
+						domain = self.parents('.rule-group-domain-wrapper').attr('data-domain'),
+						rule = self.parents('.rule-item-container').attr('data-rule'),
+						action = parseInt(self.prev().attr('data-action'), 10),
+						poppy = new Poppy(event.pageX, event.pageY, false, 'create-rule');
 
 					var templateArgs = {
 						editing: true,
@@ -615,7 +615,7 @@ UI.Rules = {
 				});
 		},
 
-		poppyDidShow: function (event) {
+		poppyDidShow: function () {
 			if (UI.Rules.viewContainer)
 				UI.Rules.viewContainer.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
 		},
@@ -648,7 +648,7 @@ UI.Rules = {
 
 
 			var isMainSwitch = (event.detail.id === '#main-views-rule'),
-					toView = isMainSwitch ? $('.active-view', UI.Rules.views) : event.detail.view;
+				toView = isMainSwitch ? $('.active-view', UI.Rules.views) : event.detail.view;
 
 			if (!toView.length)
 				return;
@@ -659,7 +659,7 @@ UI.Rules = {
 				return;
 
 			var ruleList,
-					useTheseRules;
+				useTheseRules;
 
 			switch (toID) {
 				case '#rule-views-page':
@@ -698,19 +698,19 @@ UI.Rules = {
 					});
 
 					globalPage.Page.requestPageFromActive();
-				break;
+					break;
 
 				case '#rule-views-temporary':
 					ruleList = globalPage.Rules.list.temporary;
-				break;
+					break;
 
 				case '#rule-views-active':
 					ruleList = globalPage.Rules.list.active;
-				break;
+					break;
 
 				case '#rule-views-firstVisit':
 					ruleList = globalPage.Rules.list.firstVisit;
-				break;
+					break;
 
 				case '#rule-views-filter':
 					var filterList = $('li[data-view="#rule-views-filter"]', UI.Rules.viewSwitcher).attr('data-filterList');
@@ -719,7 +719,7 @@ UI.Rules = {
 
 					if (!ruleList)
 						UI.Rules.noRules.show();
-				break;
+					break;
 			}
 
 			if (ruleList)
@@ -728,7 +728,7 @@ UI.Rules = {
 				}, 20, toView, ruleList, useTheseRules);
 		},
 
-		elementWasAdded: function (event) {
+		elementWasAdded: function () {
 			var rules = $('.rule-item-container:not(.rule-item-processed)', UI.container);
 
 			if (rules.length)
