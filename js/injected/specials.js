@@ -150,6 +150,10 @@ Special.specials = {
 			return info;
 		};
 
+		var fauxWindow = {
+			closed: false
+		};
+
 		window.open = function (URL, name, specs, replace) {
 			if (['_parent', '_self', '_top'].indexOf(name) > -1)
 				return windowOpen(URL, name, specs, replace);
@@ -165,10 +169,11 @@ Special.specials = {
 				messageExtension('page.addAllowedItem', info);
 
 				return windowOpen(URL, name, specs, replace);
-			} else
+			} else {
 				messageExtension('page.addBlockedItem', info);
 
-			return {};
+				return fauxWindow;
+			}
 		};
 
 		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
@@ -607,8 +612,10 @@ Special.specials = {
 				confirmString = _localize(useSimplifiedMethod ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt'),
 				url = baseURL + dataURL;
 
+			/* eslint-disable */
 			if (shouldAskOnce)
 				confirmString += "\n\n" + _localize(JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent', [window.location.host]);
+			/* eslint-enable */
 
 			if (ASK_COUNTER > ASK_LIMIT)
 				JSB.value.value = ASK_ONCE_SESSION;
@@ -628,7 +635,9 @@ Special.specials = {
 					var activeTabIndex = messageExtensionSync('activeTabIndex'),
 						newTabIndex = messageExtensionSync('openTabWithURL', url);
 
+					/* eslint-disable */
 					shouldContinue = messageExtensionSync('confirm', document.location.href + "\n\n" + confirmString);
+					/* eslint-enable */
 
 					messageExtension('activateTabAtIndex', activeTabIndex);
 					messageExtension('closeTabAtIndex', newTabIndex);
