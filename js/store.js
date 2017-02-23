@@ -45,6 +45,7 @@ var Store = (function () {
 	Store.__inheritable = ['ignoreSave', 'inheritMaxLife', 'selfDestruct'];
 
 	Store.LOCAL_SAVE_SIZE = 100000;
+	Store.LOCAL_SAVE_SIZE = 80000;
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
 
