@@ -312,6 +312,10 @@ var Utilities = {
 					delete self.timers[index];
 				}, this.delay * this.index, this, this.index, this.queue[this.index]);
 			}
+
+			this.timers[++this.index] = setTimeout(function (self) {
+				self.stop();
+			}, this.delay * this.index, this);
 		};
 		
 		Queue.prototype.stop = function () {
