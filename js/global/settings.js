@@ -273,6 +273,33 @@ var Settings = {
 			return !SettingStore.isSet(settingKey);
 	},
 
+	isKnown: function (settingKey, storeKey) {
+		if (storeKey) {
+			if (!Settings.map.hasOwnProperty(settingKey))
+				return false;
+
+			var setting = Settings.map[settingKey];
+
+			if (!setting.storeKeySettings)
+				return false;
+
+			var storeSetting = setting.storeKeySettings[storeKey];
+
+			if (storeSetting && storeSetting.props.remap) {
+				storeKey = storeSetting.props.remap;
+
+				storeSetting = setting.storeKeySettings[storeKey];
+			}
+
+			if (!storeSetting)
+				if (setting.props.type._startsWith('dynamic') || setting.props.type._startsWith('many'))
+					return true;
+				else
+					return false;
+		} else
+			return Settings.map.hasOwnProperty(settingKey) || settingKey._startsWith(Store.STORE_STRING);
+	},
+
 	setItem: function (settingKey, value, storeKey, changeConfirmed, unlocked, isReplay) {
 		var setting = Settings.map[settingKey];
 
@@ -476,7 +503,7 @@ var Settings = {
 				delete exported[deleteProps[i]];
 
 		for (var key in exported)
-			if (exported.hasOwnProperty(key) && Settings.isDefault(key))
+			if ((exported.hasOwnProperty(key) && Settings.isDefault(key)) || !Settings.isKnown(key))
 				delete exported[key];
 
 		return JSON.stringify(exported);
@@ -524,7 +551,7 @@ var Settings = {
 
 						value = settings[setting];
 
-						if (setting._startsWith('Storage-') || (settings[setting] && settings[setting].STORE))
+						if (setting._startsWith(Store.STORE_STRING) || (settings[setting] && settings[setting].STORE))
 							try {
 								SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= 100000);
 							} catch (e) {
