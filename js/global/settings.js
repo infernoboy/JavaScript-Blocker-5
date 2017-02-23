@@ -266,7 +266,14 @@ var Settings = {
 			});
 	},
 
-	setItem: function (settingKey, value, storeKey, changeConfirmed, unlocked) {
+	isDefault: function (settingKey, storeKey)  {
+		if (storeKey)
+			return !Settings.__stores.keyExist(settingKey) || !Settings.__stores.getStore(settingKey).keyExist(storeKey);
+		else
+			return !SettingStore.isSet(settingKey);
+	},
+
+	setItem: function (settingKey, value, storeKey, changeConfirmed, unlocked, isReplay) {
 		var setting = Settings.map[settingKey];
 
 		if (!setting)
@@ -467,6 +474,10 @@ var Settings = {
 		if (Array.isArray(deleteProps))
 			for (var i = deleteProps.length; i--;)
 				delete exported[deleteProps[i]];
+
+		for (var key in exported)
+			if (exported.hasOwnProperty(key) && Settings.isDefault(key))
+				delete exported[key];
 
 		return JSON.stringify(exported);
 	},

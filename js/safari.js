@@ -271,6 +271,10 @@ var SettingStore = {
 		this.__locked = lock;
 	},
 
+	isSet: function (key) {
+		return localStorage.hasOwnProperty(key) || safari.extension.settings.hasOwnProperty(key);
+	},
+
 	getItem: function (key, defaultValue, noCache) {
 		if (key in this.__cache)
 			return this.__cache[key];
