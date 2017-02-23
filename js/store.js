@@ -33,6 +33,15 @@ var Store = (function () {
 				}
 			}.bind(this));
 
+			var self = this;
+
+			Store.event.addCustomEventListener('reload', function (event) {
+				if (self.destroyed)
+					event.unbind();
+				else if (event.detail.id === self.id)
+					self.reload();
+			});
+
 			setTimeout(function (store) {
 				store.saveNow();
 			}, 5000, this);
@@ -48,6 +57,8 @@ var Store = (function () {
 	Store.LOCAL_SAVE_SIZE = 80000;
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
+
+	Store.event = new EventListener;
 
 	Store.promote = function (object) {
 		if (object instanceof Store)
@@ -297,6 +308,8 @@ var Store = (function () {
 			throw new Error('cannot reload a store that is not saved.');
 
 		this.load();
+
+		this.trigger('reloaded');
 	};
 
 	Store.prototype.triggerEvent = function (name) {
