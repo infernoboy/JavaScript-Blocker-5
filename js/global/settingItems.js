@@ -200,7 +200,7 @@ Settings.settings = {
 				UI.__popoverWidthSetting = 'popoverWidth' + (showResourceURLs ? 'Expanded' : '');
 				UI.__popoverHeightSetting = 'popoverHeight' + (showResourceURLs ? 'Expanded' : '');
 
-				UI.resizePopover(Settings.getItem(UI.__popoverWidthSetting), Settings.getItem(UI.__popoverHeightSetting));
+				UI.resizePopover(Settings.getItem(UI.__popoverWidthSetting), Settings.getItem(UI.__popoverHeightSetting), true);
 
 				if (Popover.visible())
 					setTimeout(function () {
