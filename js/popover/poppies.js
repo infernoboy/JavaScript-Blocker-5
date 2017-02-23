@@ -322,7 +322,12 @@ Object._extend(Poppy.scripts, {
 					string: _('setting_menu.export.done')
 				}));
 
+				var activeTab = Tabs.active();
+
 				Tabs.create(ExtensionURL('html/exportBackup.html'));
+
+				if (activeTab)
+					activeTab.activate();
 			})
 
 			.on('drop', '#setting-menu-backup-import', function (event) {
