@@ -21,7 +21,9 @@ do {
 
 		window.localStorage.setItem('JSB-RELOAD-COUNT', Number(window.localStorage.getItem('JSB-RELOAD-COUNT') || 0) + 1);
 
-		window.location.reload();
+		window.stop();
+
+		setTimeout(window.location.reload.bind(window.location), 500);
 
 		throw new Error('...');
 	}
