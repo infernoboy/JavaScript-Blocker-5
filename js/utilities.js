@@ -458,12 +458,12 @@ var Utilities = {
 			var interval = this.timers.interval[timerID];
 
 			if (!interval)
-				return this.remove('RunInterval' + timerID);
+				return this.remove('timeout', 'RunInterval' + timerID);
 
 			if (!isSetter)
 				interval.script.apply(null, interval.args);
 
-			setTimeout(this.__run_interval.bind(this), interval.time, timerID);
+			this.timeout('RunInterval-' + timerID, this.__run_interval.bind(this, timerID), interval.time);
 		},
 
 		exist: function (type, reference) {
