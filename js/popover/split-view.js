@@ -58,7 +58,7 @@ var SplitView = {
 			return Utilities.Timer.timeout(splitViewElement, function () {
 				if (SplitView.resizeTo.apply(null, arguments) === true)
 					SplitView.Divider.events.dragEnd(null, arguments[1]);
-			}, 1000, Utilities.makeArray(arguments));
+			}, 100, Utilities.makeArray(arguments));
 		}
 
 		var splitViewName = splitViewElement.getAttribute('data-splitView'),
