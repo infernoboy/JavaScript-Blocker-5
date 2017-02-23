@@ -293,7 +293,7 @@ var UI = {
 		window.addEventListener('keyup', UI.events.keyup, true);
 	},
 
-	resizePopover: function (width, height) {
+	resizePopover: function (width, height, noSave) {
 		width = Math.max(Settings.map[UI.__popoverWidthSetting].props.default, width);
 		height = Math.max(Settings.map[UI.__popoverHeightSetting].props.default, height);
 
@@ -304,17 +304,18 @@ var UI = {
 		popover.width = width;
 		popover.height = height;
 
-		setTimeout(function (originalWidth, originalHeight, popover) {
-			Utilities.Timer.timeout('savePopoverDimensions', function (popover) {
-				Settings.setItem(UI.__popoverWidthSetting, popover.width);
-				Settings.setItem(UI.__popoverHeightSetting, popover.height);
-			}, 100, [popover]);
+		setTimeout(function (originalWidth, originalHeight, popover, noSave) {
+			if (!noSave)
+				Utilities.Timer.timeout('savePopoverDimensions', function (popover) {
+					Settings.setItem(UI.__popoverWidthSetting, popover.width);
+					Settings.setItem(UI.__popoverHeightSetting, popover.height);
+				}, 100, [popover]);
 
 			UI.event.trigger('popoverDidResize', {
 				widthDifference: originalWidth - popover.width,
 				heightDifference: originalHeight - popover.height,
 			});
-		}, 10, originalWidth, originalHeight, popover);
+		}, 10, originalWidth, originalHeight, popover, noSave);
 	},
 
 	setLessVariables: function (variables) {
