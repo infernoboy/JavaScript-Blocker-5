@@ -272,13 +272,13 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 					} else {
 						for (var i = 0; i < messageHistory.error.length; i++) {
 							%><li>
-									<span class="console-error-message"><%=messageHistory.error[i].message.join(' ')%></span>
+									<span class="console-error-message"><%=messageHistory.error[i].message.join(' ')._escapeHTML().replace(/\n/g, '<br>')%></span>
 									<% if (i !== messageHistory.error.length - 1) %>
 										<div class="horizontal-divider"></div>
 								</li><%
 							if (messageHistory.error[i].stack.length) { %>
 								<li>
-									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')%></span>
+									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')._escapeHTML().replace(/\n/g, '<br>')%></span>
 								</li><%
 							}
 						}
@@ -296,7 +296,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 					} else {
 						for (var i = 0; i < messageHistory.debug.length; i++) {
 							%><li>
-									<span class="console-debug-message"><%=messageHistory.debug[i]%></span>
+									<span class="console-debug-message"><%=messageHistory.debug[i]._escapeHTML().replace(/\n/g, '<br>')%></span>
 									<% if (i !== messageHistory.debug.length - 1) %>
 										<div class="horizontal-divider"></div>
 								</li><%
