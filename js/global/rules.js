@@ -59,6 +59,11 @@ function Rule (store, storeProps, ruleProps) {
 
 	if (this.rules.useSnapshot && Settings.getItem('autoSnapshots'))
 		this.rules.snapshot.autoSnapshots(true);
+
+	if (storeProps && storeProps.save)
+		this.rules.addCustomEventListener('reloaded', function () {
+			Resource.canLoadCache.clear().saveNow();
+		});
 }
 
 Rule.event = new EventListener;
