@@ -1227,8 +1227,8 @@ var Extension = {
 		},
 
 		_clone: {
-			value: function () {
-				return Utilities.makeArray(this);
+			value: function (full) {				
+				return full ? JSON.parse(JSON.stringify(this)) : Utilities.makeArray(this);
 			}
 		},
 
