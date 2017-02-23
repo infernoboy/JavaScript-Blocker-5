@@ -297,7 +297,7 @@ var SettingStore = {
 
 	setItem: function (key, value, noCache, persist) {
 		if (this.__locked)
-			return;
+			return LogError('Locked, cannot set', key);
 
 		if (SettingStore.__badKeys._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
@@ -321,7 +321,7 @@ var SettingStore = {
 
 	removeItem: function (key) {
 		if (this.__locked)
-			return;
+			return LogError('Locked, cannot remove', key);
 
 		SettingStore.syncCancel(key);
 		
@@ -333,8 +333,18 @@ var SettingStore = {
 
 	all: function () {
 		SettingStore.syncNow();
+
+		var all = {};
+
+		for (var key in localStorage)
+			if (localStorage.hasOwnProperty(key))
+				all[key] = JSON.parse(localStorage[key]);
+
+		for (key in safari.extension.settings)
+			if (safari.extension.settings.hasOwnProperty(key))
+				all[key] = safari.extension.settings[key];
 			
-		return Object._extend(true, {}, localStorage, safari.extension.settings);
+		return all;
 	},
 
 	export: function () {
