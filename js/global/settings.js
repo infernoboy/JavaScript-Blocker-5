@@ -586,6 +586,9 @@ var Settings = {
 	},
 
 	restartRequired: function () {
+		if (Settings.RESTART_REQUIRED)
+			return;
+
 		Settings.RESTART_REQUIRED = true;
 		
 		SettingStore.lock(true);
