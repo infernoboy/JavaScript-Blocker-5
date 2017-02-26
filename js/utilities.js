@@ -1512,7 +1512,10 @@ var Extension = {
 		},
 
 		_clone: {
-			value: function (deep) {
+			value: function (deep, quick) {
+				if (quick)
+					return JSON.parse(JSON.stringify(this));
+
 				var object = {};
 
 				for (var key in this)
@@ -1622,7 +1625,7 @@ Object._copy = function (object, defaultValue) {
 			return null;
 
 		case Array.isArray(object):
-			return Utilities.makeArray(object);
+			return object._clone(true);
 
 		case objectType === 'string':
 			return String(object);
