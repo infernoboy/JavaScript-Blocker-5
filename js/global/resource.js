@@ -70,11 +70,7 @@ Resource.USE_CACHE = true;
 
 Resource.longRegExps = new Store('LongRegExps');
 
-Resource.canLoadCache = new Store('ResourceCanLoad', {
-	save: Settings.getItem('allowCache'),
-	maxLife: TIME.ONE.HOUR * 36,
-	saveDelay: TIME.ONE.MINUTE * 10
-});
+Settings.map.allowCache.props.onChange(null, null, Settings.getItem('allowCache'));
 
 Resource.canLoadCache.addCustomEventListener('storeDidClear', function () {
 	Rule.listCache.clear();

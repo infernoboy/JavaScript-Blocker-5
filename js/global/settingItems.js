@@ -843,22 +843,18 @@ Settings.settings = {
 				props: {
 					type: 'boolean',
 					default: true,
-					confirm: {
-						when: {
-							group: 'all',
-							items: [{
-								method: Utilities.Group.IS,
-								key: 'setupComplete',
-								needle: true
-							}]
-						}
-					},
 					onChange: function (type, settingKey, value) {
 						if (!value)
 							SettingStore.removeItem('Storage-ResourceCanLoad');
+
+						if (Resource.canLoadCache)
+							Resource.canLoadCache.destroy();
 						
-						if (!Settings.IMPORTING)
-							Settings.restartRequired();
+						Resource.canLoadCache = new Store('ResourceCanLoad', {
+							save: value,
+							maxLife: TIME.ONE.HOUR * 36,
+							saveDelay: TIME.ONE.MINUTE * 10
+						});
 					}
 				}
 			}, {

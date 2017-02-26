@@ -992,9 +992,10 @@ Rules.__FilterRules.addCustomEventListener('storeDidSave', function () {
 
 		Rules.list[list].rules.all();
 
-		Rules.list[list].rules.addCustomEventListener(['storeDidSave', 'storeWouldHaveSaved'], function () {
-			Resource.canLoadCache.saveNow();
-		});
+		if (!['description']._contains(list))
+			Rules.list[list].rules.addCustomEventListener(['storeDidSave', 'storeWouldHaveSaved'], function () {
+				Resource.canLoadCache.saveNow();
+			});
 	}
 })();
 
