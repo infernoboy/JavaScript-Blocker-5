@@ -16,7 +16,7 @@ var ACTION = {
 	BLACKLIST: 4
 };
 
-function processFilterList (list) {
+function processFilterList (id, list) {
 	var	lines = list.list.split(/\n/);
 
 	var kindMap = {
@@ -51,10 +51,13 @@ function processFilterList (list) {
 
 		if (i === 0 && line[0] !== '[') {
 			postMessage({
-				error: 'invalid Filter List',
-				message: {
-					name: list.name,
-					url: list.url
+				id: id,
+				error: {
+					name: 'invalid Filter List',
+					meta: {
+						name: list.name,
+						url: list.url
+					}
 				}
 			});
 
@@ -181,11 +184,11 @@ function processFilterList (list) {
 	}
 
 	self.postMessage({
-		error: false,
-		message: rules
+		id: id,
+		result: rules
 	});
 }
 
 self.addEventListener('message', function (message) {
-	processFilterList(message.data);
+	processFilterList(message.data.id, message.data.message);
 });

@@ -22,6 +22,8 @@ FilterList.__updating = 0;
 FilterList.__updateInterval = TIME.ONE.DAY * 4;
 FilterList.__addQueue = {};
 
+FilterList.promiseWorker = new PromiseWorker('../js/global/filterlist-worker.js');
+
 FilterList.executeQueue = function () {
 	Utilities.Timer.timeout('addFilterListsRules', function () {
 		for (var listName in FilterList.__addQueue)
@@ -93,24 +95,17 @@ FilterList.prototype.process = function (list) {
 		list: list
 	};
 
-	var filterListWorker = new Worker('../js/global/filterlist-worker.js');
+	FilterList.promiseWorker.postMessage(listInfo).then(this.doneWithRules.bind(this), function (err) {
+		FilterList.__updating--;
 
-	filterListWorker.addEventListener('message', function (message) {
-		if (message.data.error) {
-			FilterList.__updating--;
+		LogError(Error('invalid Filter List - ' + err.meta.name + ' - ' + err.meta.url));
 
-			LogError(Error('invalid Filter List - ' + message.data.message.name + ' - ' + message.data.message.url));
+		self.valid = false;
 
-			self.valid = false;
+		Settings.removeItem('filterLists', err.meta.name);
 
-			Settings.removeItem('filterLists', message.data.message.name);
-
-			Rules.__FilterRules.remove(message.data.message.name);
-		} else
-			self.doneWithRules(message.data.message);
+		Rules.__FilterRules.remove(err.meta.name);
 	});
-
-	filterListWorker.postMessage(listInfo);
 };
 
 FilterList.updateCheck();
