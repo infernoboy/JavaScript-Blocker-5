@@ -425,7 +425,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 														</select><label></label><%
 													} else { %>
-														<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="false" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
+														<textarea <%=disableEdit%> class="render-as-input select-custom-input jsb-light-scrollbars" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" wrap="off" rows="0" title="<%=_('view.page.editor.resource_url', [source._entityQuotes()])%>"></textarea>
 														<select <%=disableEdit%> class="page-host-item-edit-select">
 														<%
 															var sourceParts = Utilities.URL.pageParts(source),

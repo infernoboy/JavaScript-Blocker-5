@@ -104,7 +104,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 				<%=wrapper.close%>
 				<%=wrapper.right%>
 					<% if (self.props.otherOption || self.setting.props.otherOption) { %>
-						<textarea class="render-as-input select-custom-input jsb-light-scrollbars" spellcheck="false" wrap="off" rows="0"></textarea><%
+						<textarea class="render-as-input select-custom-input jsb-light-scrollbars" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" wrap="off" rows="0"></textarea><%
 					} %>
 					<select id="<%=self.id%>" <%=inlineSetting%> <%=storeKeySetting%>>
 						<% for (var i = 0; i < options.length; i++) { %>
@@ -255,7 +255,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	</li>
 	<li class="setting-section-setting user-script-edit">
 		<div class="setting-section-setting-full">
-			<textarea class="user-script-content"></textarea>
+			<textarea class="user-script-content" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 		</div>
 	</li>
 </noscript>
