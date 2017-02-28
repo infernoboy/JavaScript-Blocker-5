@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 'use strict';
 
 var Extras = {
-	__verificationURL: 'http://lion.toggleable.com:160/jsblocker/verify.php',
+	__verificationURL: 'https://imac.toggleable.com:8443/jsblocker/verify.php',
 
 	connectionFailureCount: 0,
 

@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 'use strict';
 
 var Update = {
-	__versionCheckURL: 'http://lion.toggleable.com:160/jsblocker/download/extupdates.plist',
+	__versionCheckURL: 'https://imac.toggleable.com:8443/jsblocker/download/extupdates.plist',
 
 	wasJustUpdated: false,
 
