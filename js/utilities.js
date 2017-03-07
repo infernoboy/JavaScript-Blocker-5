@@ -1056,7 +1056,7 @@ function LogError () {
 				showThisError = true;
 			}
 
-		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || globalSetting.debugMode || showThisError) {
+		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || showThisError || (window.globalSetting && globalSetting.debugMode)) {
 			if (Utilities.Page.isWebpage)
 				errorMessage = ['(JSB) ' + errorMessage[0]].concat(errorMessage.slice(1));
 
