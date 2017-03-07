@@ -8,6 +8,10 @@ var SyncClient = {
 	PING_EVERY: TIME.ONE.HOUR,
 	ORIGIN: 'https://imac.toggleable.com:8443',
 
+	get SERVER() {
+		return SyncClient.ORIGIN + '/jsb-sync' + (Settings.getItem('syncClientUseDevelopmentServer') ? '-development' : '') + '/api';
+	},
+
 	event: new EventListener,
 	changes: [],
 
@@ -194,8 +198,6 @@ var SyncClient = {
 		});
 	}
 };
-
-SyncClient.SERVER = SyncClient.ORIGIN + '/jsb-sync' + (Settings.getItem('syncClientUseDevelopmentServer') ? '-development' : '') + '/api';
 
 SyncClient.event
 	.addCustomEventListener('autoLogin', function () {

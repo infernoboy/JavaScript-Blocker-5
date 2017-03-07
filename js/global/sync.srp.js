@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 06, 2017 06:42:40 PM
+* @Last modified in Sublime on Mar 07, 2017 04:22:38 PM
 */
 
 'use strict';
@@ -7,9 +7,10 @@
 SyncClient.SRP = {
 	SERVER: {
 		URL: SyncClient.ORIGIN + '/srp',
-		PATH: (function () {
+
+		get PATH() {
 			return '/jsb-sync' + (Settings.getItem('syncClientUseDevelopmentServer') ? '-development' : '') + '/socket.io';
-		})()
+		}
 	},
 
 	socket: null,
