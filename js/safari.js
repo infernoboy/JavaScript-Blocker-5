@@ -297,7 +297,7 @@ var SettingStore = {
 
 	setItem: function (key, value, noCache, persist) {
 		if (this.__locked)
-			return LogError('Locked, cannot set', key);
+			return;
 
 		if (SettingStore.__badKeys._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
