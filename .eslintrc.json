@@ -85,7 +85,6 @@
 		"Predefined": false,
 		"EventListener": false,
 		"Resource": false,
-		"punycode": false,
 		"RemoveContentScripts": false,
 		"AddContentScriptFromURL": false,
 		"MessageTarget": false,
