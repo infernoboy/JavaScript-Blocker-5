@@ -207,11 +207,7 @@ function Command (command, data, event) {
 				contentURLs: window.CONTENT_URLS
 			};
 		},
-
-		contentBlockerMode: function () {
-			this.message = false;
-		},
-
+		
 		specialsForLocation: function (page) {
 			if (page.pageProtocol === 'about:')
 				page.pageLocation = this.event.target.url || page.pageLocation;

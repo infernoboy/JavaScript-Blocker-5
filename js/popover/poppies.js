@@ -188,14 +188,9 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
-	'main-menu': function (poppy) {
-		$('#main-menu-content-blocker-mode').prop('checked', globalPage.Rules.__contentBlockerMode);
-		
+	'main-menu': function (poppy) {		
 		poppy.content
-			.on('change', '#main-menu-content-blocker-mode', function () {
-				globalPage.Rules.setContentBlockerMode(this.checked);
-			})
-
+			.data('poppy', poppy)
 			.on('click', '#main-menu-about', function () {
 				poppy.close();
 

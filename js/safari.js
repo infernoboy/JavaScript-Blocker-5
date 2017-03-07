@@ -397,15 +397,6 @@ var SecureSettings = {
 	}
 };
 
-var ContentBlocker = {
-	set: function (contentBlocker) {
-		if (ContentBlocker.isSupported)
-			safari.extension.setContentBlocker(contentBlocker);
-	},
-
-	isSupported: typeof safari.extension.setContentBlocker === 'function'
-};
-
 var Events = {
 	__references: {
 		application: {},
@@ -535,11 +526,3 @@ function AddContentScriptFromURL (url) {
 		}, 10000);
 	}, 2000);
 })();
-
-
-if (!!GlobalPage.tab && window.location.href.indexOf(ExtensionURL()) === -1)
-	try {
-		GlobalCommand('contentBlockerMode');
-	} catch (e) {
-		throw new Error('safari: content blocker mode?');
-	}

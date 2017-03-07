@@ -33,14 +33,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 						messageCount = messageHistory.error.length + messageHistory.debug.length; %>
 			<span id="main-menu-console-message-count"><%=_('main_menu.console.message'._pluralize(messageCount), [messageCount])%></span> 
 		</div>
-
-		<% if (false && ContentBlocker.isSupported) { %>
-			<div class="horizontal-divider"></div>
-
-			<div class="generic-menu-menu jsb-align-right">
-				<input type="checkbox" id="main-menu-content-blocker-mode" /> <label for="main-menu-content-blocker-mode">"Content Blocker" mode</label>
-			</div><%
-		} %>
 	</div>
 </noscript>
 
