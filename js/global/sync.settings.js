@@ -318,18 +318,18 @@ Object._extend(SyncClient.Settings.prototype, {
 	},
 
 	syncQueuedSettings: function () {
+		var self = this;
+
 		return new Promise(function (resolve, reject) {
 			if (SyncClient.Settings.queue.length && SyncClient.SRP.isLoggedIn()) {
 				var settings = SyncClient.Settings.queue._clone(true),
 					decryptedSettings = settings._clone(true);
 
-				this.validateSyncSession();
+				self.validateSyncSession();
 
 				SyncClient.Settings.queue = [];
 
 				SettingStore.setItem('syncQueue', []);
-
-				var self = this;
 
 				this.encryptSettings({
 					isFullSettings: false,

@@ -288,7 +288,7 @@ Update.versions[170206] = {
 };
 
 // === 5.2.0 ===
-Update.versions[170306] = {
+Update.versions[170305] = {
 	blocking: false,
 
 	update: function () {
