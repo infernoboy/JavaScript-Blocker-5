@@ -4,6 +4,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 'use strict';
 
+var Settings = {};
+
 Settings.settings = {
 	// Misc settings that are not user editable
 	__misc: [{
