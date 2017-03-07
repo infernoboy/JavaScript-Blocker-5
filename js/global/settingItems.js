@@ -1843,8 +1843,3 @@ Settings.settings = {
 		}]
 	}]
 };
-
-for (var section in Settings.settings)
-	Settings.createMap(Settings.settings[section]);
-
-Object._deepFreeze(Settings.map);
