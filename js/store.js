@@ -29,7 +29,7 @@ var Store = (function () {
 				if (window.globalSetting.debugMode) {
 					var bytes = this.savedByteSize();
 
-					LogDebug('SIZE ' + this.id + ': ' + Utilities.byteSize(bytes) + ' - ' + (bytes < Store.LOCAL_SAVE_SIZE ? 'via localStorage' : 'via Safari settings'));
+					LogDebug('Size: ' + this.id + ': ' + Utilities.byteSize(bytes) + ' - ' + (bytes < Store.LOCAL_SAVE_SIZE ? 'via localStorage' : 'via Safari settings'));
 				}
 			}.bind(this));
 
@@ -43,8 +43,8 @@ var Store = (function () {
 			});
 
 			setTimeout(function (store) {
-				store.saveNow();
-			}, 5000, this);
+				store.saveNow(null, null, true);
+			}, 1000, this);
 		}
 	}
 
@@ -53,7 +53,6 @@ var Store = (function () {
 	Store.__emptyStoreString = Utilities.decode('4a+h4KGS5IG04L2A4pSl4KKg4rqA4LCC5YCgIA==');
 	Store.__inheritable = ['ignoreSave', 'inheritMaxLife', 'selfDestruct'];
 
-	Store.LOCAL_SAVE_SIZE = 100000;
 	Store.LOCAL_SAVE_SIZE = 80000;
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
@@ -72,7 +71,7 @@ var Store = (function () {
 
 		var store = new Store(object.name, object.props);
 
-		store.data = object.data || object.STORE;
+		store.data = object.data || object.STORE || {};
 
 		return store;
 	};
@@ -163,7 +162,7 @@ var Store = (function () {
 	};
 
 	Store.isStore = function (object) {
-		return !!(object && object.data && object.props) || object.STORE instanceof Object;
+		return !!(object && object.data && object.props) || (object && (object.STORE instanceof Object));
 	};
 
 	Object.defineProperty(Store.prototype, 'parent', {
@@ -272,6 +271,12 @@ var Store = (function () {
 
 	Store.prototype.load = function () {
 		if (this.save) {
+			if (window.globalSetting.debugMode) {
+				var startTime = new Date();
+
+				console.time(startTime.toLocaleTimeString() + ' - Load: ' + this.id);
+			}
+
 			var stored = Settings.__method('getItem', this.id, Store.__emptyStoreString);
 
 			var decompressed;
@@ -289,7 +294,7 @@ var Store = (function () {
 				try {
 					stored = JSON.parse(decompressed);
 				} catch (e) {
-					LogError(e, decompressed);
+					LogError(e, decompressed.substr(0, 100));
 
 					stored = {};
 				}
@@ -299,6 +304,9 @@ var Store = (function () {
 				this.lock = true;
 
 			this.data = stored.STORE || stored.data || {};
+
+			if (window.globalSetting.debugMode)
+				console.timeEnd(startTime.toLocaleTimeString() + ' - Load: ' + this.id);
 		} else
 			this.data = {};
 	};
