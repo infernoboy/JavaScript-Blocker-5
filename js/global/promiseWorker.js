@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Feb 26, 2017 12:05:52 PM
+* @Last modified in Sublime on Feb 27, 2017 10:59:04 PM
 */
 
 'use strict';
@@ -40,7 +40,7 @@ PromiseWorker.prototype.postMessage = function (message) {
 			self._timers[id] = setTimeout(function (id, self) {
 				delete self._timers[id];
 				
-				LogError('Did not receive response from worker', id, self.workerPath);
+				LogError('Did not receive response from worker', id, self.workerPath, message);
 
 				self.event.trigger('workerMessage', {
 					id: id,
