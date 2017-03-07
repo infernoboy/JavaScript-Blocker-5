@@ -373,49 +373,62 @@ Rule.prototype.page = function (page) {
 };
 
 Rule.prototype.addMany = function (kinds) {
-	if (typeof kinds !== 'object')
-		throw new TypeError(kinds + ' is not an object');
+	var self = this;
+	
+	kinds = kinds._clone(true, true);
 
-	var kind,
-		types,
-		ruleType,
-		domain,
-		rule;
+	return new Promise(function (resolve) {
+		if (typeof kinds !== 'object')
+			throw new TypeError(kinds + ' is not an object');
 
-	for (kind in kinds) {
-		if (!Rules.kindSupported(kind)) {
-			LogError(Error(Rules.ERROR.KIND.NOT_SUPPORTED + ' - ' + kind));
+		var kind,
+			types,
+			ruleType,
+			domain,
+			rule;
 
-			continue;
-		}
+		var delay = 0.2,
+			i = 0;
 
-		types = this.kind(kind);
-
-		for (ruleType in kinds[kind]) {
-			if (!types.hasOwnProperty(ruleType)) {
-				LogError(Error(Rules.ERROR.TYPE.NOT_SUPPORTED + ' - ' + ruleType));
+		for (kind in kinds) {
+			if (!Rules.kindSupported(kind)) {
+				LogError(Error(Rules.ERROR.KIND.NOT_SUPPORTED + ' - ' + kind));
 
 				continue;
 			}
 
-			for (domain in kinds[kind][ruleType])
-				for (rule in kinds[kind][ruleType][domain]) {
-					if (!(kinds[kind][ruleType][domain][rule] instanceof Object))
-						continue;
+			types = self.kind(kind);
 
-					kinds[kind][ruleType][domain][rule].rule = rule;
+			for (ruleType in kinds[kind]) {
+				if (!types.hasOwnProperty(ruleType)) {
+					LogError(Error(Rules.ERROR.TYPE.NOT_SUPPORTED + ' - ' + ruleType));
 
-					this.__add(ruleType, kind, domain, kinds[kind][ruleType][domain][rule], true);
+					continue;
 				}
+
+				for (domain in kinds[kind][ruleType])
+					for (rule in kinds[kind][ruleType][domain]) {
+						if (!(kinds[kind][ruleType][domain][rule] instanceof Object))
+							continue;
+
+						kinds[kind][ruleType][domain][rule].rule = rule;
+
+						setTimeout(function (self, ruleType, kind, domain, fullRule) {
+							self.__add(ruleType, kind, domain, fullRule, true);
+						}, i++ * delay, self, ruleType, kind, domain, kinds[kind][ruleType][domain][rule]);
+					}
+			}
 		}
-	}
 
-	Rule.event.trigger('manyRulesAdded', {
-		self: this,
-		rules: kinds
+		setTimeout(function (self, kinds) {
+			resolve();
+
+			Rule.event.trigger('manyRulesAdded', {
+				self: self,
+				rules: kinds
+			});
+		}, ++i * delay, self, kinds);
 	});
-
-	return this;
 };
 
 Rule.prototype.forLocation = function (params) {

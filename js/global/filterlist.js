@@ -4,13 +4,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 'use strict';
 
-function FilterList (listName, listURL) {
+function FilterList (listName, listURL, humanName) {
 	if (!Rules.list[listName])
 		throw new Error(listName + ' is not a known FilterList.');
 	
 	FilterList.__updating++;
 
 	this.name = listName;
+	this.humanName = humanName;
 	this.url = listURL;
 	this.valid = true;
 
@@ -26,11 +27,19 @@ FilterList.promiseWorker = new PromiseWorker('../js/global/filterlist-worker.js'
 
 FilterList.executeQueue = function () {
 	Utilities.Timer.timeout('addFilterListsRules', function () {
+		var promise = Promise.resolve();
+
 		for (var listName in FilterList.__addQueue)
 			if (Rules.list[listName])
-				Rules.list[listName].addMany(FilterList.__addQueue[listName]);
+				promise = promise.then(function (listName) {
+					return Rules.list[listName].addMany(FilterList.__addQueue[listName].rules);
+				}.bind(null, listName), function (err) {
+					LogError(err);
+				});
 		
-		FilterList.__addQueue = {};
+		promise.then(function () {
+			FilterList.__addQueue = {};
+		});
 	}, 5000);
 };
 
@@ -50,7 +59,7 @@ FilterList.fetch = function () {
 
 	for (var list in lists)
 		if (lists[list].enabled)
-			new FilterList(list, lists[list].value[0]);
+			new FilterList(list, lists[list].value[0], lists[list].value[1]);
 		else if (Rules.__FilterRules.keyExist(list))
 			Rules.__FilterRules.remove(list);
 };
@@ -68,7 +77,10 @@ FilterList.prototype.doneWithRules = function (rules) {
 	if (FilterList.__updating === 0)
 		Settings.setItem('FilterListLastUpdate', Date.now());
 
-	FilterList.__addQueue[this.name] = rules;
+	FilterList.__addQueue[this.name] = {
+		humanName: this.humanName,
+		rules: rules
+	};
 
 	FilterList.executeQueue();
 };
