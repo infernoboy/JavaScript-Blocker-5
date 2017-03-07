@@ -16,6 +16,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		if (closeExisting)
 			window.Poppy.closeAll();
 
+		this.userPosition = {
+			x: x,
+			y: y
+		};
+
 		this.changePosition(x, y, true);
 
 		this.id = Utilities.Token.generate();
@@ -47,7 +52,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		this.close = this.close.bind(this);
 		this.cancelScaleWithForce = this.cancelScaleWithForce.bind(this);
 
-		this.poppy.on('click', '.poppy-close', this.close.bind(this));
+		this.poppy.on('click', '.poppy-close', this.close);
 	};
 
 	Poppy = Poppy._extendClass(EventListener);
@@ -458,6 +463,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	};
 
 	Poppy.prototype.show = function (quick, instant) {
+		if (!Popover.visible())
+			return UI.event.addCustomEventListener('popoverOpened', function () {
+				this.changePosition(this.userPosition.x, this.userPosition.y, true).show(quick, instant);
+			}.bind(this), true);
+
 		poppies[this.id] = this;
 
 		if (Poppy.event.trigger('poppyWillShow', this))
@@ -484,7 +494,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 		this.poppy.prependTo(Poppy.__container);
 
-		this.displayed = Popover.visible();
+		this.displayed = true;
 
 		this.executeScript();
 
