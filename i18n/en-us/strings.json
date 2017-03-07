@@ -39,6 +39,7 @@
 	"sync.sync_now": "Sync Now",
 	"sync.session_expired": "Your session has expired. Login again to continue syncing your settings and rules.",
 	"sync.login_general": "Keep your settings and rules in sync.",
+	"sync.logged_into": "Logged in to <b>{0}</b>",
 
 	"sync.login.header": "Sync Login",
 	"sync.login.email": "Email",

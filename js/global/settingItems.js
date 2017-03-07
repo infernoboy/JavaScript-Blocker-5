@@ -671,6 +671,23 @@ Settings.settings = {
 	}, {
 		description: 'syncClientSync.what'
 	}, {
+		when: {
+			hide: true,
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'syncClientIsLoggedIn',
+					needle: true
+				}]
+			}
+		},
+		settings: [{
+			customView: function (container) {
+				container.append(Template.create('settings', 'sync-client-logged-in'));
+			}
+		}]
+	}, {
 		asRow: [{
 			when: {
 				hide: true,
