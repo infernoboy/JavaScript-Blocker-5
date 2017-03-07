@@ -238,7 +238,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 					}
 
 					&.is-disabled,
-					&.unread-error {
+					&.unread-error,
+					&.has-progress {
 						&,
 						* {
 							color: #fff;
@@ -266,6 +267,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 						&:active {
 							background: darken(red, 15%);
+						}
+					}
+
+					&.has-progress {
+						background: darken(@baseColor, 5%);
+
+						&:active {
+							background: darken(@baseColor, 10%);
 						}
 					}
 				}

@@ -548,32 +548,39 @@ var UI = {
 			if (!UI.view.universalProgressBar)
 				return;
 
+			$('#open-menu', UI.view.viewToolbar).toggleClass('has-progress', percent >= 0 && percent < 100);
+
 			if (UI.view.universalProgressBar.data('previousPercent') > percent && percent > 0)
 				UI.view.updateProgressBar(0, 0, description, timeRemaining);
 
 			UI.view.universalProgressBar.data('previousPercent', percent);
 
-			var progressBarContainer = $('#main-menu .progress-bar-container', UI.container);
+			var menuProgressBarContainer = $('#main-menu .progress-bar-container', UI.container);
 
 			if (UI.view.universalProgressBar.is(':visible')) {
 				UI.view.universalProgressBar
-					.add($('.progress-bar-progress', progressBarContainer))
+					.add($('.progress-bar-progress', menuProgressBarContainer))
 					.css('WebkitTransitionDuration', ((duration * 1.15) * globalSetting.speedMultiplier) + 'ms');
 
-				if (progressBarContainer.length) {
-					var poppy = progressBarContainer.parents('.poppy-content').data('poppy');
+				if (menuProgressBarContainer.length) {
+					var poppy = menuProgressBarContainer.parents('.poppy-content').data('poppy');
 
-					$('.progress-bar-progress', progressBarContainer).width(percent + '%');
-					$('.progress-bar-description', progressBarContainer).text(description || '');
-					$('.progress-bar-time-remaining', progressBarContainer).text(timeRemaining || '');
+					$('.progress-bar-progress', menuProgressBarContainer).width(percent + '%');
+					$('.progress-bar-description', menuProgressBarContainer).text(description || '');
+					$('.progress-bar-time-remaining', menuProgressBarContainer).text(timeRemaining || '');
 
 					poppy.setPosition();
 
-					if (!progressBarContainer.is(':visible'))
-						progressBarContainer.animate({
+					if (!menuProgressBarContainer.is(':visible'))
+						menuProgressBarContainer.animate({
 							height: 'show',
 							opacity: 'show'
-						}, 250);
+						}, {
+							duration: 250,
+							step: function () {
+								poppy.setPosition();
+							}
+						});
 				}
 
 				UI.view.universalProgressBar.width(percent + '%');
@@ -583,8 +590,8 @@ var UI = {
 						UI.view.universalProgressBar.fadeOut(250, function () {
 							UI.view.universalProgressBar.width(0);
 
-							if (progressBarContainer.length)
-								progressBarContainer.animate({
+							if (menuProgressBarContainer.length)
+								menuProgressBarContainer.animate({
 									height: 'hide',
 									opacity: 'hide'
 								}, 250, function () {
