@@ -497,6 +497,7 @@ var Settings = {
 		delete exported['trialStart'];
 		delete exported['updateNotify'];
 		delete exported['installedBundle'];
+		delete exported['openSettings'];
 
 		if (Array.isArray(deleteProps))
 			for (var i = deleteProps.length; i--;)
@@ -510,7 +511,7 @@ var Settings = {
 	},
 
 	import: function (settings, clearExisting, semi) {
-		var willNotImport = ['donationVerified', 'trialStart', 'updateNotify', 'FilterListLastUpdate', 'installedBundle'];
+		var willNotImport = ['donationVerified', 'trialStart', 'updateNotify', 'FilterListLastUpdate', 'installedBundle', 'openSettings'];
 
 		UI.Locker
 			.showLockerPrompt('importBackupSettings', !!semi)
