@@ -31,8 +31,6 @@ var Utilities = {
 	__watchdog: {},
 	__immediateTimeouts: [],
 
-	safariBuildVersion: parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10),
-
 	noop: function () {},
 
 	beautifyScript: function (script) {
@@ -50,7 +48,7 @@ var Utilities = {
 	OSXVersion: (function () {
 		var osx = window.navigator.userAgent.match(/Mac OS X ([^\)]+)\)/);
 
-		if (!osx[1])
+		if (!osx || !osx[1])
 			return null;
 
 		var version = osx[1].split(/_/);
@@ -1686,13 +1684,16 @@ Object._deepFreeze = function (object) {
 	return object;
 };
 
-Utilities.safariVersionSupported = Utilities.safariBuildVersion >= 537;
-
-if (!Utilities.safariVersionSupported)
-	throw new Error('safari version too old.');
-
 Utilities.Page.isWebpage = window.GlobalPage ? (!!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL())) : false;
 Utilities.Page.isUserScript = window.location ? window.location.href._endsWith('.user.js') : false;
+
+if (Utilities.Page.isGlobal || Utilities.Page.isPopover) {
+	Utilities.safariBuildVersion = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10);
+	Utilities.safariVersionSupported = Utilities.safariBuildVersion >= 537;
+
+	if (!Utilities.safariVersionSupported)
+		throw new Error('Safari version too old');
+}
 
 Utilities.Group.NOT._createReverseMap();
 
@@ -1702,7 +1703,6 @@ Utilities.Group.TYPES = {
 	array: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.CONTAINS, Utilities.Group.NOT.CONTAINS],
 	boolean: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS]
 };
-
 
 // Event listeners ======================================================================
 
