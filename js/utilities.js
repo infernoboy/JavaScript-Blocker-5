@@ -216,9 +216,9 @@ var Utilities = {
 
 	messageHistory: function () {
 		return {
-			log: Popover.window.Log.history.concat(GlobalPage.window.Log.history).reverse(),
-			error: Popover.window.LogError.history.concat(GlobalPage.window.LogError.history).reverse(),
-			debug: Popover.window.LogDebug.history.concat(GlobalPage.window.LogDebug.history).reverse(),
+			log: Popover.window.Log.history.concat(GlobalPage.window.Log.history),
+			error: Popover.window.LogError.history.concat(GlobalPage.window.LogError.history),
+			debug: Popover.window.LogDebug.history.concat(GlobalPage.window.LogDebug.history),
 		};
 	},
 
