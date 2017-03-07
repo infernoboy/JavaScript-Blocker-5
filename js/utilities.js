@@ -456,18 +456,6 @@ var Utilities = {
 					return timerID;
 		},
 
-		__run_interval: function (timerID, isSetter) {
-			var interval = this.timers.interval[timerID];
-
-			if (!interval)
-				return this.remove('timeout', 'RunInterval' + timerID);
-
-			if (!isSetter)
-				interval.script.apply(null, interval.args);
-
-			this.timeout('RunInterval-' + timerID, this.__run_interval.bind(this, timerID), interval.time);
-		},
-
 		exist: function (type, reference) {
 			return !!this.__findReference(type, reference);
 		},
@@ -519,15 +507,16 @@ var Utilities = {
 
 			this.remove(type, reference);
 
-			var timer = null,
-				timerID = typeof reference === 'string' ? reference : Utilities.Token.generate();
+			var timerID = typeof reference === 'string' ? reference : Utilities.Token.generate();
 
-			if (type === 'timeout')
-				timer = setTimeout(function (timer, type, reference, script, args) {
-					timer.remove(type, reference);
+			var timer = setTimeout(function (type, reference, script, time, args) {
+				Utilities.Timer.remove(type, reference);
 
-					script.apply(null, args);
-				}, time, this, type, reference, script, args);
+				script.apply(null, args);
+
+				if (type === 'interval')
+					Utilities.Timer.interval(reference, script, time, args);
+			}, time, type, reference, script, time, args);
 
 			this.timers[type][timerID] = {
 				reference: reference,
@@ -536,9 +525,6 @@ var Utilities = {
 				time: time,
 				script: script
 			};
-
-			if (type === 'interval')
-				this.__run_interval(timerID, true);
 		},
 
 		remove: function () {
@@ -559,8 +545,7 @@ var Utilities = {
 				timerID = this.__findReference(type, args[i]);
 
 				if (timerID) {
-					if (type === 'timeout')
-						clearTimeout(this.timers[type][timerID].timer);
+					clearTimeout(this.timers[type][timerID].timer);
 
 					existed = true;
 
