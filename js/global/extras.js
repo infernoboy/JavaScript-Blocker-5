@@ -7,6 +7,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 var Extras = {
 	__verificationURL: 'https://imac.toggleable.com:8443/jsblocker/verify.php',
 
+	event: new EventListener,
+
 	connectionFailureCount: 0,
 
 	isActive: function () {
@@ -94,6 +96,8 @@ var Extras = {
 
 		ended: function () {
 			Settings.setItem('trialStart', -1);
+			
+			Extras.event.trigger('trialEnded');
 		}
 	}
 };
