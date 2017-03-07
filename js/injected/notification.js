@@ -40,15 +40,6 @@ function PageNotification (detail) {
 
 	PageNotification.addPending(this);
 
-	// Element.prependTo(document.documentElement, this.element);
-
-	// if (['10.7', '10.8', '10.9']._contains(Utilities.OSXVersion) {
-	// 	this.element.classList.add('jsb-notification-warped');
-
-	// 	this.top = -this.height - PageNotification.__offset + 24;
-	// 	this.element.style.right = '0px';
-	// }
-
 	this.bindEvents();
 
 	this.element.style.setProperty('z-index', PageNotification.__baseZIndex - PageNotification.notificationIDs.length, 'important');
@@ -67,7 +58,9 @@ function PageNotification (detail) {
 		this.show();
 }
 
+/* eslint-disable */
 PageNotification = PageNotification._extendClass(EventListener);
+/* eslint-enable */
 
 PageNotification.__containerID = 'jsb-notification-container';
 PageNotification.__closeButtonsContainerClass = 'jsb-notification-close-container';
