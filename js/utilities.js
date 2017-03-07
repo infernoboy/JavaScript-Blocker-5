@@ -1017,6 +1017,9 @@ function LogError () {
 		showThisError;
 
 	var args = Utilities.makeArray(arguments),
+		extensionURL = ExtensionURL(),
+		origin = Utilities.URL.origin(extensionURL)._escapeRegExp(),
+		pathname = Utilities.URL.pathname(extensionURL)._escapeRegExp(),
 		now = (new Date).toLocaleTimeString() + ' -';
 			
 	for (var i = 0; i < args.length; i++) {
@@ -1025,10 +1028,10 @@ function LogError () {
 
 		if (error && (error instanceof DOMException || (error.constructor && error.constructor.name && error.constructor.name._endsWith('Error')))) {
 			if (!errorStack)
-				errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : null;
+				errorStack = error.stack ? error.stack : null;
 
 			if (error.sourceURL)
-				errorMessage = ['%s %s (%s:%s)', now, error.message, error.sourceURL.replace(ExtensionURL(), '/'), error.line];
+				errorMessage = ['%s %s (%s:%s)', now, error.message, error.sourceURL.replace(new RegExp('(blob:)?' + origin + '(' + pathname + ')?', 'g'), ''), error.line];
 			else
 				errorMessage = ['%s %s', now, error.message];
 		} else if (typeof error === 'string' || typeof error === 'number')
