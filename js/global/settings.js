@@ -89,6 +89,13 @@ Object._extend(Settings, {
 				UI.view.switchTo('#main-views-setting');
 	},
 
+	onStoreReload: function () {
+		SettingStore.__cache = {};
+		Special.__enabled = null;
+
+		FilterList.fetch();
+	},
+
 	isLocked: function () {
 		return Locker.isLocked('settings');
 	},
@@ -300,7 +307,7 @@ Object._extend(Settings, {
 			return Settings.map.hasOwnProperty(settingKey) || settingKey._startsWith(Store.STORE_STRING);
 	},
 
-	setItem: function (settingKey, value, storeKey, changeConfirmed, unlocked, isReplay) {
+	setItem: function (settingKey, value, storeKey, changeConfirmed, unlocked, isSync, isFullSync) {
 		var setting = Settings.map[settingKey];
 
 		if (!setting)
@@ -356,14 +363,17 @@ Object._extend(Settings, {
 			this.__stores.getStore(settingKey).set(storeKey, value);
 
 			if (setting.props.onChange)
-				setting.props.onChange('set', settingKey, value, storeKey, prevValue);
+				setting.props.onChange('set', settingKey, value, storeKey, prevValue, isSync, isFullSync);
 
 			if (storeSetting.props.onChange)
-				storeSetting.props.onChange('set', settingKey, value, storeKey, prevValue);
+				storeSetting.props.onChange('set', settingKey, value, storeKey, prevValue, isSync, isFullSync);
 
 			Settings.anySettingChanged({
 				key: settingKey
 			});
+
+			if (!isSync)
+				SyncClient.Settings.setItem(settingKey, value, storeKey);
 		} else if (this.__validate(type, value, options, otherOption, setting.props.extendOptions)) {			
 			if (locked && !unlocked)
 				return Settings.unlockSettingSet(settingKey, value, storeKey);
@@ -376,14 +386,17 @@ Object._extend(Settings, {
 			this.__method('setItem', settingKey, value);
 
 			if (setting.props.onChange)
-				setting.props.onChange('set', settingKey, value, storeKey, prevValue);
+				setting.props.onChange('set', settingKey, value, storeKey, prevValue, isSync, isFullSync);
+
+			if (!isSync)
+				SyncClient.Settings.setItem(settingKey, value);
 		} else
 			throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, '', value]));
 
 		return true;
 	},
 
-	removeItem: function (settingKey, storeKey) {
+	removeItem: function (settingKey, storeKey, isSync, isFullSync) {
 		var setting = Settings.map[settingKey],
 			storeSetting = setting.storeKeySettings ? setting.storeKeySettings[storeKey] : null;
 
@@ -402,16 +415,22 @@ Object._extend(Settings, {
 				this.__stores.getStore(settingKey).clear();
 
 			if (setting.props.onChange)
-				setting.props.onChange('remove', settingKey, undefined, storeKey, prevValue);
+				setting.props.onChange('remove', settingKey, undefined, storeKey, prevValue, isSync, isFullSync);
 
 			if (storeSetting && storeSetting.props.onChange)
-				storeSetting.props.onChange('remove', settingKey, undefined, storeKey, prevValue);
+				storeSetting.props.onChange('remove', settingKey, undefined, storeKey, prevValue, isSync, isFullSync);
 
 			Settings.anySettingChanged({
 				key: settingKey
 			});
-		} else
+
+			if (!isSync)
+				SyncClient.Settings.removeItem(settingKey, storeKey);
+		} else {
 			this.__method('removeItem', settingKey);
+			if (!isSync)
+				SyncClient.Settings.removeItem(settingKey);
+		}
 	},
 
 	createMap: function (settings, when) {
@@ -484,10 +503,13 @@ Object._extend(Settings, {
 		else if (!options.exportSettings)
 			exported['Storage-Snapshots'] = allSettings['Storage-Snapshots'];
 
-		if (!options.exportUserScripts)
+		if (!options.exportUserScripts) {
 			delete exported['Storage-UserScripts'];
-		else if (!options.exportSettings)
+			delete exported['Storage-UserScripts-Storage'];
+		} else if (!options.exportSettings) {
 			exported['Storage-UserScripts'] = allSettings['Storage-UserScripts'];
+			exported['Storage-UserScripts-Storage'] = allSettings['Storage-UserScripts-Storage'];
+		}
 
 		delete exported['FilterListLastUpdate'];
 		delete exported['Storage-FilterRules'];
@@ -498,6 +520,11 @@ Object._extend(Settings, {
 		delete exported['updateNotify'];
 		delete exported['installedBundle'];
 		delete exported['openSettings'];
+		delete exported['syncQueue'];
+		delete exported['syncLastTime'];
+		delete exported['syncNeedsFullSettingsSync'];
+		delete exported['syncClientUseDevelopmentServer'];
+		delete exported['syncClientNeedsVerification'];
 
 		if (Array.isArray(deleteProps))
 			for (var i = deleteProps.length; i--;)
@@ -570,8 +597,10 @@ Object._extend(Settings, {
 					}
 				}
 
-				if (!semi)
+				if (!semi) {
 					Settings.setItem('showPopoverOnLoad', true);
+					Settings.setItem('syncNeedsFullSettingsSync', true);
+				}
 
 				setTimeout(function (settings, semi) {
 					if (!settings._isEmpty())
@@ -615,5 +644,7 @@ Object._deepFreeze(Settings.map);
 Settings.__stores = new Store('StoreSettings', {
 	save: true
 });
+
+Settings.__stores.addCustomEventListener('reloaded', Settings.onStoreReload);
 
 Locker.event.addCustomEventListener(['locked', 'unlocked'], Settings.onToggleLock);

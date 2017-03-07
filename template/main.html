@@ -4,9 +4,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 <noscript id="container">
 	<div id="container">
-		<div id="modal-overlay">
-
-		</div>
+		<div id="modal-overlay"></div>
 
 		<div id="view-container">
 			<div id="view-toolbar">
@@ -49,6 +47,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 				%><%=mainSwitcher.html()%>
 
 				<span id="open-menu" data-forceTriggersClick="1"><%=_('view_toolbar.menu')%></span>
+				
+				<div id="universal-progress-bar-container">
+					<div id="universal-progress-bar"><div class="progress-bar-shine"></div></div>
+				</div>
 			</div>
 
 			<div id="main-views" class="ui-view-container">

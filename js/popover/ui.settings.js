@@ -56,6 +56,15 @@ UI.Settings = {
 			});
 
 		UI.container
+			.on('click', '#sync-client-learn-more', function (event) {
+				var poppy = new Poppy(event.pageX, event.pageY, true);
+
+				poppy
+					.setContent(Template.create('main', 'jsb-readable', {
+						string: _('setting.syncClientSync.help')
+					}))
+					.show();
+			})
 			.on('click', '*[data-settingButton]', function (event) {
 				var settingName = this.getAttribute('data-settingButton'),
 					setting = Settings.map[settingName];
@@ -667,7 +676,7 @@ UI.Settings = {
 
 	events: {
 		repopulateActiveSection: function (event) {
-			var id = event.detail.id || event.detail.to.id;
+			var id = event ? (event.detail.id || event.detail.to.id) : $('.active-view', UI.view.viewSwitcher).attr('data-view');
 
 			if (id !== '#main-views-setting' || $('.active-view', UI.Settings.views).is('#setting-views-userScript-edit'))
 				return;
@@ -767,3 +776,14 @@ UI.Settings = {
 };
 
 document.addEventListener('DOMContentLoaded', UI.Settings.init, true);
+
+globalPage.SyncClient.event
+	.addCustomEventListener('registered', function () {
+		UI.Settings.events.repopulateActiveSection();
+	})
+	.addCustomEventListener('login', function () {
+		UI.Settings.events.repopulateActiveSection();
+	})
+	.addCustomEventListener('logout', function () {
+		UI.Settings.events.repopulateActiveSection();
+	});

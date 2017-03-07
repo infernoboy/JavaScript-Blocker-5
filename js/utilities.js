@@ -938,7 +938,7 @@ function _cleanErrorStack(stackArray) {
 function _createConsoleFormat(messages) {
 	var format = '';
 
-	messages.unshift((new Date).toLocaleTimeString() + ' - ');
+	messages.unshift((new Date).toLocaleTimeString() + ' -');
 
 	if (Utilities.Page.isWebpage)
 		messages.unshift('(JSB)');
@@ -951,6 +951,7 @@ function _createConsoleFormat(messages) {
 }
 
 function Log () {
+	/* eslint-disable */
 	var stack = Error().stack.split("\n");
 
 	stack.shift();
@@ -959,6 +960,8 @@ function Log () {
 		messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
 
 	Log.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack);
+
+	/* eslint-enable */
 
 	Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
 
@@ -976,6 +979,7 @@ Log.history = [];
 
 function LogDebug () {
 	if (globalSetting.debugMode) {
+		/* eslint-disable */
 		var stack = Error().stack.split("\n");
 
 		stack.shift();
@@ -984,6 +988,8 @@ function LogDebug () {
 			messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
 
 		LogDebug.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack);
+
+		/* eslint-enable */
 
 		LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
 

@@ -14,7 +14,7 @@
        <key>CFBundleShortVersionString</key>
        <string>4.1.24</string>
        <key>URL</key>
-       <string>http://lion.toggleable.com:160/jsblocker/download/JS%20Blocker.safariextz</string>
+       <string>https://imac.toggleable.com:8443/jsblocker/download/JS%20Blocker.safariextz</string>
      </dict>
      <dict>
        <key>CFBundleIdentifier</key>
@@ -26,7 +26,7 @@
        <key>CFBundleShortVersionString</key>
        <string>4.1.24</string>
        <key>URL</key>
-       <string>http://lion.toggleable.com:160/jsblocker/download/JS%20BlockerBeta.safariextz</string>
+       <string>https://imac.toggleable.com:8443/jsblocker/download/JS%20BlockerBeta.safariextz</string>
      </dict>
      <dict>
        <key>CFBundleIdentifier</key>
@@ -38,7 +38,7 @@
        <key>CFBundleShortVersionString</key>
        <string>5.1.7</string>
        <key>URL</key>
-       <string>http://lion.toggleable.com:160/jsblocker/download/JSB5.safariextz</string>
+       <string>https://imac.toggleable.com:8443/jsblocker/download/JSB5.safariextz</string>
        <key>Update From Gallery</key>
        <true/>
      </dict>

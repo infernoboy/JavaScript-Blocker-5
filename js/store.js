@@ -4,7 +4,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 'use strict';
 
-var Store = (function () {
+window.Store = (function () {
 	function Store (name, props) {
 		if (!(props instanceof Object))
 			props = {};
@@ -48,7 +48,9 @@ var Store = (function () {
 		}
 	}
 
+	/* eslint-disable */
 	Store = Store._extendClass(EventListener);
+	/* eslint-enable */
 
 	Store.__emptyStoreString = Utilities.decode('4a+h4KGS5IG04L2A4pSl4KKg4rqA4LCC5YCgIA==');
 	Store.__inheritable = ['ignoreSave', 'inheritMaxLife', 'selfDestruct'];
@@ -189,42 +191,49 @@ var Store = (function () {
 
 	Store.prototype.__parent = undefined;
 
-	Store.prototype.__save = function (bypassIgnore, saveNow) {
+	Store.prototype.__performSave = function (skipSync) {
+		var startTime = window.globalSetting.debugMode ? new Date : 0;
+
+		if (window.globalSetting.debugMode)
+			console.time(startTime.toLocaleTimeString() + ' - Save: ' + this.id);
+
+		var savableStore = JSON.stringify(this),
+			useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;
+
+		var self = this;
+
+		Utilities.compress(savableStore).then(function (savableStore) {
+			Settings.__method('setItem', self.id, savableStore, !useLocal);
+
+			if (!skipSync)
+				SyncClient.Settings.setStore(self.id, savableStore);
+
+			if (window.globalSetting.debugMode)
+				console.timeEnd(startTime.toLocaleTimeString() + ' - Save: ' + self.id);
+
+			if (!skipSync)
+				self.triggerEvent('storeDidSave');
+		});
+	};
+
+	Store.prototype.__save = function (bypassIgnore, saveNow, skipSync) {
 		if (this.lock || (this.ignoreSave && !bypassIgnore))
 			return;
 
 		if (this.save) {
 			clearTimeout(this.__saveTimeout);
 
-			this.__saveTimeout = setTimeout(function (store) {
-				var startTime = window.globalSetting.debugMode ? new Date : 0;
-
-				if (window.globalSetting.debugMode)
-					console.time(startTime.toLocaleTimeString() + ' - SAVED ' + store.id);
-
-				var savableStore = JSON.stringify(store),
-					useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;				
-
-				if (useLocal)
-					savableStore = LZString.compressToUTF16(savableStore);
-
-				Settings.__method('setItem', store.id, savableStore, !useLocal);
-
-				if (window.globalSetting.debugMode) {
-					console.timeEnd(startTime.toLocaleTimeString() + ' - SAVED ' + store.id);
-
-					LogDebug('SAVED ' + store.id + ': ' + (Date.now() - startTime.getTime()) + 'ms');
-				}
-
-				store.triggerEvent('storeDidSave');
-			}, saveNow ? 0 : this.saveDelay, this);
-		} else
+			if (saveNow)
+				this.__performSave(skipSync);
+			else
+				this.__saveTimeout = setTimeout(this.__performSave.bind(this), this.saveDelay, skipSync);
+		} else if (!skipSync)
 			this.triggerEvent('storeWouldHaveSaved');
 
 		if (this.parent)
-			Utilities.setImmediateTimeout(function (store) {
-				store.parent.__save(true);
-			}, [this]);
+			Utilities.setImmediateTimeout(function (store, skipSync) {
+				store.parent.__save(true, null, skipSync);
+			}, [this, skipSync]);
 	};
 
 	Store.prototype.setProperties = function (name, props) {
@@ -265,8 +274,8 @@ var Store = (function () {
 		return this;
 	};
 
-	Store.prototype.saveNow = function (bypassIgnore, immediate) {
-		this.__save(bypassIgnore, immediate ? 2 : 1);
+	Store.prototype.saveNow = function (bypassIgnore, immediate, skipSync) {
+		this.__save(bypassIgnore, immediate ? 2 : 1, skipSync);
 	};
 
 	Store.prototype.load = function () {

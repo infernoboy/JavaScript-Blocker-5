@@ -86,6 +86,33 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			}
 		}
 
+		@-webkit-keyframes progress-bar-shine {
+			0% {
+				left: -300px;
+			}
+			100% {
+				left: 150%;
+			}
+		}
+
+		#universal-progress-bar-container {
+			position: absolute;
+			bottom: 0;
+			height: 2px;
+			width: 100%;
+			pointer-events: none;
+
+			#universal-progress-bar {
+				overflow: hidden;
+				bottom: 0;
+				width: 0;
+				height: 100%;
+				background: lighten(@baseColor, 7%);
+				display: none;
+				-webkit-transition: width unit(0.5 * @speedMultiplier, s) ease-out;
+			}
+		}
+
 		#change-log {
 			width: 350px;
 			max-height: 150px;
@@ -273,6 +300,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 					}
 
 					li {
+						position: relative;
 						border-top: 1px solid darken(#fff, @darknessLevel);
 						border-left: 1px solid darken(rgb(225, 225, 225), @darknessLevel);
 						display: inline-block;

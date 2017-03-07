@@ -314,7 +314,9 @@ function Command (command, data, event) {
 
 		verifyScriptSafety: function (script) {
 			try {
+				/* eslint-disable */
 				new Function("return function () {\n" + script + "\n}");
+				/* eslint-enable */
 
 				this.message = true;
 			} catch (error) {
@@ -515,6 +517,7 @@ function Command (command, data, event) {
 
 			setItem: function (detail) {
 				this.message = SettingStore.setItem(detail.setting, detail.value);
+				SyncClient.Settings.setItem(detail.setting, detail.value);
 			}
 		},
 

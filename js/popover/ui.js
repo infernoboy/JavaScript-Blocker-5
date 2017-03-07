@@ -311,6 +311,8 @@ var UI = {
 					Settings.setItem(UI.__popoverHeightSetting, popover.height);
 				}, 100, [popover]);
 
+			UI.view.updateProgressBarAnimation();
+
 			UI.event.trigger('popoverDidResize', {
 				widthDifference: originalWidth - popover.width,
 				heightDifference: originalHeight - popover.height,
@@ -367,7 +369,9 @@ var UI = {
 					if (nodeName === 'TEXTAREA' && event.which === UI.events.__keys.TAB && !document.activeElement.classList.contains('render-as-input')) {
 						event.preventDefault();
 
+						/* eslint-disable */
 						Utilities.Element.insertText(document.activeElement, "\t");
+						/* eslint-enable */
 					}
 
 					return;
@@ -449,6 +453,7 @@ var UI = {
 		init: function () {
 			this.views = $('#main-views', UI.container);
 			this.viewContainer = $('#view-container', UI.container);
+			this.universalProgressBar = $('#universal-progress-bar', UI.container);
 			this.viewToolbar = $('#view-toolbar', this.viewContainer);
 			this.viewSwitcher = $('.view-switcher', this.viewToolbar);
 
@@ -535,6 +540,68 @@ var UI = {
 				});
 
 			this.switchTo(this.__default);
+		},
+
+		updateProgressBar: function (percent, duration, description, timeRemaining) {
+			clearTimeout(UI.view.updateProgressBar.timeout);
+
+			if (!UI.view.universalProgressBar)
+				return;
+
+			if (UI.view.universalProgressBar.data('previousPercent') > percent && percent > 0)
+				UI.view.updateProgressBar(0, 0, description, timeRemaining);
+
+			UI.view.universalProgressBar.data('previousPercent', percent);
+
+			var progressBarContainer = $('#main-menu .progress-bar-container', UI.container);
+
+			if (UI.view.universalProgressBar.is(':visible')) {
+				UI.view.universalProgressBar
+					.add($('.progress-bar-progress', progressBarContainer))
+					.css('WebkitTransitionDuration', ((duration * 1.15) * globalSetting.speedMultiplier) + 'ms');
+
+				if (progressBarContainer.length) {
+					var poppy = progressBarContainer.parents('.poppy-content').data('poppy');
+
+					$('.progress-bar-progress', progressBarContainer).width(percent + '%');
+					$('.progress-bar-description', progressBarContainer).text(description || '');
+					$('.progress-bar-time-remaining', progressBarContainer).text(timeRemaining || '');
+
+					poppy.setPosition();
+
+					if (!progressBarContainer.is(':visible'))
+						progressBarContainer.animate({
+							height: 'show',
+							opacity: 'show'
+						}, 250);
+				}
+
+				UI.view.universalProgressBar.width(percent + '%');
+
+				if (percent === 100)
+					UI.view.updateProgressBar.timeout = setTimeout(function () {
+						UI.view.universalProgressBar.fadeOut(250, function () {
+							UI.view.universalProgressBar.width(0);
+
+							if (progressBarContainer.length)
+								progressBarContainer.animate({
+									height: 'hide',
+									opacity: 'hide'
+								}, 250, function () {
+									poppy.setPosition();
+								});
+						});
+					}, duration * 3);
+			} else {
+				UI.view.universalProgressBar.css('WebkitTransitionDuration', '0ms').width(0).show();
+
+				UI.view.updateProgressBar(percent, duration, description, timeRemaining);
+			}
+		},
+
+		updateProgressBarAnimation: function () {
+			if (UI.view.universalProgressBar)
+				UI.view.universalProgressBar.toggleClass('animated', globalSetting.speedMultiplier >= 1);
 		},
 
 		create: function (prefix, viewID, container) {

@@ -11,6 +11,10 @@ var UserScript = {
 		save: true
 	}),
 
+	storage: new Store('UserScripts-Storage', {
+		save: true
+	}),
+
 	__fetch: function (attributes, store, resources) {
 		store.clear();
 
@@ -281,7 +285,9 @@ var UserScript = {
 				lines[line].replace(lineMatch, function (fullLine, key, value) {
 					value = $.trim(value);
 
+					/* eslint-disable */
 					metaStr += fullLine + "\n";
+					/* eslint-enable */
 
 					if (parsed.hasOwnProperty(key) && value.length)
 						if (typeof parsed[key] === 'string' || parsed[key] === null)
@@ -349,6 +355,7 @@ var UserScript = {
 		this.removeRules(namespace, true);
 
 		this.scripts.remove(namespace);
+		this.storage.remove(namespace);
 
 		Settings.anySettingChanged({
 			key: 'userScripts'
@@ -483,25 +490,27 @@ var UserScript = {
 	getStorageStore: function (userScriptNS, key) {
 		var userScript = UserScript.exist(userScriptNS);
 
-		if (userScript) {
-			var storage = userScript.getStore('storage');
+		if (!userScript)
+			throw new Error(userScriptNS + ' does not exist.');
 
-			if (key)
-				return storage.get(key);
-
-			return storage;
+		if (userScript.keyExist('storage')) {
+			UserScript.storage.getStore(userScriptNS).replaceWith(userScript.getStore('storage'));
+			
+			userScript.remove('storage');
 		}
+		
+		var storage = UserScript.storage.getStore(userScriptNS);
 
-		throw new Error(userScriptNS + ' does not exist.');
+		if (key)
+			return storage.get(key);
+
+		return storage;
 	},
 
 	setStorageItem: function (userScriptNS, key, value) {
-		var userScript = UserScript.exist(userScriptNS);
+		var storage = UserScript.getStorageStore(userScriptNS);
 
-		if (userScript)
-			return userScript.getStore('storage').set(key, value);
-
-		throw new Error(userScriptNS + ' does not exist.');
+		return storage.set(key, value);
 	}
 };
 
