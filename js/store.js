@@ -327,7 +327,7 @@ var Store = (function () {
 	};
 
 	Store.prototype.isEmpty = function () {
-		return !this.data || this.data._isEmpty() || this.all()._isEmpty();
+		return !this.data || this.data._isEmpty() || this.all(true)._isEmpty();
 	};
 
 	Store.prototype.keys = function () {
@@ -836,7 +836,7 @@ var Store = (function () {
 		Utilities.Timer.removeStartingWith('timeout', timerIDPrefix + '$' + key, timerIDPrefix + ',' + key + (key.length ? '$' : ''));
 	};
 
-	Store.prototype.all = function () {
+	Store.prototype.all = function (asReference) {
 		var key,
 			value,
 			finalValue;
@@ -844,13 +844,13 @@ var Store = (function () {
 		var object = {};
 
 		for (key in this.data) {
-			value = this.get(key, null, null, true);
+			value = this.get(key, null, asReference, true);
 
 			if (value instanceof Store)
 				if (value.isEmpty())
 					continue;
 				else {
-					finalValue = value.all();
+					finalValue = value.all(asReference);
 
 					if (finalValue._isEmpty())
 						continue;
@@ -868,7 +868,7 @@ var Store = (function () {
 	};
 
 	Store.prototype.allJSON = function () {
-		return JSON.stringify(this.all(), null, 2);
+		return JSON.stringify(this.all(true), null, 2);
 	};
 
 	Store.prototype.readyJSON = function (swapPrefix, noProps) {
@@ -896,7 +896,7 @@ var Store = (function () {
 			delete stringable.props;
 
 		for (var key in this.data) {
-			value = this.get(key, null, null, true);
+			value = this.get(key, null, true, true);
 
 			if (value instanceof Store)
 				if (value.isEmpty())
