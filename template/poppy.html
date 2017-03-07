@@ -1,5 +1,5 @@
 <!--
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 -->
 
 <noscript id="poppy">
@@ -76,7 +76,19 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 	<div id="page-menu" class="generic-menu">
 		<ul class="generic-menu-options">
 			<%
-				var settings = ['showResourceURLs', 'showItemDescription', 'showUnblockedScripts', 'showHiddenItems'];
+				var showResourceURLs = Settings.getItem('showResourceURLs'),
+						showResourceURLsOnNumberClick = Settings.getItem('showResourceURLsOnNumberClick'),
+						settings = ['showItemDescription', 'showHiddenItems'];
+
+				if (showResourceURLs || !showResourceURLsOnNumberClick) {
+					settings.unshift('showResourceURLs');
+				}
+
+				if (!showResourceURLs) {
+					settings.unshift('showResourceURLsOnNumberClick');
+				}
+
+				settings.unshift('showUnblockedScripts');
 
 				for (var i = settings.length; i--;) { %>
 					<li><%=UI.Settings.createElementForSetting(Settings.map[settings[i]]).html()%></li><%
@@ -260,13 +272,13 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					} else {
 						for (var i = 0; i < messageHistory.error.length; i++) {
 							%><li>
-									<span class="console-error-message"><%=messageHistory.error[i].message.join(' ')%></span>
+									<span class="console-error-message"><%=messageHistory.error[i].message.join(' ')._escapeHTML().replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;')%></span>
 									<% if (i !== messageHistory.error.length - 1) %>
 										<div class="horizontal-divider"></div>
 								</li><%
 							if (messageHistory.error[i].stack.length) { %>
 								<li>
-									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')%></span>
+									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')._escapeHTML().replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;')%></span>
 								</li><%
 							}
 						}
@@ -284,7 +296,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 					} else {
 						for (var i = 0; i < messageHistory.debug.length; i++) {
 							%><li>
-									<span class="console-debug-message"><%=messageHistory.debug[i]%></span>
+									<span class="console-debug-message"><%=messageHistory.debug[i]._escapeHTML().replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;')%></span>
 									<% if (i !== messageHistory.debug.length - 1) %>
 										<div class="horizontal-divider"></div>
 								</li><%

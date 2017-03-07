@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 // Global constants =====================================================================
 
@@ -24,16 +24,12 @@ var TIME = {
 	}
 };
 
-var LINE_SEPARATOR = '―――――――――――――――';
-
 
 // Primary utilities ====================================================================
 
 var Utilities = {
 	__watchdog: {},
 	__immediateTimeouts: [],
-
-	safariBuildVersion: parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10),
 
 	noop: function () {},
 
@@ -52,7 +48,7 @@ var Utilities = {
 	OSXVersion: (function () {
 		var osx = window.navigator.userAgent.match(/Mac OS X ([^\)]+)\)/);
 
-		if (!osx[1])
+		if (!osx || !osx[1])
 			return null;
 
 		var version = osx[1].split(/_/);
@@ -131,7 +127,7 @@ var Utilities = {
 
 	throttle: function (fn, delay, extraArgs, debounce) {
 		var timeout = null,
-				last = 0;
+			last = 0;
 
 		var execute = function (args) {
 			last = Date.now();
@@ -148,7 +144,7 @@ var Utilities = {
 			clearTimeout(timeout);
 
 			if (elapsed > delay && !debounce)
-				execute.call(this, arguments)
+				execute.call(this, arguments);
 			else
 				timeout = setTimeout(execute.bind(this, arguments), debounce ? delay : delay - elapsed);
 		};
@@ -157,14 +153,15 @@ var Utilities = {
 	byteSize: function (number) {	
 		var power;
 
-		var number = parseInt(number, 10),
-				powers = ['', 'K', 'M', 'G', 'T', 'E', 'P'],
-				divisor = /Mac/.test(navigator.platform) ? 1000 : 1024;
+		number = parseInt(number, 10);
 
-		for(var key = 0; key < powers.length; key++) {
+		var powers = ['', 'K', 'M', 'G', 'T', 'E', 'P'],
+			divisor = /Mac/.test(navigator.platform) ? 1000 : 1024;
+
+		for (var key = 0; key < powers.length; key++) {
 			power = powers[key];
 
-			if(Math.abs(number) < divisor)
+			if (Math.abs(number) < divisor)
 				break;
 
 			number /= divisor;
@@ -174,16 +171,17 @@ var Utilities = {
 	},
 
 	isNewerVersion: function (a, b) {
-		var a = typeof a === 'string' ? a : '0',
-				b = typeof b === 'string' ? b : '0',
-				aModifier = a.split(/[^0-9\.]+/),
-				bModifier = b.split(/[^0-9\.]+/),
-				aSimpleModifier = a.split(/[0-9\.]+/),
-				bSimpleModifier = b.split(/[0-9\.]+/),
-				aVersionPieces = aModifier[0].split(/\./),
-				bVersionPieces = bModifier[0].split(/\./),
-				aModifierCheck = aModifier[1] !== undefined ? parseInt(aModifier[1], 10) : Infinity,
-				bModifierCheck = bModifier[1] !== undefined ? parseInt(bModifier[1], 10) : Infinity;
+		a = typeof a === 'string' ? a : '0';
+		b = typeof b === 'string' ? b : '0';
+		
+		var aModifier = a.split(/[^0-9\.]+/),
+			bModifier = b.split(/[^0-9\.]+/),
+			aSimpleModifier = a.split(/[0-9\.]+/),
+			bSimpleModifier = b.split(/[0-9\.]+/),
+			aVersionPieces = aModifier[0].split(/\./),
+			bVersionPieces = bModifier[0].split(/\./),
+			aModifierCheck = aModifier[1] !== undefined ? parseInt(aModifier[1], 10) : Infinity,
+			bModifierCheck = bModifier[1] !== undefined ? parseInt(bModifier[1], 10) : Infinity;
 
 		aModifier[1] = isNaN(aModifierCheck) ? aSimpleModifier[1] : aModifierCheck;
 		bModifier[1] = isNaN(bModifierCheck) ? bSimpleModifier[1] : bModifierCheck;
@@ -195,7 +193,7 @@ var Utilities = {
 			bVersionPieces.push(0);
 
 		var aVersion = aVersionPieces.join(''),
-				bVersion = bVersionPieces.join('');
+			bVersion = bVersionPieces.join('');
 
 		if (aVersion.charAt(0) === '0' || bVersion.charAt(0) === '0') {
 			aVersion = '99999' + aVersion;
@@ -218,9 +216,9 @@ var Utilities = {
 
 	messageHistory: function () {
 		return {
-			log: Popover.window.Log.history.concat(GlobalPage.window.Log.history).reverse(),
-			error: Popover.window.LogError.history.concat(GlobalPage.window.LogError.history).reverse(),
-			debug: Popover.window.LogDebug.history.concat(GlobalPage.window.LogDebug.history).reverse(),
+			log: Popover.window.Log.history.concat(GlobalPage.window.Log.history),
+			error: Popover.window.LogError.history.concat(GlobalPage.window.LogError.history),
+			debug: Popover.window.LogDebug.history.concat(GlobalPage.window.LogDebug.history),
 		};
 	},
 
@@ -228,7 +226,7 @@ var Utilities = {
 		var convertedUnit;
 
 		var seconds = time / 1000,
-				humanTime = {};
+			humanTime = {};
 
 		var units = {
 			days: 24 * 60 * 60,
@@ -237,7 +235,7 @@ var Utilities = {
 			seconds: 1
 		};
 		
-		for (var unit in units) {
+		for (var unit in units)
 			if (seconds / units[unit] > 0) {
 				convertedUnit = Math.floor(seconds / units[unit]);
 
@@ -246,7 +244,6 @@ var Utilities = {
 				seconds -= convertedUnit * units[unit];
 			} else
 				humanTime[unit] = 0;
-		};
 
 		return humanTime;
 	},
@@ -283,7 +280,7 @@ var Utilities = {
 			}
 
 			return this;
-		}
+		};
 
 		Queue.prototype.start = function () {
 			if (this.__started)
@@ -313,6 +310,10 @@ var Utilities = {
 					delete self.timers[index];
 				}, this.delay * this.index, this, this.index, this.queue[this.index]);
 			}
+
+			this.timers[++this.index] = setTimeout(function (self) {
+				self.stop();
+			}, this.delay * this.index, this);
 		};
 		
 		Queue.prototype.stop = function () {
@@ -334,7 +335,7 @@ var Utilities = {
 			this.queue = [];
 			this.index = 0;
 			this.timers = {};
-		}
+		};
 
 		return Queue;
 	})(),
@@ -372,51 +373,44 @@ var Utilities = {
 			switch (method) {
 				case this.IS_ANYTHING:
 					return (typeof needle !== 'undefined' && needle !== null);
-				break;
-
+					
 				case this.IS:
 					return haystack === needle;
-				break;
-
+					
 				case this.NOT.IS:
 					return haystack !== needle;
-				break;
-
+					
 				case this.STARTS_WITH:
 					return haystack._startsWith(needle);
-				break;
-
+					
 				case this.NOT.STARTS_WITH:
 					return !haystack._startsWith(needle);
-				break;
-
+					
 				case this.ENDS_WITH:
 					return haystack._endsWith(needle);
-				break;
-
+					
 				case this.NOT.ENDS_WITH:
 					return !haystack._endsWith(needle);
-				break;
-
+					
 				case this.CONTAINS:
 					return haystack._contains(needle);
-				break;
-
+					
 				case this.NOT.CONTAINS:
 					return !haystack._contains(needle);
-				break;
-
+					
 				case this.MATCHES:
 					try {
 						return (new RegExp(needle)).test(haystack);
-					} catch (e) {}
-				break;
+					} catch (e) {
+						return false;
+					}
 
 				case this.NOT.MATCHES:
 					try {
 						return !(new RegExp(needle)).test(haystack);
-					} catch (e) {}
-				break;
+					} catch (e) {
+						return false;
+					}
 			}
 
 			return false;
@@ -460,18 +454,6 @@ var Utilities = {
 			for (var timerID in timers)
 				if (timers[timerID].reference === reference)
 					return timerID;
-		},
-
-		__run_interval: function (timerID, isSetter) {
-			var interval = this.timers.interval[timerID];
-
-			if (!interval)
-				return this.remove('RunInterval' + timerID);
-
-			if (!isSetter)
-				interval.script.apply(null, interval.args);
-
-			setTimeout(this.__run_interval.bind(this), interval.time, timerID);
 		},
 
 		exist: function (type, reference) {
@@ -525,15 +507,16 @@ var Utilities = {
 
 			this.remove(type, reference);
 
-			var timer = null,
-					timerID = typeof reference === 'string' ? reference : Utilities.Token.generate();
+			var timerID = typeof reference === 'string' ? reference : Utilities.Token.generate();
 
-			if (type === 'timeout')
-				timer = setTimeout(function (timer, type, reference, script, args) {
-					timer.remove(type, reference);
+			var timer = setTimeout(function (type, reference, script, time, args) {
+				Utilities.Timer.remove(type, reference);
 
-					script.apply(null, args);
-				}, time, this, type, reference, script, args);
+				script.apply(null, args);
+
+				if (type === 'interval')
+					Utilities.Timer.interval(reference, script, time, args);
+			}, time, type, reference, script, time, args);
 
 			this.timers[type][timerID] = {
 				reference: reference,
@@ -542,17 +525,14 @@ var Utilities = {
 				time: time,
 				script: script
 			};
-
-			if (type === 'interval')
-				this.__run_interval(timerID, true);
 		},
 
 		remove: function () {
 			var timerID;
 
 			var existed = false,
-					args = Utilities.makeArray(arguments),
-					type = args.shift();
+				args = Utilities.makeArray(arguments),
+				type = args.shift();
 
 			if (!args.length) {
 				for (timerID in this.timers[type])
@@ -565,8 +545,7 @@ var Utilities = {
 				timerID = this.__findReference(type, args[i]);
 
 				if (timerID) {
-					if (type === 'timeout')
-						clearTimeout(this.timers[type][timerID].timer);
+					clearTimeout(this.timers[type][timerID].timer);
 
 					existed = true;
 
@@ -575,12 +554,29 @@ var Utilities = {
 			}
 
 			return existed;
+		},
+
+		removeStartingWith: function () {
+			var timerID;
+
+			var args = Utilities.makeArray(arguments),
+				type = args.shift();
+
+			if (!args.length)
+				return;
+
+			for (var i = 0; i < args.length; i++)
+				for (timerID in this.timers[type])
+					if (timerID._startsWith(args[i]))
+						this.remove(type, timerID);
+
+			return;
 		}
 	},
 
 	Token: (function () {
 		var tokens = {},
-				characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+			characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 		return {
 			generate: function () {
@@ -622,7 +618,7 @@ var Utilities = {
 				if ((token in tokens) && (!expireKept || !tokens[token].keep))
 					delete tokens[token];
 			}
-		}
+		};
 	})(),
 
 	Element: {
@@ -630,7 +626,7 @@ var Utilities = {
 
 		insertText: function (element, text) {
 			var value = element.value,
-					selectionStart = element.selectionStart;
+				selectionStart = element.selectionStart;
 
 			element.value = value.substr(0, selectionStart) + text + value.substr(element.selectionEnd);
 
@@ -663,11 +659,11 @@ var Utilities = {
 		*/
 		fitFontWithin: function (containerNode, textNode, size) {
 			var textNodeHeight,
-					textNodeWidth;
+				textNodeWidth;
 
 			var currentFontSize = size || 30,
-					maxWrapperHeight = containerNode.offsetHeight + containerNode.offsetHeight,
-					maxWrapperWidth = containerNode.offsetWidth;
+				maxWrapperHeight = containerNode.offsetHeight + containerNode.offsetHeight,
+				maxWrapperWidth = containerNode.offsetWidth;
 						
 			do {
 				textNode.style.setProperty('font-size', currentFontSize + 'px', 'important');
@@ -724,9 +720,8 @@ var Utilities = {
 					return base + '?';
 				else
 					return base;
-			} else {
+			} else
 				return document.location.href;
-			}
 		}
 	},
 
@@ -784,7 +779,7 @@ var Utilities = {
 		extractHost: function (url) {
 			this.__anchor.href = url;
 
-			var url = (typeof url !== 'string') ? Utilities.Page.getCurrentLocation() : url;
+			url = (typeof url !== 'string') ? Utilities.Page.getCurrentLocation() : url;
 
 			if (/^about:/.test(url))
 				return url.substr(6);
@@ -809,8 +804,8 @@ var Utilities = {
 				});
 
 			var cacheKey = prefixed ? 'prefixed' : 'unprefixed',
-					hostStore = this.hostParts.cache ? this.hostParts.cache.getStore(host) : null,
-					cached = hostStore ? hostStore.get(cacheKey) : null;
+				hostStore = this.hostParts.cache ? this.hostParts.cache.getStore(host) : null,
+				cached = hostStore ? hostStore.get(cacheKey) : null;
 
 			if (cached)
 				return cached;
@@ -819,14 +814,13 @@ var Utilities = {
 				return hostStore ? hostStore.set(cacheKey, [host]).get(cacheKey) : [host];
 
 			var split = host.split(/\./g).reverse(),
-					part = split[0],
-					parts = [],
-					eTLDLength = EffectiveTLDs.length,
-					sTLDLength = SimpleTLDs.length;
+				part = split[0],
+				parts = [],
+				eTLDLength = EffectiveTLDs.length,
+				sTLDLength = SimpleTLDs.length;
 
 			if (!EffectiveTLDs._contains(host) && !SimpleTLDs._contains(host)) {
-				var part,
-						j;
+				var j;
 								
 				hostLoop:
 				for (var i = 1; i < split.length; i++) {
@@ -859,7 +853,7 @@ var Utilities = {
 			this.__anchor.href = url;
 
 			var parts = [this.__anchor.origin !== 'null' ? (this.__anchor.origin + '/') : this.__anchor.protocol],
-					splitPath = this.__anchor.pathname.split(/\//g);
+				splitPath = this.__anchor.pathname.split(/\//g);
 		
 			if (splitPath.length > 1)
 				splitPath._remove(0);
@@ -962,9 +956,9 @@ function Log () {
 	stack.shift();
 
 	var cleanErrorStack = _cleanErrorStack(stack).join("\n"),
-			messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
+		messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
 
-	Log.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack.replace(/\n/g, "<br>"));
+	Log.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack);
 
 	Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
 
@@ -976,7 +970,7 @@ function Log () {
 	console.groupCollapsed('Stack');
 	console.log(cleanErrorStack);
 	console.groupEnd();
-};
+}
 
 Log.history = [];
 
@@ -987,9 +981,9 @@ function LogDebug () {
 		stack.shift();
 
 		var cleanErrorStack = _cleanErrorStack(stack).join("\n"),
-				messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
+			messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
 
-		LogDebug.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack.replace(/\n/g, "<br>"));
+		LogDebug.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack);
 
 		LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
 
@@ -1012,18 +1006,21 @@ function LogDebug () {
 				});
 		}
 	}
-};
+}
 
 LogDebug.history = [];
 
 function LogError () {
 	var	error,
-			errorMessage,
-			errorStack,
-			showThisError;
+		errorMessage,
+		errorStack,
+		showThisError;
 
 	var args = Utilities.makeArray(arguments),
-			now = (new Date).toLocaleTimeString() + ' -';
+		extensionURL = ExtensionURL(),
+		origin = Utilities.URL.origin(extensionURL)._escapeRegExp(),
+		pathname = Utilities.URL.pathname(extensionURL)._escapeRegExp(),
+		now = (new Date).toLocaleTimeString() + ' -';
 			
 	for (var i = 0; i < args.length; i++) {
 		error = args[i];
@@ -1031,13 +1028,15 @@ function LogError () {
 
 		if (error && (error instanceof DOMException || (error.constructor && error.constructor.name && error.constructor.name._endsWith('Error')))) {
 			if (!errorStack)
-				errorStack = error.stack ? error.stack.replace(new RegExp(ExtensionURL()._escapeRegExp(), 'g'), '/') : null;
+				errorStack = error.stack ? error.stack : null;
 
 			if (error.sourceURL)
-				errorMessage = ['%s %s (%s:%s)', now, error.message, error.sourceURL.replace(ExtensionURL(), '/'), error.line];
+				errorMessage = ['%s %s (%s:%s)', now, error.message, error.sourceURL.replace(new RegExp('(blob:)?' + origin + '(' + pathname + ')?', 'g'), ''), error.line];
 			else
 				errorMessage = ['%s %s', now, error.message];
-		} else
+		} else if (typeof error === 'string' || typeof error === 'number')
+			errorMessage = ['%s %s', now, error];
+		else
 			errorMessage = ['%s %o', now, error];
 
 		LogError.history.unshift({
@@ -1057,7 +1056,7 @@ function LogError () {
 				showThisError = true;
 			}
 
-		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || globalSetting.debugMode || showThisError) {
+		if (Utilities.Page.isGlobal || Utilities.Page.isPopover || showThisError || (window.globalSetting && globalSetting.debugMode)) {
 			if (Utilities.Page.isWebpage)
 				errorMessage = ['(JSB) ' + errorMessage[0]].concat(errorMessage.slice(1));
 
@@ -1074,12 +1073,9 @@ function LogError () {
 		console.groupEnd();
 	}
 
-	if (window.UI) {
+	if (window.UI)
 		$('#open-menu', UI.view.viewToolbar).addClass('unread-error');
-
-		// Update.showRequiredPopover();
-	}
-};
+}
 
 LogError.history = [];
 
@@ -1113,7 +1109,7 @@ var Extension = {
 					fn.call(this);
 
 					extended.__originalClass.apply(this, arguments);
-				};
+				}
 
 				extended.__originalClass = this;
 
@@ -1146,7 +1142,7 @@ var Extension = {
 					extended.prototype.constructor = this;
 
 					return extended;
-				}
+				};
 			})()
 		}
 	},
@@ -1156,22 +1152,22 @@ var Extension = {
 			value: function (matchType, needle, returnMissingItems) {
 				if (typeof matchType !== 'number')
 					throw new TypeError(matchType + ' is not a number');
+
+				var i, b;
 				
-				switch(matchType) {
+				switch (matchType) {
 					case ARRAY.CONTAINS.ONE:
 						return this.indexOf(needle) > -1;
-					break;
 
 					case ARRAY.CONTAINS.ANY:
 						if (!Array.isArray(needle))
 							throw new TypeError(needle + ' is not an array');
 
-						for (var i = 0, b = needle.length; i < b; i++)
+						for (i = 0, b = needle.length; i < b; i++)
 							if (this._contains(needle[i]))
 								return true;
 
 						return false;
-					break;
 
 					case ARRAY.CONTAINS.ALL:
 						if (!Array.isArray(needle))
@@ -1179,7 +1175,7 @@ var Extension = {
 
 						var missingItems = [];
 
-						for (var i = 0, b = needle.length; i < b; i++)
+						for (i = 0, b = needle.length; i < b; i++)
 							if (this.indexOf(needle) === -1)
 								if (returnMissingItems)
 									missingItems.push(needle[i]);
@@ -1190,15 +1186,12 @@ var Extension = {
 							return missingItems;
 						else
 							return true;
-					break;
 
 					case ARRAY.CONTAINS.NONE:
 						return !this._containsAny(needle);
-					break;
 
 					default:
 						throw new Error('unsupported match type');
-					break;
 				}
 			}
 		},
@@ -1224,8 +1217,8 @@ var Extension = {
 		},
 
 		_clone: {
-			value: function () {
-				return Utilities.makeArray(this);
+			value: function (full) {				
+				return full ? JSON.parse(JSON.stringify(this)) : Utilities.makeArray(this);
 			}
 		},
 
@@ -1252,21 +1245,19 @@ var Extension = {
 			value: function() {
 				var a = this.concat();
 
-				for(var i = 0; i < a.length; ++i) {
-					for(var j = i + 1; j < a.length; ++j) {
-						if(a[i] === a[j])
+				for (var i = 0; i < a.length; ++i)
+					for (var j = i + 1; j < a.length; ++j)
+						if (a[i] === a[j])
 							a.splice(j--, 1);
-					}
-				}
 
-			return a;
+				return a;
 			}
 		},
 
 		_chunk: {
 			value: function (pieces) {
 				var chunks = [[]],
-						chunk = 0;
+					chunk = 0;
 
 				for (var i = 0, b = this.length; i < b; i++) {
 					if (pieces > 0 && chunks[chunk].length >= pieces)
@@ -1408,14 +1399,11 @@ var Extension = {
 				container = (container || $('<ul>')).addClass('object-as-list');
 
 				var li,
-						keyName,
-						keyValue;
+					keyValue;
 
 				for (var key in this)
 					if (this.hasOwnProperty(key)) {
 						li = $('<li>').appendTo(container);
-
-						keyName = $('<span>').addClass('object-key-name').appendTo(li).text(key + ': ');
 
 						if (Object._isPlainObject(this[key]))
 							keyValue = $('<div>').append(this[key]._toHTMLList($('<ul>')));
@@ -1437,9 +1425,12 @@ var Extension = {
 				var found;
 
 				for (var key in this)
-					if (this.hasOwnProperty(key) && Object._isPlainObject(this[key]))
-						if (found = this[key]._findKey(findKey))
+					if (this.hasOwnProperty(key) && Object._isPlainObject(this[key])) {
+						found = this[key]._findKey(findKey);
+
+						if (found)
 							return found;
+					}
 
 				return undefined;
 			}
@@ -1507,16 +1498,18 @@ var Extension = {
 		},
 
 		_clone: {
-			value: function (deep) {
+			value: function (deep, quick) {
+				if (quick)
+					return JSON.parse(JSON.stringify(this));
+
 				var object = {};
 
 				for (var key in this)
-					if (this.hasOwnProperty(key)) {
-						if (deep && Object._isPlainObject(this[key])) {
+					if (this.hasOwnProperty(key))
+						if (deep && Object._isPlainObject(this[key]))
 							object[key] = Object.prototype._clone.call(this[key], true);
-						} else
+						else
 							object[key] = Object._copy(this[key]);
-					}
 
 				return object;
 			}
@@ -1527,7 +1520,7 @@ var Extension = {
 				var object;
 
 				var deep = false,
-						objects = Utilities.makeArray(arguments);
+					objects = Utilities.makeArray(arguments);
 
 				if (objects[0] === true) {
 					deep = true;
@@ -1542,12 +1535,11 @@ var Extension = {
 						throw new TypeError(object + ' is not an object');
 
 					for (var key in object)
-						if (object.hasOwnProperty(key)) {
+						if (object.hasOwnProperty(key))
 							if (deep && Object._isPlainObject(this[key]) && Object._isPlainObject(object[key]) && this.hasOwnProperty(key))
 								this[key]._merge(true, object[key]);
 							else
 								this[key] = object[key];
-						}
 				}
 
 				return this;
@@ -1557,7 +1549,7 @@ var Extension = {
 		_sort: {
 			value: function (fn, reverse) {
 				var newObject = {},
-						keys = Object.keys(this).sort(fn);
+					keys = Object.keys(this).sort(fn);
 
 				if (reverse)
 					keys.reverse();
@@ -1572,8 +1564,8 @@ var Extension = {
 		_chunk: {
 			value: function (pieces) {
 				var size = 0,
-						chunk = 0,
-						chunks = { 0: {} };
+					chunk = 0,
+					chunks = { 0: {} };
 
 				for (var key in this) {
 					if (pieces > 0 && size >= pieces) {
@@ -1597,7 +1589,7 @@ var Extension = {
 	for (var object in Extension)
 		try {
 			Object.defineProperties(window[object].prototype, Extension[object]);
-		} catch (error) {}
+		} catch (error) { /* do nothing */ }
 })();
 
 Extension = undefined;
@@ -1617,47 +1609,36 @@ Object._copy = function (object, defaultValue) {
 	switch (true) {
 		case object === null:
 			return null;
-		break;
 
 		case Array.isArray(object):
-			return Utilities.makeArray(object);
-		break;
+			return object._clone(true);
 
 		case objectType === 'string':
 			return String(object);
-		break;
 
 		case objectType === 'number':
 			return Number(object);
-		break;
 
 		case objectType === 'boolean':
 			return Boolean(object);
-		break;
 
 		case objectType === 'undefined':
 			if (defaultValue !== undefined && defaultValue !== null)
 				return defaultValue;
 
 			return object;
-		break;
 
 		case objectType === 'object' && object.constructor === Object:
 			return object._clone(true);
-		break;
 
 		default:
-			// console.trace();
-			// LogDebug('getting as reference when not requested as such:', object);
-
 			return object;
-		break;
 	}
 };
 
 Object._extend = function () {
 	var deep = false,
-			args = Utilities.makeArray(arguments);
+		args = Utilities.makeArray(arguments);
 
 	if (args[0] === true) {
 		deep = true;
@@ -1691,13 +1672,16 @@ Object._deepFreeze = function (object) {
 	return object;
 };
 
-Utilities.safariVersionSupported = Utilities.safariBuildVersion >= 537;
-
-if (!Utilities.safariVersionSupported)
-	throw new Error('safari version too old.');
-
 Utilities.Page.isWebpage = window.GlobalPage ? (!!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL())) : false;
 Utilities.Page.isUserScript = window.location ? window.location.href._endsWith('.user.js') : false;
+
+if (Utilities.Page.isGlobal || Utilities.Page.isPopover) {
+	Utilities.safariBuildVersion = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10);
+	Utilities.safariVersionSupported = Utilities.safariBuildVersion >= 537;
+
+	if (!Utilities.safariVersionSupported)
+		throw new Error('Safari version too old');
+}
 
 Utilities.Group.NOT._createReverseMap();
 
@@ -1707,7 +1691,6 @@ Utilities.Group.TYPES = {
 	array: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS, Utilities.Group.CONTAINS, Utilities.Group.NOT.CONTAINS],
 	boolean: [Utilities.Group.IS_ANYTHING, Utilities.Group.IS, Utilities.Group.NOT.IS]
 };
-
 
 // Event listeners ======================================================================
 

@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 UI.Page = {
 	__forceRuleColorTemplate: 'rgba(252, 240, 255, {0})',
@@ -20,7 +20,7 @@ UI.Page = {
 		UI.Page.hideSwitcherBadge();
 
 		var pageInfo = page.tree(),
-				renderedSections = $('<div>');
+			renderedSections = $('<div>');
 
 		pageInfo.private = page.tab.private;
 
@@ -38,9 +38,9 @@ UI.Page = {
 
 		sections.each(function () {
 			var	hiddenCount = 0,
-					hiddenCountText = $('.page-host-hidden-count', this);
+				hiddenCountText = $('.page-host-hidden-count', this);
 
-			$('.page-host-items', this).each(function (i) {
+			$('.page-host-items', this).each(function () {
 				var items = $(this);
 
 				if (!items.children().length)
@@ -48,7 +48,7 @@ UI.Page = {
 				else
 					$('.page-host-item', this).each(function () {
 						var resources = $(this).data('resources', {}).data('resources'),
-								resourceIDs = JSON.parse(this.getAttribute('data-resourceIDs'));
+							resourceIDs = JSON.parse(this.getAttribute('data-resourceIDs'));
 
 						for (var i = resourceIDs.length; i--;)
 							resources[resourceIDs[i]] = pageInfo._findKey(resourceIDs[i]);
@@ -95,8 +95,8 @@ UI.Page = {
 		UI.container
 			.on('click', '.show-resource-source', function (event) {
 				var url = this.getAttribute('data-url'),
-						kind = this.getAttribute('data-kind'),
-						protocol = Utilities.URL.protocol(url);
+					kind = this.getAttribute('data-kind'),
+					protocol = Utilities.URL.protocol(url);
 
 				if (kind === 'image') {
 					var imageContainer = Template.create('page', 'resource-image', {
@@ -144,7 +144,7 @@ UI.Page = {
 		forceClickPageItems.setThreshold(0.5, 0.05).modifyNormalizedForce(0, 1);
 
 		forceClickPageItems.event
-			.addCustomEventListener('forceClickCancelled', function (event) {
+			.addCustomEventListener('forceClickCancelled', function () {
 				Poppy.closeAll();
 
 				$('.page-host-item', UI.Page.view).css('background', '');
@@ -152,8 +152,8 @@ UI.Page = {
 
 			.addCustomEventListener('forceChange', function (event) {
 				var target = $(event.detail.target),
-						section = target.parents('.page-host-section'),
-						colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
+					section = target.parents('.page-host-section'),
+					colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
 
 				if (section.hasClass('page-host-editing') || globalPage.Rules.isLocked())
 					return;
@@ -171,8 +171,8 @@ UI.Page = {
 
 			.addCustomEventListener('forceDown', function (event) {
 				var target = $(event.detail.target),
-						section = target.parents('.page-host-section'),
-						colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
+					section = target.parents('.page-host-section'),
+					colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
 
 				if (section.hasClass('page-host-editing') || globalPage.Rules.isLocked())
 					return;
@@ -206,8 +206,8 @@ UI.Page = {
 					return;
 
 				var target = $(event.detail.target),
-						section = target.parents('.page-host-section'),
-						colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
+					section = target.parents('.page-host-section'),
+					colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
 
 				if (section.hasClass('page-host-editing'))
 					return;
@@ -234,7 +234,7 @@ UI.Page = {
 				if (section.hasClass('page-host-editing'))
 					return;
 
-				Poppy.closeAll()
+				Poppy.closeAll();
 
 				$(event.detail.target).click();
 
@@ -256,7 +256,7 @@ UI.Page = {
 				if (!isShowingResourceURLs && !Poppy.poppyWithScriptNameExist('force-click-host-count')) {
 					var poppy = new Poppy(event.pageX, event.pageY, true, 'force-click-host-count');
 
-					poppy.scaleWithForce(foreClickHostCount).setContent(_('force_click_host_count_switch')).show();
+					poppy.scaleWithForce(foreClickHostCount).setContent(_(Settings.getItem('showResourceURLsOnNumberClick') ? 'force_click_host_count_popup' : 'force_click_host_count_switch')).show();
 				}
 			});
 	},
@@ -304,7 +304,7 @@ UI.Page = {
 		UI.Page.hideSwitcherBadge();
 	},
 
-	throttledRequestFromActive: Utilities.throttle(function (event) {
+	throttledRequestFromActive: Utilities.throttle(function () {
 		globalPage.Page.requestPageFromActive();
 	}, 250, null, true),
 
@@ -327,7 +327,7 @@ UI.Page = {
 				return;
 
 			var pageHostEditor = section.find('.page-host-editor').stop(true, true),
-					wasInEditMode = pageHostEditor.is(':visible');
+				wasInEditMode = pageHostEditor.is(':visible');
 
 			if (forceAdvanced && Settings.getItem('useSimplePageEditor'))
 				$('.page-host-editor-advanced:not(.is-advanced)', pageHostEditor).toggleClass('jsb-hidden').addClass('is-advanced');
@@ -336,7 +336,7 @@ UI.Page = {
 				return;
 
 			var editButtons = $('.page-host-edit .poppy-menu-target', section),
-					items = $('.page-host-columns .page-host-item', section).find('.page-host-item-container, .page-host-item-edit-container');
+				items = $('.page-host-columns .page-host-item', section).find('.page-host-item-container, .page-host-item-edit-container');
 
 			editButtons.text(wasInEditMode ? _('view.page.host.edit') : _('view.page.host.done'));
 
@@ -344,7 +344,7 @@ UI.Page = {
 				pageHostEditor.toggle().css('margin-top', 0);
 			else {
 				var viewContainer = UI.Page.view.parents('.ui-view-container'),
-						viewScrollTop = viewContainer.scrollTop();
+					viewScrollTop = viewContainer.scrollTop();
 
 				if (wasInEditMode)
 					pageHostEditor.marginSlideUp(310 * window.globalSetting.speedMultiplier, 'easeOutQuad');
@@ -373,20 +373,19 @@ UI.Page = {
 			if (!hideInstantly && section.find('.page-host-editor').is(':not(:visible)'))
 				return;
 
-			var ruleAction,
-					ruleDomain;
+			var ruleDomain;
 
 			var ruleWasCreated = false,
-					Rules = globalPage.Rules,
-					ruleKindPrefix = section.find('.page-host-editor-when-framed').is(':checked') ? 'framed:' : '',
-					notWhere = section.find('.page-host-editor-where-not').is(':checked'),
-					ruleList = Rules.list[section.find('.page-host-editor-list').val()],
-					addRule = notWhere ? ruleList.addNotDomain : ruleList.addDomain,
-					ruleType = section.find('.page-host-editor-kind').val(),
-					ruleWhere = section.find('.page-host-editor-where'),
-					ruleWhereValue = ruleWhere.val(),
-					ruleWhichItems = section.find('.page-host-editor-which-items').val(),
-					items = section.find('.page-host-columns .page-host-item:not(.page-host-item-disabled)');
+				Rules = globalPage.Rules,
+				ruleKindPrefix = section.find('.page-host-editor-when-framed').is(':checked') ? 'framed:' : '',
+				notWhere = section.find('.page-host-editor-where-not').is(':checked'),
+				ruleList = Rules.list[section.find('.page-host-editor-list').val()],
+				addRule = notWhere ? ruleList.addNotDomain : ruleList.addDomain,
+				ruleType = section.find('.page-host-editor-kind').val(),
+				ruleWhere = section.find('.page-host-editor-where'),
+				ruleWhereValue = ruleWhere.val(),
+				ruleWhichItems = section.find('.page-host-editor-which-items').val(),
+				items = section.find('.page-host-columns .page-host-item:not(.page-host-item-disabled)');
 
 			if (ruleType === 'hide' || ruleType === 'show')
 				ruleKindPrefix = 'hide:' + ruleKindPrefix;
@@ -399,7 +398,7 @@ UI.Page = {
 				addRule = notWhere ? ruleList.addNotPage : ruleList.addPage;
 
 				var ruleOption = $('option', ruleWhere).eq(ruleWhere[0].selectedIndex),
-						rulePage = ruleOption.attr('data-page')._escapeRegExp();
+					rulePage = ruleOption.attr('data-page')._escapeRegExp();
 
 				if (ruleOption.is(':not(:last-child)'))
 					rulePage += '.*';
@@ -415,6 +414,8 @@ UI.Page = {
 			UI.Locker
 				.showLockerPrompt('disable', ruleType !== 'disable' && ruleType !== 'enable')
 				.then(function () {
+					var ruleAction;
+
 					if (ruleType === 'disable' || ruleType === 'enable') {
 						ruleAction = ruleType === 'disable' ? 0 : 1;
 
@@ -436,8 +437,9 @@ UI.Page = {
 
 						ruleWasCreated = true;
 					} else if (ruleWhichItems === 'items-of-kind') {
-						var checked = $('.page-host-editor-kinds input:checked', section),
-								ruleAction = (ruleType === 'block' || ruleType === 'hide') ? 0 : 1;
+						var checked = $('.page-host-editor-kinds input:checked', section);
+
+						ruleAction = (ruleType === 'block' || ruleType === 'hide') ? 0 : 1;
 
 						checked.each(function () {
 							addRule(ruleKindPrefix + this.getAttribute('data-kind'), ruleDomain, {
@@ -447,27 +449,27 @@ UI.Page = {
 
 							ruleWasCreated = true;
 						});
-					} else {
+					} else
 						items.each(function () {
 							var item = $(this),
-									isBlocked = item.parents('.page-host-column').is('.page-host-column-blocked'),
-									ruleAction = isBlocked ? 1 : 0,
-									checked = item.find('.page-host-item-edit-check');
+								isBlocked = item.parents('.page-host-column').is('.page-host-column-blocked'),
+								ruleAction = isBlocked ? 1 : 0,
+								checked = item.find('.page-host-item-edit-check');
 
 							if (!checked.is(':checked'))
 								return;
 
 							var itemSource = item.find('.select-custom-input, .page-host-item-edit-select'),
-									itemSourceVal = itemSource.val(),
-									kind = item.parents('.page-host-items').attr('data-kind'),
-									protocol = item.attr('data-protocol'),
-									resources = item.data('resources');
+								itemSourceVal = itemSource.val(),
+								kind = item.parents('.page-host-items').attr('data-kind'),
+								protocol = item.attr('data-protocol'),
+								resources = item.data('resources');
 
 							if (['block/allow', 'block', 'allow', 'hide', 'show']._contains(ruleType)) {
 								var hasAffect;
 
 								if (ruleType === 'block' || ruleType === 'hide')
-									ruleAction = 0
+									ruleAction = 0;
 								else if (ruleType === 'allow' || ruleType === 'show')
 									ruleAction = 1;
 
@@ -476,6 +478,7 @@ UI.Page = {
 									action: ruleAction
 								});
 
+								/* eslint-disable */
 								for (var resourceID in resources)
 									do {
 										hasAffect = ruleList.hasAffectOnResource(rule, resources[resourceID], ['hide', 'show']._contains(ruleType));
@@ -485,32 +488,34 @@ UI.Page = {
 
 										hasAffect.detail.ruleList.__remove(false, hasAffect.detail.ruleType, hasAffect.detail.ruleKind, hasAffect.detail.domain, hasAffect.detail.rule);
 									} while (true);
+								/* eslint-enable */
 
 								ruleWasCreated = true;
 							} else
 								throw new Error('not yet supported');
 						});
-					}
 
 					UI.Page.section.toggleEditMode(section, false, !!hideInstantly);
 
 					var tab = UI.Page.stateContainer.data('page').tab;
 
-					Utilities.Timer.timeout(tab, function (tab, ruleWasCreated) {
-						UI.view.toTop(UI.view.views);
-
-						$('.page-host-item-edit-check', UI.Page.view).prop('checked', false);
-
+					globalPage.Rule.event.addCustomEventListener('fixedCanLoadCache', function () {
 						MessageTarget({
 							target: tab
 						}, ruleWasCreated ? 'reload' : 'sendPage');
-					}, 310, [tab, ruleWasCreated]);
+					}, true);
+
+					Utilities.Timer.timeout(tab, function () {
+						UI.view.toTop(UI.view.views);
+
+						$('.page-host-item-edit-check', UI.Page.view).prop('checked', false);
+					}, 310);
 				});
 		}
 	},
 
 	events: {
-		openedPopover: function () {
+		popoverOpened: function () {
 			if (!Poppy.modalOpen)
 				UI.Page.clear();
 
@@ -558,7 +563,7 @@ UI.Page = {
 
 		selectCustomOptionChanged: function (event) {
 			var input = $(event.detail),
-					editContainer = input.parents('.page-host-item-edit-container');
+				editContainer = input.parents('.page-host-item-edit-container');
 
 			if (editContainer.length)
 				$('.page-host-item-edit-check', editContainer).prop('checked', true).change();
@@ -573,10 +578,10 @@ UI.Page = {
 				UI.event.addCustomEventListener('pageDidRender', function (event) {
 					if (event.detail === lastPage) {
 						var pageToolbar = $('li[data-view="#main-views-page"]', UI.view.viewSwitcher),
-								pageToolbarOffset = pageToolbar.offset().left,
-								pageToolbarWidth = pageToolbar.outerWidth(),
-								pageToolbarHeight = pageToolbar.outerHeight(),
-								poppy = new Poppy(Math.floor(pageToolbarOffset + pageToolbarWidth / 2), Math.floor(pageToolbarHeight) - 6);
+							pageToolbarOffset = pageToolbar.offset().left,
+							pageToolbarWidth = pageToolbar.outerWidth(),
+							pageToolbarHeight = pageToolbar.outerHeight(),
+							poppy = new Poppy(Math.floor(pageToolbarOffset + pageToolbarWidth / 2), Math.floor(pageToolbarHeight) - 6);
 
 						poppy.setContent(_('view.page.from_cache')).stayOpenOnScroll().show();
 
@@ -604,10 +609,10 @@ UI.Page = {
 
 		bindSectionEvents: function (sections, page, pageInfo) {
 			sections
-				.on('click', '.page-host-first-visit-keep-blocked, .page-host-first-visit-unblock', function (event) {
+				.on('click', '.page-host-first-visit-keep-blocked, .page-host-first-visit-unblock', function () {
 					var thisPageInfo = pageInfo,
-							section = $(this).parents('.page-host-section'),
-							pageID = section.attr('data-id');
+						section = $(this).parents('.page-host-section'),
+						pageID = section.attr('data-id');
 
 					if (pageID !== pageInfo.id)
 						thisPageInfo = pageInfo.frames[pageID];
@@ -623,9 +628,11 @@ UI.Page = {
 
 					UI.view.toTop(UI.view.views);
 
-					MessageTarget({
-						target: page.tab
-					}, 'reload');
+					globalPage.Rule.event.addCustomEventListener('fixedCanLoadCache', function () {
+						MessageTarget({
+							target: page.tab
+						}, 'reload');
+					}, true);
 				})
 
 				.on('click', '.page-host-first-visit .more-info', function (event, forceClickEvent, forceClick) {
@@ -650,7 +657,7 @@ UI.Page = {
 					section.scrollIntoView(UI.view.views, 225 * window.globalSetting.speedMultiplier, section.is(':first-child') ? 0 : 2);
 				})
 
-				.on('click', '.page-host-editor-advanced-options', function (event) {
+				.on('click', '.page-host-editor-advanced-options', function () {
 					var editor = $(this).parents('.page-host-editor');
 
 					$('.page-host-editor-advanced:not(.is-advanced)', editor).toggleClass('jsb-hidden').addClass('is-advanced');
@@ -658,17 +665,16 @@ UI.Page = {
 					this.classList.add('jsb-hidden');
 				})
 
-				.on('change', '.page-host-editor-kind', function (event) {
+				.on('change', '.page-host-editor-kind', function () {
 					var enableOptions;
 
 					var editor = $(this).parents('.page-host-editor'),
-							selectEnableOptionIndex = 0,
-							whichItems = $('.page-host-editor-which-items', editor),
-							selectedIndex = whichItems[0].selectedIndex,
-							newSelectIndex = 0,
-							options = $('option', whichItems);
+						whichItems = $('.page-host-editor-which-items', editor),
+						selectedIndex = whichItems[0].selectedIndex,
+						newSelectIndex = 0,
+						options = $('option', whichItems);
 
-					options.prop('disabled', true)
+					options.prop('disabled', true);
 
 					if (this.value === 'disable' || this.value === 'enable')
 						enableOptions = options.filter('[value="jsb"]');
@@ -689,9 +695,9 @@ UI.Page = {
 					whichItems.trigger('change');
 				})
 
-				.on('change', '.page-host-editor-which-items', function (event) {
+				.on('change', '.page-host-editor-which-items', function () {
 					var section = $(this).parents('.page-host-section'),
-							kinds = section.find('.page-host-editor-kinds');
+						kinds = section.find('.page-host-editor-kinds');
 
 					if (this.value === 'items-of-kind')
 						kinds.stop(true).slideDown(225 * window.globalSetting.speedMultiplier);
@@ -704,19 +710,19 @@ UI.Page = {
 					$('.page-host-editor-where', section).trigger('change');
 				})
 
-				.on('change', '.page-host-editor-where', function (event) {
+				.on('change', '.page-host-editor-where', function () {
 					var section = $(this).parents('.page-host-section'),
-							whichItems = $('.page-host-editor-which-items', section),
-							items = $('.page-host-columns .page-host-item', section),
-							option = $('option', this).eq(this.selectedIndex),
-							optgroup = option.parent();
+						whichItems = $('.page-host-editor-which-items', section),
+						items = $('.page-host-columns .page-host-item', section),
+						option = $('option', this).eq(this.selectedIndex),
+						optgroup = option.parent();
 
 					if (whichItems.val() !== 'items-checked')
 						return;
 
 					if (optgroup.is('optgroup')) {
 						var resources,
-								resourceID;
+							resourceID;
 
 						var location = optgroup.attr('data-location');
 
@@ -748,9 +754,9 @@ UI.Page = {
 							event.stopImmediatePropagation();
 
 							var thisPageInfo = pageInfo,
-									section = $(self).parents('.page-host-section'),
-									pageID = section.attr('data-id'),
-									tab = UI.Page.stateContainer.data('page').tab;
+								section = $(self).parents('.page-host-section'),
+								pageID = section.attr('data-id'),
+								tab = UI.Page.stateContainer.data('page').tab;
 
 							if (pageID !== pageInfo.id)
 								thisPageInfo = pageInfo.frames[pageID];
@@ -762,9 +768,11 @@ UI.Page = {
 								action: section.attr('data-disabled') === '1' ? 1 : 0
 							});
 
-							MessageTarget({
-								target: tab
-							}, 'reload');
+							globalPage.Rule.event.addCustomEventListener('fixedCanLoadCache', function () {
+								MessageTarget({
+									target: tab
+								}, 'reload');
+							}, true);
 						});
 				})
 
@@ -778,8 +786,8 @@ UI.Page = {
 
 				.on('click webkitmouseforcedown', '.page-host-host-count', function (event) {	
 					var isShowingResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
-							showResourceURLsOnNumberClick = false,
-							isForceClick = event.type === 'webkitmouseforcedown';
+						showResourceURLsOnNumberClick = Settings.getItem('showResourceURLsOnNumberClick'),
+						isForceClick = event.type === 'webkitmouseforcedown';
 
 					if (isForceClick) {
 						Poppy.preventNextCloseAll();
@@ -794,9 +802,9 @@ UI.Page = {
 					}
 
 					var item = $(this).parents('.page-host-item'),
-							resources = item.data('resources'),
-							poppy = new Poppy(EventListener.eventInfo.pageX, EventListener.eventInfo.pageY, true),
-							items = [];
+						resources = item.data('resources'),
+						poppy = new Poppy(EventListener.eventInfo.pageX, EventListener.eventInfo.pageY, true),
+						items = [];
 
 					for (var resourceID in resources)
 						items.push({
@@ -846,9 +854,9 @@ UI.Page = {
 						return;
 
 					var self = $(this),
-							isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description') || self.is('.page-host-item-will-create-rule'),
-							pageHostItem = self.parents('.page-host-item'),
-							createRulesOnClick = (!event.isTrigger && isItem && Settings.getItem('createRulesOnClick'));
+						isItem = self.is('.page-host-item-source') || self.is('.page-host-item-description') || self.is('.page-host-item-will-create-rule'),
+						pageHostItem = self.parents('.page-host-item'),
+						createRulesOnClick = (!event.isTrigger && isItem && Settings.getItem('createRulesOnClick'));
 
 					self.removeClass('force-click-began');
 
@@ -866,7 +874,7 @@ UI.Page = {
 
 					if (isItem) {
 						var checkbox = $('.page-host-item-edit-check', pageHostItem),
-								wasChecked = checkbox.prop('checked');
+							wasChecked = checkbox.prop('checked');
 
 						checkbox
 							.prop('checked', createRulesOnClick ? !wasChecked : true)
@@ -896,7 +904,7 @@ UI.Page = {
 
 				.on('click', '.page-host-unblocked .page-host-items[data-kind="script"] .page-host-item-source', function (event) {
 					var item = $(this).parents('.page-host-item'),
-							resources = item.data('resources');
+						resources = item.data('resources');
 					
 					var loadingPoppy = Poppy.createLoadingPoppy(event.pageX, event.pageY, true, function (loadingPoppy) {
 						for (var resourceID in resources) {
@@ -917,19 +925,19 @@ UI.Page = {
 					event.preventDefault();
 				})
 
-				.on('click', '.page-host-item-edit-container .select-single', function (event) {
+				.on('click', '.page-host-item-edit-container .select-single', function () {
 					var check = $(this).parents('.page-host-item-edit-container').find('.page-host-item-edit-check');
 
 					check.prop('checked', !check.prop('checked')).change();
 				})
 
-				.on('change', '.page-host-item-edit-check', function (event) {
+				.on('change', '.page-host-item-edit-check', function () {
 					var items = $(this).parents('.page-host-items');
 
 					Utilities.Timer.timeout(items[0], function (items) {
 						var totalChecks = $('.page-host-item-edit-check', items),
-								checked = totalChecks.filter(':checked'),
-								selectAll = items.parent().prev().find('.page-host-kind-select-all');
+							checked = totalChecks.filter(':checked'),
+							selectAll = items.parent().prev().find('.page-host-kind-select-all');
 
 						selectAll.toggleClass('select-some', totalChecks.length !== checked.length);
 
@@ -938,13 +946,13 @@ UI.Page = {
 					}, 100, [items]);
 				})
 
-				.on('change input', '.page-host-item-edit-select, .page-host-item-edit-container .select-custom-input', function (event) {
+				.on('change input', '.page-host-item-edit-select, .page-host-item-edit-container .select-custom-input', function () {
 					var check = $(this).parents('.page-host-item-edit-container').find('.page-host-item-edit-check');
 
 					check.prop('checked', true).change();
 				})
 
-				.on('change', '.page-host-kind-select-all', function (event) {
+				.on('change', '.page-host-kind-select-all', function () {
 					if (this.classList.contains('select-some')) {
 						this.classList.remove('select-some');
 
@@ -953,9 +961,10 @@ UI.Page = {
 						return $(this).change();
 					}
 
-					var checks = $(this).parent().parent().next().find('.page-host-item-edit-check');
-
-					checks.prop('checked', this.checked).change();
+					$(this).parent().parent().next()
+						.find('.page-host-item-edit-check')
+						.prop('checked', this.checked)
+						.change();
 				})
 
 				.on('click', '.page-host-column .page-host-items-quick-action', function (event) {
@@ -964,11 +973,11 @@ UI.Page = {
 					event.stopImmediatePropagation();
 
 					var thisPageInfo = pageInfo,
-							section = $(this).parents('.page-host-section'),
-							column = $(this).parents('.page-host-column'),
-							state = column.attr('data-state'),
-							pageID = section.attr('data-id'),
-							tab = UI.Page.stateContainer.data('page').tab;
+						section = $(this).parents('.page-host-section'),
+						column = $(this).parents('.page-host-column'),
+						state = column.attr('data-state'),
+						pageID = section.attr('data-id'),
+						tab = UI.Page.stateContainer.data('page').tab;
 
 					if (pageID !== pageInfo.id)
 						thisPageInfo = pageInfo.frames[pageID];
@@ -982,9 +991,11 @@ UI.Page = {
 
 					UI.Page.section.toggleEditMode(section, false);
 
-					MessageTarget({
-						target: tab
-					}, 'reload');
+					globalPage.Rule.event.addCustomEventListener('fixedCanLoadCache', function () {
+						MessageTarget({
+							target: tab
+						}, 'reload');
+					}, true);
 				})
 
 				.on('click', '.page-host-column .page-host-kind h4', function (event) {
@@ -992,11 +1003,26 @@ UI.Page = {
 						return;
 
 					var check = $(this).parent().find('.page-host-kind-select-all'),
-							section = $(this).parents('.page-host-section');
+						wasChecked = check.is(':checked'),
+						section = $(this).parents('.page-host-section'),
+						isInEditMode = section.find('.page-host-editor:visible').length;
 
 					check.prop('checked', !check.is(':checked')).change();
 
-					UI.Page.section.toggleEditMode(section, true);
+					if (!isInEditMode && !event.isTrigger && Settings.getItem('createRulesOnClick')) {
+						var colorTemplate = Settings.getItem('darkMode') ? UI.Page.__forceRuleColorTemplateDarkMode : UI.Page.__forceRuleColorTemplate;
+
+						$(this).parent().next()
+							.find('.page-host-item')
+							.css('background', wasChecked ? '' : colorTemplate._format([1]))
+							.find('.page-host-item-will-create-rule')
+							.toggleClass('is-pending', !wasChecked);
+
+						Utilities.Timer.timeout('createRulesOnClick' + section.attr('data-id'), function (section) {
+							UI.Page.section.createRules(section, true);
+						}, 1500, [section]);
+					} else
+						UI.Page.section.toggleEditMode(section, true);
 				});
 		}
 	}
@@ -1010,6 +1036,6 @@ UI.event.addCustomEventListener('popoverDidResize', UI.Page.events.popoverDidRes
 UI.event.addCustomEventListener('sectionSwitchedOutOfEditMode', UI.Page.events.sectionSwitchedOutOfEditMode);
 UI.event.addCustomEventListener('selectCustomOptionChanged', UI.Page.events.selectCustomOptionChanged);
 UI.event.addCustomEventListener('disabled', UI.Page.events.disabled);
-UI.event.addCustomEventListener('popoverOpened', UI.Page.events.openedPopover);
+UI.event.addCustomEventListener('popoverOpened', UI.Page.events.popoverOpened);
 
 document.addEventListener('DOMContentLoaded', UI.Page.init, true);

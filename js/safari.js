@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 if (!window.safari || !window.safari.extension)
 	throw new Error('JS Blocker cannot run ' + (window === window.top ? 'on' : 'in a frame on' ) + ' this page because the required safari object is unavailable.');
@@ -16,11 +16,13 @@ var Version = {
 	bundle: parseFloat(safari.extension.bundleVersion)
 };
 
+var BrowserTab, BrowserWindow;
+
 try {
-	var BrowserTab = SafariBrowserTab,
-			BrowserWindow = SafariBrowserWindow;
+	BrowserTab = SafariBrowserTab;
+	BrowserWindow = SafariBrowserWindow;
 } catch (e) {
-	var BrowserTab = BrowserWindow = null;
+	BrowserTab = BrowserWindow = null;
 }
 
 var ToolbarItems = {
@@ -157,7 +159,7 @@ var Tabs = {
 	},
 	create: function (url, autoClose) {
 		var activeWindow = BrowserWindows.active(),
-				activeTabIndex = Tabs.array().indexOf(Tabs.active());
+			activeTabIndex = Tabs.array().indexOf(Tabs.active());
 
 		var tab = activeWindow ? activeWindow.openTab() : BrowserWindows.open().activeTab;
 
@@ -233,8 +235,44 @@ var SettingStore = {
 		});
 	},
 
+	sync: function (key, value) {
+		SettingStore.__syncTimeout[key] = {
+			fn: (function (key, value) {
+				delete SettingStore.__syncTimeout[key];
+
+				safari.extension.settings.setItem(key, value);
+			}).bind(this, key, value)
+		};
+
+		var syncDelay = 3000 + (1000 * Object.keys(SettingStore.__syncTimeout).length);
+
+		SettingStore.__syncTimeout[key].timeout = setTimeout(SettingStore.__syncTimeout[key].fn, syncDelay);
+	},
+
+	syncNow: function () {
+		for (var key in SettingStore.__syncTimeout) {
+			clearTimeout(SettingStore.__syncTimeout[key].timeout);
+
+			SettingStore.__syncTimeout[key].fn();			
+		}
+
+		SettingStore.__syncTimeout = {};
+	},
+
+	syncCancel: function (key) {
+		if (SettingStore.__syncTimeout[key]) {
+			clearTimeout(SettingStore.__syncTimeout[key]);
+
+			delete SettingStore.__syncTimeout[key];
+		}
+	},
+
 	lock: function (lock) {
 		this.__locked = lock;
+	},
+
+	isSet: function (key) {
+		return localStorage.hasOwnProperty(key) || safari.extension.settings.hasOwnProperty(key);
 	},
 
 	getItem: function (key, defaultValue, noCache) {
@@ -242,7 +280,7 @@ var SettingStore = {
 			return this.__cache[key];
 
 		var localValue = localStorage.getItem(key),
-				value = (typeof localValue === 'string') ? JSON.parse(localValue) : safari.extension.settings.getItem(key);
+			value = (typeof localValue === 'string') ? JSON.parse(localValue) : safari.extension.settings.getItem(key);
 
 		if (value === null)
 			return defaultValue === undefined ? value : defaultValue;
@@ -264,7 +302,7 @@ var SettingStore = {
 		if (SettingStore.__badKeys._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
 
-		clearTimeout(SettingStore.__syncTimeout[key]);
+		SettingStore.syncCancel(key);
 
 		delete this.__cache[key];
 		
@@ -277,19 +315,15 @@ var SettingStore = {
 		} else {
 			localStorage.setItem(key, JSON.stringify(value));
 
-			SettingStore.__syncTimeout[key] = setTimeout(function (key, value) {
-				delete SettingStore.__syncTimeout[key];
-
-				safari.extension.settings.setItem(key, value);
-			}, 3000, key, value);
+			SettingStore.sync(key, value);
 		}
 	},
 
 	removeItem: function (key) {
 		if (this.__locked)
-			return;
+			return LogError('Locked, cannot remove', key);
 
-		clearTimeout(SettingStore.__syncTimeout[key]);
+		SettingStore.syncCancel(key);
 		
 		delete this.__cache[key];
 
@@ -298,7 +332,19 @@ var SettingStore = {
 	},
 
 	all: function () {
-		return Object._extend(true, safari.extension.settings, localStorage);
+		SettingStore.syncNow();
+
+		var all = {};
+
+		for (var key in localStorage)
+			if (localStorage.hasOwnProperty(key))
+				all[key] = JSON.parse(localStorage[key]);
+
+		for (key in safari.extension.settings)
+			if (safari.extension.settings.hasOwnProperty(key))
+				all[key] = safari.extension.settings[key];
+			
+		return all;
 	},
 
 	export: function () {
@@ -307,7 +353,7 @@ var SettingStore = {
 
 	import: function (settings) {
 		try {
-			var settings = Object._isPlainObject(settings) ? settings : JSON.parse(settings);
+			settings = Object._isPlainObject(settings) ? settings : JSON.parse(settings);
 		} catch (e) {
 			LogError(e);
 			
@@ -367,36 +413,29 @@ var Events = {
 		tab: {}
 	},
 
-	__addReference: function (kind, type, callback) {
+	__addReference: function () {
 		return;
-		
-		var ref = Events.__references[kind];
-
-		if (!ref[type])
-			ref[type] = [];
-
-		ref[type].push(callback);
 	},
 
 	__unbindAll: function () {
 		var which,
-				base,
-				type,
-				i;
+			base,
+			type,
+			i;
 
 		for (which in Events.__references) {
 			switch (which) {
 				case 'application':
 					base = safari.application;
-				break;
+					break;
 
 				case 'settings':
 					base = safari.extension.settings;
-				break;
+					break;
 
 				case 'tab':
 					base = safari.self;
-				break;
+					break;
 			}
 
 			for (type in Events.__references[which])
@@ -433,34 +472,34 @@ var Events = {
 function MessageTarget (event, name, data) {
 	if (event.target.page)
 		event.target.page.dispatchMessage(name, data);
-};
+}
 
 function PrivateBrowsing () {
 	return (safari.application.privateBrowsing && safari.application.privateBrowsing.enabled);
-};
+}
 
 function ExtensionURL (path) {
 	return safari.extension.baseURI + (path || '');
-};
+}
 
 function ResourceCanLoad (beforeLoad, data) {
 	return GlobalPage.tab.canLoad(beforeLoad, data);
-};
+}
 
 function GlobalCommand (command, data) {
 	return GlobalPage.tab.canLoad(beforeLoad, {
 		command: command,
 		data: data
 	});
-};
+}
 
 function RemoveContentScripts () {
 	safari.extension.removeContentScripts();
-};
+}
 
 function AddContentScriptFromURL (url) {
 	safari.extension.addContentScriptFromURL(ExtensionURL(url));
-};
+}
 
 
 (function () {
@@ -470,7 +509,7 @@ function AddContentScriptFromURL (url) {
 	};
 
 	if (window.GlobalPage && GlobalPage.window === window) {
-		Popover.create('manager', ExtensionURL('popover.html'), 480, 250);
+		Popover.create('manager', ExtensionURL('html/popover.html'), 480, 250);
 
 		ToolbarItems.setPopover();
 
@@ -498,10 +537,9 @@ function AddContentScriptFromURL (url) {
 })();
 
 
-if (!!GlobalPage.tab && window.location.href.indexOf(ExtensionURL()) === -1) {
+if (!!GlobalPage.tab && window.location.href.indexOf(ExtensionURL()) === -1)
 	try {
 		GlobalCommand('contentBlockerMode');
 	} catch (e) {
 		throw new Error('safari: content blocker mode?');
 	}
-}

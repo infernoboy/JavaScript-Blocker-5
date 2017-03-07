@@ -1,18 +1,18 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function Command (command, data, event) {
 	function InternalCommand () {
 		var part;
 
 		var commands = this.commands,
-				commandParts = command.split(/\./g);	
+			commandParts = command.split(/\./g);	
 
-		if (commandParts.length > 1) {
-			while (true) {
+		if (commandParts.length > 1)
+			for (;;) {
 				if (commands.hasOwnProperty((part = commandParts.shift())))
 					commands = commands[part];
 
@@ -22,7 +22,6 @@ function Command (command, data, event) {
 				if (commandParts.length === 1)
 					break;
 			}
-		}
 
 		if (!commands.hasOwnProperty(commandParts[0]))
 			throw new Error('command not found - ' + command);
@@ -37,7 +36,7 @@ function Command (command, data, event) {
 		this.commands = commands;
 
 		commands[commandParts[0]].apply(this, Array.isArray(data) ? data : [data]);
-	};
+	}
 
 	Object.defineProperty(InternalCommand.prototype, 'message', {
 		get: function () {
@@ -124,7 +123,7 @@ function Command (command, data, event) {
 		editResourceIDs: function (detail) {
 			UI.event.addCustomEventListener('pageDidRender', function () {
 				var item,
-						section;
+					section;
 
 				for (var i = detail.resourceIDs.length; i--;) {
 					item = $('.page-host-item[data-resourceids*="' + detail.resourceIDs[i] + '"]', UI.Page.view);
@@ -169,39 +168,28 @@ function Command (command, data, event) {
 		},
 
 		canLoadResource: function (info) {
-			if (false && info.kind !== 'disable') {
-				MessageTarget(this.event, 'showJSBUpdatePrompt');
-
-				this.message = {
-					isAllowed: false,
-					action: ACTION.BLOCKED_ATTENTION_REQUIRED
-				};
-			} else {
-				if (info.pageProtocol === 'about:' || info.getPageLocationFromTab) {
-					info.pageLocation = this.event.target.url || info.pageLocation;
-					info.pageProtocol = Utilities.URL.protocol(this.event.target.url || info.pageLocation);
-				}
-
-				if (typeof info.pageLocation !== 'string') {
-					LogDebug('unable to determine proper resource information', info, this.event.target.url);
-
-					info.pageLocation = 'about:blank';
-					info.pageProtocol = 'about:';
-				}
-
-				info.private = this.event.target.private;
-				
-				var resource = new Resource(info);
-
-				this.message = resource.canLoad();
+			if (info.pageProtocol === 'about:' || info.getPageLocationFromTab) {
+				info.pageLocation = this.event.target.url || info.pageLocation;
+				info.pageProtocol = Utilities.URL.protocol(this.event.target.url || info.pageLocation);
 			}
+
+			if (typeof info.pageLocation !== 'string') {
+				info.pageLocation = 'about:blank';
+				info.pageProtocol = 'about:';
+			}
+
+			info.private = this.event.target.private;
+			
+			var resource = new Resource(info);
+
+			this.message = resource.canLoad();
 		},
 
-		refreshPopover: function (info) {
+		refreshPopover: function () {
 			Page.requestPageFromActive();
 		},
 
-		globalSetting: function (setting) {
+		globalSetting: function () {
 			this.message = {
 				disabled: window.globalSetting.disabled,
 				debugMode: window.globalSetting.debugMode,
@@ -212,7 +200,6 @@ function Command (command, data, event) {
 				enabledKinds: Settings.getItem('enabledKinds'),
 				showPlaceholder: Settings.getItem('showPlaceholder'),
 				hideInjected: Settings.getItem('hideInjected'),
-				// blockReferrer: Settings.getItem('blockReferrer'),
 				blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
 				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 				showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
@@ -247,8 +234,8 @@ function Command (command, data, event) {
 
 		receivePage: function (thePage) {
 			var tab = this.event.target,
-					popoverVisible = Popover.visible(),
-					activeTab = Tabs.active();
+				popoverVisible = Popover.visible(),
+				activeTab = Tabs.active();
 
 			if (!Page.protocolSupported(thePage.protocol)) {
 				ToolbarItems.badge(0, activeTab);
@@ -263,10 +250,10 @@ function Command (command, data, event) {
 			}
 
 			var page = new Page(thePage, tab),
-					renderPage = page;
+				renderPage = page;
 
 			if (thePage.isFrame) {
-				var pageParent = Page.pages.findLast(function (pageID, parent, store) {
+				var pageParent = Page.pages.findLast(function (pageID, parent) {
 					if (parent.info.state.data && parent.isTop && parent.tab === tab) {
 						parent.addFrame(page);
 
@@ -341,7 +328,7 @@ function Command (command, data, event) {
 
 		XMLHttpRequest: function (detail) {
 			var self = this,
-					meta = detail.meta;
+				meta = detail.meta;
 
 			meta.type = meta.method || meta.type || 'GET';
 			meta.mimeType = meta.overrideMimeType;
@@ -363,7 +350,7 @@ function Command (command, data, event) {
 							var line;
 
 							var lines = headers.split(/\n/),
-									headerMap = {};
+								headerMap = {};
 
 							for (var i = 0; i < lines.length; i++) {
 								line = lines[i].split(': ');
@@ -384,7 +371,7 @@ function Command (command, data, event) {
 					self.sendCallback(detail.sourceID, detail.callbackID, result);
 				else
 					self.message = result;
-			};
+			}
 
 			meta.xhr = function () {
 				var xhr = new XMLHttpRequest();
@@ -403,21 +390,21 @@ function Command (command, data, event) {
 
 				xhr.upload.addEventListener('progress', onProgress.bind(null, true));
 
-				xhr.upload.addEventListener('load', function (event) {
+				xhr.upload.addEventListener('load', function () {
 					eventCallback('upload.onload', xhr.responseText, {});
 				});
 
-				xhr.upload.addEventListener('error', function (event) {
+				xhr.upload.addEventListener('error', function () {
 					eventCallback('upload.onerror', xhr.responseText, xhr);
 				});
 
-				xhr.upload.addEventListener('abort', function (event) {
+				xhr.upload.addEventListener('abort', function () {
 					eventCallback('upload.onabort', xhr.responseText, xhr);
 				});
 
 				xhr.addEventListener('progress', onProgress.bind(null, false));
 
-				xhr.addEventListener('loadend', function (event) {
+				xhr.addEventListener('loadend', function () {
 					eventCallback('XHRComplete', '', xhr);
 				});
 
@@ -436,12 +423,19 @@ function Command (command, data, event) {
 			};
 
 			meta.error = function (request, status, response) {
-				if (response === 'timeout')
+				if (response === 'timeout') {
+					LogDebug('XHR timeout in user script - ' + detail.sourceID + ' - ' + meta.url);
+
 					eventCallback('ontimeout', response, request);
-				else if (response === 'abort')
+				}	else if (response === 'abort') {
+					LogDebug('XHR abort in user script - ' + detail.sourceID + ' - ' + meta.url);
+
 					eventCallback('onabort', response, request);
-				else
+				} else {
+					LogDebug('XHR error in user script - ' + detail.sourceID + ' - ' + (response.message || response) + ' - ' + meta.url);
+
 					eventCallback('onerror', response.message ? response.message : response, request);
+				}
 			};
 
 			$.ajax(meta);
@@ -498,6 +492,12 @@ function Command (command, data, event) {
 			Tabs.create(detail);
 		},
 
+		exportedBackup: function () {
+			this.message = Settings.EXPORTED_BACKUP;
+
+			delete Settings.EXPORTED_BACKUP;
+		},
+
 		template: {
 			create: function (detail) {
 				try {
@@ -544,7 +544,7 @@ function Command (command, data, event) {
 			storage: {
 				__storage: function (method, detail) {
 					try {
-						var storage = UserScript.getStorageItem(detail.meta.parentUserScript || detail.namespace);
+						var storage = UserScript.getStorageStore(detail.meta.parentUserScript || detail.namespace);
 					} catch (error) {
 						this.message = null;
 
@@ -586,10 +586,10 @@ function Command (command, data, event) {
 
 	var result = new InternalCommand();
 
-	InternalCommand = command = data = event = undefined;
+	command = data = event = undefined;
 
 	return result.message;
-};
+}
 
 Command.event = new EventListener;
 
@@ -620,7 +620,7 @@ Command.toggleDisabled = function (force, doNotReload) {
 	if (Command.event.trigger('willDisable', window.globalSetting.disabled))
 		return;
 
-	Command.event.addCustomEventListener('UIReady', function (event) {
+	Command.event.addCustomEventListener('UIReady', function () {
 		UI.Locker
 			.showLockerPrompt('disable', typeof force === 'boolean')
 			.then(function () {
@@ -671,44 +671,29 @@ Command.onExecuteMenuCommand = function (event) {
 	if (event.command._startsWith('restorePlaceholderElements:')) {
 		var splitCommand = event.command.split(':');
 
-		Tabs.messageAll('restorePlaceholderElements', {
+		Tabs.messageAll(splitCommand[0], {
 			pageID: splitCommand[1]
 		});
 	}
 };
-
-window.globalSetting = {
-	disabled: false,
-	speedMultiplier: 1,
-
-	get debugMode () {
-		return Settings.getItem('debugMode');
-	},
-
-	set debugMode (value) {
-		Settings.setItem('debugMode', value);
-	}
-};
-
-// Object._extend(window.globalSetting, Command('globalSetting', null, {}));
 
 if (Settings.getItem('persistDisabled'))
 	Command.toggleDisabled(Settings.getItem('isDisabled'));
 
 Command.setupContentURLs();
 
-Command.event.addCustomEventListener('popoverReady', function (event) {
+Command.event.addCustomEventListener('popoverReady', function () {
 	if (Settings.getItem('showPopoverOnLoad')) {
 		Settings.setItem('showPopoverOnLoad', false);
 
 		ToolbarItems.showPopover();
 	}
-}, true)
+}, true);
 
 window.addEventListener('error', function (event) {
 	event.preventDefault();
 
-	LogError(event.filename.replace(ExtensionURL(), '/') + ' - ' + event.lineno, new Error(event.message));
+	LogError.apply(null, event.error ? [event.error] : [event.filename.replace(ExtensionURL(), '/') + ' - ' + event.lineno, new Error(event.message)]);
 });
 
 Events.addApplicationListener('message', Command.messageReceived);

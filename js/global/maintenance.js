@@ -1,8 +1,21 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
+
+window.globalSetting = {
+	disabled: false,
+	speedMultiplier: 1,
+
+	get debugMode () {
+		return Settings.getItem('debugMode');
+	},
+
+	set debugMode (value) {
+		Settings.setItem('debugMode', value);
+	}
+};
 
 window.$$ = function (selector, context) {
 	return $(selector, context || Popover.window.document);
@@ -10,22 +23,34 @@ window.$$ = function (selector, context) {
 
 var Maintenance = {
 	event: new EventListener,
+	idleTimer: null,
+
+	resetIdleTimer: function () {
+		clearTimeout(Maintenance.idleTimer);
+
+		Maintenance.idleTimer = setTimeout(function () {
+			Maintenance.event.trigger('idle');
+
+			Maintenance.resetIdleTimer();
+		}, TIME.ONE.HOUR);
+	},
 	
 	maintainPopover: function () {
 		var popover = Popover.window,
-				popoverURL = ExtensionURL('popover.html');
+			popoverURL = ExtensionURL('html/popover.html');
 
 		if (popover.location.href !== popoverURL)
 			popover.location.href = popoverURL;
 	},
 
 	validate: function (event) {
-		if (event && event.target) {
+		if (event && event.target)
 			if (event.target.browserWindow) {
 				if (!event.target.browserWindow.activeTab || !event.target.browserWindow.activeTab.page)
 					ToolbarItems.badge(0, event.target.browserWindow.activeTab);
+
+				Maintenance.resetIdleTimer();
 			}
-		}
 	},
 
 	shouldOpenPopover: function (event) {
@@ -36,6 +61,8 @@ var Maintenance = {
 
 $(function () {
 	window.GlobalPageReady = true;
+
+	Maintenance.resetIdleTimer();
 
 	Maintenance.event.trigger('globalPageReady', true);
 });

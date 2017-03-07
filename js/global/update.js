@@ -1,11 +1,11 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Update = {
-	__versionCheckURL: 'http://lion.toggleable.com:160/jsblocker/download/extupdates.plist',
+	__versionCheckURL: 'https://imac.toggleable.com:8443/jsblocker/download/extupdates.plist',
 
 	wasJustUpdated: false,
 
@@ -29,7 +29,7 @@ var Update = {
 			Update.installedBundle = Version.bundle;
 		else
 			Command.event.addCustomEventListener('UIReady', function () {
-				if (Update.installedBundle === NaN)
+				if (isNaN(Update.installedBundle))
 					Update.installedBundle = 1;
 				
 				Update.performUpdate();
@@ -42,8 +42,9 @@ var Update = {
 
 		$.get(Update.__versionCheckURL + '?_' + Date.now()).then(function (plist) {
 			try {
-				var plist = $(plist),
-						jsb = plist.find('string:contains("com.toggleable.JavaScriptBlocker5")');
+				plist = $(plist);
+
+				var jsb = plist.find('string:contains("com.toggleable.JavaScriptBlocker5")');
 
 				var version = {
 					bundleID: Number(jsb.nextAll('key:contains("CFBundleVersion")').next().text()),
@@ -51,7 +52,7 @@ var Update = {
 					URL: jsb.nextAll('key:contains("URL")').next().text()
 				};
 
-				if (version.bundleID > Update.installedBundle && !Settings.getItem('ignoredUpdates', version.bundleID)) {
+				if (version.bundleID > Update.installedBundle && !Settings.getItem('ignoredUpdates', version.bundleID))
 					Update
 						.fetchChangeLog(version.displayVersion)
 						.finally(function (changeLog) {
@@ -72,8 +73,7 @@ var Update = {
 									.show();
 							}, true);
 						});
-				}
-			} catch (e) {}
+			} catch (e) { /* do nothing */ }
 		});
 	},
 
@@ -106,7 +106,7 @@ var Update = {
 						}))
 						.show();
 
-					Poppy.event.addCustomEventListener('poppyDidClose', function (event) {
+					Poppy.event.addCustomEventListener('poppyDidClose', function () {
 						Update.checkLatestVersion();
 					}, true);
 				});
@@ -120,8 +120,8 @@ var Update = {
 		var update;
 
 		var didReEnable = false,
-				isDisabled = window.globalSetting.disabled,
-				availableUpdates = Update.versionUpdatesAvailable();
+			isDisabled = window.globalSetting.disabled,
+			availableUpdates = Update.versionUpdatesAvailable();
 
 		if (!availableUpdates.length){
 			if (Update.wasJustUpdated) {
@@ -135,12 +135,16 @@ var Update = {
 		}
 
 		var updateToVersion = availableUpdates[0],
-				hasBlockingUpdate = false,
-				update = Update.versions[updateToVersion];
+			hasBlockingUpdate = false;
 
-		for (var i = availableUpdates.length; i--;)
-			if (hasBlockingUpdate = (availableUpdates[i] && availableUpdates[i].blocking))
+		update = Update.versions[updateToVersion];
+
+		for (var i = availableUpdates.length; i--;) {
+			hasBlockingUpdate = (availableUpdates[i] && availableUpdates[i].blocking);
+
+			if (hasBlockingUpdate)
 				break;
+		}
 
 		if (hasBlockingUpdate) {
 			Update.showRequiredPopover();
@@ -213,12 +217,12 @@ var Update = {
 	},
 
 	updatedToVersion: function (version) {		
- 		version = parseFloat(version);
+		version = parseFloat(version);
 
- 		if (version <= Update.installedBundle)
- 			throw new Error('cannot update to less or same version - ' + (version + '<=' + Update.installedBundle));
+		if (version <= Update.installedBundle)
+			throw new Error('cannot update to less or same version - ' + (version + '<=' + Update.installedBundle));
 
- 		Update.wasJustUpdated = true;
+		Update.wasJustUpdated = true;
 
 		Update.installedBundle = version;
 
@@ -230,11 +234,10 @@ var Update = {
 			$.get('http://jsblocker.toggleable.com/change-log/' + displayVersion.replace(/\./g, ''))
 				.done(function (responseText, textStatus, request) {
 					if (textStatus === 'success')
-						resolve($('#sites-canvas-main-content', responseText))
+						resolve($('#sites-canvas-main-content', responseText));
 					else
 						reject(request.status);
 				})
-				
 				.fail(function (request) {
 					reject(request.status);
 				});

@@ -1,15 +1,15 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Feedback = {
-	__feedbackURL: 'http://lion.toggleable.com:160/jsblocker/feedback.php',
+	__feedbackURL: 'https://imac.toggleable.com:8443/jsblocker/feedback.php',
 	__lastSubmissionTime: 0,
 
 	getSubmittableSettings: function () {
-		return Utilities.encode(Settings.export({ exportSettings: true }));
+		return Utilities.encode(Settings.export({ exportSettings: true }, ['Storage-StoreSettings']));
 	},
 
 	useSubmittedSettings: function (settings) {
@@ -19,7 +19,7 @@ var Feedback = {
 	getConsoleMessages: function () {
 		var messageHistory = Utilities.messageHistory();
 		
-		var errors = messageHistory.error.map(function (value, i) {
+		var errors = messageHistory.error.map(function (value) {
 			return value.message.join(' ').replace(/<br>/g, "\n") + (value.stack ? "\n\t\tStack:" + value.stack : '');
 		});
 

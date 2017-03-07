@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Strings = {
 	__currentLanguage: null,
@@ -44,7 +44,7 @@ var Strings = {
 			return this.__currentLanguage;
 
 		var setLanguage = window.Settings ? Settings.getItem('language') : 'auto',
-				useLanguage = (setLanguage !== 'auto') ? setLanguage : window.navigator.language.toLowerCase();
+			useLanguage = (setLanguage !== 'auto') ? setLanguage : window.navigator.language.toLowerCase();
 
 		if (this.__currentLanguage !== useLanguage)
 			this.loadLanguage(useLanguage);
@@ -80,15 +80,12 @@ function _ (string, args, hideNotLocalized) {
 		throw new TypeError(string + ' is not a valid string.');
 
 	var localized = null,
-			language = Strings.getLanguage();
+		language = Strings.getLanguage();
 
 	if (Strings.strings[language] && typeof Strings.strings[language][string] === 'string')
 		localized = Strings.strings[language][string];
-	else if (Strings.strings[Strings.__defaultLanguage] && typeof Strings.strings[Strings.__defaultLanguage][string] === 'string') {
+	else if (Strings.strings[Strings.__defaultLanguage] && typeof Strings.strings[Strings.__defaultLanguage][string] === 'string')
 		localized = Strings.strings[Strings.__defaultLanguage][string];
-
-		// LogDebug('"' + string + '" is not localized in ' + language);
-	}
 
 	localized = (!localized && !hideNotLocalized) ? string + ':NOT_LOCALIZED' : (localized || string);
 
@@ -96,8 +93,7 @@ function _ (string, args, hideNotLocalized) {
 		localized = localized._format(args);
 
 	return localized;
-};
-
+}
 
 if (window.globalPage) {
 	globalPage.Strings = Strings;

@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 UI.Settings = {
 	__hidden: ['userScript-edit'],
@@ -35,7 +35,7 @@ UI.Settings = {
 
 		UI.Settings.viewSwitcher = $('.view-switcher', UI.Settings.view);
 
-		for (var i = 0; i < sections.length; i++)
+		for (i = 0; i < sections.length; i++)
 			UI.view.create('setting-views', sections[i], UI.Settings.views);
 
 		UI.Settings.userScriptEdit = $('#setting-views-userScript-edit', UI.Settings.views);
@@ -58,7 +58,7 @@ UI.Settings = {
 		UI.container
 			.on('click', '*[data-settingButton]', function (event) {
 				var settingName = this.getAttribute('data-settingButton'),
-						setting = Settings.map[settingName];
+					setting = Settings.map[settingName];
 
 				if (setting.props.onClick) {
 					if (setting.props.validate && !setting.props.validate.test()) {
@@ -110,11 +110,11 @@ UI.Settings = {
 			element.attr('data-inlineSettingBound', 1);
 
 			var settingName = element.attr('data-inlineSetting'),
-					storeKey = element.attr('data-storeKey'),
-					settingRef = Settings.map[settingName],
-					storeSetting = settingRef.storeKeySettings ? settingRef.storeKeySettings[storeKey] : null,
-					settingType = storeSetting && storeSetting.props.type || settingRef.props.type,
-					currentValue = Settings.getItem(settingName, storeKey);
+				storeKey = element.attr('data-storeKey'),
+				settingRef = Settings.map[settingName],
+				storeSetting = settingRef.storeKeySettings ? settingRef.storeKeySettings[storeKey] : null,
+				settingType = storeSetting && storeSetting.props.type || settingRef.props.type,
+				currentValue = Settings.getItem(settingName, storeKey);
 
 			switch (settingType) {
 				case 'option':
@@ -147,7 +147,7 @@ UI.Settings = {
 							Settings.setItem(this.getAttribute('data-inlineSetting'), value, this.getAttribute('data-storeKey'));
 						}
 					});
-				break;
+					break;
 
 				case 'range':
 					element
@@ -155,7 +155,7 @@ UI.Settings = {
 						.change(function () {
 							Settings.setItem(this.getAttribute('data-inlineSetting'), this.value, this.getAttribute('data-storeKey'));
 						});
-				break;
+					break;
 
 				case 'many-boolean':
 				case 'boolean':
@@ -164,15 +164,15 @@ UI.Settings = {
 						.change(function () {
 							Settings.setItem(this.getAttribute('data-inlineSetting'), this.checked, this.getAttribute('data-storeKey'));
 						});
-				break;
+					break;
 
 				case 'dynamic-array':
 					element
 						.prop('checked', currentValue.enabled)
 						.change(function () {
 							var setting = this.getAttribute('data-inlineSetting'),
-									storeKey = this.getAttribute('data-storeKey'),
-									currentValue = Settings.getItem(setting, storeKey)._clone();
+								storeKey = this.getAttribute('data-storeKey'),
+								currentValue = Settings.getItem(setting, storeKey)._clone();
 
 							currentValue.enabled = this.checked;
 
@@ -187,7 +187,7 @@ UI.Settings = {
 
 							Settings.removeItem(container.attr('data-setting'), container.attr('data-storeKey'));
 						});
-				break;
+					break;
 			}
 		}
 	},
@@ -212,7 +212,7 @@ UI.Settings = {
 				.change(function () {
 					try {
 						globalPage.UserScript.setAttribute(this.getAttribute('data-userScript'), this.getAttribute('data-attribute'), this.checked);
-					} catch (error) {}
+					} catch (error) { /* do nothing */ }
 				});
 		}
 	},
@@ -225,15 +225,17 @@ UI.Settings = {
 				continue;
 
 			try {
-				var storageItem = globalPage.UserScript.getStorageItem(element.attr('data-userScript'), element.attr('data-storageKey'));
+				var storageItem = globalPage.UserScript.getStorageStore(element.attr('data-userScript'), element.attr('data-storageKey'));
 			} catch (error) {
 				continue;
 			}
 
+			var storageItemValue;
+
 			try {
-				var storageItemValue = JSON.stringify(storageItem);
+				storageItemValue = JSON.stringify(storageItem);
 			} catch (e) {
-				var storageItemValue = '';
+				storageItemValue = '';
 			}
 
 			element.attr('data-userScriptStorageBound', 1);
@@ -245,7 +247,7 @@ UI.Settings = {
 						var userScriptNS = this.getAttribute('data-userScript');
 
 						try {
-							var storage = globalPage.UserScript.getStorageItem(userScriptNS);
+							var storage = globalPage.UserScript.getStorageStore(userScriptNS);
 						} catch (error) {
 							return;
 						}
@@ -274,7 +276,7 @@ UI.Settings = {
 							return;
 
 						try {
-							var storage = globalPage.UserScript.getStorageItem(this.getAttribute('data-userScript'));
+							var storage = globalPage.UserScript.getStorageStore(this.getAttribute('data-userScript'));
 						} catch (error) {
 							return;
 						}
@@ -321,7 +323,7 @@ UI.Settings = {
 						return;
 
 					var userScript = this.getAttribute('data-userScript'),
-							value = $.trim(this.value);
+						value = $.trim(this.value);
 
 					if (value === 'undefined' || value.length === '') {
 						globalPage.UserScript.removeAttribute(userScript, this.getAttribute('data-attributeKey'));
@@ -367,12 +369,12 @@ UI.Settings = {
 					Settings.removeItem(newContainer.attr('data-setting'));
 				})
 
-				.on('click', '.setting-dynamic-new-save', function (event) {
+				.on('click', '.setting-dynamic-new-save', function () {
 					var newContainer = $(this).parents('.setting-dynamic-new-container'),
-							newName = $('.setting-dynamic-new-name', newContainer),
-							newNameVal = $.trim(newName.val()),
-							newContent = $('.setting-dynamic-new-content', newContainer),
-							newContentVal = $.trim(newContent.val());
+						newName = $('.setting-dynamic-new-name', newContainer),
+						newNameVal = $.trim(newName.val()),
+						newContent = $('.setting-dynamic-new-content', newContainer),
+						newContentVal = $.trim(newContent.val());
 
 					if (!newNameVal.length) {
 						newName.shake().focus();
@@ -393,7 +395,7 @@ UI.Settings = {
 
 					if (success !== true) {
 						var offset = $(this).offset(),
-								poppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true);
+							poppy = new Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), true);
 
 						poppy.setContent(Template.create('main', 'jsb-readable', {
 							string: _(success)
@@ -412,13 +414,12 @@ UI.Settings = {
 			return;
 
 		var setting,
-				settingItem,
-				settingElement,
-				listSetting,
-				shouldRender,
-				collapsibleContainer,
-				subContainer,
-				settingRow;
+			settingElement,
+			listSetting,
+			shouldRender,
+			collapsibleContainer,
+			subContainer,
+			settingRow;
 
 		var allSettings = Settings.all();
 
@@ -465,7 +466,7 @@ UI.Settings = {
 				if (shouldRender || !setting.when.hide)
 					this.createList(container, setting.settings, !shouldRender || disabled);
 
-			} else if (setting.setting || setting.collapsible || (setting.store && setting.props && setting.props.isSetting)) {
+			} else if (setting.setting || setting.collapsible || (setting.store && setting.props && setting.props.isSetting))
 				if (setting.props) {
 					if (setting.props.remap || setting.props.readOnly)
 						continue;
@@ -508,20 +509,21 @@ UI.Settings = {
 						this.createList($('ul', subContainer), setting.props.subSettings);
 					}
 				}
-			}
 		}
 	},
 
 	createElementForSetting: function (setting, id, wrap, noFullEval) {		
 		var allSettings = noFullEval ? {} : Settings.all(),
-				mappedSetting = Settings.map[setting.setting],
-				baseProps = (setting.props.storeKey && mappedSetting.storeKeySettings) ? mappedSetting.props : setting.props,
-				shouldRender = noFullEval ? true : (mappedSetting.props.when ? Utilities.Group.eval(mappedSetting.props.when.settings, allSettings) : true);
+			mappedSetting = Settings.map[setting.setting],
+			baseProps = (setting.props.storeKey && mappedSetting.storeKeySettings) ? mappedSetting.props : setting.props,
+			shouldRender = noFullEval ? true : (mappedSetting.props.when ? Utilities.Group.eval(mappedSetting.props.when.settings, allSettings) : true);
+
+		var element;
 
 		if (!shouldRender && (mappedSetting.props.when && mappedSetting.props.when.hide))
-			var element = $('<div>');
+			element = $('<div>');
 		else
-			var element = Template.create('settings', 'setting-element', {
+			element = Template.create('settings', 'setting-element', {
 				id: id || ('setting-element-' + Utilities.Token.generate()),
 				setting: setting,
 				props: baseProps,
@@ -534,7 +536,7 @@ UI.Settings = {
 
 	populateSection: function (view, settingSection)  {		
 		var container = Template.create('settings', 'setting-section-container'),
-				currentSection = $('> .setting-section', view);
+			currentSection = $('> .setting-section', view);
 
 		this.createList(container, Settings.settings[settingSection]);
 
@@ -550,7 +552,7 @@ UI.Settings = {
 
 	repopulateActiveSection: function (force) {
 		var activeSettingView = $('.active-view', UI.Settings.views),
-				focusedTextInput = $('textarea:focus, input[type="text"]:focus', activeSettingView);
+			focusedTextInput = $('textarea:focus, input[type="text"]:focus', activeSettingView);
 
 		if (force || (!focusedTextInput.length && activeSettingView.is(':not(#setting-views-userScript-edit)')))
 			UI.Settings.populateSection(activeSettingView, $('.active-view', UI.Settings.views).attr('data-section'));
@@ -558,8 +560,8 @@ UI.Settings = {
 
 	saveUserScriptEdit: function (button, noSwitch, noAutoLoad) {
 		var userScript = $('.user-script-content', UI.Settings.views),
-				userScriptContent = userScript.val(),
-				result = globalPage.UserScript.add(userScriptContent);
+			userScriptContent = userScript.val(),
+			result = globalPage.UserScript.add(userScriptContent);
 
 		if (typeof result === 'string') {
 			userScript.removeAttr('data-blockViewSwitch');
@@ -570,7 +572,7 @@ UI.Settings = {
 				UI.Settings.editUserScript(result);
 		} else if (button) {
 			var offset = $(button).offset(),
-					poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
+				poppy = new Popover.window.Poppy(Math.floor(offset.left + 7), Math.floor(offset.top + 12), false);
 
 			poppy.setContent(Template.create('main', 'jsb-readable', {
 				string: _('setting.saveUserScript.fail')
@@ -591,10 +593,10 @@ UI.Settings = {
 
 			try {
 				var meta = globalPage.UserScript.getAttribute(userScriptNS, 'meta'),
-						script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
-						downloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'downloadURL'),
-						customDownloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'customDownloadURL'),
-						storage = globalPage.UserScript.getStorageItem(userScriptNS);
+					script = globalPage.UserScript.getAttribute(userScriptNS, 'script'),
+					downloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'downloadURL'),
+					customDownloadURL = globalPage.UserScript.getAttribute(userScriptNS, 'customDownloadURL'),
+					storage = globalPage.UserScript.getStorageStore(userScriptNS);
 			} catch (error) {
 				return;
 			}
@@ -631,9 +633,9 @@ UI.Settings = {
 			}
 
 			var element = UI.Settings.createElementForSetting(Settings.map.newUserScriptStorageItem, null, true, true),
-					wrapper = Template.create('settings', 'setting-section-setting', {
-						setting: 'newUserScriptStorageItem'
-					}, true);
+				wrapper = Template.create('settings', 'setting-section-setting', {
+					setting: 'newUserScriptStorageItem'
+				}, true);
 
 			$('li', wrapper).append(element.children());
 
@@ -655,7 +657,7 @@ UI.Settings = {
 					key: 'customDownloadURL',
 					value: customDownloadURL,
 					defaultValue: downloadURL
-				}));;
+				}));
 
 			UI.Settings.disableUserScriptSave();
 		}, true);
@@ -675,7 +677,7 @@ UI.Settings = {
 
 		viewSwitcher: function () {
 			UI.Settings.viewSwitcher
-				.on('click', 'li', function (event) {
+				.on('click', 'li', function () {
 					var viewID = this.getAttribute('data-view');
 
 					if (!viewID._endsWith('userScript-edit'))
@@ -683,12 +685,38 @@ UI.Settings = {
 				});
 		},
 
-		poppyDidShow: function (event) {
+		poppyDidShow: function () {
 			UI.Settings.views.unbind('scroll', Poppy.closeAll).one('scroll', Poppy.closeAll);
 		},
 
 		elementWasAdded: function (event) {
 			if (event.detail.querySelectorAll) {
+				// ===== Custom Selects =====
+				var customSelects = event.detail.querySelectorAll('.select-custom-input + select:not(.select-custom-ready)');
+
+				for (var i = customSelects.length; i--;) {
+					if (customSelects[i].classList.contains('select-single')) {
+						$(customSelects[i]).prev().hide();
+
+						continue;
+					}
+
+					customSelects[i].classList.add('select-custom-ready');
+
+					customSelects[i].previousElementSibling.value = customSelects[i].value;
+
+					$(customSelects[i])
+						.append('<option class="select-custom-option">Custom Option</option>')
+						.next()
+						.addBack()
+						.wrapAll('<div class="select-wrapper"></div>')
+						.end()
+						.parent()
+						.prev()
+						.addBack()
+						.wrapAll('<div class="select-custom-wrapper"></div>');
+				}
+				
 				UI.Settings.bindInlineSettings(event.detail.querySelectorAll('*[data-inlineSetting]'));
 				UI.Settings.bindUserScriptSettings(event.detail.querySelectorAll('*[data-attribute]'));
 				UI.Settings.bindUserScriptStorageEdit(event.detail.querySelectorAll('*[data-storageKey]'));

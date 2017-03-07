@@ -1,11 +1,13 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
 Special.specials = {
-	prepareScript: function () {
+	prepareScript: function (JSB) {
 		if (window[JSB.eventToken])
 			return;
+
+		document.documentElement.removeAttribute('data-JSB-CSP-SCRIPTS-ALLOWED');
 		
 		Object.defineProperty(window, JSB.eventToken, {
 			value: Object.freeze({
@@ -19,51 +21,6 @@ Special.specials = {
 				document$createEvent: document.createEvent.bind(document),
 				document$dispatchEvent: document.dispatchEvent.bind(document)
 			})
-		});
-
-		var myEvent = document.createEvent('CustomEvent');
-
-		myEvent.initCustomEvent('JSBCommander:' + JSB.sourceID + ':' + JSB.eventToken, false, false, {
-			commandToken: JSB.commandToken,
-			command: 'inlineScriptsAllowed'
-		});
-
-		document.dispatchEvent(myEvent);
-	},
-
-	installUserScriptPrompt: function () {
-		messageTopExtension('notification', {
-			title: _localize('user_script'),
-			subTitle: document.location.href,
-			body: messageExtensionSync('template.create', {
-				template: 'injected',
-				section: 'install-user-script-prompt'
-			}),
-			closeButtons: [{
-				title: _localize('user_script.add_script'),
-				callbackID: registerCallback(function () {
-					messageExtension('installUserScriptFromURL', {
-						url: document.location.href
-					}, function (result) {
-						messageTopExtension('notification', {
-							title: _localize('user_script'),
-							subTitle: document.location.href,
-							body: messageExtensionSync('template.create', {
-								template: 'injected',
-								section: 'javascript-alert',
-								data: {
-									body: typeof result === 'string' ? _localize('user_script.add_success') : result
-								}
-							})
-						});
-					});
-				})
-			}]
-		}, function (detail) {
-			var notification = document.getElementById(detail.result),
-					addScriptButton = notification.querySelectorAll('.jsb-notification-close')[1];
-
-			addScriptButton.classList.add('jsb-color-allowed');
 		});
 	},
 
@@ -90,7 +47,7 @@ Special.specials = {
 		var meta = document.createElement('meta');
 		
 		meta.setAttribute('http-equiv', 'content-security-policy');
-		meta.setAttribute('content', "script-src *");
+		meta.setAttribute('content', 'script-src *');
 		
 		if (document.documentElement.firstChild)
 			document.documentElement.insertBefore(meta, document.documentElement.firstChild);
@@ -121,7 +78,7 @@ Special.specials = {
 		};
 	},
 
-	zoom: function () {
+	zoom: function (JSB) {
 		document.addEventListener('DOMContentLoaded', function () {
 			document.body.style.setProperty('zoom', JSB.value.value + '%', 'important');
 		}, true);
@@ -149,8 +106,9 @@ Special.specials = {
 	},
 
 	popups: function () {
-		var windowOpen = window.open,
-				dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
+		var popupCount = 0,
+			windowOpen = window.open,
+			dispatchEvent = window.HTMLAnchorElement.prototype.dispatchEvent;
 
 		var canLoadPopup = function (URL, untrusted) {
 			var a = document.createElement('a');
@@ -173,7 +131,9 @@ Special.specials = {
 			if (info.canLoad.action < 0 && JSB.value.value.alwaysBlock === 'ask')
 				info.canLoad.isAllowed = confirm(_localize('special.popups.confirm' + (untrusted ? '.untrusted' : ''), [displayURL]));
 
-			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification)
+			if (!info.canLoad.isAllowed && info.canLoad.action >= 0 && JSB.value.value.showPopupBlockedNotification && popupCount < 4) {
+				popupCount++;
+
 				messageTopExtension('notification', {
 					title: _localize('special.popups.notification.title'),
 					subTitle: document.location.href,
@@ -181,12 +141,17 @@ Special.specials = {
 						template: 'injected',
 						section: 'javascript-alert',
 						data: {
-							body: _localize('special.popups.notification.body', [displayURL])
+							body: _localize('special.popups.notification.body' + (popupCount === 4 ? '.further_suppressed' : ''), [displayURL])
 						}
 					})
 				});
+			}
 
 			return info;
+		};
+
+		var fauxWindow = {
+			closed: false
 		};
 
 		window.open = function (URL, name, specs, replace) {
@@ -204,8 +169,11 @@ Special.specials = {
 				messageExtension('page.addAllowedItem', info);
 
 				return windowOpen(URL, name, specs, replace);
-			} else
+			} else {
 				messageExtension('page.addBlockedItem', info);
+
+				return fauxWindow;
+			}
 		};
 
 		window.HTMLAnchorElement.prototype.dispatchEvent = function (event) {
@@ -223,7 +191,7 @@ Special.specials = {
 		};
 	},
 
-	contextmenu_overrides: function () {
+	contextmenu_overrides: function (JSB) {
 		var stopPropagation = function (event) {
 			event.stopImmediatePropagation();
 			event.stopPropagation();
@@ -287,21 +255,20 @@ Special.specials = {
 		};
 
 		var SYNCHRONOUS_ALLOW = '0',
-				SYNCHRONOUS_BLOCK = '1',
-				SYNCHRONOUS_ASK = '2';
+			SYNCHRONOUS_ASK = '2';
 
 		var shouldShowPrompt = JSB.value.value.alwaysBlock === 'ask',
-				supportedMethods = ['get', 'post', 'put'],
-				openToken = Math.random(),
-				openArguments = {};
+			supportedMethods = ['get', 'post', 'put'],
+			openToken = Math.random(),
+			openArguments = {};
 
 		function performAction (request, info, args, sendData, awaitPromptResourceID, postParams) {
 			var xhrError;
 
 			var detail = openArguments[request[openToken]],
-					pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
+				pageAction = info.canLoad.isAllowed ? 'addAllowedItem' : 'addBlockedItem';
 
-			if (sendData) {
+			if (sendData)
 				if (detail.method === 'post')
 					args[0] = sendData;
 				else if (detail.method === 'get') {
@@ -315,15 +282,13 @@ Special.specials = {
 
 					XHR.open.call(request, 'GET', newPath);
 				}
-			}
 
-			if (info.canLoad.isAllowed) {
+			if (info.canLoad.isAllowed)
 				try {
 					XHR.send.apply(request, args);
 				} catch (error) {
 					xhrError = error;
 				}
-			}
 
 			setTimeout(function (pageAction, info, detail, postParams) {
 				if (info.meta === undefined)
@@ -345,7 +310,7 @@ Special.specials = {
 				
 				throw xhrError;
 			}
-		};
+		}
 
 		function createMetaData (detail, postParams) {
 			var meta;
@@ -360,8 +325,8 @@ Special.specials = {
 					};
 
 					var splitParam,
-							paramName,
-							paramValue;
+						paramName,
+						paramValue;
 
 					var params = toSend.split(/&/g);
 
@@ -396,21 +361,20 @@ Special.specials = {
 							type: 'blob',
 							data: URL.createObjectURL(toSend)
 						};
-				} else if (toSend instanceof window.FormData) {
+				} else if (toSend instanceof window.FormData)
 					// There is no way to retrieve the values of a FormData object.
 					meta = {
 						type: 'formdata',
 						data: {}
 					};
-				}
 			}
 
 			return meta;
-		};
+		}
 
 		XMLHttpRequest.prototype.open = function () {
 			var openID = Math.random(),
-					path = arguments[1];
+				path = arguments[1];
 
 			this[openToken] = openID;
 
@@ -438,14 +402,14 @@ Special.specials = {
 				return XHR.send.apply(this, arguments);
 
 			var kind = 'xhr_' + detail.method,
-					postParams = arguments[0],
-					awaitPromptResourceID = null,
-					info = {
-						meta: undefined,
-						kind: kind,
-						source: detail.path,
-						canLoad: {}
-					};
+				postParams = arguments[0],
+				awaitPromptResourceID = null,
+				info = {
+					meta: undefined,
+					kind: kind,
+					source: detail.path,
+					canLoad: {}
+				};
 
 			var canLoad = messageExtensionSync('canLoadResource', info);
 
@@ -462,8 +426,10 @@ Special.specials = {
 
 			info.canLoad = canLoad;
 
+			var isAllowed;
+
 			var self = this,
-					args = arguments;
+				args = arguments;
 
 			var shouldPerformAction = (function () {
 				if (canLoad.action !== -8 && canLoad.action < 0 && shouldShowPrompt) {
@@ -494,15 +460,15 @@ Special.specials = {
 
 						return false;
 					} else {
-						if (JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ASK) {
-							var isAllowed = confirm(_localize('xhr.sync.prompt', [
+						if (JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ASK)
+							isAllowed = confirm(_localize('xhr.sync.prompt', [
 								_localize(kind + '.prompt.title') + ' - ' + _localize('xhr.synchronous'),
 								document.location.href,
 								info.source.substr(0, info.source.indexOf('?')),
 								info.meta ? JSON.stringify(info.meta.data, null, 1) : ''
 							]));
-						} else {
-							var isAllowed = JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ALLOW;
+						else {
+							isAllowed = JSB.value.value.synchronousXHRMethod === SYNCHRONOUS_ALLOW;
 
 							if (JSB.value.value.showSynchronousXHRNotification)
 								setTimeout(function (isAllowed, onXHRPromptInput, info, detail, postParams) {
@@ -536,14 +502,18 @@ Special.specials = {
 	environmental_information: function () {
 		var randomInteger = function (min, max) {
 			return Math.floor(Math.random() * (max - min + 1)) + min;
-		}
+		};
 
-		var now = Math.random().toString(36),
-				agent = 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/' + randomInteger(20, 50) + '.0';
+		var now = (Math.random() * 1000000000000000000).toString(36),
+			agent = 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/' + randomInteger(20, 50) + '.0';
+
+		var localNavigator = window.navigator;
+
+		delete window.navigator;
 
 		window.navigator = {
-			geoLocation: window.navigator.geoLocation,
-			cookieEnabled: window.navigator.cookieEnabled,
+			geoLocation: localNavigator.geoLocation,
+			cookieEnabled: localNavigator.cookieEnabled,
 			productSub: now,
 			mimeTypes: [],
 			product: now,
@@ -554,9 +524,9 @@ Special.specials = {
 			platform: now,
 			appName: 'Netscape',
 			userAgent: agent,
-			language: window.navigator.language,
+			language: localNavigator.language,
 			plugins: (function () {
-				function PluginArray () {};
+				function PluginArray () {}
 
 				PluginArray.prototype.refresh = function () {};
 				PluginArray.prototype.item = function () {};
@@ -564,14 +534,10 @@ Special.specials = {
 
 				return new PluginArray();
 			})(),
-			onLine: window.navigator.onLine,
-			javaEnabled: window.navigator.javaEnabled.bind(window.navigator),
-			getStorageUpdates: window.navigator.getStorageUpdates.bind(window.navigator)
+			onLine: localNavigator.onLine,
+			javaEnabled: localNavigator.javaEnabled.bind(localNavigator),
+			getStorageUpdates: localNavigator.getStorageUpdates.bind(localNavigator)
 		};
-
-		function randomInteger (min, max) {
-			return Math.floor(Math.random() * (max - min)) + min;
-		}
 
 		window.screen = {
 			width: randomInteger(1000, 2000),
@@ -603,16 +569,15 @@ Special.specials = {
 		}
 
 		var ASK_COUNTER = 0,
-				ASK_LIMIT = 3,
-				ALWAYS_ASK = '1',
-				ASK_ONCE = '2',
-				ASK_ONCE_SESSION = '3',
-				ALWAYS_BLOCK = '4';
+			ASK_LIMIT = 3,
+			ASK_ONCE = '2',
+			ASK_ONCE_SESSION = '3',
+			ALWAYS_BLOCK = '4';
 
 		var toDataURL = HTMLCanvasElement.prototype.toDataURL,
-				toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
-				autoContinue = {},
-				alwaysContinue = false;
+			toDataURLHD = HTMLCanvasElement.prototype.toDataURLHD,
+			autoContinue = {},
+			alwaysContinue = false;
 
 		var baseURL = messageExtensionSync('extensionURL', {
 			path: 'html/canvasFingerprinting.html#'
@@ -629,8 +594,7 @@ Special.specials = {
 
 		var generateRandomImage = function () {
 			var canvas = document.createElement('canvas'),
-					context = canvas.getContext('2d'),
-					string = ''
+				context = canvas.getContext('2d');
 
 			context.textBaseline = 'top';
 			context.font = '100 20px sans-serif';
@@ -644,12 +608,14 @@ Special.specials = {
 			var shouldContinue;
 
 			var useSimplifiedMethod = document.hidden,
-					shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION || ++ASK_COUNTER > ASK_LIMIT),
-					confirmString = _localize(useSimplifiedMethod ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt'),
-					url = baseURL + dataURL;
+				shouldAskOnce = (JSB.value.value === ASK_ONCE || JSB.value.value === ASK_ONCE_SESSION || ++ASK_COUNTER > ASK_LIMIT),
+				confirmString = _localize(useSimplifiedMethod ? 'special.canvas_data_url.prompt_old' : 'special.canvas_data_url.prompt'),
+				url = baseURL + dataURL;
 
+			/* eslint-disable */
 			if (shouldAskOnce)
 				confirmString += "\n\n" + _localize(JSB.value.value === ASK_ONCE_SESSION ? 'special.canvas_data_url.subsequent_session' : 'special.canvas_data_url.subsequent', [window.location.host]);
+			/* eslint-enable */
 
 			if (ASK_COUNTER > ASK_LIMIT)
 				JSB.value.value = ASK_ONCE_SESSION;
@@ -667,9 +633,11 @@ Special.specials = {
 					shouldContinue = confirm(confirmString);
 				else {
 					var activeTabIndex = messageExtensionSync('activeTabIndex'),
-							newTabIndex = messageExtensionSync('openTabWithURL', url);
+						newTabIndex = messageExtensionSync('openTabWithURL', url);
 
-					var shouldContinue = messageExtensionSync('confirm', document.location.href + "\n\n" + confirmString);
+					/* eslint-disable */
+					shouldContinue = messageExtensionSync('confirm', document.location.href + "\n\n" + confirmString);
+					/* eslint-enable */
 
 					messageExtension('activateTabAtIndex', activeTabIndex);
 					messageExtension('closeTabAtIndex', newTabIndex);
@@ -705,7 +673,7 @@ Special.specials = {
 			try {
 				if (typeof this.toDataURL.caller === 'function' && shouldSkipProtectionOnFunction(this.toDataURL.caller))
 					return toDataURL.apply(this, arguments);
-			} catch (e) {}
+			} catch (e) { /*do nothing*/ }
 
 			return protection(toDataURL.apply(this, arguments));
 		};
@@ -715,7 +683,7 @@ Special.specials = {
 				try {
 					if (typeof this.toDataURLHD.caller === 'function' && shouldSkipProtectionOnFunction(this.toDataURLHD.caller))
 						return toDataURLHD.apply(this, arguments);
-				} catch (e) {}
+				} catch (e) { /* do nothing */ }
 
 				return protection(toDataURLHD.apply(this, arguments));
 			};
@@ -724,14 +692,15 @@ Special.specials = {
 	page_blocker: function () {
 		window.stop();
 
-		messageExtension('refreshPopover');
+		if (typeof messageExtension !== 'undefined')
+			messageExtension('refreshPopover');
 
 		document.documentElement.innerHTML = '<head><style type="text/css">* {text-align:center;}</style><body>' + _localize('setting.enabledSpecials.page_blocker.blocked') + '</body>';
 
 		var meta = document.createElement('meta');
 		
 		meta.setAttribute('http-equiv', 'content-security-policy');
-		meta.setAttribute('content', "script-src *");
+		meta.setAttribute('content', 'script-src *');
 		
 		if (document.documentElement.firstChild)
 			document.documentElement.insertBefore(meta, document.documentElement.firstChild);
@@ -749,7 +718,7 @@ Special.specials = {
 			var meta = document.createElement('meta');
 
 			meta.setAttribute('http-equiv', 'content-security-policy');
-			meta.setAttribute('content', "script-src " + (frameSandbox.indexOf('allow-same-origin') > -1 ? 'self' : 'none'));
+			meta.setAttribute('content', 'script-src ' + (frameSandbox.indexOf('allow-same-origin') > -1 ? 'self' : 'none'));
 			
 			if (document.documentElement.firstChild)
 				document.documentElement.insertBefore(meta, document.documentElement.firstChild);
@@ -761,16 +730,11 @@ Special.specials = {
 
 (function () {
 	for (var special in Special.specials)
-		Special.specials[special].private = true;
+		if (Special.specials.hasOwnProperty(special))
+			Special.specials[special].private = true;
 })();
 
-Special.specials.canvas_data_url.data = {
-	safariBuildVersion: Utilities.safariBuildVersion
-};
-
 Special.specials.prepareScript.ignoreHelpers = true;
-Special.specials.prepareScript.commandToken = Command.requestToken('inlineScriptsAllowed');
-Special.specials.installUserScriptPrompt.excludeFromPage = true;
 Special.specials.historyFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.ignoreHelpers = true;
@@ -778,5 +742,10 @@ Special.specials.xhr_intercept.excludeFromPage = true;
 Special.specials.popups.excludeFromPage = true;
 Special.specials.simple_referrer.noInject = true;
 Special.specials.anchor_titles.noInject = true;
+Special.specials.prepareScript.uninjectableCompatible = true;
+Special.specials.zoom.uninjectableCompatible = true;
+Special.specials.autocomplete_disabler.uninjectableCompatible = true;
+Special.specials.page_blocker.uninjectableCompatible = true;
+Special.specials.contextmenu_overrides.uninjectableCompatible = true;
 
 Special.init();

@@ -1,5 +1,5 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
 
@@ -16,24 +16,34 @@ do {
 	}
 
 	if (!globalSetting.popoverReady && window === window.top) {
-		window.location.reload();
+		if (window.localStorage.getItem('JSB-RELOAD-COUNT') === '3')
+			throw new Error('JSB failed to load');
+
+		window.localStorage.setItem('JSB-RELOAD-COUNT', Number(window.localStorage.getItem('JSB-RELOAD-COUNT') || 0) + 1);
+
+		window.stop();
+
+		setTimeout(window.location.reload.bind(window.location), 500);
 
 		throw new Error('...');
 	}
 } while (globalSetting.command || !globalSetting.popoverReady);
 
+setTimeout(function () {
+	window.localStorage.removeItem('JSB-RELOAD-COUNT');
+}, 1000);
+
 if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
 
 var BLOCKED_ELEMENTS = [],
-		PLACEHOLDER_ELEMENTS = {},
-		FRAMED_PAGES = {},
-		STYLESHEET_INJECTED = false,
-		PARENT = {},
-		RECOMMEND_PAGE_RELOAD = false,
-		SHOWED_UPDATE_PROMPT = false,
-		BROKEN = false,
-		FRAME_ELEMENT = null;
+	PLACEHOLDER_ELEMENTS = {},
+	FRAMED_PAGES = {},
+	PARENT = {},
+	RECOMMEND_PAGE_RELOAD = false,
+	SHOWED_UPDATE_PROMPT = false,
+	BROKEN = false,
+	FRAME_ELEMENT = null;
 
 if (!Utilities.Page.isTop)
 	FRAME_ELEMENT = window.frameElement;
@@ -67,7 +77,7 @@ var Page = {
 
 			for (var framePageID in FRAMED_PAGES)
 				GlobalPage.message('receivePage', FRAMED_PAGES[framePageID]);
-		};
+		}
 
 		sendPageInfo.timeout = null;
 
@@ -79,7 +89,7 @@ var Page = {
 					id: Page.info.id
 				}
 			});
-		};
+		}
 
 		requestFrameInfo.timeout = null;
 
@@ -102,7 +112,7 @@ var Page = {
 					}
 				}
 			});
-		}
+		};
 	})(),
 
 	info: {
@@ -158,7 +168,7 @@ var _ = (function () {
 			});
 
 		return strings[string];
-	}
+	};
 })();
 
 var Handler = {
@@ -174,13 +184,12 @@ var Handler = {
 	},
 
 	setPageLocation: function () {
-		if (FRAME_ELEMENT && FRAME_ELEMENT.getAttribute('data-jsbParentHost')) {
+		if (FRAME_ELEMENT && FRAME_ELEMENT.getAttribute('data-jsbParentHost'))
 			TopPage.info = {
 				location: FRAME_ELEMENT.getAttribute('data-jsbParentLocation'),
 				host: FRAME_ELEMENT.getAttribute('data-jsbParentHost'),
 				protocol: FRAME_ELEMENT.getAttribute('data-jsbParentProtocol')
 			};
-		}
 
 		if (Utilities.Page.isAbout && FRAME_ELEMENT && TopPage.info) {
 			Page.info.location = TopPage.info.location;
@@ -206,8 +215,7 @@ var Handler = {
 		var URL = window.webkitURL || window.URL || {};
 
 		if (window.Blob && URL.createObjectURL) {
-			var base64,
-					uri;
+			var uri;
 
 			for (var key in globalSetting.contentURLs) {
 				uri = globalSetting.contentURLs[key].url;
@@ -225,10 +233,9 @@ var Handler = {
 		var i;
 
 		var scripts = document.getElementsByTagName('script'),
-				anchors = document.getElementsByTagName('a'),
-				forms = document.getElementsByTagName('form'),
-				iframes = document.getElementsByTagName('iframe'),
-				frames = document.getElementsByTagName('frame');
+			anchors = document.getElementsByTagName('a'),
+			iframes = document.getElementsByTagName('iframe'),
+			frames = document.getElementsByTagName('frame');
 
 		for (i = scripts.length; i--;)
 			if (!Element.triggersBeforeLoad(scripts[i]) && globalSetting.showUnblockedScripts)
@@ -245,27 +252,16 @@ var Handler = {
 		for (i = frames.length; i--;)
 			Element.handle.frame(frames[i]);
 
-		if (globalSetting.blockReferrer && false) {
-			var method;
-
-			for (var i = forms.length; i--;) {
-				method = forms[y].getAttribute('method');
-
-				if (method && method.toLowerCase() === 'post')
-					GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(forms[i].getAttribute('action')));
-			}
-		}
-
 		Handler.visibilityChange();
 	},
 
-	resetLocation: function (event) {
+	resetLocation: function () {
 		Handler.setPageLocation();
 
 		Page.send();
 	},
 
-	hashChange: function (event) {
+	hashChange: function () {
 		Handler.setPageLocation();
 
 		if (Page.info.isFrame)
@@ -280,7 +276,7 @@ var Handler = {
 		Page.send();
 	},
 
-	visibilityChange: function (event) {
+	visibilityChange: function () {
 		if (!document.hidden)
 			Handler.event.trigger('documentBecameVisible');
 	},
@@ -295,8 +291,10 @@ var Handler = {
 	contextMenu: function (event) {
 		var menuCommands = Object.keys(UserScript.menuCommand);
 
+		var contextMenuTarget;
+
 		if (menuCommands.length && (event.target instanceof HTMLElement)) {
-			var contextMenuTarget = Utilities.Token.generate();
+			contextMenuTarget = Utilities.Token.generate();
 
 			event.target.setAttribute('data-jsbContextMenuTarget', contextMenuTarget);
 
@@ -305,7 +303,7 @@ var Handler = {
 					element.removeAttribute('data-jsbContextMenuTarget');
 			}, 3000, event.target);
 		} else
-			var contextMenuTarget = null;
+			contextMenuTarget = null;
 
 		Events.setContextMenuEventUserInfo(event, {
 			pageID: Page.info.id,
@@ -320,7 +318,7 @@ var Handler = {
 			GlobalPage.message('showPopover');
 	},
 
-	blockedHiddenPageContent: function (event) {
+	blockedHiddenPageContent: function () {
 		GlobalPage.message('bounce', {
 			command: 'recommendPageReload'
 		});
@@ -335,9 +333,9 @@ var Handler = {
 			return;
 
 		var host = detail.host,
-				trustDomain = false,
-				hostDisplay = host._startsWith('.') ? host.substr(1) : host,
-				hostTitle = viaFrame ? _('via_frame') + ' - ' + hostDisplay : hostDisplay;
+			trustDomain = false,
+			hostDisplay = host._startsWith('.') ? host.substr(1) : host,
+			hostTitle = viaFrame ? _('via_frame') + ' - ' + hostDisplay : hostDisplay;
 
 		var notification = new PageNotification({
 			id: Utilities.encode(hostTitle),
@@ -354,7 +352,7 @@ var Handler = {
 			})
 		});
 
-		var ignoreButton = notification.addCloseButton(_('first_visit.keep_blocked'), function (notification) {
+		var ignoreButton = notification.addCloseButton(_('first_visit.keep_blocked'), function () {
 			GlobalPage.message('noFirstVisitNotification', host);
 		});
 
@@ -442,9 +440,9 @@ var Element = {
 	},
 
 	hide: function (kind, element, source) {
-		if (globalSetting.showPlaceholder[kind]) {
+		if (globalSetting.showPlaceholder[kind])
 			Element.createPlaceholder(kind, element, source);
-		} else
+		else
 			Element.collapse(element);
 	},
 
@@ -464,11 +462,11 @@ var Element = {
 		var cssValue;
 
 		var elementParent = element.parentNode,
-				height = element.offsetHeight - 1,
-				width = element.offsetWidth,
-				elementStyle = window.getComputedStyle(element, null),
-				placeholder = Utilities.Element.createFromHTML(placeholderTemplate)[0],
-				placeholderToken = Utilities.Token.create('ElementPlaceholder');
+			height = element.offsetHeight - 1,
+			width = element.offsetWidth,
+			elementStyle = window.getComputedStyle(element, null),
+			placeholder = Utilities.Element.createFromHTML(placeholderTemplate)[0],
+			placeholderToken = Utilities.Token.create('ElementPlaceholder');
 
 		PLACEHOLDER_ELEMENTS[placeholderToken] = {
 			element: element,
@@ -488,11 +486,11 @@ var Element = {
 		}
 
 		var kindString = placeholder.querySelector('.jsb-element-placeholder-kind'),
-				properties = {
-					height: height + 'px',
-					width: width + 'px',
-					visibility: 'hidden'
-				};
+			properties = {
+				height: height + 'px',
+				width: width + 'px',
+				visibility: 'hidden'
+			};
 
 		Element.setCSS(placeholder, true, properties);
 
@@ -550,12 +548,12 @@ var Element = {
 	},
 
 	shouldIgnore: function (element) {
-		return Utilities.Token.valid(element.getAttribute('data-jsbAllowAndIgnore'), 'AllowAndIgnore', true)
+		return Utilities.Token.valid(element.getAttribute('data-jsbAllowAndIgnore'), 'AllowAndIgnore', true);
 	},
 
 	triggersBeforeLoad: function (element) {
 		var nodeName = element.nodeName.toUpperCase(),
-				elementBased = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG']._contains(nodeName);
+			elementBased = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG']._contains(nodeName);
 
 		if (!elementBased)
 			return false;
@@ -570,10 +568,12 @@ var Element = {
 		if (kind === 'script' && (Special.isEnabled('inline_script_execution') || !globalSetting.showUnblockedScripts))
 			return false;
 
+		var content;
+
 		if (kind === 'embed')
-			var content = element.outerHTML;
+			content = element.outerHTML;
 		else
-			var content = element.innerHTML || element.src || element.outerHTML || element.textContent;
+			content = element.innerHTML || element.src || element.outerHTML || element.textContent;
 
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbUnblockable'), element)) {			
 			element.setAttribute('data-jsbUnblockable', Utilities.Token.create(element));
@@ -680,7 +680,7 @@ var Element = {
 						token: Utilities.Token.create(frame.id)
 					}
 				}, '*');
-			}, 2000, frame, reason)
+		}, 2000, frame, reason);
 	},
 
 	handle: {
@@ -724,7 +724,7 @@ var Element = {
 
 			if (isAnchor && !Utilities.Token.valid(anchor.jsbAnchorPrepared, 'AnchorPrepared')) {
 				var href = anchor.getAttribute('href'),
-						absoluteHref = Utilities.URL.getAbsolutePath(href);
+					absoluteHref = Utilities.URL.getAbsolutePath(href);
 
 				if (!anchor.title && Special.isEnabled('anchor_titles'))
 					anchor.title = absoluteHref;
@@ -733,32 +733,20 @@ var Element = {
 					value: Utilities.Token.create('AnchorPrepared', true)
 				});
 
-				if (Special.isEnabled('simple_referrer')) {
+				if (Special.isEnabled('simple_referrer'))
 					if (href && href.length && href.charAt(0) !== '#')
 						if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length))
 							anchor.setAttribute('rel', 'noreferrer');
-				}
 
-				if (globalSetting.blockReferrer && false)
-					if (href && href[0] === '#')
-						GlobalPage.message('cannotAnonymize', Utilities.URL.getAbsolutePath(href));
-					else
-						anchor.addEventListener('mousedown', function (event) {
-							var key = /Win/.test(window.navigator.platform) ? event.ctrlKey : event.metaKey;
-
-							GlobalPage.message('anonymousNewTab', key || event.which === 2 ? 1 : 0);
-
-							setTimeout(function () {
-								GlobalPage.message('anonymousNewTab', 0);
-							}, 1000);
-						}, true);
+				anchor.removeAttribute('ping');
 			}
 		},
 
 		frame: function (frame) {
-			var frame = frame.target || frame,
-					id = frame.getAttribute('id'),
-					sandbox = frame.getAttribute('sandbox');
+			frame = frame.target || frame;
+			
+			var id = frame.getAttribute('id'),
+				sandbox = frame.getAttribute('sandbox');
 
 			if (sandbox && !sandbox._contains('allow-scripts')) {
 				frame.setAttribute('data-jsbFrameSandbox', sandbox);
@@ -799,9 +787,9 @@ var Element = {
 
 					Element.requestFrameURL(frame, undefined, true);
 				}
-			} catch (e) {}
+			} catch (e) { /* do nothing */ }
 
-			frame.addEventListener('load', function (event) {
+			frame.addEventListener('load', function () {
 				Element.requestFrameURL(this);
 			}, false);
 		}
@@ -816,7 +804,7 @@ var Resource = {
 			return;
 
 		var element = event.target || event,
-				nodeName = element.nodeName.toUpperCase();
+			nodeName = element.nodeName.toUpperCase();
 
 		if (nodeName === 'LINK' && !Element.shouldIgnore(element))
 			return true;
@@ -842,7 +830,7 @@ var Resource = {
 
 		var source = Utilities.URL.getAbsolutePath(event.url || element.getAttribute('src'));
 
-		if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad')) {
+		if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad'))
 			if (kind in Resource.staticActions) {
 				if (!Resource.staticActions[kind].isAllowed && event.preventDefault)
 					event.preventDefault();
@@ -853,13 +841,12 @@ var Resource = {
 
 				return Resource.staticActions[kind];
 			} else {
-				if (!source || !source.length) {
+				if (!source || !source.length)
 					if (nodeName !== 'OBJECT') {
 						source = 'about:blank';
 						sourceHost = 'blank';
 					} else
 						return true;
-				}
 
 				if (Utilities.Token.valid(element.jsbBeforeLoadProcessed, source))
 					return true;
@@ -867,22 +854,24 @@ var Resource = {
 				if (Element.shouldIgnore(element))
 					return Element.processUnblockable(kind, element);
 
+				var canLoad;
+
 				if (event.unblockable)
-					var canLoad = {
+					canLoad = {
 						isAllowed: true,
 						action: -3
-					}
+					};
 				else if (document.hidden && Page.info.isFrame && Page.info.protocol === 'about:') {
 					LogDebug('blocked source from loading within blank frame because the document was hidden when it loaded and the frame\'s parent address could not reliably be determined: ' + source);
 
-					var canLoad = {
+					canLoad = {
 						action: -4,
 						isAllowed: false
 					};
 
 					Handler.event.addMissingCustomEventListener('documentBecameVisible', Handler.blockedHiddenPageContent, true);
 				} else
-					var canLoad = GlobalCommand('canLoadResource', {
+					canLoad = GlobalCommand('canLoadResource', {
 						kind: kind,
 						pageLocation: Page.info.location,
 						pageProtocol: Page.info.protocol,
@@ -905,7 +894,7 @@ var Resource = {
 
 				return canLoad.isAllowed;
 			}
-		} else {
+		else {
 			Utilities.Token.expire(element.getAttribute('data-jsbAllowLoad'));
 
 			return true;
@@ -921,8 +910,10 @@ Handler.setPageLocation();
 document.addEventListener('visibilitychange', Handler.visibilityChange, true);
 
 if (!globalSetting.disabled) {
+	var JSBSupport;
+
 	if (Page.info.location)
-		var JSBSupport = GlobalCommand('canLoadResource', {
+		JSBSupport = GlobalCommand('canLoadResource', {
 			kind: 'disable',
 			strict: true,
 			pageLocation: Page.info.location,
@@ -931,7 +922,7 @@ if (!globalSetting.disabled) {
 			isFrame: Page.info.isFrame
 		});
 	else
-		var JSBSupport = {
+		JSBSupport = {
 			isAllowed: true,
 			action: -1
 		};
@@ -942,18 +933,6 @@ if (!globalSetting.disabled) {
 		Page.info.disabled = {
 			action: JSBSupport.action
 		};
-		
-		// setTimeout(function () {
-		// 	Page.blocked.pushSource('disable', '*', {
-		// 		action: JSBSupport.action
-		// 	});
-
-		// 	Page.blocked.incrementHost('disable', '*');
-
-		// 	// LogDebug('disabled on this page: ' + Page.info.location);
-
-		// 	Page.send(true);
-		// }, 0);
 
 		Page.send();
 	} else {
@@ -986,7 +965,7 @@ if (!globalSetting.disabled) {
 			setTimeout(function (blockFirstVisitStatus) {
 				Page.info.blockFirstVisitStatus = blockFirstVisitStatus;
 
-				if (blockFirstVisitStatus.blocked) {
+				if (blockFirstVisitStatus.blocked)
 					if (blockFirstVisitStatus.action !== 8 && window.globalSetting.showBlockFirstVisitNotification) {
 						Handler.event.addCustomEventListener('readyForPageNotifications', function () {
 							if (Page.info.isFrame)
@@ -1006,7 +985,6 @@ if (!globalSetting.disabled) {
 								});
 						}, true);
 					}
-				}
 			}, 500, blockFirstVisitStatus);
 		} else
 			Page.info.blockFirstVisitStatus = {
@@ -1016,12 +994,11 @@ if (!globalSetting.disabled) {
 
 		var observer = new MutationObserver(function (mutations) {
 			var i,
-					j;
+				j;
 
-			for (i = mutations.length; i--;) {
+			for (i = mutations.length; i--;)
 				for (j = mutations[i].addedNodes.length; j--;)
 					Element.handle.node(mutations[i].addedNodes[j], i + j);
-			}
 		});
 
 		observer.observe(document.documentElement, {
@@ -1031,7 +1008,6 @@ if (!globalSetting.disabled) {
 
 		document.addEventListener('contextmenu', Handler.contextMenu, true);
 		document.addEventListener('keyup', Handler.keyUp, true);
-		document.addEventListener('beforeload', Resource.canLoad, true);
 		document.addEventListener('DOMContentLoaded', Handler.DOMContentLoaded, true);
 
 		window.addEventListener('error', function (event) {

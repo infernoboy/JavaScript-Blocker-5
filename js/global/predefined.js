@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function Predefined () {
 	Rules.list['$predefined'].clear();
@@ -11,8 +11,8 @@ function Predefined () {
 		return;
 	
 	var kind,
-			domain,
-			i;
+		domain,
+		i;
 
 	var whitelistValue = {
 		action: 5
@@ -60,7 +60,7 @@ function Predefined () {
 		}
 	};
 
-	Rules.list['$predefined'].addMany({
+	var addWhitelist = Rules.list['$predefined'].addMany({
 		script: {
 			domain: {
 				'*': {
@@ -101,119 +101,125 @@ function Predefined () {
 		}
 	});
 
-	for (kind in whitelistDomains)
-		for (domain in whitelistDomains[kind])
-			for (i = 0; i < whitelistDomains[kind][domain].length; i++) 
-				Rules.list['$predefined'].addDomain(kind, domain, {
-					rule: '^https?:\\/\\/([^\\/]+\.)?' + whitelistDomains[kind][domain][i] + '\\/.*$',
-					action: 5
-				});
+	addWhitelist = addWhitelist.then(function () {
+		for (kind in whitelistDomains)
+			for (domain in whitelistDomains[kind])
+				for (i = 0; i < whitelistDomains[kind][domain].length; i++) 
+					Rules.list['$predefined'].addDomain(kind, domain, {
+						rule: '^https?:\\/\\/([^\\/]+\.)?' + whitelistDomains[kind][domain][i] + '\\/.*$',
+						action: 5
+					});
 
-	var scriptRules = Rules.list['$predefined'].kind('script').domain();
+		var scriptRules = Rules.list['$predefined'].kind('script').domain();
 
-	scriptRules.setMany({
-		'.google.co.uk': scriptRules.get('.google.com'),
-		'.google.de': scriptRules.get('.google.com'),
-		'.amazon.co.uk': scriptRules.get('.amazon.com'),
-		'.amazon.de': scriptRules.get('.amazon.com')
+		scriptRules.setMany({
+			'.google.co.uk': scriptRules.get('.google.com'),
+			'.google.de': scriptRules.get('.google.com'),
+			'.amazon.co.uk': scriptRules.get('.amazon.com'),
+			'.amazon.de': scriptRules.get('.amazon.com')
+		});
 	});
 	
 
 	/* ====================BLACKLIST===================== */
 
-	Rules.list['$predefined'].addMany({
-		'*': {
-			domain: {
-				'*': {
-					'^.*JSB_BLOCKED_SOURCE.*$': blacklistValue
+	var addBlacklist = addWhitelist.then(function () {
+		return Rules.list['$predefined'].addMany({
+			'*': {
+				domain: {
+					'*': {
+						'^.*JSB_BLOCKED_SOURCE.*$': blacklistValue
+					}
+				}
+			},
+			script: {
+				domain: {
+					'*': {
+						'^.*google\\.[^\\/]+\\/.*\\/plusone\\.js((\\?|#)+.*)?$': blacklistValue,
+						'^https?:\\/\\/platform\.stumbleupon\\.com\\/.*\\/widgets\\.js((\\?|#)+.*)?$': blacklistValue,
+						'^https?:\\/\\/widgets\\.getpocket\\.com\\/.*\\/btn.js((\\?|#)+.*)?$': blacklistValue,
+						'^https?:\\/\\/assets\\.pinterest\\.com\\/js\\/pinit.js((\\?|#)+.*)?$': blacklistValue,
+						'^https?:\\/\\/([^\\/]+\\.)?platform\\.linkedin\\.com\\/in\\.js.*((\\?|#)+.*)?$': blacklistValue
+					},
+					'.thepiratebay.sx': {
+						'^https?:\\/\\/([^\\/]+\\.)?thepiratebay\\.sx\\/static\\/js\\/((?!tpb).)*\\.js((\\?|#)+.*)?$': blacklistValue
+					}
 				}
 			}
-		},
-		script: {
-			domain: {
-				'*': {
-					'^.*google\\.[^\\/]+\\/.*\\/plusone\\.js((\\?|#)+.*)?$': blacklistValue,
-					'^https?:\\/\\/platform\.stumbleupon\\.com\\/.*\\/widgets\\.js((\\?|#)+.*)?$': blacklistValue,
-					'^https?:\\/\\/widgets\\.getpocket\\.com\\/.*\\/btn.js((\\?|#)+.*)?$': blacklistValue,
-					'^https?:\\/\\/assets\\.pinterest\\.com\\/js\\/pinit.js((\\?|#)+.*)?$': blacklistValue,
-					'^https?:\\/\\/([^\\/]+\\.)?platform\\.linkedin\\.com\\/in\\.js.*((\\?|#)+.*)?$': blacklistValue
-				},
-				'.thepiratebay.sx': {
-					'^https?:\\/\\/([^\\/]+\\.)?thepiratebay\\.sx\\/static\\/js\\/((?!tpb).)*\\.js((\\?|#)+.*)?$': blacklistValue
-				}
-			}
-		}
+		});
 	});
 
-	var blacklistDomain = {
-		'*': {
-			'*': [
-				'tynt\\.com',
-				'kontera\\.com',
-				'snap\\.com',
-				'(edge|pixel)\\.quantserve\\.com',
-				'pagead[0-9]+\\.googlesyndication\\.com',
-				'blogads\\.com',
-				'admeld\\.com',
-				'scorecardresearch\\.com',
-				'connect\\.facebook\\.(com|net)',
-				'platform\\.twitter\\.com',
-				'engine\\.carbonads\\.com',
-				'widgets\\.twimg\\.com',
-				'media6degrees\\.com',
-				'(ssl|www)\\.google\\-analytics\\.com',
-				'(ad|stats)\.([a-z]+\\.)?doubleclick\.net',
-				'getclicky\\.com',
-				'infolinks\\.com',
-				'clicktale\\.(net|com)',
-				'zedo\\.com',
-				'monster\\.com',
-				'ensighten\\.com',
-				'gorillanation\\.com',
-				'bizographics\\.com',
-				'widgets\\.digg\\.com',
-				'chartbeat\\.com',
-				'redditstatic.s3.amazonaws.com',
-				'reddit.com',
-				'verticalacuity\\.com',
-				'sail\\-horizon\\.com',
-				'kissmetrics\\.com',
-				'legolas\\-media\\.com',
-				'adzerk\\.(com|net)',
-				'adtechus\\.com',
-				'skimlinks\\.com',
-				'visualwebsiteoptimizer\\.com',
-				'marketo\\.(net|com)',
-				'coremetrics\\.com',
-				'serving\\-sys\\.com',
-				'insightexpressai\\.com',
-				'googletagservices\\.com',
-				'live\\.spokenlayer\\.com',
-				'linksalpha\\.com',
-				'sharethis\\.com',
-				'addthis\\.com'
-			]
-		},
-		frame: {
-			'*': [
-				'facebook\\.com',
-				'twitter\\.com',
-				'plusone\\.google\\.(com|ca|co\\.uk)',
-				'ads\\.[^\\.]+\\..*',
-				'mediaplex\\.com',
-				'legolas\\-media\\.com',
-				'reddit.com',
-				'linksalpha.com'
-			]
-		}
-	};
+	addBlacklist.then(function () {
+		var blacklistDomain = {
+			'*': {
+				'*': [
+					'tynt\\.com',
+					'kontera\\.com',
+					'snap\\.com',
+					'(edge|pixel)\\.quantserve\\.com',
+					'pagead[0-9]+\\.googlesyndication\\.com',
+					'blogads\\.com',
+					'admeld\\.com',
+					'scorecardresearch\\.com',
+					'connect\\.facebook\\.(com|net)',
+					'platform\\.twitter\\.com',
+					'engine\\.carbonads\\.com',
+					'widgets\\.twimg\\.com',
+					'media6degrees\\.com',
+					'(ssl|www)\\.google\\-analytics\\.com',
+					'(ad|stats)\.([a-z]+\\.)?doubleclick\.net',
+					'getclicky\\.com',
+					'infolinks\\.com',
+					'clicktale\\.(net|com)',
+					'zedo\\.com',
+					'monster\\.com',
+					'ensighten\\.com',
+					'gorillanation\\.com',
+					'bizographics\\.com',
+					'widgets\\.digg\\.com',
+					'chartbeat\\.com',
+					'redditstatic.s3.amazonaws.com',
+					'reddit.com',
+					'verticalacuity\\.com',
+					'sail\\-horizon\\.com',
+					'kissmetrics\\.com',
+					'legolas\\-media\\.com',
+					'adzerk\\.(com|net)',
+					'adtechus\\.com',
+					'skimlinks\\.com',
+					'visualwebsiteoptimizer\\.com',
+					'marketo\\.(net|com)',
+					'coremetrics\\.com',
+					'serving\\-sys\\.com',
+					'insightexpressai\\.com',
+					'googletagservices\\.com',
+					'live\\.spokenlayer\\.com',
+					'linksalpha\\.com',
+					'sharethis\\.com',
+					'addthis\\.com'
+				]
+			},
+			frame: {
+				'*': [
+					'facebook\\.com',
+					'twitter\\.com',
+					'plusone\\.google\\.(com|ca|co\\.uk)',
+					'ads\\.[^\\.]+\\..*',
+					'mediaplex\\.com',
+					'legolas\\-media\\.com',
+					'reddit.com',
+					'linksalpha.com'
+				]
+			}
+		};
 
-	for (kind in blacklistDomain)
-		for (domain in blacklistDomain[kind])
-			for (i = 0; i < blacklistDomain[kind][domain].length; i++)
-				Rules.list['$predefined'].addDomain(kind, domain, {
-					rule: '^https?:\\/\\/([^\\/]+\.)?' + blacklistDomain[kind][domain][i] + '\\/.*$',
-					action: 4,
-					thirdParty: true
-				});
-};
+		for (kind in blacklistDomain)
+			for (domain in blacklistDomain[kind])
+				for (i = 0; i < blacklistDomain[kind][domain].length; i++)
+					Rules.list['$predefined'].addDomain(kind, domain, {
+						rule: '^https?:\\/\\/([^\\/]+\.)?' + blacklistDomain[kind][domain][i] + '\\/.*$',
+						action: 4,
+						thirdParty: true
+					});
+	});
+}

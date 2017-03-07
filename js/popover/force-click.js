@@ -1,10 +1,10 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
-var ForceClickElement = function (element, selector) {
+var ForceClickElement = function () {
 	this.elementEvents = ForceClickElement.elementEvents;
 
 	this.originalForce = 0;
@@ -28,8 +28,6 @@ ForceClickElement.events = {
 	elementWasAdded: function (event) {
 		if (!event.detail.querySelectorAll)
 			return;
-
-		var forceClick;
 
 		var forceClickElements = event.detail.querySelectorAll('*[data-forceTriggersClick]:not(.force-click-ready)');
 
@@ -56,7 +54,7 @@ ForceClickElement.events = {
 						.addCustomEventListener('forceBegin', function (event) {
 							event.detail.currentTarget.setAttribute('data-forceClickTarget', 1);
 
-							event.detail.currentTarget.removeAttribute('data-clickTriggeredByForce')
+							event.detail.currentTarget.removeAttribute('data-clickTriggeredByForce');
 						})
 
 						.addCustomEventListener('firstForceChange', function (event) {
@@ -201,7 +199,7 @@ ForceClickElement.elementEvents = {
 
 		if (forceClick.currentTarget === event.currentTarget && event.originalEvent.webkitForce >= forceClick.startThreshold && event.originalEvent.webkitForce < MouseEvent.WEBKIT_FORCE_AT_FORCE_MOUSE_DOWN) {
 			var preNormalizedForce = (event.originalEvent.webkitForce - forceClick.startThreshold) / (forceClick.endThreshold - forceClick.startThreshold),
-					normalizedForce = (event.originalEvent.webkitForce - forceClick.startThreshold) / (forceClick.endThreshold - forceClick.startThreshold - forceClick.additionalNormalizedForce);
+				normalizedForce = (event.originalEvent.webkitForce - forceClick.startThreshold) / (forceClick.endThreshold - forceClick.startThreshold - forceClick.additionalNormalizedForce);
 
 			forceClick.normalizedForce = normalizedForce;
 

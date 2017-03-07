@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var ACTION = {
 	SOURCE_DESCRIPTION: 9,
@@ -59,7 +59,12 @@ function Rule (store, storeProps, ruleProps) {
 
 	if (this.rules.useSnapshot && Settings.getItem('autoSnapshots'))
 		this.rules.snapshot.autoSnapshots(true);
-};
+
+	if (storeProps && storeProps.save)
+		this.rules.addCustomEventListener('reloaded', function () {
+			Resource.canLoadCache.clear().saveNow();
+		});
+}
 
 Rule.event = new EventListener;
 
@@ -69,15 +74,15 @@ Rule.listCache = new Store('RuleListCache', {
 
 Rule.withLocationRules = function (allRules, callback) {
 	var ruleList,
-			ruleKind,
-			ruleType,
-			domains,
-			domain;
+		ruleKind,
+		ruleType,
+		domains,
+		domain;
 
 	matchingRulesLoop:
-	for (ruleList in allRules) {
-		for (ruleKind in allRules[ruleList]) {
-			for (ruleType in allRules[ruleList][ruleKind]) {
+	for (ruleList in allRules)
+		for (ruleKind in allRules[ruleList])
+			for (ruleType in allRules[ruleList][ruleKind])
 				if (allRules[ruleList][ruleKind][ruleType]) {
 					domains = allRules[ruleList][ruleKind][ruleType].data._sort(Rules.__prioritize);
 
@@ -85,9 +90,6 @@ Rule.withLocationRules = function (allRules, callback) {
 						if (callback(allRules[ruleList].rule, ruleList, ruleKind, ruleType, domain, domains[domain].value))
 							break matchingRulesLoop;
 				}
-			}
-		}
-	}
 };
 
 Rule.prototype.__add = function (type, kind, domain, rule, isViaMany) {
@@ -105,16 +107,16 @@ Rule.prototype.__add = function (type, kind, domain, rule, isViaMany) {
 	} else if (typeof rule.rule !== 'string')
 		throw new TypeError(rule.rule + ' is not a valid rule');
 
-	if (!Rules.kindSupported(kind))
+	if (!isViaMany && !Rules.kindSupported(kind))
 		throw new Error(Rules.ERROR.KIND.NOT_SUPPORTED);
 
 	var types = this.kind(kind);
 
-	if (!types.hasOwnProperty(type))
+	if (!isViaMany && !types.hasOwnProperty(type))
 		throw new Error(Rules.ERROR.TYPE.NOT_SUPPORTED);
 
 	if (type.toLowerCase()._endsWith('page')) {
-	 	if (!Rules.isRegExp(domain))
+		if (!Rules.isRegExp(domain))
 			throw new TypeError(Rules.ERROR.TYPE.PAGE_NOT_REGEXP);
 
 		try {
@@ -127,8 +129,8 @@ Rule.prototype.__add = function (type, kind, domain, rule, isViaMany) {
 	}
 
 	var rules = type._startsWith('not') ? types[type]() : types[type](domain),
-			isRegExp = Rules.isRegExp(rule.rule),
-			action = typeof this.action === 'number' ? this.action : rule.action;
+		isRegExp = Rules.isRegExp(rule.rule),
+		action = typeof this.action === 'number' ? this.action : rule.action;
 
 	if (type._startsWith('not'))
 		rules = rules.getStore(domain);
@@ -191,10 +193,12 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 		else if (rule === undefined)
 			types[type]().remove(domain);
 		else {
+			var rules;
+
 			if (type._startsWith('not'))
-				var rules = types[type]().getStore(domain);
+				rules = types[type]().getStore(domain);
 			else
-				var rules = types[type](domain, domainIsLocation);
+				rules = types[type](domain, domainIsLocation);
 
 			rules.remove(rule);
 		}
@@ -212,12 +216,16 @@ Rule.prototype.__remove = function (domainIsLocation, type, kind, domain, rule) 
 };
 
 Rule.prototype.fixCanLoadCache = function (type, kind, domain) {
-	if (domain === '*' || type._startsWith('not'))
-		Resource.canLoadCache.clear();
-	else {		
-		Resource.canLoadCache.removeMatching(new RegExp('-?' + kind._escapeRegExp() + '-?'));
-		Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind._escapeRegExp() + '-?'));
-	}
+	Utilities.Timer.timeout('fixCanLoadCache-' + type + kind + domain, function (type, kind, domain) {
+		if (domain === '*' || type._startsWith('not'))
+			Resource.canLoadCache.clear();
+		else {		
+			Resource.canLoadCache.removeMatching(new RegExp('-?' + kind._escapeRegExp() + '-?'));
+			Resource.canLoadCache.removeMatching(new RegExp('-?framed:' + kind._escapeRegExp() + '-?'));
+		}
+
+		Rule.event.trigger('fixedCanLoadCache');
+	}, 500, [type, kind, domain]);
 };
 
 Rule.prototype.clear = function () {
@@ -268,17 +276,17 @@ Rule.prototype.kind = function (kindName) {
 			return domains;
 
 		var isArray = Array.isArray(domain),
-				isSimple = !isArray && !type._startsWith('not') && (type === 'domain' || type === 'notDomain' || !domainIsLocation);
+			isSimple = !isArray && !type._startsWith('not') && (type === 'domain' || type === 'notDomain' || !domainIsLocation);
 
 		if (isSimple)
 			return domains.getStore(domain);
 
 		var baseKey = this.parent ? this.parent.name || this.parent.id : this.name || this.id,
-				listCache = Rule.listCache.getStore(baseKey, {
-					maxLife: TIME.ONE.HOUR * 12,
-				}),
-				cacheKey = domains.name + ',' + (isArray ? '[' + domain + ']' : domain) + ',' + domainIsLocation,
-				cachedRules = listCache.get(cacheKey);
+			listCache = Rule.listCache.getStore(baseKey, {
+				maxLife: TIME.ONE.HOUR * 12,
+			}),
+			cacheKey = domains.name + ',' + (isArray ? '[' + domain + ']' : domain) + ',' + domainIsLocation,
+			cachedRules = listCache.get(cacheKey);
 
 		if (cachedRules && !cachedRules.destroyed)
 			return cachedRules;
@@ -287,9 +295,11 @@ Rule.prototype.kind = function (kindName) {
 			maxLife: Infinity
 		}, this);
 
-		if (Array.isArray(domain)) {
+		var testDomain;
+
+		if (Array.isArray(domain))
 			if (type._startsWith('not')) {
-				for (var testDomain in domains.data)
+				for (testDomain in domains.data)
 					if (!domain._contains(testDomain))
 						rules.set(testDomain, domains.get(testDomain));
 			} else {
@@ -297,14 +307,14 @@ Rule.prototype.kind = function (kindName) {
 					if (domains.keyExist(domain[i]))
 						rules.set(domain[i], domains.get(domain[i]));
 			}
-		} else {
+		else
 			if (type._startsWith('not')) {
-				for (var testDomain in domains.data)
+				for (testDomain in domains.data)
 					if (testDomain !== domain)
 						rules.set(testDomain, domains.get(testDomain));
 			} else {
 				var regExp,
-						matches;
+					matches;
 
 				for (var testPage in domains.data)
 					try {
@@ -318,7 +328,6 @@ Rule.prototype.kind = function (kindName) {
 						LogError(error);
 					}
 			}
-		}
 
 		return rules;
 	};
@@ -335,7 +344,7 @@ Rule.prototype.domain = function (domain) {
 	var rules;
 
 	var self = this,
-			kinds = {};
+		kinds = {};
 
 	this.rules.forEach(function (kind) {
 		rules = self.kind(kind).domain(domain);
@@ -351,7 +360,7 @@ Rule.prototype.page = function (page) {
 	var rules;
 
 	var self = this,
-			kinds = {};
+		kinds = {};
 
 	this.rules.forEach(function (kind) {
 		rules = self.kind(kind).page(page);
@@ -364,55 +373,71 @@ Rule.prototype.page = function (page) {
 };
 
 Rule.prototype.addMany = function (kinds) {
-	if (typeof kinds !== 'object')
-		throw new TypeError(kinds + ' is not an object');
+	var self = this;
+	
+	kinds = kinds._clone(true, true);
 
-	var kind,
+	return new Promise(function (resolve) {
+		if (typeof kinds !== 'object')
+			throw new TypeError(kinds + ' is not an object');
+
+		var kind,
 			types,
-			type,
+			ruleType,
 			domain,
 			rule;
 
-	for (kind in kinds) {
-		if (!Rules.kindSupported(kind)) {
-			LogError(Error(Rules.ERROR.KIND.NOT_SUPPORTED + ' - ' + kind));
+		var delay = 0.2,
+			i = 0;
 
-			continue;
-		}
-
-		types = this.kind(kind);
-
-		for (type in kinds[kind]) {
-			if (!types.hasOwnProperty(type)) {
-				LogError(Error(Rules.ERROR.TYPE.NOT_SUPPORTED + ' - ' + type));
+		for (kind in kinds) {
+			if (!Rules.kindSupported(kind)) {
+				LogError(Error(Rules.ERROR.KIND.NOT_SUPPORTED + ' - ' + kind));
 
 				continue;
 			}
 
-			for (domain in kinds[kind][type])
-				for (rule in kinds[kind][type][domain]) {
-					if (!(kinds[kind][type][domain][rule] instanceof Object))
-						continue;
+			types = self.kind(kind);
 
-					kinds[kind][type][domain][rule].rule = rule;
+			for (ruleType in kinds[kind]) {
+				if (!types.hasOwnProperty(ruleType)) {
+					LogError(Error(Rules.ERROR.TYPE.NOT_SUPPORTED + ' - ' + ruleType));
 
-					this.__add(type, kind, domain, kinds[kind][type][domain][rule], true);
+					continue;
 				}
+
+				for (domain in kinds[kind][ruleType])
+					for (rule in kinds[kind][ruleType][domain]) {
+						if (!(kinds[kind][ruleType][domain][rule] instanceof Object))
+							continue;
+
+						kinds[kind][ruleType][domain][rule].rule = rule;
+
+						setTimeout(function (self, ruleType, kind, domain, fullRule) {
+							self.__add(ruleType, kind, domain, fullRule, true);
+						}, i++ * delay, self, ruleType, kind, domain, kinds[kind][ruleType][domain][rule]);
+					}
+			}
 		}
-	}
 
-	Rule.event.trigger('manyRulesAdded', {
-		self: this,
-		rules: kinds
+		setTimeout(function (self, kinds) {
+			resolve();
+
+			Rule.event.trigger('manyRulesAdded', {
+				self: self,
+				rules: kinds
+			});
+		}, ++i * delay, self, kinds);
 	});
-
-	return this;
 };
 
 Rule.prototype.forLocation = function (params) {
+	var rules;
+
 	if (Array.isArray(params.searchKind)) {
-		var localParams = params._clone(true),
-				rules = {};
+		var localParams = params._clone(true);
+	
+		rules = {};
 
 		for (var i = 0; i < params.searchKind.length; i++)
 			if (params.searchKind[i]) {
@@ -429,31 +454,33 @@ Rule.prototype.forLocation = function (params) {
 	}
 
 	var types = this.kind(params.searchKind),
-			location = params.location.toLowerCase(),
-			host = params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? '' : Utilities.URL.extractHost(location),
-			hostParts = params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? [] : (params.excludeParts ? [host] : Utilities.URL.hostParts(host, true));
+		location = params.location.toLowerCase(),
+		host = params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? '' : Utilities.URL.extractHost(location),
+		hostParts = params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? [] : (params.excludeParts ? [host] : Utilities.URL.hostParts(host, true));
 
 	if (!params.excludeAllDomains)
 		hostParts.push('*');
 
-	var rules = {
+	rules = {
 		page: params.onlyRulesOfType === Rules.DOMAIN_RULES_ONLY ? undefined : types.page(location, true),
 		domain: params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? undefined : types.domain(hostParts),
 		notPage: params.onlyRulesOfType === Rules.DOMAIN_RULES_ONLY ? undefined : types.notPage(location, true),
 		notDomain: params.onlyRulesOfType === Rules.PAGE_RULES_ONLY ? undefined : types.notDomain(hostParts)
 	};
 
+	var ruleType;
+
 	if (typeof params.isAllowed === 'boolean')
-		for (var type in rules)
-			rules[type] = rules[type].map(function (domain, rules, domainStore) {
-				return rules.filter(function (rule, value, ruleStore) {
+		for (ruleType in rules)
+			rules[ruleType] = rules[ruleType].map(function (domain, rules) {
+				return rules.filter(function (rule, value) {
 					return (!!(value.action % 2) === params.isAllowed);
 				});
 			});
 
 	if (params.all === true)
-		for (var type in rules)
-			rules[type] = rules[type].all();
+		for (ruleType in rules)
+			rules[ruleType] = rules[ruleType].all();
 
 	Object.defineProperty(rules, 'rule', {
 		value: this
@@ -464,7 +491,7 @@ Rule.prototype.forLocation = function (params) {
 
 Rule.prototype.createContentBlocker = function (withTheseRules) {
 	var allRules = withTheseRules || this.rules.all(),
-			allowingRules = {};
+		allowingRules = {};
 
 	var map = {
 		'*': 1,
@@ -482,17 +509,16 @@ Rule.prototype.createContentBlocker = function (withTheseRules) {
 
 	var subDomainBase = '\\/\\/(.+\\.)?';
 
-	var ruleList,
-			ruleKind,
-			ruleType,
-			domains,
-			domain,
-			rule,
-			contentBlockerRules,
-			ruleParts,
-			ruleSub,
-			protocol,
-			i;
+	var ruleKind,
+		ruleType,
+		domains,
+		domain,
+		rule,
+		contentBlockerRules,
+		ruleParts,
+		ruleSub,
+		protocol,
+		i;
 
 	var contentBlocker = [];
 
@@ -514,7 +540,7 @@ Rule.prototype.createContentBlocker = function (withTheseRules) {
 				for (domain in domains) {
 					allowingRules[ruleKind][ruleType]._getWithDefault(domain, {});
 
-					for (rule in domains[domain]) {
+					for (rule in domains[domain])
 						if (!withTheseRules && (domains[domain][rule].action % 2))
 							allowingRules[ruleKind][ruleType][domain][rule] = domains[domain][rule];
 						else {
@@ -536,12 +562,11 @@ Rule.prototype.createContentBlocker = function (withTheseRules) {
 
 								ruleParts = Rules.partsForRule(rule);
 
-								for (protocol in ruleParts.protocols) {
-									contentBlockerRules.push(protocol === 'about:' ? (protocol + ruleParts.domain) : (protocol + subDomainBase + punycode.toASCII(ruleParts.domain)._escapeRegExp() + '\\/.*'))
-								}
+								for (protocol in ruleParts.protocols)
+									contentBlockerRules.push(protocol === 'about:' ? (protocol + ruleParts.domain) : (protocol + subDomainBase + punycode.toASCII(ruleParts.domain)._escapeRegExp() + '\\/.*'));
 							}
 
-							for (i = contentBlockerRules.length; i--;) {
+							for (i = contentBlockerRules.length; i--;)
 								contentBlocker.push({
 									trigger: {
 										'url-filter': contentBlockerRules[i],
@@ -552,9 +577,7 @@ Rule.prototype.createContentBlocker = function (withTheseRules) {
 										type: !(domains[domain][rule].action % 2) ? 'block' : 'ignore-previous-rules'
 									}
 								});
-							}
 						}
-					}
 				}
 			}
 		}
@@ -634,9 +657,9 @@ var Rules = {
 
 		RemoveContentScripts();
 
-		if (Rules.__contentBlockerMode) {
+		if (Rules.__contentBlockerMode)
 			ContentBlocker.create(Rules.createContentBlocker());
-		} else {
+		else {
 			ContentBlocker.create();
 
 			AddContentScriptFromURL('js/injected/compiled.js');
@@ -648,8 +671,8 @@ var Rules = {
 			return false;
 
 		var excludeLists = ['description', 'active', 'temporaryFirstVisit', 'firstVisit', 'temporary'],
-				reverseList = Object.keys(Rules.list).reverse(),
-				lists = [];
+			reverseList = Object.keys(Rules.list).reverse(),
+			lists = [];
 
 		for (var i = 0; i < reverseList.length; i++)
 			if (!excludeLists._contains(reverseList[i]))
@@ -672,15 +695,15 @@ var Rules = {
 
 	attachFilterLists: function (clearCache) {
 		var filterLists = Settings.getItem('filterLists'),
-				filterListsKeys = Object.keys(filterLists).sort().reverse(),
-				currentLists = Object.keys(Rules.list).filter(function (value) {
-					return value._startsWith('$');
-				});
+			filterListsKeys = Object.keys(filterLists).sort().reverse(),
+			currentLists = Object.keys(Rules.list).filter(function (value) {
+				return value._startsWith('$');
+			});
 
 		for (var i = currentLists.length; i--;)
 			try {
 				delete Rules.list[currentLists[i]];
-			} catch (e) {}
+			} catch (e) { /* do nothing */ }
 
 
 		for (var j = filterListsKeys.length; j--;)
@@ -763,8 +786,8 @@ var Rules = {
 				return rule === source;
 
 			var ruleParts = this.partsForRule(rule),
-					sourceProtocol = Utilities.URL.protocol(source),
-					sourceParts = Utilities.URL.hostParts(Utilities.URL.extractHost(source));
+				sourceProtocol = Utilities.URL.protocol(source),
+				sourceParts = Utilities.URL.hostParts(Utilities.URL.extractHost(source));
 
 			if (ruleParts.protocols && !ruleParts.protocols.hasOwnProperty(sourceProtocol))
 				return false;
@@ -785,7 +808,7 @@ var Rules = {
 				this.sourceProtocol = Utilities.URL.protocol(source);
 				this.sourceParts = Utilities.URL.hostParts(Utilities.URL.extractHost(source));
 			}
-		};
+		}
 
 		SourceMatcher.prototype.testRule = function (rule, regexp, thirdParty, exceptionHosts) {
 			if (thirdParty && this.pageDomain === Utilities.URL.domain(this.lowerSource))
@@ -809,7 +832,7 @@ var Rules = {
 				return false;
 
 			return (ruleParts.domain === '*' || ruleParts.domain === this.source || (ruleParts.domain._startsWith('.') && this.sourceParts._contains(ruleParts.domain.substr(1))) || this.sourceParts[0] === ruleParts.domain);
-		}
+		};
 
 		return SourceMatcher;
 	})(),
@@ -819,7 +842,7 @@ var Rules = {
 	// Temporary rules are only included if the active set is the user set.
 	forLocation: function (params) {
 		var excludeLists = params.excludeLists ? params.excludeLists : [],
-				includeLists = params.includeLists ? params.includeLists : false;
+			includeLists = params.includeLists ? params.includeLists : false;
 
 		excludeLists.push('description', 'user');
 
@@ -828,10 +851,10 @@ var Rules = {
 
 		var lists = {};
 
-		if (includeLists) {
+		if (includeLists)
 			for (var i = includeLists.length; i--;)
 				lists[includeLists[i]] = this.list[includeLists[i]].forLocation(params);
-		} else
+		else
 			for (var list in Rules.list)
 				if (!excludeLists._contains(list))
 					lists[list] = this.list[list].forLocation(params);
@@ -870,7 +893,13 @@ Object.defineProperty(Rules, 'list', {
 
 		temporary: {
 			enumerable: true,
-			value: new Rule('TemporaryRules')
+			value: new Rule('TemporaryRules', {
+				maxLife: (function () {
+					var temporaryRuleTime = Settings.getItem('temporaryRuleTime');
+
+					return Number(temporaryRuleTime === '0' ? Infinity : temporaryRuleTime);
+				})()
+			})
 		},
 
 		__active: {
@@ -926,7 +955,13 @@ Object.defineProperty(Rules, 'list', {
 		temporaryFirstVisit: {
 			enumerable: true,
 
-			value: new Rule('TemporaryFirstVisit', {}, {
+			value: new Rule('TemporaryFirstVisit', {
+				maxLife: (function () {
+					var temporaryRuleTime = Settings.getItem('temporaryRuleTime');
+
+					return temporaryRuleTime === '0' ? Infinity : temporaryRuleTime;
+				})()
+			}, {
 				ignoreLock: true
 			})
 		},
@@ -959,7 +994,7 @@ Rules.attachFilterLists();
 
 Rules.list.active = Rules.list.user;
 
-Rules.__FilterRules.addCustomEventListener('storeDidSave', function (event) {
+Rules.__FilterRules.addCustomEventListener('storeDidSave', function () {
 	Resource.canLoadCache.clear();
 });
 
@@ -970,9 +1005,10 @@ Rules.__FilterRules.addCustomEventListener('storeDidSave', function (event) {
 
 		Rules.list[list].rules.all();
 
-		Rules.list[list].rules.addCustomEventListener(['storeDidSave', 'storeWouldHaveSaved'], function (event) {
-			Resource.canLoadCache.saveNow();
-		});
+		if (!['description']._contains(list))
+			Rules.list[list].rules.addCustomEventListener(['storeDidSave', 'storeWouldHaveSaved'], function () {
+				Resource.canLoadCache.saveNow();
+			});
 	}
 })();
 

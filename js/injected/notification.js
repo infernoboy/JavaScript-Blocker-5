@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function PageNotification (detail) {
 	PageNotification.createContainer();
@@ -40,15 +40,6 @@ function PageNotification (detail) {
 
 	PageNotification.addPending(this);
 
-	// Element.prependTo(document.documentElement, this.element);
-
-	// if (['10.7', '10.8', '10.9']._contains(Utilities.OSXVersion) {
-	// 	this.element.classList.add('jsb-notification-warped');
-
-	// 	this.top = -this.height - PageNotification.__offset + 24;
-	// 	this.element.style.right = '0px';
-	// }
-
 	this.bindEvents();
 
 	this.element.style.setProperty('z-index', PageNotification.__baseZIndex - PageNotification.notificationIDs.length, 'important');
@@ -65,9 +56,11 @@ function PageNotification (detail) {
 		Handler.event.addCustomEventListener('documentBecameVisible', this.show.bind(this), true);
 	else
 		this.show();
-};
+}
 
+/* eslint-disable */
 PageNotification = PageNotification._extendClass(EventListener);
+/* eslint-enable */
 
 PageNotification.__containerID = 'jsb-notification-container';
 PageNotification.__closeButtonsContainerClass = 'jsb-notification-close-container';
@@ -140,11 +133,11 @@ PageNotification.displaySomeOverflowed = function () {
 
 PageNotification.shift = function () {
 	var notification,
-			previousNotification;
+		previousNotification;
 
 	var fullOffset = 0,
-			stackOffset = 0,
-			notificationCount = PageNotification.notificationIDs.length - 1;
+		stackOffset = 0,
+		notificationCount = PageNotification.notificationIDs.length - 1;
 
 	for (var i = notificationCount; i >= 0; i--) {
 		notification = PageNotification.notifications[PageNotification.notificationIDs[i]];
@@ -186,7 +179,7 @@ PageNotification.shift = function () {
 	}
 };
 
-PageNotification.totalShift = function (event) {
+PageNotification.totalShift = function () {
 	var notification;
 
 	PageNotification.displaySomeOverflowed();
@@ -218,7 +211,7 @@ PageNotification.setWillCloseAll = function (should) {
 
 PageNotification.relayer = function () {
 	var notification,
-			wasForwarded;
+		wasForwarded;
 
 	var notificationIDs = Utilities.makeArray(PageNotification.notificationIDs);
 
@@ -289,15 +282,6 @@ Object.defineProperties(PageNotification.prototype, {
 	height: {
 		get: function () {
 			return this.element.offsetHeight;
-
-			var height = this.element.getAttribute('data-originalHeight');
-
-			if (height)
-				return parseInt(height, 10);
-
-			this.element.setAttribute('data-originalHeight', this.element.offsetHeight);
-
-			return this.height;
 		}
 	},
 
@@ -399,10 +383,9 @@ PageNotification.prototype.events = {
 				notification.element.classList.remove('jsb-notification-entering');
 
 				notification.restoreLayering();
-			} else if (event.propertyName === 'top') {
+			} else if (event.propertyName === 'top')
 				if (!notification.displayed)
 					notification.element.classList.add('jsb-hidden');
-			}
 		}
 	},
 
@@ -432,7 +415,7 @@ PageNotification.prototype.events = {
 	},
 
 	'.jsb-notification-close': {
-		click: function (notification, event) {
+		click: function (notification) {
 			var otherNotification;
 
 			if (PageNotification.willCloseAll) {
@@ -458,8 +441,7 @@ PageNotification.prototype.shouldObeyCloseAll = function () {
 };
 
 PageNotification.prototype.bindEvents = function () {
-	var elements,
-			eventType;
+	var eventType;
 
 	for (var selector in this.events)
 		for (eventType in this.events[selector])
@@ -467,10 +449,12 @@ PageNotification.prototype.bindEvents = function () {
 };
 
 PageNotification.prototype.addEventListener = function (eventType, selector, fn) {
+	var elements;
+
 	if (Array.isArray(selector))
-		var elements = selector;
+		elements = selector;
 	else
-		var elements = selector === '*' ? [this.element] : this.element.querySelectorAll(selector);
+		elements = selector === '*' ? [this.element] : this.element.querySelectorAll(selector);
 
 	for (var i = 0; i < elements.length; i++)
 		elements[i].addEventListener(eventType, fn.bind(elements[i], this), true);
@@ -502,7 +486,7 @@ PageNotification.prototype.addCloseButton = function (text, onClick, primary) {
 	});
 
 	var closeButtonWrapper = Utilities.Element.createFromHTML(closeButtonWrapperTemplate)[0],
-			input = closeButtonWrapper.querySelector('input');
+		input = closeButtonWrapper.querySelector('input');
 
 	this.closeContainer.appendChild(closeButtonWrapper);
 

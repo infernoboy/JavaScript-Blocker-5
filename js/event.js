@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function EventListener () {
 	var self = this;
@@ -39,7 +39,7 @@ function EventListener () {
 	this.fnWrapper.prototype.afterwards = function (fn) {
 		this.__afterwards.push(fn.bind(null, this));
 	};
-};
+}
 
 EventListener.eventInfo = {
 	pageX: 0,
@@ -92,8 +92,10 @@ EventListener.prototype.addCustomEventListener = function (name, fn, once, shoul
 };
 
 EventListener.prototype.addMissingCustomEventListener = function (name, fn, once, shouldBeDelayed) {
+	var i;
+
 	if (Array.isArray(name)) {
-		for (var i = 0; i < name.length; i++)
+		for (i = 0; i < name.length; i++)
 			this.addMissingCustomEventListener(name[i], fn, once, shouldBeDelayed);
 
 		return this;
@@ -101,7 +103,7 @@ EventListener.prototype.addMissingCustomEventListener = function (name, fn, once
 
 	var listeners = this.listeners(name);
 
-	for (var i = 0; i < listeners.fns.length; i++)
+	for (i = 0; i < listeners.fns.length; i++)
 		if (listeners.fns[i].fn === fn)
 			return this;
 
@@ -122,11 +124,11 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 	var info;
 
 	var fnInstance = {},
-			defaultPrevented = false,
-			afterwards = [],
-			fnInstances = [],
-			listeners = this.listeners(name),
-			listenerFns = listeners.fns._clone();
+		defaultPrevented = false,
+		afterwards = [],
+		fnInstances = [],
+		listeners = this.listeners(name),
+		listenerFns = listeners.fns._clone();
 
 	listeners.triggerSubsequentListeners = !!triggerSubsequentListeners;
 
@@ -142,7 +144,7 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 			fnInstance.type = name;
 			fnInstance.detail = detail;
 
-			Object._extend(fnInstance, EventListener.eventInfo)
+			Object._extend(fnInstance, EventListener.eventInfo);
 
 			try {
 				defaultPrevented = fnInstance.__run().defaultPrevented || defaultPrevented;
@@ -161,10 +163,10 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 			listeners.fns._remove(listeners.fns.indexOf(info));
 	}
 
-	for (var i = 0; i < fnInstances.length; i++)
+	for (i = 0; i < fnInstances.length; i++)
 		fnInstances[i].defaultPrevented = defaultPrevented;
 
-	for (var i = 0; i < afterwards.length; i++)
+	for (i = 0; i < afterwards.length; i++)
 		afterwards[i]();
 
 	fnInstances = undefined;
@@ -172,5 +174,7 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 	return defaultPrevented;
 };
 
-document.addEventListener('mousemove', EventListener.onMouseMove, true);
-document.addEventListener('click', EventListener.onClick, true);
+if (window.document) {
+	document.addEventListener('mousemove', EventListener.onMouseMove, true);
+	document.addEventListener('click', EventListener.onClick, true);
+}

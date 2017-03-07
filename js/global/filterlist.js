@@ -1,34 +1,45 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
-function FilterList (listName, listURL) {
+function FilterList (listName, listURL, humanName) {
 	if (!Rules.list[listName])
 		throw new Error(listName + ' is not a known FilterList.');
 	
 	FilterList.__updating++;
 
 	this.name = listName;
+	this.humanName = humanName;
 	this.url = listURL;
 	this.valid = true;
 
 	this.download().done(this.process.bind(this));
-};
+}
 
 FilterList.__cancel = 0;
 FilterList.__updating = 0;
 FilterList.__updateInterval = TIME.ONE.DAY * 4;
 FilterList.__addQueue = {};
 
+FilterList.promiseWorker = new PromiseWorker('../js/global/filterlist-worker.js');
+
 FilterList.executeQueue = function () {
 	Utilities.Timer.timeout('addFilterListsRules', function () {
+		var promise = Promise.resolve();
+
 		for (var listName in FilterList.__addQueue)
 			if (Rules.list[listName])
-				Rules.list[listName].addMany(FilterList.__addQueue[listName]);
+				promise = promise.then(function (listName) {
+					return Rules.list[listName].addMany(FilterList.__addQueue[listName].rules);
+				}.bind(null, listName), function (err) {
+					LogError(err);
+				});
 		
-		FilterList.__addQueue = {};
+		promise.then(function () {
+			FilterList.__addQueue = {};
+		});
 	}, 5000);
 };
 
@@ -48,7 +59,7 @@ FilterList.fetch = function () {
 
 	for (var list in lists)
 		if (lists[list].enabled)
-			new FilterList(list, lists[list].value[0]);
+			new FilterList(list, lists[list].value[0], lists[list].value[1]);
 		else if (Rules.__FilterRules.keyExist(list))
 			Rules.__FilterRules.remove(list);
 };
@@ -66,7 +77,10 @@ FilterList.prototype.doneWithRules = function (rules) {
 	if (FilterList.__updating === 0)
 		Settings.setItem('FilterListLastUpdate', Date.now());
 
-	FilterList.__addQueue[this.name] = rules;
+	FilterList.__addQueue[this.name] = {
+		humanName: this.humanName,
+		rules: rules
+	};
 
 	FilterList.executeQueue();
 };
@@ -93,24 +107,17 @@ FilterList.prototype.process = function (list) {
 		list: list
 	};
 
-	var filterListWorker = new Worker('js/global/filterlist-worker.js');
+	FilterList.promiseWorker.postMessage(listInfo).then(this.doneWithRules.bind(this), function (err) {
+		FilterList.__updating--;
 
-	filterListWorker.addEventListener('message', function (message) {
-		if (message.data.error) {
-			FilterList.__updating--;
+		LogError(Error('invalid Filter List - ' + err.meta.name + ' - ' + err.meta.url));
 
-			LogError(Error('invalid Filter List - ' + message.data.message.name + ' - ' + message.data.message.url));
+		self.valid = false;
 
-			self.valid = false;
+		Settings.removeItem('filterLists', err.meta.name);
 
-			Settings.removeItem('filterLists', message.data.message.name);
-
-			Rules.__FilterRules.remove(message.data.message.name);
-		} else
-			self.doneWithRules(message.data.message);
+		Rules.__FilterRules.remove(err.meta.name);
 	});
-
-	filterListWorker.postMessage(listInfo);
 };
 
 FilterList.updateCheck();

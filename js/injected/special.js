@@ -1,5 +1,5 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
 TOKEN.INJECTED = {};
@@ -7,6 +7,7 @@ TOKEN.REGISTERED = {};
 
 var Special = {
 	__injected: [],
+	injectable: true,
 
 	enabled: {},
 
@@ -55,7 +56,7 @@ var Special = {
 			return deepInject.prepend(helpers.__cache);
 
 		var helperScript,
-				prepend;
+			prepend;
 
 		var cache = [];
 
@@ -68,7 +69,7 @@ var Special = {
 			if (helpers[helper].semiGlobal)
 				prepend = helperScript.inner();
 			else
-				prepend = helpers[helper].args ? helperScript.executable() : helperScript.asFunction();
+				prepend = helpers[helper].args ? helperScript.executable(true) : helperScript.asFunction();
 
 			cache.unshift(prepend);
 
@@ -83,13 +84,15 @@ var Special = {
 	},
 
 	setup: function (deepInject) {
+		var JSB;
+
 		if (deepInject.script.ignoreHelpers)
-			var JSB = {
+			JSB = {
 				eventToken: TOKEN.EVENT,
 				sourceID: deepInject.id
 			};
 		else
-			var JSB = {
+			JSB = {
 				eventCallback: {},
 				commandGeneratorToken: Command.requestToken('commandGeneratorToken'),
 				eventToken: TOKEN.EVENT,
@@ -106,8 +109,10 @@ var Special = {
 		});
 
 		var specialSetup = new DeepInject(null, function () {
+			/* eslint-disable */
 			if (window[JSB.eventToken])
 				var console = window[JSB.eventToken].console;
+			/* eslint-enable */
 		}, true);
 
 		deepInject.prepend([specialSetup.inner()]);
@@ -124,7 +129,9 @@ var Special = {
 		if (useURL === undefined && this.__injected._contains(name))
 			return;
 
-		if (useURL === undefined && !this.specials[name].excludeFromPage)
+		var injectable = Special.injectable || this.specials[name].uninjectableCompatible;
+
+		if (injectable && useURL === undefined && !this.specials[name].excludeFromPage)
 			Page.blocked.pushSource('special', name, {
 				action: this.enabled[name].action
 			});
@@ -147,7 +154,13 @@ var Special = {
 			private: !!this.specials[name].private
 		};
 
-		special.inject(useURL);
+		if (!Special.injectable)
+			if (this.specials[name].uninjectableCompatible)
+				special.execute();
+			else
+				LogDebug('Cannot inject special "' + name + '" due to page\'s Content-Security-Policy.');
+		else
+			special.inject(useURL);
 
 		return special;
 	},
@@ -159,19 +172,30 @@ var Special = {
 		if (Utilities.Page.isXML)
 			return LogDebug('refusing to inject helper scripts into XML page.');
 
-		var preparation = this.inject('prepareScript', false);
+		var CSPToken = Utilities.Token.generate();
 
-		Utilities.Token.expire(Special.specials.prepareScript.commandToken);
+		var CSPDetect = new DeepInject('CSPScriptDetection', function (CSPToken) {
+			document.documentElement.setAttribute('data-JSB-CSP-SCRIPTS-ALLOWED', CSPToken);
+		});
+
+		CSPDetect.setArguments({ CSPToken: CSPToken }).inject(false);
+
+		if (document.documentElement.getAttribute('data-JSB-CSP-SCRIPTS-ALLOWED') !== CSPToken) {
+			CSPDetect.inject(true);
+
+			if (document.documentElement.getAttribute('data-JSB-CSP-SCRIPTS-ALLOWED') !== CSPToken)
+				Special.injectable = false;
+		} else
+			DeepInject.useURL = false;
+
+		var preparation = this.inject('prepareScript', DeepInject.useURL);
+
 		Utilities.Token.expire(preparation.id);
 
-		if (DeepInject.useURL) {
-			preparation = this.inject('prepareScript', true);
-
-			Utilities.Token.expire(preparation.id);
-		}
-
 		if (Utilities.Page.isUserScript)
-			this.inject('installUserScriptPrompt');
+			setTimeout(function (url) {
+				UserScript.showInstallScriptPrompt(url);
+			}, 500, document.location.href);
 
 		this.enabled = GlobalCommand('specialsForLocation', {
 			pageLocation: Page.info.location,
@@ -185,7 +209,7 @@ var Special = {
 				action: -14
 			};
 
-		for (var special in this.enabled) {
+		for (var special in this.enabled)
 			if (!this.enabled[special].enabled) {
 				if (!this.specials[special].excludeFromPage)
 					Page.allowed.pushSource('special', special, {
@@ -196,7 +220,6 @@ var Special = {
 
 				this.inject(special);
 			}
-		}
 	},
 
 	helpers: {
@@ -266,7 +289,7 @@ var Special = {
 			JSB.eventCallback[id] = {
 				fn: fn,
 				preserve: preserve
-			}
+			};
 
 			return id;
 		},
@@ -319,7 +342,7 @@ var Special = {
 			return evt;
 		},
 
-		JSBCallbackSetup: function (event) {
+		JSBCallbackSetup: function () {
 			if (!window[JSB.eventToken])
 				return console.error('frame disappeared?');
 

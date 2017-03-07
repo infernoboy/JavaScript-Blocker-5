@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Snapshots = new Store('Snapshots', {
 	save: true
@@ -38,7 +38,7 @@ function Snapshot (store, props) {
 			snapshot.checkForChanges();
 		}, TIME.ONE.SECOND * 30, [this]);
 	}.bind(this);
-};
+}
 
 Snapshot.storageInfo = function () {
 	var count = 0;
@@ -56,7 +56,7 @@ Snapshot.storageInfo = function () {
 
 Snapshot.prototype.__outerMost = function (latest, kept, returnID) {
 	var store = kept ? this.kept : this.unkept,
-			ids = store.keys().sort();
+		ids = store.keys().sort();
 
 	if (latest)
 		ids.reverse();
@@ -78,7 +78,7 @@ Snapshot.prototype.autoSnapshots = function (value) {
 
 Snapshot.prototype.latest = function (returnID) {
 	var latestKept = this.latestKept(true) || 0,
-			latestUnkept = this.latestUnkept(true) || 0;
+		latestUnkept = this.latestUnkept(true) || 0;
 	
 	if (returnID)
 		return Math.max(latestKept, latestUnkept);
@@ -93,7 +93,7 @@ Snapshot.prototype.latest = function (returnID) {
 
 Snapshot.prototype.first = function (returnID) {
 	var firstKept = this.firstKept(true) || Date.now(),
-			firstUnkept = this.firstUnkept(true) || Date.now();
+		firstUnkept = this.firstUnkept(true) || Date.now();
 	
 	if (returnID)
 		return Math.min(firstKept, firstUnkept);
@@ -129,23 +129,23 @@ Snapshot.prototype.checkForChanges = function () {
 
 Snapshot.prototype.keep = function (id) {
 	var unkeptSnapshot = this.unkept.get(id),
-			keptSnapshot = this.kept.get(id);
+		keptSnapshot = this.kept.get(id);
 
 	if (!unkeptSnapshot || keptSnapshot)
 		return null;
 
-	this.kept.set(snapshot, unkeptSnapshot);
+	this.kept.set(id, unkeptSnapshot);
 	this.unkept.remove(id);
 };
 
 Snapshot.prototype.unkeep = function (id) {
 	var unkeptSnapshot = this.unkept.get(id),
-			keptSnapshot = this.kept.get(id);
+		keptSnapshot = this.kept.get(id);
 
 	if (unkeptSnapshot || !keptSnapshot)
 		return null;
 
-	this.unkept.set(snapshot, keptSnapshot);
+	this.unkept.set(id, keptSnapshot);
 	this.kept.remove(id);
 };
 
@@ -177,12 +177,14 @@ Snapshot.prototype.add = function (keep, name, comparisonData) {
 		name = null;
 
 	var id = Date.now(),
-			store = comparisonData ? this.comparisons : (keep ? this.kept : this.unkept);
+		store = comparisonData ? this.comparisons : (keep ? this.kept : this.unkept);
+
+	var cloned;
 
 	if (comparisonData)
-		var cloned = comparisonData;
+		cloned = comparisonData;
 	else
-		var cloned = this.store.clone(null, {
+		cloned = this.store.clone(null, {
 			lock: true
 		}).readyJSON();
 

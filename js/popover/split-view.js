@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var SplitView = {
 	COLLAPSE_WIDTH: 120,
@@ -58,11 +58,11 @@ var SplitView = {
 			return Utilities.Timer.timeout(splitViewElement, function () {
 				if (SplitView.resizeTo.apply(null, arguments) === true)
 					SplitView.Divider.events.dragEnd(null, arguments[1]);
-			}, 1000, Utilities.makeArray(arguments));
+			}, 100, Utilities.makeArray(arguments));
 		}
 
 		var splitViewName = splitViewElement.getAttribute('data-splitView'),
-				canCollapse = !splitViewElement.classList.contains('split-view-fixed');
+			canCollapse = !splitViewElement.classList.contains('split-view-fixed');
 
 		splitViewElement.style.opacity = 1;
 
@@ -74,8 +74,8 @@ var SplitView = {
 		leftColumnWidth = Math.min(100 - SplitView.MIN_WIDTH, Math.max(SplitView.MIN_WIDTH, leftColumnWidth * 100));
 
 		var divider = $('.split-view-divider', splitViewElement),
-				splitViewLeft = $('.split-view-left', splitViewElement),
-				splitViewRight = $('.split-view-right', splitViewElement);				
+			splitViewLeft = $('.split-view-left', splitViewElement),
+			splitViewRight = $('.split-view-right', splitViewElement);				
 
 		if ($$.noAnimation)
 			divider.addClass('dragging');
@@ -110,8 +110,7 @@ var SplitView = {
 				return;
 
 			var splitViewName,
-					splitViewSize,
-					splitViewWillCollapse;
+				splitViewSize;
 
 			var splitViewElements = event.detail.classList.contains('split-view') ? [event.detail] : event.detail.querySelectorAll('.split-view:not(.split-view-ready)');
 
@@ -149,19 +148,18 @@ SplitView.Divider.events = {
 		var splitViews = (event && event.classList) ? $(event) : $('.split-view');
 
 		splitViews.each(function () {
-			var self = this,
-					divider = $('.split-view-divider', this),
-					splitViewLeft = $('.split-view-left', this),
-					splitViewRight = $('.split-view-right', this),
-					leftCollapses = splitViewLeft.hasClass('collapses'),
-					rightCollapses = splitViewRight.hasClass('collapses');
+			var divider = $('.split-view-divider', this),
+				splitViewLeft = $('.split-view-left', this),
+				splitViewRight = $('.split-view-right', this),
+				leftCollapses = splitViewLeft.hasClass('collapses'),
+				rightCollapses = splitViewRight.hasClass('collapses');
 
 			if (leftCollapses || rightCollapses) {
 				divider.css('left', (leftCollapses ? SplitView.MIN_WIDTH : 100 - SplitView.MIN_WIDTH) + '%');
 
 				splitViewLeft
 					.css('-webkit-flex-basis', (leftCollapses ? SplitView.MIN_WIDTH : 100 - SplitView.MIN_WIDTH) + '%')
-					.toggleClass('collapsed', leftCollapses)
+					.toggleClass('collapsed', leftCollapses);
 
 				splitViewRight.toggleClass('collapsed', rightCollapses);
 			}
@@ -178,5 +176,5 @@ SplitView.Divider.events = {
 
 document.addEventListener('DOMContentLoaded', SplitView.init, true);
 
-UI.event.addCustomEventListener('dragEnd', SplitView.Divider.events.dragEnd)
+UI.event.addCustomEventListener('dragEnd', SplitView.Divider.events.dragEnd);
 UI.event.addCustomEventListener('elementWasAdded', SplitView.events.elementWasAdded);

@@ -1,26 +1,29 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
 var UserScript = {
 	menuCommand: {},
 
 	injectWhenLoaded: function (script, parentUserScript, parentUserScriptName) {
-		document.addEventListener('DOMContentLoaded', function (script, parentUserScript, parentUserScriptName, event) {
+		document.addEventListener('DOMContentLoaded', function (script, parentUserScript, parentUserScriptName) {
 			UserScript.inject(script, parentUserScript, parentUserScriptName);
 		}.bind(null, script, parentUserScript, parentUserScriptName), false);
 	},
 
 	inject: function (script, parentUserScript, parentUserScriptName) {
-		var isSafe = false,
-				attributes = script.attributes,
-				requirementScripts = [];
+		if (!Special.injectable)
+			return LogDebug('Cannot inject user script "' + script.attributes.meta.name + '" due to page\'s Content-Security-Policy.');
 
-		if (typeof attributes.script === 'string') {
+		var isSafe = false,
+			attributes = script.attributes,
+			requirementScripts = [];
+
+		if (typeof attributes.script === 'string')
 			try {
 				new Function("return function () {\n" + attributes.script + "\n}");
 
-				isSafe = true
+				isSafe = true;
 			} catch (error) {
 				if (error.message._contains('unsafe-eval') || error instanceof EvalError) {
 					isSafe = GlobalCommand('verifyScriptSafety', attributes.script);
@@ -29,25 +32,25 @@ var UserScript = {
 				} else
 					LogError('unable to inject user script - ' + attributes.meta.name, error);
 			}
-		}
 
 		if (typeof attributes.script !== 'function' && !isSafe)
 			return LogError(Error('user script did not transform into a function - ' + attributes.meta.name));
 
-		if (script.requirements) {
+		if (script.requirements)
 			for (var indexURL in script.requirements)
 				requirementScripts.push(Utilities.decode(script.requirements[indexURL].data));
-		}
 
 		var userScript = new DeepInject(attributes.meta.trueNamespace, attributes.script);
 
 		var userScriptSetup = new DeepInject(null, function () {
+			/* eslint-disable */
 			var unsafeWindow = window,
 					GM_info = JSB.scriptInfo;
 
 			Object.defineProperty(window, 'unsafeWindow', {
 				value: window
 			});
+			/* eslint-enable */
 		}, true);
 
 		userScript.anonymize();
@@ -112,17 +115,13 @@ var UserScript = {
 		if (Utilities.Page.isXML)
 			return LogDebug('refusing to inject user scripts into XML page.');
 
-		var url,
-				requirement,
-				requirementName;
-
 		var enabledUserScripts = GlobalCommand('userScriptsForLocation', {
 			pageLocation: Page.info.location,
 			pageProtocol: Page.info.protocol,
 			isFrame: Page.info.isFrame
 		});
 
-		for (var userScript in enabledUserScripts) {
+		for (var userScript in enabledUserScripts)
 			if (!(enabledUserScripts[userScript].action % 2))
 				Page.blocked.pushSource('user_script', userScript, {
 					action: enabledUserScripts[userScript].action
@@ -136,7 +135,37 @@ var UserScript = {
 				else
 					UserScript.injectWhenLoaded(enabledUserScripts[userScript]);
 			}
-		}
+	},
+
+	showInstallScriptPrompt: function (url) {
+		var promptNotification = new PageNotification({
+			highPriority: true,
+			title: _('user_script'),
+			subTitle: url,
+			body: GlobalCommand('template.create', {
+				template: 'injected',
+				section: 'install-user-script-prompt'
+			})
+		});
+
+		var installButton = promptNotification.addCloseButton(_('user_script.add_script'), function () {
+			var result = GlobalCommand('installUserScriptFromURL', url);
+
+			new PageNotification({
+				highPriority: true,
+				title: _('user_script'),
+				subTitle: url,
+				body: GlobalCommand('template.create', {
+					template: 'injected',
+					section: 'javascript-alert',
+					data: {
+						body: typeof result === 'string' ? _('user_script.add_success') : result
+					}
+				})
+			});
+		});
+
+		installButton.classList.add('jsb-color-allowed');
 	},
 
 	helpers: {
@@ -195,7 +224,7 @@ var UserScript = {
 
 			if (window.Blob && typeof URL.createObjectURL === 'function') {
 				var text = atob(resource.data),
-						textArray = new Array(text.length);
+					textArray = new Array(text.length);
 
 				for (var i = 0; i < text.length; i++)
 					textArray[i] = text.charCodeAt(i);
@@ -229,7 +258,7 @@ var UserScript = {
 			messageExtension('openInTab', url);
 		},
 
-		GM_registerMenuCommand: function (caption, fn, accessKey) {
+		GM_registerMenuCommand: function (caption, fn) {
 			var fnWrapper = function (fn, target) {
 				fn(document.querySelector('*[data-jsbContextMenuTarget="' + target + '"]'));
 			}.bind(null, fn);
@@ -243,10 +272,10 @@ var UserScript = {
 
 		GM_xmlhttpRequest: function (details) {
 			var events,
-					action;
+				action;
 
 			var serializable = window[JSB.eventToken].window$JSON$parse(window[JSB.eventToken].window$JSON$stringify(details)),
-					messageFn = details.synchronous ? messageExtensionSync : messageExtension;
+				messageFn = details.synchronous ? messageExtensionSync : messageExtension;
 
 			var response = messageFn('XMLHttpRequest', serializable, function (result) {
 				if (result.action === 'XHRComplete') {

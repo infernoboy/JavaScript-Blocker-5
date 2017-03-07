@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var Special = {
 	__enabled: null,
@@ -13,18 +13,18 @@ var Special = {
 
 	__forLocation: function (specials, kind, location, isFrame) {
 		var rule,
-				lowerSpecial,
-				matcher,
-				special;
+			lowerSpecial,
+			matcher,
+			special;
 
 		var isUserScript = kind === 'user_script',
-				enabled = isUserScript ? {} : specials,
-				framedKind = isFrame ? 'framed:' + kind : null,
-				forLocation = Rules.forLocation({
-					searchKind: [framedKind, kind],
-					location: location,
-					excludeLists: Special.__excludeLists
-				});
+			enabled = isUserScript ? {} : specials,
+			framedKind = isFrame ? 'framed:' + kind : null,
+			forLocation = Rules.forLocation({
+				searchKind: [framedKind, kind],
+				location: location,
+				excludeLists: Special.__excludeLists
+			});
 
 		if (isUserScript)
 			for (var script in specials)
@@ -38,21 +38,20 @@ var Special = {
 			matcher = new Rules.SourceMatcher(lowerSpecial, lowerSpecial);
 
 			Rule.withLocationRules(forLocation, function (list, listName, kind, type, domain, rules) {
-				for (rule in rules.data) {
+				for (rule in rules.data)
 					if (matcher.testRule(rule.toLowerCase(), rules.data[rule].value.regexp)) {
-						if (rules.data[rule].value.action % 2) {
+						if (rules.data[rule].value.action % 2)
 							if (isUserScript)
 								enabled[special] = specials[special];
 							else
 								enabled[special].enabled = false;
-						} else if (!isUserScript)
-							enabled[special].enabled = true
+						else if (!isUserScript)
+							enabled[special].enabled = true;
 
 						enabled[special].action = rules.data[rule].value.action;
 
 						return true;
 					}
-				}
 			});
 		}
 
@@ -68,7 +67,7 @@ var Special = {
 			return this.__enabled._clone(true);
 
 		var specials = Settings.getItem('enabledSpecials'),
-				allowByDefault = ['page_blocker'];
+			allowByDefault = ['page_blocker'];
 
 		this.__enabled = {};
 

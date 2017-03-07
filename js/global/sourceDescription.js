@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 var SourceDescription = {	
 	getDescription: function (host, url) {
@@ -12,13 +12,12 @@ var SourceDescription = {
 			ref = SourceDescription.__map[simplified];
 
 			if (ref instanceof Array) {
-				for (var i = ref.length; i--;) {
+				for (var i = ref.length; i--;)
 					if (ref[i] instanceof RegExp) {
 						if (ref[i].test(url.toLowerCase()))
-							return simplified
+							return simplified;
 					} else if ((ref[i][0] === '.' && host._endsWith(ref[i])) || host === ref[i])
 						return simplified;
-				}
 			} else if ((ref instanceof RegExp) && ref.test(url.toLowerCase()))
 				return simplified;
 		}
@@ -81,8 +80,8 @@ SourceDescription.describe('*', {
 
 	'.crazyegg.com': ['crazyegg'],
 	'.wikia-beacon.com': ['wikiaTracking'],
-	"collector-cdn.github.com": ['githubTracking'],
-	"fls-na.amazon.com": ['amazonTracking'],
+	'collector-cdn.github.com': ['githubTracking'],
+	'fls-na.amazon.com': ['amazonTracking'],
 	'tynt.com': ['tynt'],
 	'industrybrains.com': ['industrybrains'],
 	'criteo.com': ['criteo'],

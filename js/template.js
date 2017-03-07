@@ -1,8 +1,8 @@
 /*
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 */
 
-"use strict";
+'use strict';
 
 function Template (template, file) {
 	this.cache = {};
@@ -11,7 +11,7 @@ function Template (template, file) {
 	this.template = $(template);
 
 	// document.createDocumentFragment();
-};
+}
 
 Template.__templates = {};
 Template.__autoLoaded = [];
@@ -47,8 +47,6 @@ Template.create = function (template, section, data, shouldBeWrapped, returnStri
 	if (!Template.__templates.hasOwnProperty(template)) {
 		if (Template.__autoLoaded._contains(template))
 			throw new Error('auto load for template failed - ' + template);
-
-		LogDebug('auto load template - ' + template);
 
 		Template.__autoLoaded.push(template);
 

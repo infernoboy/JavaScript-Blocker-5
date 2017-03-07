@@ -1,5 +1,5 @@
 <!--
-JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 -->
 
 <noscript id="injected-element">
@@ -68,8 +68,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2015 Travis Lee Roman
 						<span class="jsb-xhr-query-param" data-param="<%=encodeURIComponent(param)%>"><%=param._escapeHTML()%></span>: <span class="jsb-xhr-query-value" data-value="<%=encodeURIComponent(self.info.meta.data[param])%>"><%=self.info.meta.data[param] ? self.info.meta.data[param]._escapeHTML() : null%></span>
 					</span>
 					<span class="jsb-xhr-query-modify jsb-hidden">
-						<input type="text" class="jsb-xhr-query-param-modify" spellcheck="false" data-for="data-param" value="<%=param._entityQuotes()%>" />:
-						<input type="text" class="jsb-xhr-query-value-modify" spellcheck="false" data-for="data-value" value="<%=typeof self.info.meta.data[param] === 'string' ? self.info.meta.data[param]._entityQuotes() : self.info.meta.data[param]%>" />
+						<input type="text" class="jsb-xhr-query-param-modify" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-for="data-param" value="<%=param._entityQuotes()%>" />:
+						<input type="text" class="jsb-xhr-query-value-modify" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-for="data-value" value="<%=typeof self.info.meta.data[param] === 'string' ? self.info.meta.data[param]._entityQuotes() : self.info.meta.data[param]%>" />
 					</span>
 				</span>
 				<br />
