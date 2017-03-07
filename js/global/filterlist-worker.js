@@ -8,8 +8,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 var window = self;
 /* eslint-enable */
 
-importScripts('../global/tlds.js');
-importScripts('../utilities.js');
+importScripts('../global/tlds.js', '../utilities.js');
 
 var ACTION = {
 	WHITELIST: 5,
