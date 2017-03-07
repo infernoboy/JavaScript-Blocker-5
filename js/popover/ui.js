@@ -41,7 +41,7 @@ var UI = {
 
 			$('#too-old').show();
 
-			throw new Error('safari version too old');
+			throw new Error('Safari version too old');
 		}
 
 		var observer = new MutationObserver(function (mutations) {
@@ -60,9 +60,6 @@ var UI = {
 		});
 
 		var userAgent = window.navigator.userAgent;
-
-		Settings.map.useAnimations.props.onChange();
-		Settings.map.largeFont.props.onChange();
 
 		document.documentElement.classList.toggle('sierra', userAgent._contains('10_12'));
 		document.documentElement.classList.toggle('capitan', userAgent._contains('10_11'));
@@ -280,6 +277,9 @@ var UI = {
 		UI.view.init();
 
 		setTimeout(function () {
+			Settings.map.useAnimations.props.onChange();
+			Settings.map.largeFont.props.onChange();
+			
 			UI.setLessVariables();
 
 			UI.event.trigger('UIReady', null, true);
