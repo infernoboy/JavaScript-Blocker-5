@@ -515,7 +515,7 @@ UI.Page = {
 	},
 
 	events: {
-		openedPopover: function () {
+		popoverOpened: function () {
 			if (!Poppy.modalOpen)
 				UI.Page.clear();
 
@@ -1036,6 +1036,6 @@ UI.event.addCustomEventListener('popoverDidResize', UI.Page.events.popoverDidRes
 UI.event.addCustomEventListener('sectionSwitchedOutOfEditMode', UI.Page.events.sectionSwitchedOutOfEditMode);
 UI.event.addCustomEventListener('selectCustomOptionChanged', UI.Page.events.selectCustomOptionChanged);
 UI.event.addCustomEventListener('disabled', UI.Page.events.disabled);
-UI.event.addCustomEventListener('popoverOpened', UI.Page.events.openedPopover);
+UI.event.addCustomEventListener('popoverOpened', UI.Page.events.popoverOpened);
 
 document.addEventListener('DOMContentLoaded', UI.Page.init, true);

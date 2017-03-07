@@ -351,7 +351,7 @@ var UI = {
 			TAB: 9
 		},
 
-		openedPopover: function () {
+		popoverOpened: function () {
 			UI.drag = false;
 
 			Utilities.setImmediateTimeout(function () {
@@ -658,4 +658,4 @@ globalPage.UI = UI;
 
 document.addEventListener('DOMContentLoaded', UI.init, true);
 
-Events.addApplicationListener('popover', UI.events.openedPopover);
+Events.addApplicationListener('popover', UI.events.popoverOpened);
