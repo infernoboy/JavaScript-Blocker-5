@@ -174,5 +174,7 @@ EventListener.prototype.trigger = function (name, detail, triggerSubsequentListe
 	return defaultPrevented;
 };
 
-document.addEventListener('mousemove', EventListener.onMouseMove, true);
-document.addEventListener('click', EventListener.onClick, true);
+if (window.document) {
+	document.addEventListener('mousemove', EventListener.onMouseMove, true);
+	document.addEventListener('click', EventListener.onClick, true);
+}
