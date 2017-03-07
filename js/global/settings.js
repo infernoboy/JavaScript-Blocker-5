@@ -4,7 +4,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 'use strict';
 
-var Settings = {
+Object._extend(Settings, {
 	__method: function (method, setting, value, persist) {
 		if (SettingStore.available) {
 			if (method === 'setItem' || method === 'removeItem')
@@ -604,7 +604,13 @@ var Settings = {
 
 		UI.Page.showModalInfo(_('settings.safari_restart'));
 	}
-};
+});
+
+for (var section in Settings.settings)
+	Settings.createMap(Settings.settings[section]);
+
+Object._deepFreeze(Settings.map);
+
 
 Settings.__stores = new Store('StoreSettings', {
 	save: true
