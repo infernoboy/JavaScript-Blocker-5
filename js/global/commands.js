@@ -693,7 +693,7 @@ Command.event.addCustomEventListener('popoverReady', function () {
 window.addEventListener('error', function (event) {
 	event.preventDefault();
 
-	LogError(event.filename.replace(ExtensionURL(), '/') + ' - ' + event.lineno, new Error(event.message));
+	LogError.apply(null, event.error ? [event.error] : [event.filename.replace(ExtensionURL(), '/') + ' - ' + event.lineno, new Error(event.message)]);
 });
 
 Events.addApplicationListener('message', Command.messageReceived);
