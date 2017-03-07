@@ -177,7 +177,7 @@ var SyncClient = {
 					syncSessionID: syncSessionID,
 					encryptedData: encryptedData
 				}).then(function (res) {
-					if (res.error)	
+					if (res.error && res.error.name !== 'invalid syncSessionID')
 						return reject(res.error);
 
 					SecureSettings.removeItem('syncSessionID');
