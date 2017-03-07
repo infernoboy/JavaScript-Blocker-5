@@ -734,10 +734,6 @@ Special.specials = {
 			Special.specials[special].private = true;
 })();
 
-Special.specials.canvas_data_url.data = {
-	safariBuildVersion: Utilities.safariBuildVersion
-};
-
 Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.historyFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.excludeFromPage = true;
