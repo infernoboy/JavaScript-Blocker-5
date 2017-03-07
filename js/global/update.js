@@ -55,7 +55,7 @@ var Update = {
 				if (version.bundleID > Update.installedBundle && !Settings.getItem('ignoredUpdates', version.bundleID))
 					Update
 						.fetchChangeLog(version.displayVersion)
-						.finally(function (changeLog) {
+						.then(function (changeLog) {
 							UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
 								var poppy = new Popover.window.Poppy(0.5, 0, false, 'update-available');
 
@@ -72,7 +72,7 @@ var Update = {
 									}))
 									.show();
 							}, true);
-						});
+						}, Utilities.noop);
 			} catch (e) { /* do nothing */ }
 		});
 	},
@@ -95,7 +95,7 @@ var Update = {
 
 			Update
 				.fetchChangeLog(Version.display)
-				.finally(function (changeLog) {
+				.then(function (changeLog) {
 					if (!Extras.isUnlockedByDonating())
 						poppy.modal();
 
@@ -109,7 +109,7 @@ var Update = {
 					Poppy.event.addCustomEventListener('poppyDidClose', function () {
 						Update.checkLatestVersion();
 					}, true);
-				});
+				}, Utilities.noop);
 		}, true, true);
 
 		if (!Popover.visible() && (Settings.getItem('updateNotify') || !Extras.isUnlockedByDonating()))
