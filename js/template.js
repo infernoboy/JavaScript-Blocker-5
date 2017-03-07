@@ -48,8 +48,6 @@ Template.create = function (template, section, data, shouldBeWrapped, returnStri
 		if (Template.__autoLoaded._contains(template))
 			throw new Error('auto load for template failed - ' + template);
 
-		LogDebug('auto load template - ' + template);
-
 		Template.__autoLoaded.push(template);
 
 		Template.load(template);
