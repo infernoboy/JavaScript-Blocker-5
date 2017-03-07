@@ -560,6 +560,11 @@ UI.Settings = {
 	},
 
 	repopulateActiveSection: function (force) {
+		var mainViewID = $('.active-view', UI.view.viewSwitcher).attr('data-view');
+
+		if (mainViewID !== '#main-views-setting')
+			return;
+
 		var activeSettingView = $('.active-view', UI.Settings.views),
 			focusedTextInput = $('textarea:focus, input[type="text"]:focus', activeSettingView);
 
@@ -779,11 +784,11 @@ document.addEventListener('DOMContentLoaded', UI.Settings.init, true);
 
 globalPage.SyncClient.event
 	.addCustomEventListener('registered', function () {
-		UI.Settings.events.repopulateActiveSection();
+		UI.Settings.repopulateActiveSection();
 	})
 	.addCustomEventListener('login', function () {
-		UI.Settings.events.repopulateActiveSection();
+		UI.Settings.repopulateActiveSection();
 	})
 	.addCustomEventListener('logout', function () {
-		UI.Settings.events.repopulateActiveSection();
+		UI.Settings.repopulateActiveSection();
 	});
