@@ -33,6 +33,13 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 						messageCount = messageHistory.error.length + messageHistory.debug.length; %>
 			<span id="main-menu-console-message-count"><%=_('main_menu.console.message'._pluralize(messageCount), [messageCount])%></span> 
 		</div>
+
+		<%=Template.create('poppy', 'progress-bar', {
+			percent: 0,
+			timeRemaining: '',
+			description: '',
+			topDivider: true
+		}, true).html()%>
 	</div>
 </noscript>
 
