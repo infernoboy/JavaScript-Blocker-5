@@ -19,8 +19,9 @@ function CustomPromise (fn) {
 
 	promise.catch(unhandledPromiseRejection.bind(promise));
 
-	promise.catch = function () {
-		this._needsUnhandledRejection = false;
+	promise.catch = function (onRejected) {
+		if (typeof onRejected === 'function')
+			this._needsUnhandledRejection = false;
 
 		return promiseCatch.apply(this, arguments);
 	};

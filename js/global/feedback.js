@@ -49,7 +49,7 @@ var Feedback = {
 
 		Settings.setItem('feedbackEmail', email);
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			$.post(Feedback.__feedbackURL, Feedback.createFeedbackData(message, email)).then(function (result) {
 				if (result !== '1')
 					reject(result);

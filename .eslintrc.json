@@ -136,6 +136,7 @@
 		"jsrp": true,
 		"io": true,
 		"sha512": true,
-		"Libraries": true
+		"Libraries": true,
+		"CustomPromise": true
 	}
 }

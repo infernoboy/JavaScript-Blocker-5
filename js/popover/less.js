@@ -663,7 +663,7 @@ less.unwatch = function () {clearInterval(less.watchTimer); this.watchMode = fal
 // Get all <link> tags with the 'rel' attribute set to "stylesheet/less"
 //
 less.registerStylesheets = function() {
-    return new Promise(function(resolve, reject) {
+    return CustomPromise(function(resolve, reject) {
         var links = document.getElementsByTagName('link');
         less.sheets = [];
 
@@ -690,7 +690,7 @@ less.refresh = function (reload, modifyVars, clearFileCache) {
     if ((reload || clearFileCache) && clearFileCache !== false) {
         fileManager.clearFileCache();
     }
-    return new Promise(function (resolve, reject) {
+    return CustomPromise(function (resolve, reject) {
         var startTime, endTime, totalMilliseconds;
         startTime = endTime = new Date();
 
@@ -9211,7 +9211,7 @@ module.exports = Promise
 function ValuePromise(value) {
   this.then = function (onFulfilled) {
     if (typeof onFulfilled !== 'function') return this
-    return new Promise(function (resolve, reject) {
+    return CustomPromise(function (resolve, reject) {
       asap(function () {
         try {
           resolve(onFulfilled(value))
@@ -9245,10 +9245,10 @@ Promise.resolve = function (value) {
     try {
       var then = value.then
       if (typeof then === 'function') {
-        return new Promise(then.bind(value))
+        return CustomPromise(then.bind(value))
       }
     } catch (ex) {
-      return new Promise(function (resolve, reject) {
+      return CustomPromise(function (resolve, reject) {
         reject(ex)
       })
     }
@@ -9260,7 +9260,7 @@ Promise.resolve = function (value) {
 Promise.all = function (arr) {
   var args = Array.prototype.slice.call(arr)
 
-  return new Promise(function (resolve, reject) {
+  return CustomPromise(function (resolve, reject) {
     if (args.length === 0) return resolve([])
     var remaining = args.length
     function res(i, val) {
@@ -9287,13 +9287,13 @@ Promise.all = function (arr) {
 }
 
 Promise.reject = function (value) {
-  return new Promise(function (resolve, reject) { 
+  return CustomPromise(function (resolve, reject) { 
     reject(value);
   });
 }
 
 Promise.race = function (values) {
-  return new Promise(function (resolve, reject) { 
+  return CustomPromise(function (resolve, reject) { 
     values.forEach(function(value){
       Promise.resolve(value).then(resolve, reject);
     })

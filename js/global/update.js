@@ -230,7 +230,7 @@ var Update = {
 	},
 
 	fetchChangeLog: function (displayVersion) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			$.get('http://jsblocker.toggleable.com/change-log/' + displayVersion.replace(/\./g, ''))
 				.done(function (responseText, textStatus, request) {
 					if (textStatus === 'success')

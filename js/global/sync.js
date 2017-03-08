@@ -34,7 +34,7 @@ var SyncClient = {
 	},
 
 	encrypt: function (string, hash) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (typeof string === 'undefined')
 				return reject(Error('attempt to encrypt undefined'));
 
@@ -54,7 +54,7 @@ var SyncClient = {
 	},
 
 	encryptWorker: function (string, hash) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (typeof string === 'undefined')
 				return reject(Error('attempt to encrypt undefined'));
 
@@ -83,7 +83,7 @@ var SyncClient = {
 	},
 
 	decrypt: function (string, hash) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (typeof string !== 'string' || typeof hash !== 'string')
 				return reject(Error('string or hash is not a string'));
 
@@ -116,7 +116,7 @@ var SyncClient = {
 	},
 
 	ping: function (syncSessionID, silent) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (!SyncClient.isRegistered())
 				return resolve(false);
 
@@ -163,7 +163,7 @@ var SyncClient = {
 	},
 
 	logout: function () {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (!SyncClient.SRP.isLoggedIn()) {
 				SyncClient.event.trigger('logout');
 

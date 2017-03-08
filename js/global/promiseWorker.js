@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Feb 27, 2017 10:59:04 PM
+* @Last modified in Sublime on Mar 08, 2017 03:59:20 PM
 */
 
 'use strict';
@@ -33,7 +33,7 @@ PromiseWorker.prototype.terminate = function () {
 PromiseWorker.prototype.postMessage = function (message) {
 	var self = this;
 
-	return new Promise(function (resolve, reject) {
+	return CustomPromise(function (resolve, reject) {
 		if (self.worker) {
 			var id = Utilities.Token.generate();
 

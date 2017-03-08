@@ -333,7 +333,7 @@ var UI = {
 	},
 
 	executeLessScript: function (script) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			less.render('JSB { value: ' + script + ' }', { compress: true }).then(function (result) {
 				var value = result.css.substr(10);
 

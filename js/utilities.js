@@ -57,7 +57,7 @@ var Utilities = {
 	})(),
 
 	watchdog: function (type, tries, timeLimit, callback) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			var first;
 
 			if (typeof callback !== 'function')

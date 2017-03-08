@@ -222,7 +222,7 @@ var UserScript = {
 
 	download: function (url, async, urlIsScript) {
 		if (urlIsScript)
-			return new Promise(function (resolve) {
+			return CustomPromise(function (resolve) {
 				resolve(url);
 			});
 

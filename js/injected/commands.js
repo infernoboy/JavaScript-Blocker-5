@@ -740,7 +740,7 @@ var Command = function (type, event) {
 		},
 
 		notification: function (detail) {
-			return new Promise(function (resolve) {				
+			return CustomPromise(function (resolve) {				
 				var info = TOKEN.INJECTED[detail.sourceID];
 
 				if (info.isUserScript)

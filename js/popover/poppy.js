@@ -532,7 +532,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	};
 
 	Poppy.prototype.close = function (immediate, doNotCheckEvent) {
-		return new Promise(function (resolve) {
+		return CustomPromise(function (resolve) {
 			if (this.closed || (!doNotCheckEvent && Poppy.event.trigger('poppyWillClose', this)))
 				return this;
 

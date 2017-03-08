@@ -99,7 +99,7 @@ Object._extend(SyncClient.Settings, {
 	},
 
 	append: function (type, key, value, storeKey) {
-		return new Promise(function () {
+		return CustomPromise(function () {
 			if (SyncClient.Settings.shouldSkip(key) || SyncClient.Settings.DO_NOT_APPEND._contains(key))
 				return;
 
@@ -178,7 +178,7 @@ Object._extend(SyncClient.Settings, {
 	},
 
 	addSettings: function (settings, isDecrypted) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			var setting,
 				CurrentSetting;
 
@@ -320,7 +320,7 @@ Object._extend(SyncClient.Settings.prototype, {
 	syncQueuedSettings: function () {
 		var self = this;
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (SyncClient.Settings.queue.length && SyncClient.SRP.isLoggedIn()) {
 				var settings = SyncClient.Settings.queue._clone(true),
 					decryptedSettings = settings._clone(true);
@@ -351,7 +351,7 @@ Object._extend(SyncClient.Settings.prototype, {
 	encryptSettings: function (settings) {
 		var self = this;
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			self.validateSyncSession();
 
 			SyncClient.Settings.busy = true;
@@ -375,7 +375,7 @@ Object._extend(SyncClient.Settings.prototype, {
 	encryptSingleSetting: function (settings, i, passwordHash, tick) {
 		var self = this;
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			var startTime = Date.now();
 
 			if (Array.isArray(settings.settings[i]))
@@ -428,7 +428,7 @@ Object._extend(SyncClient.Settings.prototype, {
 	syncEncryptedSettings: function (settings, decryptedSettings) {
 		var self = this;
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (SyncClient.Settings.busy)
 				return setTimeout(function (settings, decryptedSettings, resolve, reject) {
 					try {
@@ -544,7 +544,7 @@ Object._extend(SyncClient.Settings.prototype, {
 	decryptSettings: function (settings) {
 		var self = this;
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			var syncPasswordHash = SecureSettings.getItem('syncPasswordHash');
 
 			if (typeof syncPasswordHash !== 'string')
@@ -568,7 +568,7 @@ Object._extend(SyncClient.Settings.prototype, {
 	decryptSingleSetting: function (settings, i, passwordHash, tick) {
 		var self = this;
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			var startTime = Date.now();
 
 			if (Array.isArray(settings.settings[i]))
@@ -599,7 +599,7 @@ Object._extend(SyncClient.Settings.prototype, {
 	performFullSettingsSync: function () {
 		var self = this;
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (SyncClient.Settings.busy)
 				return reject(false);
 
@@ -625,7 +625,7 @@ Object._extend(SyncClient.Settings.prototype, {
 	fetchSettings: function (since) {
 		var self = this;
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (SyncClient.Settings.busy)
 				return reject(Error('busy'));
 

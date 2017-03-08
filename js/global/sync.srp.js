@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 07, 2017 09:17:08 PM
+* @Last modified in Sublime on Mar 08, 2017 03:59:21 PM
 */
 
 'use strict';
@@ -52,7 +52,7 @@ SyncClient.SRP = {
 	},
 
 	register: function (email, password) {
-		return new Promise(function (resolve, reject) {			
+		return CustomPromise(function (resolve, reject) {			
 			if (typeof email !== 'string' || typeof password !== 'string')
 				return reject(Error('email or password is not a string'));
 
@@ -102,7 +102,7 @@ SyncClient.SRP = {
 	},
 
 	verify: function (verificationKey) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (!SyncClient.isRegistered())
 				return reject(Error('not registered'));
 
@@ -135,7 +135,7 @@ SyncClient.SRP = {
 	},
 
 	validateClient: function (email, password) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (typeof email !== 'string' || typeof password !== 'string')
 				return reject('email or password is not a string');
 
@@ -183,7 +183,7 @@ SyncClient.SRP = {
 	},
 
 	login: function (email, password) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			SyncClient.SRP.validateClient(email, password).then(function (socket) {
 				socket
 					.on('syncSessionID', function (syncSessionID) {
@@ -209,7 +209,7 @@ SyncClient.SRP = {
 	},
 
 	changePassword: function (email, currentPassword, password) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			SyncClient.SRP.validateClient(email, currentPassword).then(function (socket) {
 				socket
 					.on('passwordChanged', function () {						
@@ -261,7 +261,7 @@ SyncClient.SRP = {
 	},
 
 	verifySession: function () {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			SyncClient.ping(SecureSettings.getItem('syncSessionID')).then(function (sessionIsValid) {
 				if (sessionIsValid) {
 					SyncClient.event.trigger('login');

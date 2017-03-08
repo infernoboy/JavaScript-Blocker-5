@@ -24,7 +24,7 @@ var Extras = {
 	},
 
 	unlockUsingEmail: function (email) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			$.ajax({
 				url: Extras.__verificationURL,
 				timeout: 5000,
