@@ -658,5 +658,23 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			background: -webkit-linear-gradient(left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
 			-webkit-animation: progress-bar-shine 2s ease-in-out 1s infinite; 
 		}
+
+		#container {
+			div,
+			#universal-progress-bar-container {
+				&,
+				#universal-progress-bar {
+					&.progress-bar-indeterminate {
+						.progress-bar-shine {
+							display: none;
+						}
+
+						background: lighten(@baseColor, 7%) -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%) repeat;
+						background-size: 300px 300px;
+						-webkit-animation: progress-bar-indeterminate 2.5s linear 0 infinite; 
+					}
+				}
+			}
+		}
 	}
 }

@@ -280,7 +280,7 @@ Object._extend(SyncClient.Settings, {
 Object._extend(SyncClient.Settings.prototype, {
 	validateSyncSession: function () {
 		if (this.syncSessionID !== SecureSettings.getItem('syncSessionID') || typeof SecureSettings.getItem('syncPasswordHash') !== 'string' || !SyncClient.SRP.isLoggedIn()) {
-			UI.view.updateProgressBar(0, 0);
+			UI.view.updateProgressBar(100, 0);
 
 			SyncClient.Settings.busy = false;
 
@@ -450,7 +450,7 @@ Object._extend(SyncClient.Settings.prototype, {
 				settings: settings
 			};
 
-			UI.view.updateProgressBar(80, 250, _('sync.encrypting_for_session'), _('sync.please_wait'));
+			UI.view.updateProgressBar(-1, 250, _('sync.encrypting_for_session'), _('sync.please_wait'));
 
 			SyncClient.encryptWorker(data, SecureSettings.getItem('syncSharedKey') || '').then(function (encryptedData) {
 				self.validateSyncSession();
@@ -476,7 +476,7 @@ Object._extend(SyncClient.Settings.prototype, {
 						return;
 					}
 
-					UI.view.updateProgressBar(80, 250, _('sync.decrypting_for_session'), _('sync.please_wait'));
+					UI.view.updateProgressBar(-1, 250, _('sync.decrypting_for_session'), _('sync.please_wait'));
 
 					SyncClient.decryptWorker(res.encryptedData, SecureSettings.getItem('syncSharedKey') || '').then(function (data) {
 						UI.view.updateProgressBar(100, 250, _('sync.decrypting_for_session'), _('sync.done'));
@@ -650,7 +650,7 @@ Object._extend(SyncClient.Settings.prototype, {
 					return reject(res.error);
 				}
 
-				UI.view.updateProgressBar(80, 250, _('sync.decrypting_for_session'), _('sync.please_wait'));
+				UI.view.updateProgressBar(-1, 250, _('sync.decrypting_for_session'), _('sync.please_wait'));
 
 				SyncClient.decryptWorker(res.encryptedData, SecureSettings.getItem('syncSharedKey') || '').then(function (data) {
 					UI.view.updateProgressBar(100, 250, _('sync.decrypting_for_session'), _('sync.done'));

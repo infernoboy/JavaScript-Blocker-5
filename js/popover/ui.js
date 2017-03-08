@@ -548,24 +548,27 @@ var UI = {
 			if (!UI.view.universalProgressBar)
 				return;
 
+			var width = percent < 0 ? 100 : percent;
+
 			$('#open-menu', UI.view.viewToolbar).toggleClass('has-progress', percent >= 0 && percent < 100);
 
 			if (UI.view.universalProgressBar.data('previousPercent') > percent && percent > 0)
 				UI.view.updateProgressBar(0, 0, description, timeRemaining);
 
-			UI.view.universalProgressBar.data('previousPercent', percent);
+			UI.view.universalProgressBar.data('previousPercent', percent).toggleClass('progress-bar-indeterminate', percent < 0);
 
 			var menuProgressBarContainer = $('#main-menu .progress-bar-container', UI.container);
 
 			if (UI.view.universalProgressBar.is(':visible')) {
 				UI.view.universalProgressBar
 					.add($('.progress-bar-progress', menuProgressBarContainer))
+					.toggleClass('progress-bar-indeterminate', percent < 0)
 					.css('WebkitTransitionDuration', ((duration * 1.15) * globalSetting.speedMultiplier) + 'ms');
 
 				if (menuProgressBarContainer.length) {
 					var poppy = menuProgressBarContainer.parents('.poppy-content').data('poppy');
 
-					$('.progress-bar-progress', menuProgressBarContainer).width(percent + '%');
+					$('.progress-bar-progress', menuProgressBarContainer).width(width + '%');
 					$('.progress-bar-description', menuProgressBarContainer).text(description || '');
 					$('.progress-bar-time-remaining', menuProgressBarContainer).text(timeRemaining || '');
 
@@ -583,7 +586,7 @@ var UI = {
 						});
 				}
 
-				UI.view.universalProgressBar.width(percent + '%');
+				UI.view.universalProgressBar.width(width + '%');
 
 				if (percent === 100)
 					UI.view.updateProgressBar.timeout = setTimeout(function () {
