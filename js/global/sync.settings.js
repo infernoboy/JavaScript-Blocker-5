@@ -331,7 +331,7 @@ Object._extend(SyncClient.Settings.prototype, {
 
 				SettingStore.setItem('syncQueue', []);
 
-				this.encryptSettings({
+				self.encryptSettings({
 					isFullSettings: false,
 					settings: settings
 				}).then(function (encryptedSettings) {
