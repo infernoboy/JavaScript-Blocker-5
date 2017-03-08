@@ -103,3 +103,41 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		</ul>
 	</div>
 </noscript>
+
+<noscript id="change-password">
+	<h3 class="jsb-centered"><%=_('sync.change_password.header')%></h3>
+
+	<div id="sync-form-container" class="generic-menu">
+		<ul class="generic-menu-menu generic-menu-options">
+			<li>
+				<p class="jsb-info jsb-readable"><%=_('sync.change_password.description', [self.email])%></p>
+				<p id="sync-client-error" class="jsb-info jsb-readable jsb-error jsb-hidden"><%=self.errorMessage || ''%></p>
+				<div class="horizontal-divider"></div>
+			</li>
+
+			<li>
+				<table class="generic-menu-options">
+					<tbody>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-current-password"><%=_('sync.change_password.current_password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-current-password" class="trigger-on-enter" /></td>
+						</tr>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-password"><%=_('sync.change_password.new_password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-password" class="trigger-on-enter" /></td>
+						</tr>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-verify-password"><%=_('sync.login.verify_password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-verify-password" class="trigger-on-enter" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</li>
+
+			<li class="jsb-align-right">
+				<input type="button" id="sync-client-change-password-cancel" value="<%=_('Cancel')%>" />
+				<input type="button" id="sync-client-change-password-change" class="on-enter" value="<%=_('sync.change_password.change_password')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>

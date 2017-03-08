@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 07, 2017 04:22:38 PM
+* @Last modified in Sublime on Mar 07, 2017 09:17:08 PM
 */
 
 'use strict';
@@ -134,7 +134,7 @@ SyncClient.SRP = {
 		});
 	},
 
-	login: function (email, password) {
+	validateClient: function (email, password) {
 		return new Promise(function (resolve, reject) {
 			if (typeof email !== 'string' || typeof password !== 'string')
 				return reject('email or password is not a string');
@@ -158,7 +158,7 @@ SyncClient.SRP = {
 							username: email,
 							password: password
 						}, function () {
-							socket.emit('login', {
+							socket.emit('validateClient', {
 								email: email,
 								publicKey: SyncClient.SRP.client.getPublicKey()
 							});
@@ -174,8 +174,18 @@ SyncClient.SRP = {
 						if (!SyncClient.SRP.client.checkServerProof(serverProof))
 							return reject('server proof failed');
 
-						socket.emit('getSyncSessionID', SecureSettings.getItem('syncSessionID') || '');
-					})
+						resolve(socket);
+					});
+			}, function () {
+				reject('too quick');
+			});
+		});
+	},
+
+	login: function (email, password) {
+		return new Promise(function (resolve, reject) {
+			SyncClient.SRP.validateClient(email, password).then(function (socket) {
+				socket
 					.on('syncSessionID', function (syncSessionID) {
 						Settings.setItem('syncClientNeedsVerification', false);
 
@@ -192,9 +202,43 @@ SyncClient.SRP = {
 						}, reject);
 					})
 					.on('done', SyncClient.SRP.cleanup);
-			}, function () {
-				reject('too quick');
-			});
+
+				socket.emit('getSyncSessionID', SecureSettings.getItem('syncSessionID') || '');
+			}, reject);
+		});
+	},
+
+	changePassword: function (email, currentPassword, password) {
+		return new Promise(function (resolve, reject) {
+			SyncClient.SRP.validateClient(email, currentPassword).then(function (socket) {
+				socket
+					.on('passwordChanged', function () {						
+						SyncClient.SRP.sessionExpired(true);
+
+						SyncClient.event.trigger('logout');
+						SyncClient.event.trigger('passwordChanged');
+
+						resolve();
+					})
+					.on('done', SyncClient.SRP.cleanup);
+
+				var newClient = new jsrp.client();
+
+				newClient.init({
+					username: email,
+					password: password
+				}, function () {
+					newClient.createVerifier(function(err, result) {
+						if (err)
+							return reject(err);
+
+						socket.emit('changePassword', {
+							salt: result.salt,
+							verifier: result.verifier
+						});
+					});
+				});
+			}, reject);
 		});
 	},
 

@@ -1171,6 +1171,59 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'sync-client-change-password': function (poppy) {
+		var currentPassword = $('#sync-client-current-password', poppy.content),
+			password = $('#sync-client-password', poppy.content),
+			verifyPassword = $('#sync-client-verify-password', poppy.content),
+			errorMessage = $('#sync-client-error', poppy.content),
+			email = SecureSettings.getItem('syncEmail');
+
+		currentPassword.focus();
+
+		poppy.content
+			.on('click', '#sync-client-change-password-cancel', function () {
+				poppy.close();
+			})
+			.on('click', '#sync-client-change-password-change', function () {
+				errorMessage.hide();
+
+				var currentPasswordValue = currentPassword.val(),
+					passwordValue = password.val(),
+					verifyPasswordValue = verifyPassword.val();
+
+				if (!currentPasswordValue.length)
+					return currentPassword.shake().focus();
+
+				if (!passwordValue.length)
+					return password.shake().focus();
+
+				if (passwordValue !== verifyPasswordValue)
+					return verifyPassword.shake().focus();
+
+				globalPage.SyncClient.SRP.changePassword(email, currentPasswordValue, passwordValue).then(function () {
+					poppy.close();
+
+					UI.SyncClient.SRP.showLogin(_('sync.password_changed'));
+				}, function (err) {					
+					if (err === 'server error')
+						globalPage.SyncClient.getServerStatus().then(function () {
+							errorMessage.show().text(_('sync.server.unknown_error'));
+						}, function (err) {
+							if (err.responseJSON)
+								errorMessage.show().text(err.responseJSON.error.name);
+							else
+								errorMessage.show().text(_('sync.server.unknown_error'));
+						});
+					else if (err === 'invalid password')
+						currentPassword.shake().focus().selectAll();
+					else if (err === 'client not found')
+						errorMessage.show().text(_('sync.server.client_not_found'));
+					else if (err === 'invalid verifier')
+						errorMessage.show().text(_('sync.server.unknown_error'));
+				});
+			});
+	},
+
 	console: function (poppy) {
 		poppy.content
 			.on('change', '#console-debug-mode', function () {

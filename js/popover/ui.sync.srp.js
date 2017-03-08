@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 05, 2017 03:29:09 PM
+* @Last modified in Sublime on Mar 07, 2017 04:59:45 PM
 */
 
 'use strict';
@@ -30,6 +30,17 @@ UI.SyncClient.SRP = {
 
 		poppy
 			.setContent(Template.create('poppy.sync', 'verify', {
+				email: (SecureSettings.getItem('syncEmail') || '')._escapeHTML()
+			}))
+			.modal()
+			.show();
+	},
+
+	showChangePassword: function () {
+		var poppy = new Poppy(0.5, 0, true, 'sync-client-change-password');
+
+		poppy
+			.setContent(Template.create('poppy.sync', 'change-password', {
 				email: (SecureSettings.getItem('syncEmail') || '')._escapeHTML()
 			}))
 			.modal()

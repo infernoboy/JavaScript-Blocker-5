@@ -705,10 +705,15 @@ Settings.settings = {
 				props: {
 					type: 'stand-alone-button',
 					onClick: function () {
-						SyncClient.logout()
-							.then(Utilities.noop, function (err) {
-								LogError(err.message || err);
-							});
+						SyncClient.logout().then(Utilities.noop, Utilities.noop);
+					}
+				}
+			}, {
+				setting: 'syncClientChangePassword',
+				props: {
+					type: 'stand-alone-button',
+					onClick: function () {
+						UI.SyncClient.SRP.showChangePassword();
 					}
 				}
 			}]

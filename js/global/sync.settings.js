@@ -704,6 +704,9 @@ SyncClient.event
 			syncClientSettings.sync();
 		}
 	})
+	.addCustomEventListener('passwordChanged', function () {
+		Settings.setItem('syncNeedsFullSettingsSync', true);
+	})
 	.addCustomEventListener('logout', function () {
 		SyncClient.Settings.autoSync(false);
 	})
