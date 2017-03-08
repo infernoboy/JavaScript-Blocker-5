@@ -1037,9 +1037,9 @@ function LogError () {
 				errorStack = error.stack ? error.stack : null;
 
 			if (error.sourceURL)
-				errorMessage = ['%s %s (%s:%s)', now, error.message, error.sourceURL.replace(new RegExp('(blob:)?' + origin + '(' + pathname + ')?', 'g'), ''), error.line];
+				errorMessage = ['%s %s (%s:%s)', now, error, error.sourceURL.replace(new RegExp('(blob:)?' + origin + '(' + pathname + ')?', 'g'), ''), error.line];
 			else
-				errorMessage = ['%s %s', now, error.message];
+				errorMessage = ['%s %s', now, error];
 		} else if (typeof error === 'string' || typeof error === 'number')
 			errorMessage = ['%s %s', now, error];
 		else
