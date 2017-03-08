@@ -280,7 +280,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 								</li><%
 							if (messageHistory.error[i].stack.length) { %>
 								<li>
-									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')._escapeHTML().replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;')%></span>
+									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack._escapeHTML().replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;')%></span>
 								</li><%
 							}
 						}
