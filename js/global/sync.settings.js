@@ -305,7 +305,7 @@ Object._extend(SyncClient.Settings.prototype, {
 		if (SyncClient.SRP.isLoggedIn()) {
 			if (!SyncClient.Settings.busy) {
 				if (SyncClient.Settings.queue.length)
-					sync = this.syncQueuedSettings();
+					sync = this.syncQueuedSettings().catch(LogError);
 				else
 					sync = this.fetchSettings();
 

@@ -1106,6 +1106,12 @@ var Extension = {
 			}
 		},
 
+		_new: {
+			value: function () {
+				return new (Function.prototype.bind.apply(this, arguments));
+			}
+		},
+
 		_extendClass: {
 			value: function (fn) {
 				if (typeof fn !== 'function')
@@ -1123,6 +1129,10 @@ var Extension = {
 
 				extended.prototype.constructor = this;
 
+				for (var key in this)
+					if (this.hasOwnProperty(key))
+						extended[key] = this[key];
+
 				return extended;
 			},
 		},
@@ -1130,7 +1140,11 @@ var Extension = {
 		_extends: {
 			value: (function () {
 				function _super (superClass, localArgs) {
-					return superClass.apply(this, localArgs.concat(Utilities.makeArray(arguments).slice(2)));
+					try {
+						return superClass.apply(this, localArgs.concat(Utilities.makeArray(arguments).slice(2)));
+					} catch (err) {
+						return superClass._new(localArgs.concat(Utilities.makeArray(arguments).slice(2)));
+					}
 				}
 
 				return function (superClass) {
@@ -1146,6 +1160,10 @@ var Extension = {
 					extended.prototype = Object.create(superClass.prototype);
 
 					extended.prototype.constructor = this;
+
+					for (var key in superClass)
+						if (superClass.hasOwnProperty(key))
+							extended[key] = superClass[key];
 
 					return extended;
 				};

@@ -47,6 +47,7 @@
 	"sync.login.password": "Password",
 	"sync.login.verify_password": "Verify Password",
 	"sync.login.login": "Log In",
+	"sync.login.forgot": "Forgot?",
 
 	"sync.register.header": "Sync Register",
 	"sync.register.description": "Sign up to begin syncing your settings and rules across multiple computers. You'll receive an email with a verification key to activate your account.",
