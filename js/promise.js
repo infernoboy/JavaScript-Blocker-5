@@ -4,42 +4,38 @@
 /* eslint-enable */
 
 (function () {
-	function unhandledPromiseRejection (fn, err) {
-		if (this._needsUnhandledRejection) {
-			LogError('Unhandled promise rejection', err);
+	function unhandledPromiseRejection (fn, result) {
+		setTimeout(function (self) {
+			if (self._needsUnhandledRejection) {
+				LogError('Potentially unhandled promise rejection', result);
 
-			console.groupCollapsed('Promise Function');
-			LogError(Array.isArray(fn) ? fn.map(function (v) { return v._fn || v; }) : String(fn));
-			console.groupEnd('Promise Function');
-		}
+				console.groupCollapsed('Promise Function');
+				LogError(Array.isArray(fn) ? fn.map(function (v) { return v._fn || v; }) : String(fn));
+				console.groupEnd('Promise Function');
+			}
+		}, 500, this);
 
-		delete this._fn;
-		delete this._needsUnhandledRejection;
-
-		throw err;
+		throw result;
 	}
 
 	function attachCustomPromiseHandlers(promise, fn) {
-		var promiseCatch = promise.catch,
-			promiseThen = promise.then;
+		Promise.prototype.catch.call(promise, unhandledPromiseRejection.bind(promise, fn));
 
 		promise._fn = fn;
 		promise._needsUnhandledRejection = true;
-
-		promise.catch(unhandledPromiseRejection.bind(promise, fn));
 
 		promise.catch = function (rejectionHandler) {
 			if (typeof rejectionHandler === 'function')
 				this._needsUnhandledRejection = false;
 
-			return promiseCatch.apply(this, arguments);
+			return attachCustomPromiseHandlers(Promise.prototype.catch.apply(this, arguments), null);
 		};
 
 		promise.then = function (resolvedHandler, rejectionHandler) {
 			if (typeof rejectionHandler === 'function')
 				this._needsUnhandledRejection = false;
 
-			return promiseThen.apply(this, arguments);
+			return attachCustomPromiseHandlers(Promise.prototype.then.apply(this, arguments), null);
 		};
 
 		return promise;
