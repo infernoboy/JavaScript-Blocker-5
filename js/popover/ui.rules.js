@@ -183,7 +183,7 @@ UI.Rules = {
 			return view;
 		}
 
-		var type,
+		var ruleType,
 			typeExpander,
 			ruleGroupType,
 			typePaginator,
@@ -239,15 +239,15 @@ UI.Rules = {
 		var types = ['page', 'domain', 'notPage', 'notDomain'];
 
 		for (var i = 0; i < types.length; i++) {
-			type = types[i];
+			ruleType = types[i];
 
-			if (!(type in domainGrouped) || domainGrouped[type]._isEmpty())
+			if (!(ruleType in domainGrouped) || domainGrouped[ruleType]._isEmpty())
 				continue;
 
-			typeExpander = 'ruleGroupType,' + type;
+			typeExpander = 'ruleGroupType,' + ruleType;
 
 			ruleGroupType = Template.create('rules', 'rule-group-type', {
-				type: type,
+				type: ruleType,
 				editable: editable,
 				expander: keepExpanded ? 0 : typeExpander
 			});
@@ -261,8 +261,8 @@ UI.Rules = {
 
 			domainItems = [];
 
-			for (domain in domainGrouped[type]) {
-				if (domainGrouped[type][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
+			for (domain in domainGrouped[ruleType]) {
+				if (domainGrouped[ruleType][domain]._isEmpty() || (UI.Rules.__domainFilter.length && !domain._contains(UI.Rules.__domainFilter)))
 					continue;
 
 				domainExpander = typeExpander + ',ruleGroupDomain,' + domain;
@@ -279,8 +279,8 @@ UI.Rules = {
 
 				kindItems = [];
 
-				for (kind in domainGrouped[type][domain]) {
-					if (domainGrouped[type][domain][kind]._isEmpty())
+				for (kind in domainGrouped[ruleType][domain]) {
+					if (domainGrouped[ruleType][domain][kind]._isEmpty())
 						continue;
 
 					kindExpander = domainExpander + ',ruleGroupKind,' + kind;
@@ -293,7 +293,7 @@ UI.Rules = {
 
 					kindUL = $('.rule-group-kind', kindListItem);
 
-					rulesNeedPaginating = (Object.keys(domainGrouped[type][domain][kind]).length > 150);
+					rulesNeedPaginating = (Object.keys(domainGrouped[ruleType][domain][kind]).length > 150);
 
 					if (rulesNeedPaginating) {
 						rulePaginator = new Paginator(kindListItem, {
@@ -307,12 +307,12 @@ UI.Rules = {
 
 					ruleItems = [];
 
-					for (rule in domainGrouped[type][domain][kind]) {
+					for (rule in domainGrouped[ruleType][domain][kind]) {
 						ruleItems.push(Template.create('rules', 'rule-list-item', {
-							type: type,
+							type: ruleType,
 							kind: kind,
 							rule: rule,
-							ruleInfo: domainGrouped[type][domain][kind][rule],
+							ruleInfo: domainGrouped[ruleType][domain][kind][rule],
 							editable: editable
 						}));
 
