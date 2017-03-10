@@ -860,7 +860,7 @@ Settings.settings = {
 					props: {
 						type: 'stand-alone-button',
 						onClick: function () {
-							SyncClient.Settings.init().performFullSettingsSync();
+							SyncClient.Settings.init().performFullSettingsSync().catch(Utilities.noop);
 						}
 					}
 				}]
