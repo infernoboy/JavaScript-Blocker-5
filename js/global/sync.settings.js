@@ -615,7 +615,7 @@ Object._extend(SyncClient.Settings.prototype, {
 					Settings.setItem('syncNeedsFullSettingsSync', false);
 
 					resolve(true);
-				});
+				}, reject);
 			}, function (err) {
 				reject(err);
 			});
