@@ -8,6 +8,7 @@ var SyncClient = {
 	PING_EVERY: TIME.ONE.HOUR,
 	ORIGIN: 'https://hero.toggleable.com',
 	DEV_ORIGIN: 'https://imac.toggleable.com:8443',
+	SERVER_TIMEOUT: 10000,
 
 	get SERVER() {
 		var development = Settings.getItem('syncClientUseDevelopmentServer');
@@ -124,9 +125,14 @@ var SyncClient = {
 				return resolve(false);
 
 			SyncClient.encrypt(syncSessionID || '', SecureSettings.getItem('syncSharedKey') || '').then(function (encryptedData) {
-				$.post(SyncClient.SERVER + '/client/ping', {
-					syncSessionID: syncSessionID || '',
-					encryptedData: encryptedData
+				$.ajax({
+					method: 'POST',
+					timeout: SyncClient.SERVER_TIMEOUT,
+					url: SyncClient.SERVER + '/client/ping',
+					data: {
+						syncSessionID: syncSessionID || '',
+						encryptedData: encryptedData
+					}
 				}).then(function (res) {
 					if (res.result === true)
 						return resolve(true);
@@ -176,9 +182,14 @@ var SyncClient = {
 			var syncSessionID = SecureSettings.getItem('syncSessionID');
 
 			SyncClient.encrypt(syncSessionID || '', SecureSettings.getItem('syncSharedKey') || '').then(function (encryptedData) {
-				$.post(SyncClient.SERVER + '/client/logout', {
-					syncSessionID: syncSessionID,
-					encryptedData: encryptedData
+				$.ajax({
+					method: 'POST',
+					timeout: SyncClient.SERVER_TIMEOUT,
+					url: SyncClient.SERVER + '/client/logout',
+					data: {
+						syncSessionID: syncSessionID,
+						encryptedData: encryptedData
+					}
 				}).then(function (res) {
 					if (res.error && res.error.name !== 'invalid syncSessionID')
 						return reject(res.error);

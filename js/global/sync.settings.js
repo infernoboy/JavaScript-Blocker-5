@@ -459,9 +459,14 @@ Object._extend(SyncClient.Settings.prototype, {
 
 				LogDebug('SyncClient: Encrypted settings size:', Utilities.byteSize(encryptedData.length));
 
-				$.post(SyncClient.SERVER + '/client/sync/setting/add', {
-					syncSessionID: self.syncSessionID,
-					encryptedData: encryptedData
+				$.ajax({
+					method: 'POST',
+					timeout: SyncClient.SERVER_TIMEOUT,
+					url: SyncClient.SERVER + '/client/sync/setting/add',
+					data: {
+						syncSessionID: self.syncSessionID,
+						encryptedData: encryptedData
+					}
 				}).uploadProgress(function (event ){
 					if (event.lengthComputable)
 						UI.view.updateProgressBar((event.loaded / event.total) * 100, 250, _('sync.uploading_settings'), _('sync.almost_done'));
@@ -633,9 +638,14 @@ Object._extend(SyncClient.Settings.prototype, {
 
 			SyncClient.Settings.busy = true;
 
-			$.post(SyncClient.SERVER + '/client/sync/setting/get', {
-				syncSessionID: self.syncSessionID,
-				since: since || Settings.getItem('syncLastTime') || 1
+			$.ajax({
+				method: 'POST',
+				timeout: SyncClient.SERVER_TIMEOUT,
+				url: SyncClient.SERVER + '/client/sync/setting/get',
+				data: {
+					syncSessionID: self.syncSessionID,
+					since: since || Settings.getItem('syncLastTime') || 1
+				}
 			}).progress(function (event ){
 				if (event.lengthComputable)
 					UI.view.updateProgressBar((event.loaded / event.total) * 100, 250, _('sync.downloading_settings'), _('sync.almost_done'));
