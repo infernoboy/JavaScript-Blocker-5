@@ -6,10 +6,13 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 var SyncClient = {
 	PING_EVERY: TIME.ONE.HOUR,
-	ORIGIN: 'https://imac.toggleable.com:8443',
+	ORIGIN: 'https://hero.toggleable.com',
+	DEV_ORIGIN: 'https://imac.toggleable.com:8443',
 
 	get SERVER() {
-		return SyncClient.ORIGIN + '/jsb-sync' + (Settings.getItem('syncClientUseDevelopmentServer') ? '-development' : '') + '/api';
+		var development = Settings.getItem('syncClientUseDevelopmentServer');
+
+		return (development ? SyncClient.DEV_ORIGIN : SyncClient.ORIGIN) + '/jsb-sync' + (development ? '-development' : '') + '/api';
 	},
 
 	event: new EventListener,

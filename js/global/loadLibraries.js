@@ -1,10 +1,10 @@
 /*
-* @Last modified in Sublime on Feb 28, 2017 12:21:29 PM
+* @Last modified in Sublime on Mar 10, 2017 02:05:41 PM
 */
 
 'use strict';
 
-var LibraryRoot = 'https://imac.toggleable.com:8443/jsblocker/';
+var LibraryRoot = 'https://hero.toggleable.com/jsblocker/';
 
 var Libraries = {
 	CryptoJS: {
@@ -21,22 +21,24 @@ var Libraries = {
 	}
 };
 
-for (var key in Libraries)
-	$.ajax({
-		async: false,
-		url: Libraries[key].source,
-		cache: false,
-		dataType: 'text'
-	}).then(function (name, library, content) {
-		if (typeof content === 'string' && sha512(content) === library.sha512) {
-			library.blobURL = Utilities.URL.createFromContent(content, 'application/javascript');
+(function () {
+	for (var key in Libraries)
+		$.ajax({
+			async: false,
+			url: Libraries[key].source,
+			cache: false,
+			dataType: 'text'
+		}).then(function (name, library, content) {
+			if (typeof content === 'string' && sha512(content) === library.sha512) {
+				library.blobURL = Utilities.URL.createFromContent(content, 'application/javascript');
 
-			/* eslint-disable */
-			$('<script>').attr('data-library', name).text('//@ sourceURL=' + name + "\n" + content).prependTo(document.head);
-			/* eslinst-enable */
-		} else
-			LogError('Library sha512 mismatch!', name);
-	}.bind(null, key, Libraries[key]), function (err) {
-		LogError('Could not load library:', name);
-		LogError(err);
-	});
+				/* eslint-disable */
+				$('<script>').attr('data-library', name).text('//@ sourceURL=' + name + "\n" + content).prependTo(document.head);
+				/* eslinst-enable */
+			} else
+				LogError('Library sha512 mismatch!', name);
+		}.bind(null, key, Libraries[key]), function (name, err) {
+			LogError('Could not load library:', name);
+			LogError(err);
+		}.bind(null, key));
+})();

@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 'use strict';
 
 var Feedback = {
-	__feedbackURL: 'https://imac.toggleable.com:8443/jsblocker/feedback.php',
+	__feedbackURL: 'https://hero.toggleable.com/jsblocker/feedback.php',
 	__lastSubmissionTime: 0,
 
 	getSubmittableSettings: function () {

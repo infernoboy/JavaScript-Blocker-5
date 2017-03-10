@@ -71,7 +71,7 @@
 		</dict>
 	</dict>
 	<key>Update Manifest URL</key>
-	<string>https://imac.toggleable.com:8443/jsblocker/download/extupdates.plist</string>
+	<string>https://hero.toggleable.com/jsblocker/download/extupdates.plist</string>
 	<key>Website</key>
 	<string>http://jsblocker.toggleable.com/</string>
 </dict>
