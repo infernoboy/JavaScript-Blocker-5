@@ -601,7 +601,7 @@ var UI = {
 									poppy.setPosition();
 								});
 						});
-					}, duration * 3);
+					}, duration + 500);
 			} else {
 				UI.view.universalProgressBar.css('WebkitTransitionDuration', '0ms').width(0).show();
 
