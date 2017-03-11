@@ -705,7 +705,7 @@ SyncClient.event
 				LogDebug('SyncClient: Uploaded all settings.');
 
 				SyncClient.Settings.autoSync(Settings.getItem('syncClientAutoSync'), syncClientSettings);
-			});
+			}, Utilities.noop);
 		else {
 			SyncClient.Settings.autoSync(Settings.getItem('syncClientAutoSync'), syncClientSettings);
 
