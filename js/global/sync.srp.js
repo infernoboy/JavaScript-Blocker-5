@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 08, 2017 03:59:21 PM
+* @Last modified in Sublime on Mar 10, 2017 08:53:30 PM
 */
 
 'use strict';
@@ -256,6 +256,8 @@ SyncClient.SRP = {
 				UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
 					UI.SyncClient.SRP.showLogin(_('sync.session_expired'));
 				}, true);
+
+				Update.showRequiredPopover();
 			});
 		}
 	},
