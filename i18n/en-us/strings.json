@@ -19,6 +19,8 @@
 	"collapse": " ",
 	"double_click_split": "Click and drag to resize; double-click for an even split",
 
+	"sync.name": "JSB Sync",
+
 	"sync.server.unknown_error": "An unknown server error occurred.",
 	"sync.server.client_exists": "A user with that email address is already registered.",
 	"sync.server.client_not_found": "Email is not registered or is unverified.",
@@ -42,24 +44,24 @@
 	"sync.logged_into": "Logged in as <b>{0}</b>",
 	"sync.password_changed": "Your password has been changed. Please log in again.",
 
-	"sync.login.header": "Sync Login",
+	"sync.login.header": "JSB Sync Login",
 	"sync.login.email": "Email",
 	"sync.login.password": "Password",
 	"sync.login.verify_password": "Verify Password",
 	"sync.login.login": "Log In",
 	"sync.login.forgot": "Forgot?",
 
-	"sync.register.header": "Sync Register",
+	"sync.register.header": "JSB Sync Register",
 	"sync.register.description": "Sign up to begin syncing your settings and rules across multiple computers. You'll receive an email with a verification key to activate your account.",
 	"sync.register.register": "Register",
 
-	"sync.change_password.header": "Change Sync Password",
+	"sync.change_password.header": "Change JSB Sync Password",
 	"sync.change_password.description": "Changing password for <b>{0}</b><br>Once you change your password, your previous syncs will be unusuable; a new, full sync will be uploaded. All other active sessions will be logged out.",
 	"sync.change_password.change_password": "Change Password",
 	"sync.change_password.current_password": "Current Password",
 	"sync.change_password.new_password": "New Password",
 
-	"sync.verify.header": "Sync Verify",
+	"sync.verify.header": "Verify JSB Sync Account",
 	"sync.verify.description": "Enter verification key sent to <b>{0}</b><br>The email will come from jsb@toggleable.com<br>Remember to check your spam.",
 	"sync.verify.key": "Verification Key",
 	"sync.verify.verify": "Verify",
