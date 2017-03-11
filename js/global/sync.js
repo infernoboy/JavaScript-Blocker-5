@@ -66,7 +66,7 @@ var SyncClient = {
 
 			SyncClient.promiseWorker.postMessage({
 				command: 'encrypt',
-				string: JSON.stringify(string),
+				string: stringifyed,
 				hash: hash
 			}).then(function (encrypted) {
 				SyncClient.decryptWorker(encrypted, hash).then(function (decrypted) {
@@ -191,7 +191,8 @@ var SyncClient = {
 					});
 				}, Utilities.noop)
 				.then(function (res) {
-					if (res && res.error && !['invalid syncSessionID', 'missing syncSessionID', 'invalid encryptedData', 'missing encryptedData']._contains(res.error.name))
+					if (res && res.error && 
+						!['invalid syncSessionID', 'missing syncSessionID', 'invalid encryptedData', 'missing encryptedData']._contains(res.error.name))
 						LogError(res.error.message || res.error.name);
 				}, function (err) {
 					LogError(err.responseJSON && err.responseJSON.error && (err.responseJSON.error.message || err.responseJSON.error.name) || err);
@@ -210,7 +211,7 @@ var SyncClient = {
 };
 
 SyncClient.event
-	.addCustomEventListener('autoLogin', function () {
+	.addCustomEventListener('login', function () {
 		SyncClient.pingTimer(true, SecureSettings.getItem('syncSessionID'));
 	});
 
