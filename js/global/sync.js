@@ -6,14 +6,14 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 var SyncClient = {
 	PING_EVERY: TIME.ONE.HOUR,
-	ORIGIN: 'https://hero.toggleable.com',
-	DEV_ORIGIN: 'https://imac.toggleable.com:8443',
 	SERVER_TIMEOUT: 10000,
 
-	get SERVER() {
-		var development = Settings.getItem('syncClientUseDevelopmentServer');
+	get ORIGIN() {
+		return 'https://' + (Settings.getItem('syncClientUseDevelopmentServer') ? 'imac.toggleable.com:8443' : 'hero.toggleable.com');
+	},
 
-		return (development ? SyncClient.DEV_ORIGIN : SyncClient.ORIGIN) + '/jsb-sync' + (development ? '-development' : '') + '/api';
+	get SERVER() {
+		return SyncClient.ORIGIN + '/jsb-sync' + (Settings.getItem('syncClientUseDevelopmentServer') ? '-development' : '') + '/api';
 	},
 
 	event: new EventListener,
@@ -172,28 +172,31 @@ var SyncClient = {
 	},
 
 	logout: function () {
-		return CustomPromise(function (resolve, reject) {
-			if (!SyncClient.SRP.isLoggedIn()) {
-				SyncClient.event.trigger('logout');
-
-				return resolve(true);
-			}
-
+		return CustomPromise(function (resolve) {
 			var syncSessionID = SecureSettings.getItem('syncSessionID');
 
-			SyncClient.encrypt(syncSessionID || '', SecureSettings.getItem('syncSharedKey') || '').then(function (encryptedData) {
-				$.ajax({
-					method: 'POST',
-					timeout: SyncClient.SERVER_TIMEOUT,
-					url: SyncClient.SERVER + '/client/logout',
-					data: {
-						syncSessionID: syncSessionID,
-						encryptedData: encryptedData
-					}
-				}).then(function (res) {
-					if (res.error && res.error.name !== 'invalid syncSessionID')
-						return reject(res.error);
+			SyncClient.encrypt(syncSessionID || '', SecureSettings.getItem('syncSharedKey') || '')
+				.then(function (encryptedData) {
+					if (!syncSessionID)
+						return;
 
+					return $.ajax({
+						method: 'POST',
+						timeout: SyncClient.SERVER_TIMEOUT,
+						url: SyncClient.SERVER + '/client/logout',
+						data: {
+							syncSessionID: syncSessionID,
+							encryptedData: encryptedData
+						}
+					});
+				}, Utilities.noop)
+				.then(function (res) {
+					if (res && res.error && !['invalid syncSessionID', 'missing syncSessionID', 'invalid encryptedData', 'missing encryptedData']._contains(res.error.name))
+						LogError(res.error.message || res.error.name);
+				}, function (err) {
+					LogError(err.responseJSON && err.responseJSON.error && (err.responseJSON.error.message || err.responseJSON.error.name) || err);
+				})
+				.then(function () {
 					SecureSettings.removeItem('syncSessionID');
 					SecureSettings.removeItem('syncSharedKey');
 					SecureSettings.removeItem('syncPasswordHash');
@@ -201,14 +204,7 @@ var SyncClient = {
 					SyncClient.event.trigger('logout');
 
 					resolve(true);
-				}, function (err) {
-					reject(err.responseJSON && err.responseJSON.error || err);
 				});
-			}, function () {
-				SyncClient.event.trigger('logout');
-
-				resolve(true);
-			});
 		});
 	}
 };

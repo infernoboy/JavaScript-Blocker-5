@@ -56,7 +56,7 @@
 	"sync.register.register": "Register",
 
 	"sync.change_password.header": "Change JSB Sync Password",
-	"sync.change_password.description": "Changing password for <b>{0}</b><br>Once you change your password, your previous syncs will be unusuable; a new, full sync will be uploaded. All other active sessions will be logged out.",
+	"sync.change_password.description": "Changing password for <b>{0}</b><br>Once changed, your previous syncs will be not be usable; all settings and rules will be re-uploaded.<br>Other active sessions will be logged out.",
 	"sync.change_password.change_password": "Change Password",
 	"sync.change_password.current_password": "Current Password",
 	"sync.change_password.new_password": "New Password",
