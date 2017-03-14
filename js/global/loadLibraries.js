@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 10, 2017 02:05:41 PM
+* @Last modified in Sublime on Mar 11, 2017 03:07:00 PM
 */
 
 'use strict';
@@ -25,8 +25,8 @@ var Libraries = {
 	for (var key in Libraries)
 		$.ajax({
 			async: false,
-			url: Libraries[key].source,
 			cache: false,
+			url: Libraries[key].source,
 			dataType: 'text'
 		}).then(function (name, library, content) {
 			if (typeof content === 'string' && sha512(content) === library.sha512) {
@@ -36,9 +36,8 @@ var Libraries = {
 				$('<script>').attr('data-library', name).text('//@ sourceURL=' + name + "\n" + content).prependTo(document.head);
 				/* eslinst-enable */
 			} else
-				LogError('Library sha512 mismatch!', name);
+				LogError('Library sha512 mismatch: ' + name);
 		}.bind(null, key, Libraries[key]), function (name, err) {
-			LogError('Could not load library:', name);
-			LogError(err);
+			LogError('Could not load library: ' + name, err);
 		}.bind(null, key));
 })();

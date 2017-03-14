@@ -9,14 +9,21 @@ window.localConsole = console;
 var globalPage = GlobalPage.window;
 
 if (!globalPage.GlobalPageReady) {
-	Log('Waiting for global page to be ready...');
+	console.warn('Waiting for global page to be ready...');
 
-	setTimeout(function () {
-		window.location.reload();
-	}, 1000);
+	if (window.localStorage.getItem('JSB-RELOAD-COUNT') === '10')
+		throw new Error('JSB failed to load');
+
+	window.localStorage.setItem('JSB-RELOAD-COUNT', Number(window.localStorage.getItem('JSB-RELOAD-COUNT') || 0) + 1);
+
+	window.stop();
+
+	setTimeout(window.location.reload.bind(window.location));
 
 	throw new Error('...');
 }
+
+window.localStorage.removeItem('JSB-RELOAD-COUNT');
 
 globalPage.Template = Template;
 
@@ -44,27 +51,6 @@ globalPage.Template = Template;
 				this.selectionStart = 0;
 				this.selectionEnd = 1e10;
 			});
-
-		return this;
-	};
-
-	$.fn.transitionEnd = function () {
-		var nextSibling,
-			parent,
-			self;
-
-		this.each(function () {
-			self = $(this);
-			parent = self.parent();
-			nextSibling = self.next();
-
-			document.documentElement.appendChild(this);
-
-			if (nextSibling.length)
-				self.insertBefore(nextSibling);
-			else
-				self.appendTo(parent);
-		});
 
 		return this;
 	};
