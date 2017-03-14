@@ -676,12 +676,12 @@ Command.onExecuteMenuCommand = function (event) {
 	}
 };
 
-if (Settings.getItem('persistDisabled'))
-	Command.toggleDisabled(Settings.getItem('isDisabled'));
-
 Command.setupContentURLs();
 
 Command.event.addCustomEventListener('popoverReady', function () {
+	if (Settings.getItem('persistDisabled'))
+		Command.toggleDisabled(Settings.getItem('isDisabled'));
+
 	if (Settings.getItem('showPopoverOnLoad')) {
 		Settings.setItem('showPopoverOnLoad', false);
 

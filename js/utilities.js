@@ -1429,6 +1429,8 @@ var Extension = {
 					if (this.hasOwnProperty(key)) {
 						li = $('<li>').appendTo(container);
 
+						$('<span>').addClass('object-key-name').appendTo(li).text(key + ': ');
+
 						if (Object._isPlainObject(this[key]))
 							keyValue = $('<div>').append(this[key]._toHTMLList($('<ul>')));
 						else
