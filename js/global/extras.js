@@ -113,4 +113,3 @@ Maintenance.event.addCustomEventListener('globalPageReady', function () {
 }, true);
 
 Extras.Trial.autoStart();
-// Extras.Trial.start();

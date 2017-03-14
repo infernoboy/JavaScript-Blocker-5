@@ -79,12 +79,12 @@ window.ToolbarItems = {
 };
 
 window.Popover = {
-	get popover() {
+	popover: (function () {
 		return safari.extension.popovers[0];
-	},
+	})(),
 
 	get window() {
-		return Popover.popover.contentWindow;
+		return Popover.popover.contentWindow || {};
 	},
 
 	hide: function () {

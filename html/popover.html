@@ -60,7 +60,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	<script>
 		window.PopoverReady = true;
 
-		globalPage.Command.event.trigger('popoverReady', null, true);
+		setTimeout(function () {
+			globalPage.Command.event.trigger('popoverReady', null, true);
+		}, 500);
 	</script>
 </head>
 

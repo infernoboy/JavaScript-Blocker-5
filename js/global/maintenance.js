@@ -34,6 +34,17 @@ var Maintenance = {
 			Maintenance.resetIdleTimer();
 		}, TIME.ONE.HOUR);
 	},
+
+	createPopoverGetters: function () {
+		var vars = ['UI', 'Poppy', 'Strings', '_'];
+
+		for (var i = vars.length; i--;)
+			Object.defineProperty(window, vars[i], {
+				get: function (key) {
+					return Popover.window[key];
+				}.bind(null, vars[i])
+			});
+	},
 	
 	maintainPopover: function () {
 		var popover = Popover.window,
@@ -62,6 +73,7 @@ var Maintenance = {
 $(function () {
 	window.GlobalPageReady = true;
 
+	Maintenance.createPopoverGetters();
 	Maintenance.resetIdleTimer();
 
 	Maintenance.event.trigger('globalPageReady', true);

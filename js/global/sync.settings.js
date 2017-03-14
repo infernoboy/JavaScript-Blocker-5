@@ -698,21 +698,23 @@ Object._extend(SyncClient.Settings.prototype, {
 
 SyncClient.event
 	.addCustomEventListener('login', function () {
-		var syncClientSettings = SyncClient.Settings.init();
+		Command.event.addCustomEventListener('popoverReady', function () {
+			var syncClientSettings = SyncClient.Settings.init();
 
-		if (Settings.getItem('syncNeedsFullSettingsSync'))
-			syncClientSettings.performFullSettingsSync().then(function () {
-				LogDebug('SyncClient: Uploaded all settings.');
+			if (Settings.getItem('syncNeedsFullSettingsSync'))
+				syncClientSettings.performFullSettingsSync().then(function () {
+					LogDebug('SyncClient: Uploaded all settings.');
 
+					SyncClient.Settings.autoSync(Settings.getItem('syncClientAutoSync'), syncClientSettings);
+				}, Utilities.noop);
+			else {
 				SyncClient.Settings.autoSync(Settings.getItem('syncClientAutoSync'), syncClientSettings);
-			}, Utilities.noop);
-		else {
-			SyncClient.Settings.autoSync(Settings.getItem('syncClientAutoSync'), syncClientSettings);
 
-			SyncClient.Settings.loadPastQueue();
+				SyncClient.Settings.loadPastQueue();
 
-			syncClientSettings.sync();
-		}
+				syncClientSettings.sync();
+			}
+		}, true);
 	})
 	.addCustomEventListener('passwordChanged', function () {
 		Settings.setItem('syncNeedsFullSettingsSync', true);

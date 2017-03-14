@@ -27,10 +27,12 @@
 			<dict>
 				<key>Filename</key>
 				<string>html/popover.html</string>
+				<key>Height</key>
+				<integer>10</integer>
 				<key>Identifier</key>
 				<string>manager</string>
 				<key>Width</key>
-				<integer>10</integer>
+				<integer>100</integer>
 			</dict>
 		</array>
 		<key>Toolbar Items</key>

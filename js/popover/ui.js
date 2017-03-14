@@ -731,8 +731,6 @@ var UI = {
 
 UI.events.__keys._createReverseMap();
 
-globalPage.UI = UI;
-
 document.addEventListener('DOMContentLoaded', UI.init, true);
 
 Events.addApplicationListener('popover', UI.events.popoverOpened);

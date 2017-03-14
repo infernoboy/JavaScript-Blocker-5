@@ -678,7 +678,4 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	UI.event.addCustomEventListener('pageWillRender', Poppy.closeAll);
 	UI.event.addCustomEventListener('popoverOpened', Poppy.closeAll.bind(Poppy, true, true));
 	UI.event.addCustomEventListener('popoverDidResize', Poppy.closeAll);
-
-	if (window.globalPage)
-		window.globalPage.Poppy = Poppy;
 })();
