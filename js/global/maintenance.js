@@ -9,7 +9,7 @@ window.globalSetting = {
 	speedMultiplier: 1,
 
 	get debugMode () {
-		return Settings.getItem('debugMode');
+		return window.Settings ? Settings.getItem('debugMode') : false;
 	},
 
 	set debugMode (value) {

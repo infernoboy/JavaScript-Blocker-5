@@ -190,22 +190,27 @@ function Command (command, data, event) {
 		},
 
 		globalSetting: function () {
-			this.message = {
-				disabled: window.globalSetting.disabled,
-				debugMode: window.globalSetting.debugMode,
-				popoverReady: Popover.window.PopoverReady,
+			if (window.Settings)
+				this.message = {
+					disabled: window.globalSetting.disabled,
+					debugMode: window.globalSetting.debugMode,
+					popoverReady: Popover.window.PopoverReady,
 
-				useAnimations: Settings.getItem('useAnimations'),
-				largeFont: Settings.getItem('largeFont'),
-				enabledKinds: Settings.getItem('enabledKinds'),
-				showPlaceholder: Settings.getItem('showPlaceholder'),
-				hideInjected: Settings.getItem('hideInjected'),
-				blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
-				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
-				showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
+					useAnimations: Settings.getItem('useAnimations'),
+					largeFont: Settings.getItem('largeFont'),
+					enabledKinds: Settings.getItem('enabledKinds'),
+					showPlaceholder: Settings.getItem('showPlaceholder'),
+					hideInjected: Settings.getItem('hideInjected'),
+					blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
+					showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
+					showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
 
-				contentURLs: window.CONTENT_URLS
-			};
+					contentURLs: window.CONTENT_URLS
+				};
+			else
+				this.messgae = {
+					popoverReady: false
+				};
 		},
 		
 		specialsForLocation: function (page) {
