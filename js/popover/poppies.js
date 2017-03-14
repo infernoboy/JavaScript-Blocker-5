@@ -1232,7 +1232,7 @@ Object._extend(Poppy.scripts, {
 				UI.Locker
 					.showLockerPrompt('setting', false, true)
 					.then(function () {
-						window.globalSetting.debugMode = self.checked;
+						Settings.setItem('debugMode', self.checked, null, true, true);
 					}, function () {
 						self.checked = !self.checked;
 					});

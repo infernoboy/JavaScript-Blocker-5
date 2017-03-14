@@ -7,14 +7,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 window.globalSetting = {
 	disabled: false,
 	speedMultiplier: 1,
-
-	get debugMode () {
-		return window.Settings ? Settings.getItem('debugMode') : false;
-	},
-
-	set debugMode (value) {
-		Settings.setItem('debugMode', value);
-	}
+	debugMode: false
 };
 
 window.$$ = function (selector, context) {

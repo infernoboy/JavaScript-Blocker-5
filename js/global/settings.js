@@ -640,6 +640,7 @@ for (var section in Settings.settings)
 
 Object._deepFreeze(Settings.map);
 
+Settings.map.debugMode.props.onChange(null, null, Settings.getItem('debugMode'));
 
 Settings.__stores = new Store('StoreSettings', {
 	save: true

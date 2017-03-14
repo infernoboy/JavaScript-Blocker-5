@@ -233,7 +233,10 @@ Settings.settings = {
 		setting: 'debugMode',
 		props: {
 			type: 'boolean',
-			default: false
+			default: false,
+			onChange: function (type, settingKey, value) {
+				window.globalSetting.debugMode = value;
+			}
 		}
 	}, {
 		setting: 'showPopoverOnLoad',

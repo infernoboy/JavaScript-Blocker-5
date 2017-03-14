@@ -103,6 +103,8 @@ var Extras = {
 };
 
 Maintenance.event.addCustomEventListener('globalPageReady', function () {
+	Extras.Trial.autoStart();
+	
 	Command.event.addCustomEventListener('popoverReady', function () {
 		Extras.ERROR = {
 			'-3': _('extras.unlock.error.email_missing'),
@@ -111,5 +113,3 @@ Maintenance.event.addCustomEventListener('globalPageReady', function () {
 		};
 	}, true);
 }, true);
-
-Extras.Trial.autoStart();
