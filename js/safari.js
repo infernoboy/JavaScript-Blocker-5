@@ -11,21 +11,19 @@ var beforeLoad = {
 	currentTarget: null
 };
 
-var Version = {
+window.Version = {
 	display: safari.extension.displayVersion,
 	bundle: parseFloat(safari.extension.bundleVersion)
 };
 
-var BrowserTab, BrowserWindow;
-
 try {
-	BrowserTab = SafariBrowserTab;
-	BrowserWindow = SafariBrowserWindow;
+	window.BrowserTab = SafariBrowserTab;
+	window.BrowserWindow = SafariBrowserWindow;
 } catch (e) {
-	BrowserTab = BrowserWindow = null;
+	window.BrowserTab = window.BrowserWindow = null;
 }
 
-var ToolbarItems = {
+window.ToolbarItems = {
 	badge: function (number, tab) {
 		safari.extension.toolbarItems.forEach(function (toolbarItem) {		
 			if (toolbarItem.browserWindow && (tab === null || tab === toolbarItem.browserWindow.activeTab))
@@ -80,34 +78,13 @@ var ToolbarItems = {
 	}
 };
 
-var Popover = {
-	popover: null,
-	window: window,
-
-	create: function (id, file, width, height) {
-		this.remove({
-			identifier: id
-		});
-
-		this.popover = safari.extension.createPopover(id, file, width, height);
-
-		setTimeout(function () {
-			Popover.window = Popover.popover.contentWindow;
-		}, 500);
-
-		return this.popover;
+window.Popover = {
+	get popover() {
+		return safari.extension.popovers[0];
 	},
 
-	remove: function (popover) {
-		this.hide();
-
-		popover = popover || this.popover;
-
-		if (popover && popover.identifier)
-			safari.extension.removePopover(popover.identifier);
-
-		this.popover = null;
-		this.window = window;
+	get window() {
+		return Popover.popover.contentWindow;
 	},
 
 	hide: function () {
@@ -120,7 +97,7 @@ var Popover = {
 	}
 };
 
-var BrowserWindows = {
+window.BrowserWindows = {
 	all: function () {
 		return safari.application.browserWindows;
 	},
@@ -132,7 +109,7 @@ var BrowserWindows = {
 	}
 };
 
-var Tabs = {
+window.Tabs = {
 	array: function () {
 		var currentTabs = [];
 
@@ -194,7 +171,7 @@ var Tabs = {
 	}
 };
 
-var GlobalPage = {
+window.GlobalPage = {
 	tab: safari.self.tab,
 	
 	get window () {
@@ -214,7 +191,7 @@ var GlobalPage = {
 	}
 };
 
-var SettingStore = {
+window.SettingStore = {
 	__syncTimeout: {},
 	__locked: false,
 	__cache: {},
@@ -371,7 +348,7 @@ var SettingStore = {
 	}
 };
 
-var SecureSettings = {
+window.SecureSettings = {
 	getItem: function (key, defaultValue) {
 		var value = safari.extension.secureSettings.getItem(key);
 
@@ -397,7 +374,7 @@ var SecureSettings = {
 	}
 };
 
-var Events = {
+window.Events = {
 	__references: {
 		application: {},
 		settings: {},
@@ -460,38 +437,37 @@ var Events = {
 	}
 };
 
-function MessageTarget (event, name, data) {
+window.MessageTarget = function (event, name, data) {
 	if (event.target.page)
 		event.target.page.dispatchMessage(name, data);
-}
+};
 
-function PrivateBrowsing () {
+window.PrivateBrowsing = function () {
 	return (safari.application.privateBrowsing && safari.application.privateBrowsing.enabled);
-}
+};
 
-function ExtensionURL (path) {
+window.ExtensionURL = function (path) {
 	return safari.extension.baseURI + (path || '');
-}
+};
 
-function ResourceCanLoad (beforeLoad, data) {
+window.ResourceCanLoad = function (beforeLoad, data) {
 	return GlobalPage.tab.canLoad(beforeLoad, data);
-}
+};
 
-function GlobalCommand (command, data) {
+window.GlobalCommand = function (command, data) {
 	return GlobalPage.tab.canLoad(beforeLoad, {
 		command: command,
 		data: data
 	});
-}
+};
 
-function RemoveContentScripts () {
+window.RemoveContentScripts = function () {
 	safari.extension.removeContentScripts();
-}
+};
 
-function AddContentScriptFromURL (url) {
+window.AddContentScriptFromURL = function (url) {
 	safari.extension.addContentScriptFromURL(ExtensionURL(url));
-}
-
+};
 
 (function () {
 	var SetPopoverToToolbarItem = function (event) {
@@ -500,17 +476,12 @@ function AddContentScriptFromURL (url) {
 	};
 
 	if (window.GlobalPage && GlobalPage.window === window) {
-		Popover.create('manager', ExtensionURL('html/popover.html'), 480, 250);
-
 		ToolbarItems.setPopover();
 
 		Events.addApplicationListener('open', SetPopoverToToolbarItem, true);
-	} else {
-		var globalPage = GlobalPage.window;
-
-		if (globalPage)
-			Popover.popover = globalPage.Popover.popover;
-	}
+	} else
+		if (GlobalPage.window)
+			Popover.popover = GlobalPage.window.Popover.popover;
 
 	setTimeout(function () {
 		if (!Utilities.Page.isGlobal)

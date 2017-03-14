@@ -22,6 +22,17 @@
 		<integer>0</integer>
 		<key>Global Page</key>
 		<string>html/global.html</string>
+		<key>Popovers</key>
+		<array>
+			<dict>
+				<key>Filename</key>
+				<string>html/popover.html</string>
+				<key>Identifier</key>
+				<string>manager</string>
+				<key>Width</key>
+				<integer>10</integer>
+			</dict>
+		</array>
 		<key>Toolbar Items</key>
 		<array>
 			<dict>
