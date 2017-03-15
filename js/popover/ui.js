@@ -550,7 +550,7 @@ var UI = {
 
 			var width = percent < 0 ? 100 : percent;
 
-			$('#open-menu', UI.view.viewToolbar).toggleClass('has-progress', percent >= 0 && percent < 100);
+			$('#open-menu', UI.view.viewToolbar).toggleClass('has-progress', percent > 1 && percent < 100);
 
 			if (UI.view.universalProgressBar.data('previousPercent') > percent && percent > 0)
 				UI.view.updateProgressBar(0, 0, description, timeRemaining);

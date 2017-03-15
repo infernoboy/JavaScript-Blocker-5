@@ -6,7 +6,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 var SyncClient = {
 	PING_EVERY: TIME.ONE.HOUR,
-	SERVER_TIMEOUT: 10000,
+	SERVER_TIMEOUT: 40000,
 
 	get ORIGIN() {
 		return 'https://' + (Settings.getItem('syncClientUseDevelopmentServer') ? 'imac.toggleable.com:8443' : 'hero.toggleable.com');
@@ -20,7 +20,7 @@ var SyncClient = {
 	changes: [],
 
 	handleError: function (source, error) {
-		LogError(source, error.message || error.name || error);
+		LogError(source, error ? (error.message || error.name) : error);
 
 		SyncClient.event.trigger('error', error);
 	},
@@ -44,7 +44,7 @@ var SyncClient = {
 
 			var stringifyed = JSON.stringify(string);
 
-			var encrypted = CryptoJS.AES.encrypt(CryptoJS.enc.Utf16.parse(stringifyed), hash, {
+			var encrypted = CryptoJS.AES.encrypt(stringifyed, hash, {
 				mode: CryptoJS.mode.CBC
 			}).toString();
 
@@ -91,7 +91,7 @@ var SyncClient = {
 			if (typeof string !== 'string' || typeof hash !== 'string')
 				return reject(Error('string or hash is not a string'));
 
-			var decrypted = CryptoJS.AES.decrypt(string, hash).toString(CryptoJS.enc.Utf16);
+			var decrypted = CryptoJS.AES.decrypt(string, hash).toString(CryptoJS.enc.Utf8);
 
 			if (!decrypted || !decrypted.length)
 				return reject(Error('decryption failed'));

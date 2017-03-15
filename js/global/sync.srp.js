@@ -1,12 +1,14 @@
 /*
-* @Last modified in Sublime on Mar 11, 2017 03:16:37 AM
+* @Last modified in Sublime on Mar 14, 2017 04:24:27 AM
 */
 
 'use strict';
 
 SyncClient.SRP = {
 	SERVER: {
-		URL: SyncClient.ORIGIN + '/srp',
+		get URL() {
+			return SyncClient.ORIGIN + '/srp';
+		},
 
 		get PATH() {
 			return '/jsb-sync' + (Settings.getItem('syncClientUseDevelopmentServer') ? '-development' : '') + '/socket.io';

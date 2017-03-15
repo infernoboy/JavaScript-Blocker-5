@@ -45,7 +45,7 @@ self.addEventListener('message', function (message) {
 
 		case 'encrypt':
 			try {
-				var encrypted = CryptoJS.AES.encrypt(CryptoJS.enc.Utf16.parse(message.string), message.hash, {
+				var encrypted = CryptoJS.AES.encrypt(message.string, message.hash, {
 					mode: CryptoJS.mode.CBC
 				}).toString();
 
@@ -67,7 +67,7 @@ self.addEventListener('message', function (message) {
 
 		case 'decrypt':
 			try {
-				var decrypted = CryptoJS.AES.decrypt(message.string, message.hash).toString(CryptoJS.enc.Utf16);
+				var decrypted = CryptoJS.AES.decrypt(message.string, message.hash).toString(CryptoJS.enc.Utf8);
 
 				// console.log('Decrypt worker:', message.string, decrypted.substr(0, 100));
 

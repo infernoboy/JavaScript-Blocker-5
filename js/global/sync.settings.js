@@ -459,6 +459,8 @@ Object._extend(SyncClient.Settings.prototype, {
 
 				LogDebug('SyncClient: Encrypted settings size:', Utilities.byteSize(encryptedData.length));
 
+				UI.view.updateProgressBar(1, 250, _('sync.uploading_settings'), _('sync.almost_done'));
+
 				$.ajax({
 					method: 'POST',
 					timeout: SyncClient.SERVER_TIMEOUT,
@@ -637,6 +639,8 @@ Object._extend(SyncClient.Settings.prototype, {
 			self.validateSyncSession();
 
 			SyncClient.Settings.busy = true;
+
+			UI.view.updateProgressBar(1, 250, _('sync.downloading_settings'), _('sync.almost_done'));
 
 			$.ajax({
 				method: 'POST',
