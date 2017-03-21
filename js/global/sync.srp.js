@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 14, 2017 04:24:27 AM
+* @Last modified in Sublime on Mar 21, 2017 11:07:29 AM
 */
 
 'use strict';
@@ -255,17 +255,18 @@ SyncClient.SRP = {
 			SyncClient.event.trigger('logout');
 
 			UI.onReady(function () {
-				UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
-					UI.SyncClient.SRP.showLogin(_('sync.session_expired'));
-				}, true);
-
-				Update.showRequiredPopover();
+				UI.SyncClient.SRP.sessionExpired();
 			});
 		}
 	},
 
 	verifySession: function () {
 		return CustomPromise(function (resolve, reject) {
+			if (Settings.getItem('syncNeedsFullSettingsSync') && !SyncClient.SRP.isLoggedIn())
+				UI.onReady(function () {
+					UI.SyncClient.SRP.sessionExpired();
+				});
+
 			SyncClient.ping(SecureSettings.getItem('syncSessionID')).then(function (sessionIsValid) {
 				if (sessionIsValid) {
 					SyncClient.event.trigger('login');

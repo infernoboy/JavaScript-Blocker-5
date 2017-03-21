@@ -4,6 +4,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 'use strict';
 
+window.UI = {
+	onReady: function (fn) {
+		Command.event.addCustomEventListener('UIReady', fn, true);
+	}
+};
+
 function Command (command, data, event) {
 	function InternalCommand () {
 		var part;
