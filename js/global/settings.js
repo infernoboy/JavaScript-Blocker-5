@@ -553,12 +553,8 @@ Object._extend(Settings, {
 
 				var temporaryBackup = JSON.stringify(SettingStore.all());
 
-				if (clearExisting) {
+				if (clearExisting)
 					SettingStore.clear();
-
-					if (!semi)
-						Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
-				}
 
 				if (settings.settings && settings.rules && settings.simpleRules)
 					try {
@@ -581,7 +577,7 @@ Object._extend(Settings, {
 
 						if (setting._startsWith(Store.STORE_STRING) || (settings[setting] && settings[setting].STORE))
 							try {
-								SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= 100000);
+								SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= Store.LOCAL_SAVE_SIZE);
 							} catch (e) {
 								LogError('failed to import store setting - ' + setting, e);
 							}
@@ -591,15 +587,11 @@ Object._extend(Settings, {
 							} catch (e) { /* do nothing */ }
 
 							try {
-								Settings.setItem(setting, value, null, true, true);
+								if (Settings.isKnown(setting))
+									SettingStore.setItem(setting, value);
 							} catch (e) { /* do nothing */ }
 						}
 					}
-				}
-
-				if (!semi) {
-					Settings.setItem('showPopoverOnLoad', true);
-					Settings.setItem('syncNeedsFullSettingsSync', true);
 				}
 
 				setTimeout(function (settings, semi) {
@@ -607,10 +599,16 @@ Object._extend(Settings, {
 						Settings.setItem('setupComplete', true);
 
 					if (!semi) {
+						Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
+						Settings.setItem('showPopoverOnLoad', true);
+						Settings.setItem('syncNeedsFullSettingsSync', true);
+
 						Settings.restartRequired();
 
 						SecureSettings.clear();
 					}
+
+					SettingStore.syncNow();
 				}, 1000, settings, semi);
 			}.bind(null, settings));
 	},
