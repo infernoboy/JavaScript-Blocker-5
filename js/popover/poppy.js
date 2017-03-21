@@ -501,12 +501,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		this.poppy
 			.toggleClass('poppy-open-quick', !!quick)
 			.toggleClass('poppy-open-instant', !!instant)
-			.addClass('poppy-open poppy-displayed')
-			.one('webkitAnimationEnd', function () {
-				Poppy.event.trigger('poppyIsFullyShown', this);
-
-				this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
-			}.bind(this));
+			.addClass('poppy-open poppy-displayed');
 
 		this.poppy.hide();
 
@@ -516,11 +511,22 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 		Poppy.event.trigger('poppyDidShow', this);
 
-		Utilities.Timer.timeout('PoppyCreating', function () {
+		Utilities.Timer.timeout('PoppyCreating', function (self) {
 			Poppy.__creating = false;
-		}, 0);
+
+			if (Settings.getItem('useAnimations'))
+				self.poppy.one('webkitAnimationEnd', self.fullyShown.bind(self));
+			else
+				self.fullyShown();
+		}, 0, [this]);
 
 		return this;
+	};
+
+	Poppy.prototype.fullyShown = function () {
+		Poppy.event.trigger('poppyIsFullyShown', this);
+
+		this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
 	};
 
 	Poppy.prototype.remove = function () {
