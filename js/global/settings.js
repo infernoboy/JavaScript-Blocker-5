@@ -25,10 +25,10 @@ Object._extend(Settings, {
 			throw new Error('missing setting type');
 
 		if (type._startsWith('dynamic'))
-			return ((typeof value === 'object' && (value.hasOwnProperty('enabled') && value.hasOwnProperty('value'))) && this.__validate(type.substr(8), value.value, options, otherOption, extendOptions));
+			return ((typeof value === 'object' && (value.hasOwnProperty('enabled') && value.hasOwnProperty('value'))) && Settings.__validate(type.substr(8), value.value, options, otherOption, extendOptions));
 
 		if (type._startsWith('many'))
-			return this.__validate(type.substr(5), value, options, otherOption, extendOptions);
+			return Settings.__validate(type.substr(5), value, options, otherOption, extendOptions);
 
 		switch (type) {
 			case 'boolean':
@@ -173,7 +173,7 @@ Object._extend(Settings, {
 
 			if (!storeKey) {
 				var storedValues = {},
-					storeKeys = Object.keys(defaultStorage).concat(this.__stores.getStore(settingKey).keys());
+					storeKeys = Object.keys(defaultStorage).concat(Settings.__stores.getStore(settingKey).keys());
 
 				for (var i = storeKeys.length; i--;)
 					storedValues[storeKeys[i]] = Settings.getItem(settingKey, storeKeys[i]);
@@ -189,13 +189,13 @@ Object._extend(Settings, {
 
 			storeKey = (setting.storeKeySettings[storeKey] && setting.storeKeySettings[storeKey].props.remap) ? setting.storeKeySettings[storeKey].props.remap : storeKey;
 
-			value = this.__stores.getStore(settingKey).get(storeKey);
+			value = Settings.__stores.getStore(settingKey).get(storeKey);
 
 			defaultValue = hasOwnDefaults ? defaultStorage[storeKey] : defaultStorage[storeKey].props.default;
 
 			isExtra = setting.storeKeySettings[storeKey] ? setting.storeKeySettings[storeKey].props.isExtra : false;
 		} else {
-			value = this.__method('getItem', settingKey);
+			value = Settings.__method('getItem', settingKey);
 
 			defaultValue = setting.props.default;
 
@@ -352,7 +352,7 @@ Object._extend(Settings, {
 			if (customValidate && !customValidate.test(type, value, options, otherOption, storeSetting.props.extendOptions))
 				return 'setting.' + customValidate.onFail;
 
-			if (!this.__validate(type, value, options, otherOption, storeSetting.props.extendOptions))
+			if (!Settings.__validate(type, value, options, otherOption, storeSetting.props.extendOptions))
 				throw new TypeError(Settings.ERROR.INVALID_TYPE._format([settingKey, storeKey, value]));
 
 			if (confirmChange && !changeConfirmed)
@@ -360,7 +360,7 @@ Object._extend(Settings, {
 
 			prevValue = (setting.props.onChange || storeSetting.props.onChange) ? Settings.getItem(settingKey, storeKey) : undefined;
 
-			this.__stores.getStore(settingKey).set(storeKey, value);
+			Settings.__stores.getStore(settingKey).set(storeKey, value);
 
 			if (setting.props.onChange)
 				setting.props.onChange('set', settingKey, value, storeKey, prevValue, isSync, isFullSync);
@@ -374,7 +374,7 @@ Object._extend(Settings, {
 
 			if (!isSync)
 				SyncClient.Settings.setItem(settingKey, value, storeKey);
-		} else if (this.__validate(type, value, options, otherOption, setting.props.extendOptions)) {			
+		} else if (Settings.__validate(type, value, options, otherOption, setting.props.extendOptions)) {			
 			if (locked && !unlocked)
 				return Settings.unlockSettingSet(settingKey, value, storeKey);
 
@@ -383,7 +383,7 @@ Object._extend(Settings, {
 
 			prevValue = setting.props.onChange ? Settings.getItem(settingKey, storeKey) : undefined;
 
-			this.__method('setItem', settingKey, value);
+			Settings.__method('setItem', settingKey, value);
 
 			if (setting.props.onChange)
 				setting.props.onChange('set', settingKey, value, storeKey, prevValue, isSync, isFullSync);
@@ -410,9 +410,9 @@ Object._extend(Settings, {
 				if (setting.storeKeySettings[storeKey])
 					storeKey = setting.storeKeySettings[storeKey].props.remap || storeKey;
 
-				this.__stores.getStore(settingKey).remove(storeKey);
+				Settings.__stores.getStore(settingKey).remove(storeKey);
 			} else
-				this.__stores.getStore(settingKey).clear();
+				Settings.__stores.getStore(settingKey).clear();
 
 			if (setting.props.onChange)
 				setting.props.onChange('remove', settingKey, undefined, storeKey, prevValue, isSync, isFullSync);
@@ -427,7 +427,7 @@ Object._extend(Settings, {
 			if (!isSync)
 				SyncClient.Settings.removeItem(settingKey, storeKey);
 		} else {
-			this.__method('removeItem', settingKey);
+			Settings.__method('removeItem', settingKey);
 			if (!isSync)
 				SyncClient.Settings.removeItem(settingKey);
 		}
@@ -438,7 +438,7 @@ Object._extend(Settings, {
 
 		for (var i = 0; i < settings.length; i++) {
 			if (settings[i].settings)
-				this.createMap(settings[i].settings, settings[i].when);
+				Settings.createMap(settings[i].settings, settings[i].when);
 			else {
 				settingKey = settings[i].setting ? settings[i].setting : settings[i].store;
 
@@ -467,10 +467,10 @@ Object._extend(Settings, {
 			}
 
 			if (settings[i].props && settings[i].props.subSettings)
-				this.createMap(settings[i].props.subSettings, settings[i].when);
+				Settings.createMap(settings[i].props.subSettings, settings[i].when);
 
 			if (settings[i].asRow)
-				this.createMap(settings[i].asRow);
+				Settings.createMap(settings[i].asRow);
 		}
 
 		return Settings.map;
