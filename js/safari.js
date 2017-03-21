@@ -80,7 +80,7 @@ window.ToolbarItems = {
 
 window.Popover = {
 	popover: (function () {
-		return safari.extension.popovers[0];
+		return safari.extension.popovers ? safari.extension.popovers[0] : {};
 	})(),
 
 	get window() {
