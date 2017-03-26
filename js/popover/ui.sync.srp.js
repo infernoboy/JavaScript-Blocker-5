@@ -1,18 +1,16 @@
 /*
-* @Last modified in Sublime on Mar 21, 2017 11:01:34 AM
+* @Last modified in Sublime on Mar 26, 2017 09:27:31 AM
 */
 
 'use strict';
 
 UI.SyncClient.SRP = {
 	sessionExpired: function () {
-		UI.onReady(function () {
-			UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
-				UI.SyncClient.SRP.showLogin(_('sync.session_expired'));
-			}, true);
+		UI.event.addCustomEventListener(Popover.visible() ? 'UIReady' : 'popoverOpened', function () {
+			UI.SyncClient.SRP.showLogin(_('sync.session_expired'));
+		}, true);
 
-			globalPage.Update.showRequiredPopover();
-		});
+		globalPage.Update.showRequiredPopover();
 	},
 
 	showLogin: function (reason) {
