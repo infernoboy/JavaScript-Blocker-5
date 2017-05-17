@@ -203,7 +203,7 @@ UI.Rules = {
 			rule;
 
 		var sorter = {
-			fn: $('#rule-sort-by', UI.Rules.viewContainer).val() === 'priority' ? globalPage.Rules.__prioritize : null,
+			fn: $('#rule-sort-by', UI.Rules.viewContainer).val() === 'priority' ? globalPage.Rules.__prioritize : undefined,
 			direction: $('#rule-sort-direction').attr('data-sortDirection')
 		};
 
