@@ -286,3 +286,25 @@ Update.versions[170206] = {
 		return true;
 	}
 };
+
+// === 5.2.0 ===
+Update.versions[170305] = {
+	blocking: false,
+
+	update: function () {
+		var currentStorage;
+
+		var userScripts = UserScript.scripts.keys();
+
+		for (var i = userScripts.length; i--;) {
+			currentStorage = UserScript.scripts.get(userScripts[i]).get('storage');
+
+			if (currentStorage) {
+				UserScript.storage.getStore(userScripts[i]).replaceWith(currentStorage);
+				UserScript.scripts.get(userScripts[i]).remove('storage');
+			}
+		}
+
+		return true;
+	}
+};

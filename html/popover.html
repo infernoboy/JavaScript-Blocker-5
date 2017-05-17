@@ -19,6 +19,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	<script src="../js/event.js"></script>	
 	<script src="../js/template.js"></script>
 	<script src="../js/utilities.js"></script>
+	<script src="../js/promise.js"></script>
 	<script src="../js/popover/popover.js"></script>
 
 	<script>
@@ -41,6 +42,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	<script src="../js/popover/poppy.js"></script>
 	<script src="../js/popover/poppy-menu.js"></script>
 	<script src="../js/popover/poppies.js"></script>
+	<script src="../js/popover/ui.sync.js"></script>
+	<script src="../js/popover/ui.sync.srp.js"></script>
 	<script src="../js/popover/ui.locker.js"></script>
 	<script src="../js/popover/ui.setup.js"></script>
 	<script src="../js/popover/ui.settings.js"></script>
@@ -57,7 +60,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	<script>
 		window.PopoverReady = true;
 
-		globalPage.Command.event.trigger('popoverReady', null, true);
+		setTimeout(function () {
+			globalPage.Command.event.trigger('popoverReady', null, true);
+		}, 500);
 	</script>
 </head>
 

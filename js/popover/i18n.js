@@ -94,8 +94,3 @@ function _ (string, args, hideNotLocalized) {
 
 	return localized;
 }
-
-if (window.globalPage) {
-	globalPage.Strings = Strings;
-	globalPage._ = _;
-}

@@ -311,6 +311,8 @@ var UI = {
 					Settings.setItem(UI.__popoverHeightSetting, popover.height);
 				}, 100, [popover]);
 
+			UI.view.updateProgressBarAnimation();
+
 			UI.event.trigger('popoverDidResize', {
 				widthDifference: originalWidth - popover.width,
 				heightDifference: originalHeight - popover.height,
@@ -331,7 +333,7 @@ var UI = {
 	},
 
 	executeLessScript: function (script) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			less.render('JSB { value: ' + script + ' }', { compress: true }).then(function (result) {
 				var value = result.css.substr(10);
 
@@ -367,7 +369,9 @@ var UI = {
 					if (nodeName === 'TEXTAREA' && event.which === UI.events.__keys.TAB && !document.activeElement.classList.contains('render-as-input')) {
 						event.preventDefault();
 
+						/* eslint-disable */
 						Utilities.Element.insertText(document.activeElement, "\t");
+						/* eslint-enable */
 					}
 
 					return;
@@ -449,6 +453,7 @@ var UI = {
 		init: function () {
 			this.views = $('#main-views', UI.container);
 			this.viewContainer = $('#view-container', UI.container);
+			this.universalProgressBar = $('#universal-progress-bar', UI.container);
 			this.viewToolbar = $('#view-toolbar', this.viewContainer);
 			this.viewSwitcher = $('.view-switcher', this.viewToolbar);
 
@@ -535,6 +540,78 @@ var UI = {
 				});
 
 			this.switchTo(this.__default);
+		},
+
+		updateProgressBar: function (percent, duration, description, timeRemaining) {
+			clearTimeout(UI.view.updateProgressBar.timeout);
+
+			if (!UI.view.universalProgressBar)
+				return;
+
+			var width = percent < 0 ? 100 : percent;
+
+			$('#open-menu', UI.view.viewToolbar).toggleClass('has-progress', percent > 1 && percent < 100);
+
+			if (UI.view.universalProgressBar.data('previousPercent') > percent && percent > 0)
+				UI.view.updateProgressBar(0, 0, description, timeRemaining);
+
+			UI.view.universalProgressBar.data('previousPercent', percent).toggleClass('progress-bar-indeterminate', percent < 0);
+
+			var menuProgressBarContainer = $('#main-menu .progress-bar-container', UI.container);
+
+			if (UI.view.universalProgressBar.is(':visible')) {
+				UI.view.universalProgressBar
+					.add($('.progress-bar-progress', menuProgressBarContainer))
+					.toggleClass('progress-bar-indeterminate', percent < 0)
+					.css('WebkitTransitionDuration', ((duration * 1.15) * globalSetting.speedMultiplier) + 'ms');
+
+				if (menuProgressBarContainer.length) {
+					var poppy = menuProgressBarContainer.parents('.poppy-content').data('poppy');
+
+					$('.progress-bar-progress', menuProgressBarContainer).width(width + '%');
+					$('.progress-bar-description', menuProgressBarContainer).text(description || '');
+					$('.progress-bar-time-remaining', menuProgressBarContainer).text(timeRemaining || '');
+
+					poppy.setPosition();
+
+					if (!menuProgressBarContainer.is(':visible'))
+						menuProgressBarContainer.animate({
+							height: 'show',
+							opacity: 'show'
+						}, {
+							duration: 250,
+							step: function () {
+								poppy.setPosition();
+							}
+						});
+				}
+
+				UI.view.universalProgressBar.width(width + '%');
+
+				if (percent === 100)
+					UI.view.updateProgressBar.timeout = setTimeout(function () {
+						UI.view.universalProgressBar.fadeOut(250, function () {
+							UI.view.universalProgressBar.width(0);
+
+							if (menuProgressBarContainer.length)
+								menuProgressBarContainer.animate({
+									height: 'hide',
+									opacity: 'hide'
+								}, 250, function () {
+									poppy.setPosition();
+								});
+						});
+					}, duration + 500);
+			} else {
+				UI.view.universalProgressBar.css('WebkitTransitionDuration', '0ms').width(0).show();
+
+				UI.view.updateProgressBar(percent, duration, description, timeRemaining);
+			}
+		},
+
+		updateProgressBarAnimation: function () {
+			if (UI.view.universalProgressBar)
+				UI.view.universalProgressBar.toggleClass('animated', globalSetting.speedMultiplier >= 1);
 		},
 
 		create: function (prefix, viewID, container) {
@@ -653,8 +730,6 @@ var UI = {
 };
 
 UI.events.__keys._createReverseMap();
-
-globalPage.UI = UI;
 
 document.addEventListener('DOMContentLoaded', UI.init, true);
 

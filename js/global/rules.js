@@ -377,7 +377,7 @@ Rule.prototype.addMany = function (kinds) {
 	
 	kinds = kinds._clone(true, true);
 
-	return new Promise(function (resolve) {
+	return CustomPromise(function (resolve) {
 		if (typeof kinds !== 'object')
 			throw new TypeError(kinds + ' is not an object');
 
@@ -489,108 +489,7 @@ Rule.prototype.forLocation = function (params) {
 	return rules;
 };
 
-Rule.prototype.createContentBlocker = function (withTheseRules) {
-	var allRules = withTheseRules || this.rules.all(),
-		allowingRules = {};
-
-	var map = {
-		'*': 1,
-		xhr_get: 'raw',
-		xhr_post: 'raw',
-		xhr_put: 'raw',
-		script: 'script',
-		frame: 'document',
-		image: 'image',
-		embed: 'media',
-		video: 'media'
-	};
-
-	var allKinds = ['raw', 'script', 'document', 'image', 'media', 'font', 'style-sheet'];
-
-	var subDomainBase = '\\/\\/(.+\\.)?';
-
-	var ruleKind,
-		ruleType,
-		domains,
-		domain,
-		rule,
-		contentBlockerRules,
-		ruleParts,
-		ruleSub,
-		protocol,
-		i;
-
-	var contentBlocker = [];
-
-	for (ruleKind in allRules) {
-		if (!(ruleKind in map))
-			continue;
-
-		allowingRules._getWithDefault(ruleKind, {});
-
-		for (ruleType in allRules[ruleKind]) {
-			if (ruleType._startsWith('not') || ruleType === 'page')
-				continue;
-
-			allowingRules[ruleKind]._getWithDefault(ruleType, {});
-
-			if (allRules[ruleKind][ruleType]) {
-				domains = allRules[ruleKind][ruleType]._sort(Rules.__prioritize);
-
-				for (domain in domains) {
-					allowingRules[ruleKind][ruleType]._getWithDefault(domain, {});
-
-					for (rule in domains[domain])
-						if (!withTheseRules && (domains[domain][rule].action % 2))
-							allowingRules[ruleKind][ruleType][domain][rule] = domains[domain][rule];
-						else {
-							if (domains[domain][rule].regexp) {
-								ruleSub = rule.substr(1);
-								ruleSub = ruleSub.substr(0, ruleSub.length - 1);
-								ruleSub = ruleSub.replace('[^\\/]', '.');
-								ruleSub = ruleSub.replace('[^\\.]', '[a-zA-Z0-9_]');
-								ruleSub = ruleSub.replace(new RegExp('([^a-za-z0-9_\\.%-]+|$)'._escapeRegExp(), 'g'), '\\/');
-								ruleSub = ruleSub.replace(/\{\d+\}/g, '+');
-
-								if (ruleSub._contains('^') || ruleSub._contains('|'))
-									continue;
-
-								contentBlockerRules = [punycode.toASCII(ruleSub)];
-							}
-							else {
-								contentBlockerRules = [];
-
-								ruleParts = Rules.partsForRule(rule);
-
-								for (protocol in ruleParts.protocols)
-									contentBlockerRules.push(protocol === 'about:' ? (protocol + ruleParts.domain) : (protocol + subDomainBase + punycode.toASCII(ruleParts.domain)._escapeRegExp() + '\\/.*'));
-							}
-
-							for (i = contentBlockerRules.length; i--;)
-								contentBlocker.push({
-									trigger: {
-										'url-filter': contentBlockerRules[i],
-										'resource-type': ruleKind === '*' ? allKinds : [map[ruleKind]],
-										'if-domain': domain === '*' ? undefined : [punycode.toASCII(domain._startsWith('.') ? '*' + domain.substr(1) : domain)]
-									},
-									action: {
-										type: !(domains[domain][rule].action % 2) ? 'block' : 'ignore-previous-rules'
-									}
-								});
-						}
-				}
-			}
-		}
-	}
-
-	if (!withTheseRules)
-		contentBlocker = contentBlocker.concat(this.createContentBlocker(allowingRules));
-
-	return contentBlocker;
-};
-
 var Rules = {
-	__contentBlockerMode: false,
 	__locked: false,
 	__regExpCache: {},
 	__partsCache: new Store('RuleParts'),
@@ -647,38 +546,6 @@ var Rules = {
 			return 1;
 
 		return 0;
-	},
-
-	setContentBlockerMode: function (contentBlockerMode) {
-		if (!ContentBlocker.isSupported)
-			return;
-
-		Rules.__contentBlockerMode = !!contentBlockerMode;
-
-		RemoveContentScripts();
-
-		if (Rules.__contentBlockerMode)
-			ContentBlocker.create(Rules.createContentBlocker());
-		else {
-			ContentBlocker.create();
-
-			AddContentScriptFromURL('js/injected/compiled.js');
-		}
-	},
-
-	createContentBlocker: function () {
-		if (!ContentBlocker.isSupported)
-			return false;
-
-		var excludeLists = ['description', 'active', 'temporaryFirstVisit', 'firstVisit', 'temporary'],
-			reverseList = Object.keys(Rules.list).reverse(),
-			lists = [];
-
-		for (var i = 0; i < reverseList.length; i++)
-			if (!excludeLists._contains(reverseList[i]))
-				lists = lists.concat(this.list[reverseList[i]].createContentBlocker());
-
-		return lists;
 	},
 
 	onToggleLock: function (event) {

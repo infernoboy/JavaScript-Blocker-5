@@ -16,10 +16,10 @@ do {
 	}
 
 	if (!globalSetting.popoverReady && window === window.top) {
-		if (window.localStorage.getItem('JSB-RELOAD-COUNT') === '3')
+		if (window.sessionStorage.getItem('JSB-RELOAD-COUNT') === '3')
 			throw new Error('JSB failed to load');
 
-		window.localStorage.setItem('JSB-RELOAD-COUNT', Number(window.localStorage.getItem('JSB-RELOAD-COUNT') || 0) + 1);
+		window.sessionStorage.setItem('JSB-RELOAD-COUNT', Number(window.sessionStorage.getItem('JSB-RELOAD-COUNT') || 0) + 1);
 
 		window.stop();
 
@@ -30,7 +30,7 @@ do {
 } while (globalSetting.command || !globalSetting.popoverReady);
 
 setTimeout(function () {
-	window.localStorage.removeItem('JSB-RELOAD-COUNT');
+	window.sessionStorage.removeItem('JSB-RELOAD-COUNT');
 }, 1000);
 
 if (!window.MutationObserver)

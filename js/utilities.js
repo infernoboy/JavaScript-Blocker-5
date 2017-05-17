@@ -57,7 +57,7 @@ var Utilities = {
 	})(),
 
 	watchdog: function (type, tries, timeLimit, callback) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			var first;
 
 			if (typeof callback !== 'function')
@@ -938,7 +938,7 @@ function _cleanErrorStack(stackArray) {
 function _createConsoleFormat(messages) {
 	var format = '';
 
-	messages.unshift((new Date).toLocaleTimeString() + ' - ');
+	messages.unshift((new Date).toLocaleTimeString() + ' -');
 
 	if (Utilities.Page.isWebpage)
 		messages.unshift('(JSB)');
@@ -951,6 +951,7 @@ function _createConsoleFormat(messages) {
 }
 
 function Log () {
+	/* eslint-disable */
 	var stack = Error().stack.split("\n");
 
 	stack.shift();
@@ -959,6 +960,8 @@ function Log () {
 		messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
 
 	Log.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack);
+
+	/* eslint-enable */
 
 	Log.history = Log.history._chunk(LOG_HISTORY_SIZE)[0];
 
@@ -976,6 +979,7 @@ Log.history = [];
 
 function LogDebug () {
 	if (globalSetting.debugMode) {
+		/* eslint-disable */
 		var stack = Error().stack.split("\n");
 
 		stack.shift();
@@ -984,6 +988,8 @@ function LogDebug () {
 			messages = _createConsoleFormat(Utilities.makeArray(arguments), _cleanErrorStack(stack));
 
 		LogDebug.history.unshift(messages.slice(1).join(' ') + "\n" + cleanErrorStack);
+
+		/* eslint-enable */
 
 		LogDebug.history = LogDebug.history._chunk(LOG_HISTORY_SIZE)[0];
 
@@ -1031,9 +1037,9 @@ function LogError () {
 				errorStack = error.stack ? error.stack : null;
 
 			if (error.sourceURL)
-				errorMessage = ['%s %s (%s:%s)', now, error.message, error.sourceURL.replace(new RegExp('(blob:)?' + origin + '(' + pathname + ')?', 'g'), ''), error.line];
+				errorMessage = ['%s %s (%s:%s)', now, error, error.sourceURL.replace(new RegExp('(blob:)?' + origin + '(' + pathname + ')?', 'g'), ''), error.line];
 			else
-				errorMessage = ['%s %s', now, error.message];
+				errorMessage = ['%s %s', now, error];
 		} else if (typeof error === 'string' || typeof error === 'number')
 			errorMessage = ['%s %s', now, error];
 		else
@@ -1100,6 +1106,12 @@ var Extension = {
 			}
 		},
 
+		_new: {
+			value: function () {
+				return new (Function.prototype.bind.apply(this, arguments));
+			}
+		},
+
 		_extendClass: {
 			value: function (fn) {
 				if (typeof fn !== 'function')
@@ -1117,6 +1129,10 @@ var Extension = {
 
 				extended.prototype.constructor = this;
 
+				for (var key in this)
+					if (this.hasOwnProperty(key))
+						extended[key] = this[key];
+
 				return extended;
 			},
 		},
@@ -1124,7 +1140,11 @@ var Extension = {
 		_extends: {
 			value: (function () {
 				function _super (superClass, localArgs) {
-					return superClass.apply(this, localArgs.concat(Utilities.makeArray(arguments).slice(2)));
+					try {
+						return superClass.apply(this, localArgs.concat(Utilities.makeArray(arguments).slice(2)));
+					} catch (err) {
+						return superClass._new(localArgs.concat(Utilities.makeArray(arguments).slice(2)));
+					}
 				}
 
 				return function (superClass) {
@@ -1140,6 +1160,10 @@ var Extension = {
 					extended.prototype = Object.create(superClass.prototype);
 
 					extended.prototype.constructor = this;
+
+					for (var key in superClass)
+						if (superClass.hasOwnProperty(key))
+							extended[key] = superClass[key];
 
 					return extended;
 				};
@@ -1404,6 +1428,8 @@ var Extension = {
 				for (var key in this)
 					if (this.hasOwnProperty(key)) {
 						li = $('<li>').appendTo(container);
+
+						$('<span>').addClass('object-key-name').appendTo(li).text(key + ': ');
 
 						if (Object._isPlainObject(this[key]))
 							keyValue = $('<div>').append(this[key]._toHTMLList($('<ul>')));

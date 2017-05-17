@@ -14,7 +14,7 @@ UI.Locker = {
 
 		poppy.modal().show();
 
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			Locker.event.addCustomEventListener('passwordSet', function (event) {
 				if (event.detail)
 					resolve();
@@ -25,7 +25,7 @@ UI.Locker = {
 	},
 
 	showLockerPrompt: function (key, autoUnlock, keepOpenPoppies) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			if (Popover.window.Poppy.poppyWithScriptNameExist('toggle-lock'))
 				return reject();
 

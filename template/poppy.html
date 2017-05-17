@@ -34,13 +34,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			<span id="main-menu-console-message-count"><%=_('main_menu.console.message'._pluralize(messageCount), [messageCount])%></span> 
 		</div>
 
-		<% if (false && ContentBlocker.isSupported) { %>
-			<div class="horizontal-divider"></div>
-
-			<div class="generic-menu-menu jsb-align-right">
-				<input type="checkbox" id="main-menu-content-blocker-mode" /> <label for="main-menu-content-blocker-mode">"Content Blocker" mode</label>
-			</div><%
-		} %>
+		<%=Template.create('poppy', 'progress-bar', {
+			percent: 0,
+			timeRemaining: '',
+			description: '',
+			topDivider: true
+		}, true).html()%>
 	</div>
 </noscript>
 
@@ -235,6 +234,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		<div class="generic-menu">
 			<ul class="generic-menu-options generic-menu-menu">
 				<li class="jsb-align-right">
+					<% if (globalPage.SyncClient.SRP.isLoggedIn()) { %>
+						<input id="setting-menu-sync-now" type="button" value="<%=_('sync.sync_now')%>" <%=globalPage.SyncClient.Settings.busy ? 'disabled="disabled"' : ''%>/><%
+					} %>
 					<input id="setting-menu-backup" type="button" value="<%=_('setting_menu.backup')%>" />
 					<% if (Locker.isEnabled()) { %>
 						<input id="setting-menu-lock" type="button" value="<%=_('Lock')%>" /><%
@@ -278,7 +280,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 								</li><%
 							if (messageHistory.error[i].stack.length) { %>
 								<li>
-									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack.replace(/\n/g, '<br>')._escapeHTML().replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;')%></span>
+									<span class="console-error-stack">Stack: <%=messageHistory.error[i].stack._escapeHTML().replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;')%></span>
 								</li><%
 							}
 						}
@@ -442,5 +444,18 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			<input type="button" value="<%=_('view.page.header.all_kinds')%>" data-action="block" data-which="all" />
 			<input type="button" value="<%=_('view.page.header.checked_kinds')%>" data-action="block" data-which="some" />
 		</div>
+	</div>
+</noscript>
+
+<noscript id="progress-bar">
+	<div class="progress-bar-container">
+		<% if (self.topDivider)	{ %>
+			<div class="horizontal-divider"></div><%
+		} %>
+		<p class="progress-bar-description jsb-info"><%=self.description._escapeHTML()%></p>
+		<div class="progress-bar-back">
+			<div class="progress-bar-progress" style="width:<%=self.percent%>%"><div class="progress-bar-shine"></div></div>
+		</div>
+		<p class="progress-bar-time-remaining jsb-info"><%=self.timeRemaining._escapeHTML()%></p>
 	</div>
 </noscript>

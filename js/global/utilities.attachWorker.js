@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Feb 26, 2017 11:28:59 PM
+* @Last modified in Sublime on Mar 08, 2017 03:59:22 PM
 */
 
 'use strict';
@@ -7,7 +7,7 @@
 Utilities.promiseWorker = new PromiseWorker('../js/global/utilities.worker.js');
 
 Utilities.compress = function (string) {
-	return new Promise(function (resolve, reject) {
+	return CustomPromise(function (resolve, reject) {
 		if (string.length < 1000000)
 			return resolve(string);
 

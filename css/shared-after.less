@@ -613,5 +613,68 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 				}
 			}
 		}
+
+		.progress-bar-container {
+			position: relative;
+
+			.progress-bar-back {
+				width: 240px;
+				height: 6px;	
+				box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 0 rgba(0, 0, 0, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(0, 0, 0, 0.1);
+				border-radius: 8px;
+				background: rgba(0, 0, 0, 0.1);
+				margin: 0 auto;
+
+				& when (@darkMode) {
+					border-color: rgba(0, 0, 0, 0.5);
+					background: rgba(0, 0, 0, 0.5);
+				}
+
+				.progress-bar-progress {
+					overflow: hidden;
+					position: relative;
+					height: 6px;
+					min-width: 6px;
+					background: lighten(@baseColor, 7%);
+					box-shadow: inset -1px 0 0 darken(@baseColor, 10%), inset 1px 0 0 darken(@baseColor, 10%), inset 0 -1px 0 darken(@baseColor, 10%), inset 0 1px 0 darken(@baseColor, 10%);
+					border-radius: 8px;
+					-webkit-transition: width unit(0.5 * @speedMultiplier, s) ease-out;
+				}
+			}
+
+			.progress-bar-time-remaining {
+				margin-top: 10px;
+				text-align: center;
+				line-height: 1;
+				margin-bottom: 0;
+			}
+		}
+
+		.progress-bar-shine {
+			position: relative;
+			height: 100%;
+			left: -300px;
+			width: 150px;
+			background: -webkit-linear-gradient(left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+			-webkit-animation: progress-bar-shine 2s ease-in-out 1s infinite; 
+		}
+
+		#container {
+			div,
+			#universal-progress-bar-container {
+				&,
+				#universal-progress-bar {
+					&.progress-bar-indeterminate {
+						.progress-bar-shine {
+							display: none;
+						}
+
+						background: lighten(@baseColor, 7%) -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%) repeat;
+						background-size: 300px 300px;
+						-webkit-animation: progress-bar-indeterminate 2.5s linear 0 infinite; 
+					}
+				}
+			}
+		}
 	}
 }
