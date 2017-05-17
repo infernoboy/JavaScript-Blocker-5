@@ -377,7 +377,7 @@ Rule.prototype.addMany = function (kinds) {
 	
 	kinds = kinds._clone(true, true);
 
-	return new Promise(function (resolve) {
+	return CustomPromise(function (resolve) {
 		if (typeof kinds !== 'object')
 			throw new TypeError(kinds + ' is not an object');
 

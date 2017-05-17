@@ -7,14 +7,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 window.globalSetting = {
 	disabled: false,
 	speedMultiplier: 1,
-
-	get debugMode () {
-		return Settings.getItem('debugMode');
-	},
-
-	set debugMode (value) {
-		Settings.setItem('debugMode', value);
-	}
+	debugMode: false
 };
 
 window.$$ = function (selector, context) {
@@ -33,6 +26,17 @@ var Maintenance = {
 
 			Maintenance.resetIdleTimer();
 		}, TIME.ONE.HOUR);
+	},
+
+	createPopoverGetters: function () {
+		var vars = ['UI', 'Poppy', 'Strings', '_'];
+
+		for (var i = vars.length; i--;)
+			Object.defineProperty(window, vars[i], {
+				get: function (key) {
+					return Popover.window[key];
+				}.bind(null, vars[i])
+			});
 	},
 	
 	maintainPopover: function () {
@@ -62,6 +66,7 @@ var Maintenance = {
 $(function () {
 	window.GlobalPageReady = true;
 
+	Maintenance.createPopoverGetters();
 	Maintenance.resetIdleTimer();
 
 	Maintenance.event.trigger('globalPageReady', true);

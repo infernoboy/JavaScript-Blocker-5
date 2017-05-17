@@ -501,12 +501,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		this.poppy
 			.toggleClass('poppy-open-quick', !!quick)
 			.toggleClass('poppy-open-instant', !!instant)
-			.addClass('poppy-open poppy-displayed')
-			.one('webkitAnimationEnd', function () {
-				Poppy.event.trigger('poppyIsFullyShown', this);
-
-				this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
-			}.bind(this));
+			.addClass('poppy-open poppy-displayed');
 
 		this.poppy.hide();
 
@@ -516,11 +511,22 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 		Poppy.event.trigger('poppyDidShow', this);
 
-		Utilities.Timer.timeout('PoppyCreating', function () {
+		Utilities.Timer.timeout('PoppyCreating', function (self) {
 			Poppy.__creating = false;
-		}, 0);
+
+			if (Settings.getItem('useAnimations'))
+				self.poppy.one('webkitAnimationEnd', self.fullyShown.bind(self));
+			else
+				self.fullyShown();
+		}, 0, [this]);
 
 		return this;
+	};
+
+	Poppy.prototype.fullyShown = function () {
+		Poppy.event.trigger('poppyIsFullyShown', this);
+
+		this.poppy.removeClass('poppy-open').addClass('poppy-fully-shown');
 	};
 
 	Poppy.prototype.remove = function () {
@@ -532,9 +538,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	};
 
 	Poppy.prototype.close = function (immediate, doNotCheckEvent) {
-		return new Promise(function (resolve) {
+		return CustomPromise(function (resolve) {
 			if (this.closed || (!doNotCheckEvent && Poppy.event.trigger('poppyWillClose', this)))
-				return this;
+				return resolve(this);
 
 			if (this.view)
 				this.view.unbind('scroll', this.__viewDidScroll);
@@ -548,7 +554,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 					.removeCustomEventListener('click', this.cancelScaleWithForce);
 
 			if (!this.displayed)
-				return this;
+				return resolve(this);
 
 			Poppy.closeLinksTo(this);
 
@@ -590,8 +596,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 						resolve(self);
 					});
-
-			return this;
 		}.bind(this));
 	};
 
@@ -678,7 +682,4 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	UI.event.addCustomEventListener('pageWillRender', Poppy.closeAll);
 	UI.event.addCustomEventListener('popoverOpened', Poppy.closeAll.bind(Poppy, true, true));
 	UI.event.addCustomEventListener('popoverDidResize', Poppy.closeAll);
-
-	if (window.globalPage)
-		window.globalPage.Poppy = Poppy;
 })();

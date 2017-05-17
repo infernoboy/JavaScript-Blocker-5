@@ -233,7 +233,10 @@ Settings.settings = {
 		setting: 'debugMode',
 		props: {
 			type: 'boolean',
-			default: false
+			default: false,
+			onChange: function (type, settingKey, value) {
+				window.globalSetting.debugMode = value;
+			}
 		}
 	}, {
 		setting: 'showPopoverOnLoad',
@@ -278,6 +281,33 @@ Settings.settings = {
 			type: 'boolean',
 			default: false
 		}
+	}, {
+		setting: 'syncNeedsFullSettingsSync',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
+		setting: 'syncLastTime',
+		props: {
+			type: 'number',
+			default: 0
+		}
+	}, {
+		setting: 'syncClientIsLoggedIn',
+		props: {
+			type: 'boolean',
+			readOnly: true,
+			default: function () {
+				return SyncClient.SRP.isLoggedIn();
+			}
+		}
+	}, {
+		setting: 'syncClientNeedsVerification',
+		props: {
+			type: 'boolean',
+			default: false
+		}
 	}],
 
 	// General Settings
@@ -297,6 +327,10 @@ Settings.settings = {
 						Popover.window.document.body.classList.toggle('jsb-no-animations', !useAnimations);
 
 						UI.setLessVariables();
+
+						UI.onReady(function () {
+							UI.view.updateProgressBarAnimation();
+						});
 					}
 				}
 			}, {
@@ -369,11 +403,11 @@ Settings.settings = {
 						['en-us', 'US English']
 					],
 					default: 'auto',
-					onChange: function () {
+					onChange: function (type, settingKey, value, storeKey, prevValue, isSync) {
 						setTimeout(function () {
 							if (!SettingStore.__locked && !Settings.IMPORTING)
 								Popover.window.location.reload();
-						}, 500);
+						}, isSync ? 2000 : 500);
 					}
 				}
 			}, {
@@ -439,10 +473,12 @@ Settings.settings = {
 					props: {
 						type: 'boolean',
 						default: false,
-						onChange: function (type, settingKey, value) {
-							var relatedSettings = [
-								'createRulesOnClick', 'autoHideWhitelist', 'autoHideBlacklist',
-								'autoHideRule', 'autoHideNoRule'];
+						onChange: function (type, settingKey, value, prevValue, isSync, isFullSync) {
+							if (isFullSync)
+								return;
+
+							var relatedSettings = ['createRulesOnClick', 'autoHideWhitelist',
+								'autoHideBlacklist', 'autoHideRule', 'autoHideNoRule'];
 
 							for (var i = relatedSettings.length; i--;)
 								if (value)
@@ -515,16 +551,14 @@ Settings.settings = {
 					type: 'boolean',
 					default: false,
 					locked: true,
-					onChange: function () {
-						if (Settings.IMPORTING)
+					onChange: function (type, settingKey, value, storeKey, prevValue, isSync, isFullSync) {
+						if (Settings.IMPORTING || isFullSync)
 							return;
 
 						if (Locker.isEnabled())
 							UI.Locker
 								.showSetPasswordPrompt()
-								.then(function () {
-									// Success
-								}, function () {
+								.then(Utilities.noop, function () {
 									Settings.setItem('useLocker', false, null, true, true);
 
 									if (!Settings.getItem('setupComplete'))
@@ -632,6 +666,230 @@ Settings.settings = {
 				}]
 			}]
 		}
+	}],
+
+	// Sync settings
+	sync: [{
+		header: 'extraFeatures'
+	}, {
+		description: 'syncClientSync.what'
+	}, {
+		when: {
+			hide: true,
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'syncClientIsLoggedIn',
+					needle: true
+				}]
+			}
+		},
+		settings: [{
+			customView: function (container) {
+				container.append(Template.create('settings', 'sync-client-logged-in'));
+			}
+		}]
+	}, {
+		asRow: [{
+			when: {
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.IS,
+						key: 'syncClientIsLoggedIn',
+						needle: true
+					}]
+				}
+			},
+			settings: [{
+				setting: 'syncClientLogout',
+				props: {
+					type: 'stand-alone-button',
+					onClick: function () {
+						SyncClient.logout().then(Utilities.noop, Utilities.noop);
+					}
+				}
+			}, {
+				setting: 'syncClientChangePassword',
+				props: {
+					type: 'stand-alone-button',
+					onClick: function () {
+						UI.SyncClient.SRP.showChangePassword();
+					}
+				}
+			}]
+		}, {
+			when: {
+				hide: true,
+				settings: {
+					group: 'all',
+					items: [{
+						method: Utilities.Group.IS,
+						key: 'syncClientIsLoggedIn',
+						needle: false
+					}, {
+						method: Utilities.Group.IS,
+						key: 'extrasActive',
+						needle: true
+					}]
+				}
+			},
+			settings: [{
+				setting: 'syncClientLogin',
+				props: {
+					type: 'stand-alone-button',
+					isExtra: true,
+					onClick: function () {
+						UI.SyncClient.SRP.showLogin(_('sync.login_general'));
+					}
+				}
+			}, {
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'syncClientNeedsVerification',
+							needle: true
+						}]
+					}
+				},
+				settings: [{
+					setting: 'syncClientVerify',
+					props: {
+						type: 'stand-alone-button',
+						onClick: function () {
+							UI.SyncClient.SRP.showVerify();
+						}
+					}
+				}]
+			}, {
+				setting: 'syncClientRegister',
+				props: {
+					type: 'stand-alone-button',
+					onClick: function () {
+						UI.SyncClient.SRP.showRegister();
+					}
+				}
+			}]
+		}]
+	}, {
+		divider: true // ========
+	}, {
+		description: 'syncClientSync.these',
+		classes: 'short'
+	}, {
+		when: {
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'extrasActive',
+					needle: true
+				}]
+			}
+		},
+		settings: [{
+			store: 'syncClientSync',
+			props: {
+				type: 'boolean'
+			}
+		}, {
+			setting: 'syncClientSync',
+			props: {
+				storeKey: 'settings',
+				isExtra: true,
+				default: true
+			}
+		}, {
+			setting: 'syncClientSync',
+			props: {
+				storeKey: 'firstVisit',
+				isExtra: true,
+				default: true
+			}
+		}, {
+			setting: 'syncClientSync',
+			props: {
+				storeKey: 'rules',
+				isExtra: true,
+				default: true
+			}
+		}, {
+			setting: 'syncClientSync',
+			props: {
+				storeKey: 'snapshots',
+				isExtra: true,
+				default: true
+			}
+		}, {
+			setting: 'syncClientSync',
+			props: {
+				storeKey: 'userScripts',
+				isExtra: true,
+				default: true
+			}
+		}, {
+			divider: true // ===============
+		}, {
+			setting: 'syncClientAutoSync',
+			props: {
+				type: 'boolean',
+				default: true,
+				onChange: function (type, settingKey, value) {
+					SyncClient.Settings.autoSync(value);
+				}
+			}
+		}, {
+			asRow: [{
+				when: {
+					hide: true,
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'syncClientIsLoggedIn',
+							needle: true
+						}]
+					}
+				},
+				settings: [{
+					divider: true // ==============
+				}, {
+					setting: 'syncClientPerformFullSettingsSync',
+					props: {
+						type: 'stand-alone-button',
+						onClick: function () {
+							SyncClient.Settings.init().performFullSettingsSync().catch(Utilities.noop);
+						}
+					}
+				}]
+			}]
+		}]
+	}, {
+		when: {
+			hide: true,
+			settings: {
+				group: 'all',
+				items: [{
+					method: Utilities.Group.IS,
+					key: 'debugMode',
+					needle: true
+				}]
+			}
+		},
+		settings: [{
+			divider: true // ==============
+		}, {
+			setting: 'syncClientUseDevelopmentServer',
+			props: {
+				type: 'boolean',
+				default: false
+			}
+		}]
 	}],
 
 	// Rule settings
@@ -806,12 +1064,12 @@ Settings.settings = {
 							}]
 						}
 					},
-					onChange: function (type, settingKey, value, storeKey, prevValue) {
+					onChange: function (type, settingKey, value, storeKey, prevValue, isSync, isFullSync) {
 						Rules.list.firstVisit.clear();
 						Rules.list.temporaryFirstVisit.clear();
 
 						if (Settings.getItem('simplifiedUI') && (prevValue === 'nowhere' || value === 'nowhere'))
-							Settings.map.simplifiedUI.props.onChange(null, null, true);
+							Settings.map.simplifiedUI.props.onChange(null, null, true, null, null, isSync, isFullSync);
 					}
 				}
 			}, {
@@ -1367,8 +1625,8 @@ Settings.settings = {
 							return (url._startsWith('http:') || url._startsWith('https:') || url._startsWith('ftp:'));
 						}
 					},
-					onChange: function (type, settingKey, value, storeKey) {
-						if (storeKey === '$fanboyUltimate' && value && value.enabled) {
+					onChange: function (type, settingKey, value, storeKey, prevValue, isSync, isFullSync) {
+						if (!isFullSync && storeKey === '$fanboyUltimate' && value && value.enabled) {
 							var poppy = new Popover.window.Poppy(0.5, 0, 'fanboys-ultimate');
 
 							poppy
@@ -1442,6 +1700,73 @@ Settings.settings = {
 	}, {
 		divider: true //===================================================================================
 	}, {
+		collapsible: 'setting.collapsible.snapshots',
+		props: {
+			subSettings: [{
+				divider: true,
+				classes: 'transparent short'
+			}, {
+				header: 'extraFeatures'
+			}, {
+				when: {
+					settings: {
+						group: 'all',
+						items: [{
+							method: Utilities.Group.IS,
+							key: 'extrasActive',
+							needle: true
+						}]
+					}
+				},
+				settings: [{
+					description: 'autoSnapshots.description',
+				}, {
+					setting: 'autoSnapshots',
+					props: {
+						type: 'boolean',
+						isExtra: true,
+						default: function () {
+							return Extras.isActive();
+						},
+						onChange: function () {
+							Rules.list.user.rules.snapshot.autoSnapshots(Settings.getItem('autoSnapshots'));
+						}
+					}
+				}, {
+					setting: 'snapshotsLimit',
+					props: {
+						type: 'range',
+						options: [1, 999],
+						default: 5,
+						onChange: function () {
+							Rules.list.user.rules.snapshot.maxUnkept = Settings.getItem('snapshotsLimit');
+						}
+					}
+				}, {
+					divider: true //===================================================================================
+				}, {
+					asRow: [{
+						setting: 'clearSnapshots',
+						props: {
+							type: 'stand-alone-button',
+							classes: 'double-click',
+							onClick: function () {
+								Rules.list.user.rules.snapshot.snapshots.clear();
+							}
+						}
+					}]
+				}]
+			}]
+		}
+	}, {
+		divider: true //===================================================================================
+	}, {
+		divider: true,
+		classes: 'transparent'
+	}, {
+		divider: true,
+		classes: 'transparent'
+	}, {
 		asRow: [{
 			setting: 'importRulesFromFour',
 			props: {
@@ -1455,60 +1780,6 @@ Settings.settings = {
 						.show();
 				}
 			}
-		}]
-	}],
-
-	// Snapshot settings
-	snapshots: [{
-		header: 'extraFeatures'
-	}, {
-		when: {
-			settings: {
-				group: 'all',
-				items: [{
-					method: Utilities.Group.IS,
-					key: 'extrasActive',
-					needle: true
-				}]
-			}
-		},
-		settings: [{
-			description: 'autoSnapshots.description',
-		}, {
-			setting: 'autoSnapshots',
-			props: {
-				type: 'boolean',
-				isExtra: true,
-				default: function () {
-					return Extras.isActive();
-				},
-				onChange: function () {
-					Rules.list.user.rules.snapshot.autoSnapshots(Settings.getItem('autoSnapshots'));
-				}
-			}
-		}, {
-			setting: 'snapshotsLimit',
-			props: {
-				type: 'range',
-				options: [1, 999],
-				default: 5,
-				onChange: function () {
-					Rules.list.user.rules.snapshot.maxUnkept = Settings.getItem('snapshotsLimit');
-				}
-			}
-		}, {
-			divider: true //===================================================================================
-		}, {
-			asRow: [{
-				setting: 'clearSnapshots',
-				props: {
-					type: 'stand-alone-button',
-					classes: 'double-click',
-					onClick: function () {
-						Rules.list.user.rules.snapshot.snapshots.clear();
-					}
-				}
-			}]
 		}]
 	}],
 
@@ -1544,6 +1815,7 @@ Settings.settings = {
 
 						while (UserScript.scripts.keyExist((scriptName = scriptNameTemplate._format([++scriptIndex])) + ':' + scriptNamespace)) { /* do nothing */ }
 
+						/* eslint-disable */
 						var defaultUserScript =
 							"// ==UserScript==\n" +
 							"// @name " + scriptName + "\n" +
@@ -1552,6 +1824,7 @@ Settings.settings = {
 							"// @downloadURL \n" +
 							"// @domain *\n" +
 							"// ==/UserScript==\n\n\n";
+						/* eslint-enable */
 
 						UI.event.addCustomEventListener('customSettingViewCreated', function () {
 							$('.user-script-content', UI.Settings.userScriptEdit).val(defaultUserScript).focus()[0].selectionStart = defaultUserScript.length;

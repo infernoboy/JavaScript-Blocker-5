@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 'use strict';
 
 var Extras = {
-	__verificationURL: 'https://imac.toggleable.com:8443/jsblocker/verify.php',
+	__verificationURL: 'https://hero.toggleable.com/jsblocker/verify.php',
 
 	event: new EventListener,
 
@@ -24,7 +24,7 @@ var Extras = {
 	},
 
 	unlockUsingEmail: function (email) {
-		return new Promise(function (resolve, reject) {
+		return CustomPromise(function (resolve, reject) {
 			$.ajax({
 				url: Extras.__verificationURL,
 				timeout: 5000,
@@ -51,7 +51,7 @@ var Extras = {
 
 							reject('Could not connect to server, but unlocked anyway. Enjoy!');
 						} else
-							reject('Could not connect to server. Check if firewall or router is blocking outgoing connections to port 160.');
+							reject('Could not connect to server. Check if firewall or router is blocking outgoing connections to hero.toggleable.com:443');
 					else
 						reject(error.status + ': ' + error.statusText);
 				});
@@ -103,6 +103,8 @@ var Extras = {
 };
 
 Maintenance.event.addCustomEventListener('globalPageReady', function () {
+	Extras.Trial.autoStart();
+	
 	Command.event.addCustomEventListener('popoverReady', function () {
 		Extras.ERROR = {
 			'-3': _('extras.unlock.error.email_missing'),
@@ -111,6 +113,3 @@ Maintenance.event.addCustomEventListener('globalPageReady', function () {
 		};
 	}, true);
 }, true);
-
-Extras.Trial.autoStart();
-// Extras.Trial.start();

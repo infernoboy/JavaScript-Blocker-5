@@ -274,6 +274,14 @@ Object._extend(Poppy.scripts, {
 				UI.Locker.showLockerPrompt('settings');
 			})
 
+			.on('click', '#setting-menu-sync-now', function () {
+				this.disabled = true;
+
+				poppy.close();
+
+				globalPage.SyncClient.Settings.init().sync();
+			})
+
 			.on('click', '#setting-menu-backup', function (event) {
 				if (event.altKey) {
 					var submittedSettings = prompt('Paste the submitted settings backup.');
@@ -946,12 +954,15 @@ Object._extend(Poppy.scripts, {
 
 		poppy.content
 			.on('click', '#feedback-send-email', function () {
+				/* eslint-disable */
 				var feedbackData = globalPage.Feedback.createFeedbackData(messageElement.val(), ''),
 					emailableFeedback = "\n\n";
 
 				for (var key in feedbackData)
 					if (key !== 'email')
 						emailableFeedback += key + ': ' + feedbackData[key] + "\n";
+
+				/* eslint-enable */
 
 				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5 Feedback&body=' + encodeURIComponent(emailableFeedback));
 
@@ -1013,6 +1024,206 @@ Object._extend(Poppy.scripts, {
 			});
 	},
 
+	'sync-client-login': function (poppy) {
+		var email = $('#sync-client-email', poppy.content),
+			password = $('#sync-client-password', poppy.content),
+			errorMessage = $('#sync-client-error', poppy.content),
+			syncEmail = SecureSettings.getItem('syncEmail');
+
+		if (typeof syncEmail === 'string') {
+			email.val(syncEmail);
+			password.focus();
+		} else
+			email.focus();
+
+		poppy.content
+			.on('click', '#sync-client-login-cancel', function () {
+				poppy.close();
+			})
+			.on('click', '#sync-client-login-login', function () {
+				errorMessage.hide();
+
+				var emailValue = email.val().trim(),
+					passwordValue = password.val();
+
+				if (!emailValue.length)
+					return email.shake().focus();
+
+				if (!passwordValue.length)
+					return password.shake().focus();
+
+				globalPage.SyncClient.SRP.login(emailValue, passwordValue).then(function () {
+					poppy.close();
+				}, function (err) {					
+					if (err === 'server error')
+						globalPage.SyncClient.getServerStatus().then(function () {
+							errorMessage.show().text(_('sync.server.unknown_error'));
+						}, function (err) {
+							if (err.responseJSON)
+								errorMessage.show().text(err.responseJSON.error.name);
+							else
+								errorMessage.show().text(_('sync.server.unknown_error'));
+						});
+					else if (err === 'invalid password')
+						password.shake().focus().selectAll();
+					else if (err === 'client not found') {
+						email.shake().focus().selectAll();
+
+						errorMessage.show().text(_('sync.server.client_not_found'));
+					}
+				});
+			});
+	},
+
+	'sync-client-register': function (poppy) {
+		var email = $('#sync-client-email', poppy.content),
+			password = $('#sync-client-password', poppy.content),
+			verifyPassword = $('#sync-client-verify-password', poppy.content),
+			errorMessage = $('#sync-client-error', poppy.content);
+
+		email.focus();
+
+		poppy.content
+			.on('click', '#sync-client-register-cancel', function () {
+				poppy.close();
+			})
+			.on('click', '#sync-client-register-register', function () {
+				errorMessage.hide();
+
+				var emailValue = email.val().trim(),
+					passwordValue = password.val(),
+					verifyPasswordValue = verifyPassword.val();
+
+				if (!emailValue.length || emailValue.length < 5 || !emailValue._contains('@'))
+					return email.shake().focus();
+
+				if (!passwordValue.length)
+					return password.shake().focus();
+
+				if (passwordValue !== verifyPasswordValue)
+					return verifyPassword.shake().focus();
+
+				globalPage.SyncClient.SRP.register(emailValue, passwordValue).then(function () {
+					poppy.close();
+
+					UI.SyncClient.SRP.showVerify();
+				}, function (err) {					
+					if (err === 'server error')
+						globalPage.SyncClient.getServerStatus().then(function () {
+							errorMessage.show().text(_('sync.server.unknown_error'));
+						}, function (err) {
+							if (err.responseJSON)
+								errorMessage.show().text(err.responseJSON.error.name);
+							else
+								errorMessage.show().text(_('sync.server.unknown_error'));
+						});
+					else if (err === 'invalid password')
+						password.shake().focus().selectAll();
+					else if (err === 'invalid email')
+						email.shake().focus().selectAll();
+					else if (err === 'client exists') {
+						email.shake().focus().selectAll();
+
+						errorMessage.show().text(_('sync.server.client_exists'));
+					}
+
+				});
+			});
+	},
+
+	'sync-client-verify': function (poppy) {
+		var verificationKey = $('#sync-client-verification-key', poppy.content),
+			errorMessage = $('#sync-client-error', poppy.content);
+
+		verificationKey.focus();
+
+		poppy.content
+			.on('click', '#sync-client-verify-cancel', function () {
+				poppy.close();
+			})
+			.on('click', '#sync-client-verify-verify', function () {
+				errorMessage.hide();
+
+				var verificationKeyValue = verificationKey.val().trim();
+
+				if (!verificationKeyValue.length)
+					return verificationKey.shake().focus();
+
+				globalPage.SyncClient.SRP.verify(verificationKeyValue).then(function () {
+					poppy.close();
+
+					UI.SyncClient.SRP.showLogin(_('sync.verify.verified'));
+				}, function (err) {					
+					if (err === 'server error')
+						globalPage.SyncClient.getServerStatus().then(function () {
+							errorMessage.show().text(_('sync.server.unknown_error'));
+						}, function (err) {
+							if (err.responseJSON)
+								errorMessage.show().text(err.responseJSON.error.name);
+							else
+								errorMessage.show().text(_('sync.server.unknown_error'));
+						});
+					else if (err === 'invalid verification key')
+						verificationKey.shake().focus().selectAll();
+					else if (err === 'client not found')
+						errorMessage.show().text(_('sync.server.client_not_found.again'));
+				});
+			});
+	},
+
+	'sync-client-change-password': function (poppy) {
+		var currentPassword = $('#sync-client-current-password', poppy.content),
+			password = $('#sync-client-password', poppy.content),
+			verifyPassword = $('#sync-client-verify-password', poppy.content),
+			errorMessage = $('#sync-client-error', poppy.content),
+			email = SecureSettings.getItem('syncEmail');
+
+		currentPassword.focus();
+
+		poppy.content
+			.on('click', '#sync-client-change-password-cancel', function () {
+				poppy.close();
+			})
+			.on('click', '#sync-client-change-password-change', function () {
+				errorMessage.hide();
+
+				var currentPasswordValue = currentPassword.val(),
+					passwordValue = password.val(),
+					verifyPasswordValue = verifyPassword.val();
+
+				if (!currentPasswordValue.length)
+					return currentPassword.shake().focus();
+
+				if (!passwordValue.length)
+					return password.shake().focus();
+
+				if (passwordValue !== verifyPasswordValue)
+					return verifyPassword.shake().focus();
+
+				globalPage.SyncClient.SRP.changePassword(email, currentPasswordValue, passwordValue).then(function () {
+					poppy.close();
+
+					UI.SyncClient.SRP.showLogin(_('sync.password_changed'));
+				}, function (err) {					
+					if (err === 'server error')
+						globalPage.SyncClient.getServerStatus().then(function () {
+							errorMessage.show().text(_('sync.server.unknown_error'));
+						}, function (err) {
+							if (err.responseJSON)
+								errorMessage.show().text(err.responseJSON.error.name);
+							else
+								errorMessage.show().text(_('sync.server.unknown_error'));
+						});
+					else if (err === 'invalid password')
+						currentPassword.shake().focus().selectAll();
+					else if (err === 'client not found')
+						errorMessage.show().text(_('sync.server.client_not_found'));
+					else if (err === 'invalid verifier')
+						errorMessage.show().text(_('sync.server.unknown_error'));
+				});
+			});
+	},
+
 	console: function (poppy) {
 		poppy.content
 			.on('change', '#console-debug-mode', function () {
@@ -1021,7 +1232,7 @@ Object._extend(Poppy.scripts, {
 				UI.Locker
 					.showLockerPrompt('setting', false, true)
 					.then(function () {
-						window.globalSetting.debugMode = self.checked;
+						Settings.setItem('debugMode', self.checked, null, true, true);
 					}, function () {
 						self.checked = !self.checked;
 					});
@@ -1041,7 +1252,9 @@ Object._extend(Poppy.scripts, {
 			})
 			
 			.on('click', '#console-report', function () {
+				/* eslint-disable */
 				UI.Feedback.showFeedbackPoppy(_('feedback.console_attached') + "\n\n");
+				/* eslint-enable */
 			});
 	}
 });

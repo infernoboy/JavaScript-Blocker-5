@@ -129,10 +129,12 @@ var Expando = {
 
 				var setHeaderColor = function (header, headerLabel) {
 					UI
-						.executeLessScript('lighten(' + header.css('color') + ', 20%)')
+						.executeLessScript('lighten(' + (header.css('color') || 'red') + ', 20%)')
 						.then((function (headerLabel, value) {
 							headerLabel.css('color', value);
-						}).bind(null, headerLabel));
+						}).bind(null, headerLabel), function () {
+							LogError('Error assigning color to header', header, header.css('color'));
+						});
 				};
 
 				var headers = event.detail.querySelectorAll('*[data-expander]:not(.header-expander-ready)'),

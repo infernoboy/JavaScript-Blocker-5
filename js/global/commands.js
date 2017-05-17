@@ -4,6 +4,12 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 'use strict';
 
+window.UI = {
+	onReady: function (fn) {
+		Command.event.addCustomEventListener('UIReady', fn, true);
+	}
+};
+
 function Command (command, data, event) {
 	function InternalCommand () {
 		var part;
@@ -190,22 +196,27 @@ function Command (command, data, event) {
 		},
 
 		globalSetting: function () {
-			this.message = {
-				disabled: window.globalSetting.disabled,
-				debugMode: window.globalSetting.debugMode,
-				popoverReady: Popover.window.PopoverReady,
+			if (window.Settings)
+				this.message = {
+					disabled: window.globalSetting.disabled,
+					debugMode: window.globalSetting.debugMode,
+					popoverReady: Popover.window.PopoverReady,
 
-				useAnimations: Settings.getItem('useAnimations'),
-				largeFont: Settings.getItem('largeFont'),
-				enabledKinds: Settings.getItem('enabledKinds'),
-				showPlaceholder: Settings.getItem('showPlaceholder'),
-				hideInjected: Settings.getItem('hideInjected'),
-				blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
-				showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
-				showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
+					useAnimations: Settings.getItem('useAnimations'),
+					largeFont: Settings.getItem('largeFont'),
+					enabledKinds: Settings.getItem('enabledKinds'),
+					showPlaceholder: Settings.getItem('showPlaceholder'),
+					hideInjected: Settings.getItem('hideInjected'),
+					blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
+					showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
+					showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
 
-				contentURLs: window.CONTENT_URLS
-			};
+					contentURLs: window.CONTENT_URLS
+				};
+			else
+				this.messgae = {
+					popoverReady: false
+				};
 		},
 		
 		specialsForLocation: function (page) {
@@ -314,7 +325,9 @@ function Command (command, data, event) {
 
 		verifyScriptSafety: function (script) {
 			try {
+				/* eslint-disable */
 				new Function("return function () {\n" + script + "\n}");
+				/* eslint-enable */
 
 				this.message = true;
 			} catch (error) {
@@ -515,6 +528,7 @@ function Command (command, data, event) {
 
 			setItem: function (detail) {
 				this.message = SettingStore.setItem(detail.setting, detail.value);
+				SyncClient.Settings.setItem(detail.setting, detail.value);
 			}
 		},
 
@@ -673,12 +687,12 @@ Command.onExecuteMenuCommand = function (event) {
 	}
 };
 
-if (Settings.getItem('persistDisabled'))
-	Command.toggleDisabled(Settings.getItem('isDisabled'));
-
 Command.setupContentURLs();
 
 Command.event.addCustomEventListener('popoverReady', function () {
+	if (Settings.getItem('persistDisabled'))
+		Command.toggleDisabled(Settings.getItem('isDisabled'));
+
 	if (Settings.getItem('showPopoverOnLoad')) {
 		Settings.setItem('showPopoverOnLoad', false);
 

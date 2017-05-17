@@ -284,3 +284,11 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		</div>
 	</li>
 </noscript>
+
+<noscript id="sync-client-logged-in">
+	<li id="sync-client-logged-in" class="setting-section-description">
+		<div class="setting-section-setting-full">
+			<p><%=_('sync.logged_into', [(SecureSettings.getItem('syncEmail') || '')._escapeHTML()])%></p>
+		</div>
+	</li>
+</noscript>

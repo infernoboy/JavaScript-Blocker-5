@@ -131,7 +131,12 @@
 		"hljs": true,
 		"EffectiveTLDs": true,
 		"SimpleTLDs": true,
-		"SyncClient": true
+		"SyncClient": true,
 		"PromiseWorker": true,
+		"jsrp": true,
+		"io": true,
+		"sha512": true,
+		"Libraries": true,
+		"CustomPromise": true
 	}
 }

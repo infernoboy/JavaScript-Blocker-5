@@ -1,0 +1,144 @@
+<!--
+JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
+-->
+
+<noscript id="login">
+	<h3 class="jsb-centered"><%=_('sync.login.header')%></h3>
+
+	<div id="sync-form-container" class="generic-menu">
+		<ul class="generic-menu-menu generic-menu-options">
+			<li>
+				<p class="jsb-info jsb-readable"><%=self.reason%></p>
+				<p id="sync-client-error" class="jsb-info jsb-readable jsb-error jsb-hidden"><%=self.errorMessage || ''%></p>
+				<div class="horizontal-divider"></div>
+			</li>
+
+			<li>
+				<table class="generic-menu-options">
+					<tbody>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-email"><%=_('sync.login.email')%>:</label><q></q></td>
+							<td><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="sync-client-email" class="trigger-on-enter" /></td>
+						</tr>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-password"><%=_('sync.login.password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-password" class="trigger-on-enter" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</li>
+
+			<li class="jsb-align-right">
+				<!-- <a href="javascript:void(0)" id="sync-client-forgot"><%=_('sync.login.forgot')%></a> -->
+				<input type="button" id="sync-client-login-cancel" value="<%=_('Cancel')%>" />
+				<input type="button" id="sync-client-login-login" class="on-enter" value="<%=_('sync.login.login')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="register">
+	<h3 class="jsb-centered"><%=_('sync.register.header')%></h3>
+
+	<div id="sync-form-container" class="generic-menu">
+		<ul class="generic-menu-menu generic-menu-options">
+			<li>
+				<p class="jsb-info jsb-readable"><%=_('sync.register.description')%></p>
+				<p id="sync-client-error" class="jsb-info jsb-readable jsb-error jsb-hidden"><%=self.errorMessage || ''%></p>
+				<div class="horizontal-divider"></div>
+			</li>
+
+			<li>
+				<table class="generic-menu-options">
+					<tbody>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-email"><%=_('sync.login.email')%>:</label><q></q></td>
+							<td><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="sync-client-email" class="trigger-on-enter" /></td>
+						</tr>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-password"><%=_('sync.login.password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-password" class="trigger-on-enter" /></td>
+						</tr>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-verify-password"><%=_('sync.login.verify_password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-verify-password" class="trigger-on-enter" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</li>
+
+			<li class="jsb-align-right">
+				<input type="button" id="sync-client-register-cancel" value="<%=_('Cancel')%>" />
+				<input type="button" id="sync-client-register-register" class="on-enter" value="<%=_('sync.register.register')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="verify">
+	<h3 class="jsb-centered"><%=_('sync.verify.header')%></h3>
+
+	<div id="sync-form-container" class="generic-menu">
+		<ul class="generic-menu-menu generic-menu-options">
+			<li>
+				<p class="jsb-info jsb-readable"><%=_('sync.verify.description', [self.email])%></p>
+				<p id="sync-client-error" class="jsb-info jsb-readable jsb-error jsb-hidden"><%=self.errorMessage || ''%></p>
+				<div class="horizontal-divider"></div>
+			</li>
+
+			<li>
+				<table class="generic-menu-options">
+					<tbody>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-verification-key"><%=_('sync.verify.key')%>:</label><q></q></td>
+							<td><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="sync-client-verification-key" class="trigger-on-enter" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</li>
+
+			<li class="jsb-align-right">
+				<input type="button" id="sync-client-verify-cancel" value="<%=_('Cancel')%>" />
+				<input type="button" id="sync-client-verify-verify" class="on-enter" value="<%=_('sync.verify.verify')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="change-password">
+	<h3 class="jsb-centered"><%=_('sync.change_password.header')%></h3>
+
+	<div id="sync-form-container" class="generic-menu">
+		<ul class="generic-menu-menu generic-menu-options">
+			<li>
+				<p class="jsb-info jsb-readable"><%=_('sync.change_password.description', [self.email])%></p>
+				<p id="sync-client-error" class="jsb-info jsb-readable jsb-error jsb-hidden"><%=self.errorMessage || ''%></p>
+				<div class="horizontal-divider"></div>
+			</li>
+
+			<li>
+				<table class="generic-menu-options">
+					<tbody>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-current-password"><%=_('sync.change_password.current_password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-current-password" class="trigger-on-enter" /></td>
+						</tr>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-password"><%=_('sync.change_password.new_password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-password" class="trigger-on-enter" /></td>
+						</tr>
+						<tr class="jsb-align-right">
+							<td class="jsb-align-right"><label for="sync-client-verify-password"><%=_('sync.login.verify_password')%>:</label><q></q></td>
+							<td><input type="password" id="sync-client-verify-password" class="trigger-on-enter" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</li>
+
+			<li class="jsb-align-right">
+				<input type="button" id="sync-client-change-password-cancel" value="<%=_('Cancel')%>" />
+				<input type="button" id="sync-client-change-password-change" class="on-enter" value="<%=_('sync.change_password.change_password')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>

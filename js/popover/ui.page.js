@@ -6,7 +6,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 UI.Page = {
 	__forceRuleColorTemplate: 'rgba(252, 240, 255, {0})',
-	__forceRuleColorTemplateDarkMode: 'rgba(75, 40, 75, {0})',
+	__forceRuleColorTemplateDarkMode: 'rgba(60, 40, 60, {0})',
 	__rendering: false,
 
 	__renderPage: function (page) {
