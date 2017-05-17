@@ -19,7 +19,7 @@
 	"collapse": " ",
 	"double_click_split": "Click and drag to resize; double-click for an even split",
 
-	"sync.name": "JSB Sync",
+	"sync.name": "JSB Sync (beta)",
 
 	"sync.server.unknown_error": "An unknown server error occurred.",
 	"sync.server.client_exists": "A user with that email address is already registered.",
@@ -324,7 +324,7 @@
 
 	"setting.syncClientAutoSync.label": "Automatically synchronize selected items",
 	"setting.syncClientAutoSync.help": "You can sync manually at any time by opening the Settings menu and clicking <b>Sync Now</b>.",
-	"setting.syncClientSync.what": "Securely sync your settings and rules with other computers. Three layers of security maintain your privacy: HTTPS, SRP, and local encryption. <a id=\"sync-client-learn-more\" href=\"javascript:void(0)\">Learn more.</a>",
+	"setting.syncClientSync.what": "<b>BETA</b> Securely sync your settings and rules with other computers. Three layers of security maintain your privacy: HTTPS, SRP, and local encryption. <a id=\"sync-client-learn-more\" href=\"javascript:void(0)\">Learn more.</a>",
 	"setting.syncClientSync.help": "SRP (Secure Remote Password) means your password is never sent to the server.<br><br>HTTPS prevents anyone from snooping on your data.<br><br>Your email is hashed and not stored in plain text on the server.<br><br>Your settings are encrypted locally with a key derived from your password, are unique every time and unpredictable, and cannot be decrypted on the server.<br><br>A unique shared-key is generated with SRP at every log in and is never transmitted. It is used to encrypt and decrypt messages to/from the server. This guarantees your communication with the server is unreadable by anyone else, even if HTTPS is ever compromised.<br><br>The server is <a href=\"https://github.com/infernoboy/jsb-sync\">open source.</a>",
 	"setting.syncClientSync.these": "Synchronize these items:",
 	"setting.syncClientSync.settings.label": "Settings",
@@ -592,7 +592,7 @@
 	"settings.current_locker_password": "Old password",
 	"settings.safari_restart": "You have to restart Safari in order for the new settings to take effect.",
 	"settings.general": "General",
-	"settings.sync": "Sync",
+	"settings.sync": "Sync (beta)",
 	"settings.rules": "Rules",
 	"settings.snapshots": "Snapshots",
 	"settings.other": "Other",
