@@ -538,7 +538,8 @@ Object._extend(Settings, {
 	},
 
 	import: function (settings, clearExisting, semi) {
-		var willNotImport = ['donationVerified', 'trialStart', 'updateNotify', 'FilterListLastUpdate', 'installedBundle', 'openSettings'];
+		var syncClientIsLoggedIn = SyncClient.SRP.isLoggedIn(),
+			willNotImport = ['donationVerified', 'trialStart', 'updateNotify', 'FilterListLastUpdate', 'installedBundle', 'openSettings'];
 
 		UI.Locker
 			.showLockerPrompt('importBackupSettings', !!semi)
@@ -601,7 +602,7 @@ Object._extend(Settings, {
 					if (!semi) {
 						Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
 						Settings.setItem('showPopoverOnLoad', true);
-						Settings.setItem('syncNeedsFullSettingsSync', true);
+						Settings.setItem('syncNeedsFullSettingsSync', syncClientIsLoggedIn);
 
 						Settings.restartRequired();
 
