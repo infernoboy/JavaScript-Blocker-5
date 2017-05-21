@@ -1102,7 +1102,7 @@ Settings.settings = {
 				setting: 'allowCache',
 				props: {
 					type: 'boolean',
-					default: true,
+					default: false,
 					onChange: function (type, settingKey, value) {
 						if (!value)
 							SettingStore.removeItem('Storage-ResourceCanLoad');
