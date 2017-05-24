@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 21, 2017 11:07:29 AM
+* @Last modified in Sublime on May 24, 2017 06:49:51 AM
 */
 
 'use strict';
@@ -262,8 +262,10 @@ SyncClient.SRP = {
 
 	verifySession: function () {
 		return CustomPromise(function (resolve, reject) {
-			if (Settings.getItem('syncNeedsFullSettingsSync') && !SyncClient.SRP.isLoggedIn())
+			if (Settings.getItem('syncNeedsFullSettingsSync') && Settings.getItem('syncNeedsLogin'))
 				UI.onReady(function () {
+					Settings.removeItem('syncNeedsLogin');
+
 					UI.SyncClient.SRP.sessionExpired();
 				});
 

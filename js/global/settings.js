@@ -603,6 +603,7 @@ Object._extend(Settings, {
 						Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
 						Settings.setItem('showPopoverOnLoad', true);
 						Settings.setItem('syncNeedsFullSettingsSync', syncClientIsLoggedIn);
+						Settings.setItem('syncNeedsLogin', syncClientIsLoggedIn);
 
 						Settings.restartRequired();
 

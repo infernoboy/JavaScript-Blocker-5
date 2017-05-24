@@ -288,6 +288,12 @@ Settings.settings = {
 			default: false
 		}
 	}, {
+		setting: 'syncNeedsLogin',
+		props: {
+			type: 'boolean',
+			default: false
+		}
+	}, {
 		setting: 'syncLastTime',
 		props: {
 			type: 'number',
