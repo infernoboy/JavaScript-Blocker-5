@@ -1039,6 +1039,8 @@ Object._extend(Poppy.scripts, {
 		poppy.content
 			.on('click', '#sync-client-login-cancel', function () {
 				poppy.close();
+
+				globalPage.SyncClient.SRP.sessionExpired(true);
 			})
 			.on('click', '#sync-client-login-login', function () {
 				errorMessage.hide();
