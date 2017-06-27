@@ -36,6 +36,7 @@ setTimeout(function () {
 if (!window.MutationObserver)
 	window.MutationObserver = window.WebKitMutationObserver;
 
+/* eslint-disable */
 var BLOCKED_ELEMENTS = [],
 	PLACEHOLDER_ELEMENTS = {},
 	FRAMED_PAGES = {},
@@ -44,6 +45,7 @@ var BLOCKED_ELEMENTS = [],
 	SHOWED_UPDATE_PROMPT = false,
 	BROKEN = false,
 	FRAME_ELEMENT = null;
+/* eslint-enable */
 
 if (!Utilities.Page.isTop)
 	FRAME_ELEMENT = window.frameElement;
@@ -829,6 +831,10 @@ var Resource = {
 		var sourceHost;
 
 		var source = Utilities.URL.getAbsolutePath(event.url || element.getAttribute('src'));
+
+		if (Utilities.URL.protocol(source) === 'data:')
+			source = source.substr(0, 15000) + ' (truncated)';
+
 
 		if (!Utilities.Token.valid(element.getAttribute('data-jsbAllowLoad'), 'AllowLoad'))
 			if (kind in Resource.staticActions) {
