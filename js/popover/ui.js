@@ -398,7 +398,7 @@ var UI = {
 										.setContent(Template.create('poppy', 'console'))
 										.stayOpenOnScroll()
 										.show();
-								});
+								}, Utilities.noop);
 							break;
 
 						case 's':
@@ -627,7 +627,7 @@ var UI = {
 			if (UI.event.trigger('viewWillScrollToTop', viewContainer))
 				return false;
 
-			onComplete = onComplete || $.noop;
+			onComplete = onComplete || Utilities.noop;
 
 			if (!evenIfPoppy && viewContainer.scrollTop() === 0 && Poppy.poppyExist())
 				Poppy.event.addCustomEventListener('poppyWillCloseAll', function (event) {

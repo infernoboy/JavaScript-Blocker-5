@@ -612,7 +612,7 @@ Object._extend(Settings, {
 
 					SettingStore.syncNow();
 				}, 1000, settings, semi);
-			}.bind(null, settings));
+			}.bind(null, settings), Utilities.noop);
 	},
 
 	restartRequired: function () {

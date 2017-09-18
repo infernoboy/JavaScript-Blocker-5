@@ -61,7 +61,7 @@ var Utilities = {
 			var first;
 
 			if (typeof callback !== 'function')
-				callback = $.noop;
+				callback = Utilities.noop;
 
 			if (!Utilities.__watchdog[type])
 				Utilities.__watchdog[type] = [];

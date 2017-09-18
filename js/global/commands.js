@@ -663,7 +663,7 @@ Command.toggleDisabled = function (force, doNotReload) {
 						}, 150);
 					else
 						Tabs.messageActive('reload');
-			});
+			}, Utilities.noop);
 	}, true);
 };
 

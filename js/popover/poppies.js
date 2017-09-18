@@ -182,7 +182,7 @@ Object._extend(Poppy.scripts, {
 						globalPage.Utilities.Timer.timeout('autoEnableJSB', function () {
 							globalPage.Command.toggleDisabled(false, true);
 						}, Settings.getItem('disableTime'));
-					});
+					}, Utilities.noop);
 
 				poppy.close();
 			});
@@ -224,7 +224,7 @@ Object._extend(Poppy.scripts, {
 							.linkTo(poppy)
 							.stayOpenOnScroll()
 							.show();
-					});
+					}, Utilities.noop);
 			});
 	},
 
@@ -472,7 +472,7 @@ Object._extend(Poppy.scripts, {
 							globalPage.Rules.list.user.clear();
 
 							UI.view.switchTo('#rule-views-active', true);
-						});
+						}, Utilities.noop);
 				}, true);
 
 				poppy.close();
@@ -841,9 +841,7 @@ Object._extend(Poppy.scripts, {
 									action: originalAction
 								});
 						}
-					}, function () {
-						// Cancelled
-					});
+					}, Utilities.noop);
 			});
 
 		type.change();
