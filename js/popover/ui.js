@@ -61,6 +61,7 @@ var UI = {
 
 		var userAgent = window.navigator.userAgent;
 
+		document.documentElement.classList.toggle('high-sierra', userAgent._contains('10_13'));
 		document.documentElement.classList.toggle('sierra', userAgent._contains('10_12'));
 		document.documentElement.classList.toggle('capitan', userAgent._contains('10_11'));
 		document.documentElement.classList.toggle('yosemite', userAgent._contains('10_10'));
