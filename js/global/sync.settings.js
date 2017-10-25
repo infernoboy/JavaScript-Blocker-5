@@ -729,5 +729,5 @@ SyncClient.event
 	.addCustomEventListener('error', function (event) {
 		SyncClient.Settings.autoSync(false);
 
-		LogError('SyncClient: Automatic syncing is disabled: ' + event.detail.name || event.detail);
+		LogError('SyncClient: Automatic syncing is disabled: ' + ((event && event.detail) ? (event.detail.name || event.detail) : 'unknown reason'));
 	});
