@@ -135,9 +135,9 @@ var Upgrade = {
 
 				}
 
-				Settings.__stores.saveNow(false, true);
+				Settings.__stores.saveNow(false);
 
-				UserScript.scripts.saveNow(false, true);
+				UserScript.scripts.saveNow(false);
 			} catch (error) {
 				LogError('failed to import user scripts from JSB4 backup', error);
 			}

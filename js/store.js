@@ -42,9 +42,7 @@ window.Store = (function () {
 					self.reload();
 			});
 
-			setTimeout(function (store) {
-				store.saveNow(null, null, true);
-			}, 1000, this);
+			this.saveNowThrottled();
 		}
 	}
 
@@ -55,6 +53,7 @@ window.Store = (function () {
 	Store.__emptyStoreString = Utilities.decode('4a+h4KGS5IG04L2A4pSl4KKg4rqA4LCC5YCgIA==');
 	Store.__inheritable = ['ignoreSave', 'inheritMaxLife', 'selfDestruct'];
 
+	Store.SAVE_THROTTLE_QUEUE = 0;
 	Store.LOCAL_SAVE_SIZE = 80000;
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
@@ -279,8 +278,18 @@ window.Store = (function () {
 		return this;
 	};
 
-	Store.prototype.saveNow = function (bypassIgnore, immediate, skipSync) {
-		this.__save(bypassIgnore, immediate ? 2 : 1, skipSync);
+	Store.prototype.saveNow = function (bypassIgnore, skipSync) {
+		this.__save(bypassIgnore, true, skipSync);
+	};
+
+	Store.prototype.saveNowThrottled = function (bypassIgnore, skipSync) {
+		Store.SAVE_THROTTLE_QUEUE += 1;
+
+		setTimeout(function (store, bypassIgnore, skipSync) {
+			Store.SAVE_THROTTLE_QUEUE -=1;
+
+			store.__save(bypassIgnore, true, skipSync);
+		}, 2000 * Store.SAVE_THROTTLE_QUEUE, this, bypassIgnore, skipSync);
 	};
 
 	Store.prototype.load = function () {
