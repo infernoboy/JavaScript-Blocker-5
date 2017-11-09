@@ -22,7 +22,7 @@ self.addEventListener('message', function (message) {
 				
 				self.postMessage({
 					id: id,
-					result: (compressed.length > message.string.length) ? message.string : LZString.compressToUTF16(message.string)
+					result: (compressed.length > message.string.length) ? message.string : compressed
 				});
 			} catch (err) {
 				self.postMessage({
