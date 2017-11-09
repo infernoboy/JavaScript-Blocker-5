@@ -197,12 +197,17 @@ window.Store = (function () {
 		if (window.globalSetting.debugMode)
 			console.time(startTime.toLocaleTimeString() + ' - Save: ' + this.id);
 
-		var savableStore = JSON.stringify(this),
-			useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;
+		var stringedStore = JSON.stringify(this),
+			useLocal = stringedStore.length < Store.LOCAL_SAVE_SIZE;
 
 		var self = this;
 
-		Utilities.compress(savableStore).then(function (savableStore) {
+		Utilities.compress(stringedStore).then(function (compressedStore) {
+			return compressedStore;
+		}, function (error) {
+			LogError('Failed to compress store, will save without compression: ' + self.id, error.message);
+			return stringedStore;
+		}).then(function (savableStore) {
 			Settings.__method('setItem', self.id, savableStore, !useLocal);
 
 			if (!skipSync)
