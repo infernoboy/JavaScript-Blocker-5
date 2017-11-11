@@ -321,16 +321,21 @@ Object._extend(Poppy.scripts, {
 
 				Settings.EXPORTED_BACKUP = Settings.export(options);
 
-				poppy.setContent(Template.create('main', 'jsb-info', {
-					string: _('setting_menu.export.done')
-				}));
-
 				var activeTab = Tabs.active();
 
 				Tabs.create(ExtensionURL('html/exportBackup.html'));
 
-				if (activeTab)
+				if (activeTab && Utilities.safariBuildVersion < 603) {
+					poppy.setContent(Template.create('main', 'jsb-info', {
+						string: _('setting_menu.export.done')
+					}));
+
 					activeTab.activate();
+				}	else {
+					poppy.close();
+					
+					Popover.hide();
+				}
 			})
 
 			.on('drop', '#setting-menu-backup-import', function (event) {
