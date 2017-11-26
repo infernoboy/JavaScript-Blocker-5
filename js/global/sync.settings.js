@@ -690,7 +690,7 @@ Object._extend(SyncClient.Settings.prototype, {
 				if (err.responseJSON && err.responseJSON.error)
 					SyncClient.handleError('SyncClient.Settings#fetchSettings post', err.responseJSON.error);
 				else
-					LogError('SyncClient.Settings#fetchSettings post', err.responseText || err.status);
+					LogError('SyncClient.Settings#fetchSettings post', err.responseText || err.statusText || err.status);
 
 				reject(err);
 			});
