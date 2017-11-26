@@ -484,6 +484,23 @@ var Command = function (type, event) {
 			Page.send();
 		},
 
+		performHistoryStateChange: function (detail) {
+			window.history[detail.meta.action].apply(window.history, detail.meta.args);
+
+			Handler.setPageLocation();
+
+			if (Page.info.isFrame)
+				GlobalPage.message('bounce', {
+					command: 'rerequestFrameURL',
+					detail: {
+						parent: PARENT,
+						reason: 'historyStateDidChange'
+					}
+				});
+
+			Page.send();
+		},
+
 		commandGeneratorToken: function (detail) {
 			return {
 				sourceID: detail.sourceID,

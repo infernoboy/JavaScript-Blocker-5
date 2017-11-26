@@ -12,6 +12,8 @@ Special.specials = {
 		Object.defineProperty(window, JSB.eventToken, {
 			value: Object.freeze({
 				console: window.console,
+				window$history$pushState: window.history.pushState.bind(window.history),
+				window$history$replaceState: window.history.replaceState.bind(window.history),
 				window$JSON$stringify: window.JSON.stringify.bind(window.JSON),
 				window$JSON$parse: window.JSON.parse.bind(window.JSON),
 				window$addEventListener: window.addEventListener.bind(window),
@@ -25,21 +27,30 @@ Special.specials = {
 	},
 
 	historyFixer: function () {
-		var localHistory = {
-			pushState: window.history.pushState,
-			replaceState: window.history.replaceState
-		};
-
 		window.history.pushState = function () {
-			localHistory.pushState.apply(window.history, arguments);
+			if (window.location.href === 'about:blank' && window.top !== window)
+				messageTopExtension('performHistoryStateChange', {
+					action: 'pushState',
+					args: Array.prototype.slice.call(arguments, 0)
+				});
+			else {
+				window[JSB.eventToken].window$history$pushState.apply(window.history, arguments);
 
-			messageExtension('historyStateChange');
+				messageExtension('historyStateChange');
+			}
 		};
 
 		window.history.replaceState = function () {
-			localHistory.replaceState.apply(window.history, arguments);
+			if (window.location.href === 'about:blank' && window.top !== window)
+				messageTopExtension('performHistoryStateChange', {
+					action: 'replaceState',
+					args: Array.prototype.slice.call(arguments, 0)
+				});
+			else {
+				window[JSB.eventToken].window$history$replaceState.apply(window.history, arguments);
 
-			messageExtension('historyStateChange');
+				messageExtension('historyStateChange');
+			}
 		};
 	},
 
