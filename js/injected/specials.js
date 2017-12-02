@@ -597,6 +597,9 @@ Special.specials = {
 		var shouldSkipProtectionOnFunction = function (fn) {
 			fn = fn.toString();
 
+			if (/.+l\.fillText\(c\.apply\(this,a\).+/.test(fn))
+				return true;
+
 			if (/.+((f|h|j|(string)?[fF]romCharCode)\(\s?55356,\s?(56812|56806|56826),\s?55356,\s?(56807|56826|56819)\s?\)).+/.test(fn))
 				return true;
 
@@ -682,6 +685,8 @@ Special.specials = {
 
 		HTMLCanvasElement.prototype.toDataURL = function () {
 			try {
+				// if (typeof this.toDataURL.caller === 'function')
+				// console.log(this.toDataURL.caller);
 				if (typeof this.toDataURL.caller === 'function' && shouldSkipProtectionOnFunction(this.toDataURL.caller))
 					return toDataURL.apply(this, arguments);
 			} catch (e) { /*do nothing*/ }
