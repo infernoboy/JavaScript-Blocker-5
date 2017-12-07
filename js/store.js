@@ -42,9 +42,7 @@ window.Store = (function () {
 					self.reload();
 			});
 
-			setTimeout(function (store) {
-				store.saveNow(null, null, true);
-			}, 1000, this);
+			this.saveNowThrottled();
 		}
 	}
 
@@ -55,6 +53,7 @@ window.Store = (function () {
 	Store.__emptyStoreString = Utilities.decode('4a+h4KGS5IG04L2A4pSl4KKg4rqA4LCC5YCgIA==');
 	Store.__inheritable = ['ignoreSave', 'inheritMaxLife', 'selfDestruct'];
 
+	Store.SAVE_THROTTLE_QUEUE = 0;
 	Store.LOCAL_SAVE_SIZE = 80000;
 	Store.STORE_STRING = 'Storage-';
 	Store.CACHE_STRING = 'Cache-';
@@ -197,12 +196,17 @@ window.Store = (function () {
 		if (window.globalSetting.debugMode)
 			console.time(startTime.toLocaleTimeString() + ' - Save: ' + this.id);
 
-		var savableStore = JSON.stringify(this),
-			useLocal = savableStore.length < Store.LOCAL_SAVE_SIZE;
+		var stringedStore = JSON.stringify(this),
+			useLocal = stringedStore.length < Store.LOCAL_SAVE_SIZE;
 
 		var self = this;
 
-		Utilities.compress(savableStore).then(function (savableStore) {
+		Utilities.compress(stringedStore).then(function (compressedStore) {
+			return compressedStore;
+		}, function (error) {
+			LogError('Failed to compress store, will save without compression: ' + self.id, error.message);
+			return stringedStore;
+		}).then(function (savableStore) {
 			Settings.__method('setItem', self.id, savableStore, !useLocal);
 
 			if (!skipSync)
@@ -274,8 +278,18 @@ window.Store = (function () {
 		return this;
 	};
 
-	Store.prototype.saveNow = function (bypassIgnore, immediate, skipSync) {
-		this.__save(bypassIgnore, immediate ? 2 : 1, skipSync);
+	Store.prototype.saveNow = function (bypassIgnore, skipSync) {
+		this.__save(bypassIgnore, true, skipSync);
+	};
+
+	Store.prototype.saveNowThrottled = function (bypassIgnore, skipSync) {
+		Store.SAVE_THROTTLE_QUEUE += 1;
+
+		setTimeout(function (store, bypassIgnore, skipSync) {
+			Store.SAVE_THROTTLE_QUEUE -=1;
+
+			store.__save(bypassIgnore, true, skipSync);
+		}, 2000 * Store.SAVE_THROTTLE_QUEUE, this, bypassIgnore, skipSync);
 	};
 
 	Store.prototype.load = function () {

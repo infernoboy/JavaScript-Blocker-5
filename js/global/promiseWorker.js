@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Mar 08, 2017 03:59:20 PM
+* @Last modified in Sublime on Nov 09, 2017 11:26:54 AM
 */
 
 'use strict';
@@ -46,7 +46,7 @@ PromiseWorker.prototype.postMessage = function (message) {
 					id: id,
 					error: Error('no response')
 				});
-			}, 60000, id, self);
+			}, 45000, id, self);
 
 			self.event.addCustomEventListener('workerMessage', function (event) {
 				if (event.detail.id === id) {

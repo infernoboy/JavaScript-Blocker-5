@@ -387,6 +387,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 									if (self.stateType === 'unblocked' && kind === 'script') {
 										sourceName = sourceName.substr(0, 300);
 									}
+
+									if (protocol === 'data:') {
+										sourceName = sourceName.substr(0, 300);
+									}
 								%>
 
 									<li

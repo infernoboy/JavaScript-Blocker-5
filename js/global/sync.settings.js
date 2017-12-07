@@ -690,7 +690,7 @@ Object._extend(SyncClient.Settings.prototype, {
 				if (err.responseJSON && err.responseJSON.error)
 					SyncClient.handleError('SyncClient.Settings#fetchSettings post', err.responseJSON.error);
 				else
-					LogError('SyncClient.Settings#fetchSettings post', err.responseText || err.status);
+					LogError('SyncClient.Settings#fetchSettings post', err.responseText || err.statusText || err.status);
 
 				reject(err);
 			});
@@ -729,5 +729,5 @@ SyncClient.event
 	.addCustomEventListener('error', function (event) {
 		SyncClient.Settings.autoSync(false);
 
-		LogError('SyncClient: Automatic syncing is disabled: ' + event.detail.name || event.detail);
+		LogError('SyncClient: Automatic syncing is disabled: ' + ((event && event.detail) ? (event.detail.name || event.detail) : 'unknown reason'));
 	});

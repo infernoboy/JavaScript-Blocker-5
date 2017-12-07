@@ -296,6 +296,7 @@
 	"setting_menu.export_backup": "Export backup",
 	"setting_menu.export": "Export",
 	"setting_menu.export.description": "A file named <b>Unknown</b> will be saved to your downloads folder. Feel free to rename it.",
+	"setting_menu.export.description.603": "A new tab will open where you will be able download your backup.",
 	"setting_menu.export.done": "Exported backup file.",
 	"setting_menu.import_backup": "Backup",
 	"setting_menu.import": "Import",

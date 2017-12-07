@@ -15,7 +15,8 @@
 			}
 		}, 500, this);
 
-		throw result;
+		if (Utilities.safariBuildVersion < 604)
+			throw result;
 	}
 
 	function attachCustomPromiseHandlers(promise, fn) {

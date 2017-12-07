@@ -154,8 +154,6 @@ Page.awaitFromTab = function (awaitTab, done) {
 		return Utilities.Timer.remove('timeout', awaitTab);
 	}
 
-	UI.event.trigger('awaitPageFromTab', this);
-
 	Utilities.Timer.timeout(awaitTab, function () {
 		Tabs.all(function (tab) {
 			if (tab === awaitTab) {

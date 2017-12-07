@@ -8,7 +8,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 	<head>
 		<meta charset="utf-8" />
 		
-		<title>Export Backup - JS Blocker</title>
+		<title>JS Blocker Backup</title>
 		
 		<script src="../js/global/jquery.js"></script>
 		<script src="../js/safari.js"></script>
@@ -19,13 +19,25 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 		<script>
 			document.addEventListener('DOMContentLoaded', function () {
-				var iframe = document.getElementById('export');
+				if (Utilities.safariBuildVersion >= 603) {
+					var anchor = $('#export-download');
 
-				iframe.src = Utilities.URL.createFromContent(GlobalCommand('exportedBackup'), 'application/zip', true);
+					anchor.click(function () {
+						setTimeout(function () {
+							window.close();
+						}, 500);
+					});
 
-				setTimeout(function () {
-					window.close();
-				}, 1500);
+					anchor.attr('href', Utilities.URL.createFromContent(GlobalCommand('exportedBackup'), 'application/json', false));
+				} else {
+					var iframe = document.getElementById('export');
+
+					iframe.src = Utilities.URL.createFromContent(GlobalCommand('exportedBackup'), 'application/zip', true);
+
+					setTimeout(function () {
+						window.close();
+					}, 1500);
+				}
 			}, true);
 		</script>
 
@@ -40,7 +52,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		</style>
 	</head>
 	<body>
-		<p class="jsb-info">Exported JSB backup.</p>
+		<p class="jsb-info">Your JSB backup is ready: <a id="export-download" href="javascript:void(0);" download="JSB-Backup.json">Download Backup</a></p>
 
 		<iframe id="export"></iframe>
 	</body>

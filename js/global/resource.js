@@ -52,14 +52,15 @@ function Resource (resource) {
 	});
 
 	if (this.sourceIsURL) {
-		var protos = ['http:', 'https:', 'ftp:', 'sftp:', 'safari-extension:'],
-			sourceProto = Utilities.URL.protocol(this.source),
-			locationProto = Utilities.URL.protocol(this.pageLocation);
+		var protos = ['http:', 'https:', 'ftp:', 'sftp:', 'safari-extension:'];
 
-		if (protos._contains(sourceProto))
+		this.sourceProto = Utilities.URL.protocol(this.source),
+		this.locationProto = Utilities.URL.protocol(this.pageLocation);
+
+		if (protos._contains(this.sourceProto))
 			this.baseSource = Utilities.URL.strip(this.source);
 
-		if (protos._contains(locationProto))
+		if (protos._contains(this.locationProto))
 			this.pageLocation = Utilities.URL.strip(this.pageLocation);
 	}
 
@@ -156,16 +157,15 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 	if (!Settings.getItem('enabledKinds', this.kind))
 		return canLoad;
 
-	var blockFrom = enforceNowhere ? 'nowhere' : Settings.getItem('alwaysBlock', this.kind),
-		sourceProtocol = this.sourceIsURL ? Utilities.URL.protocol(this.source) : null;
+	var blockFrom = enforceNowhere ? 'nowhere' : Settings.getItem('alwaysBlock', this.kind);
 
-	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || sourceProtocol === 'safari-extension:')
+	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || this.sourceProto === 'safari-extension:')
 		return canLoad;
 	else {
 		var pageParts = Utilities.URL.hostParts(this.pageHost),
 			sourceParts = Utilities.URL.hostParts(this.sourceHost);
 				
-		if (sourceProtocol === 'about:' && blockFrom !== 'everywhere')
+		if (this.sourceProto === 'about:' && blockFrom !== 'everywhere')
 			return canLoad;
 		else if ((blockFrom === 'host' && pageParts[0] !== sourceParts[0]) || 
 			(blockFrom === 'domain' && pageParts[pageParts.length - 1] !== sourceParts[sourceParts.length - 1]) ||
@@ -242,8 +242,12 @@ Resource.prototype.descriptionsForResource = function (isAllowed) {
 		domain,
 		rule;
 
-	var descriptionList = [],
-		descriptions = this.rulesForResource(isAllowed, null, ['description'], Rules.DOMAIN_RULES_ONLY);
+	var descriptionList = [];
+
+	if (this.sourceProto === 'data:')
+		return descriptionList;
+
+	var descriptions = this.rulesForResource(isAllowed, null, ['description'], Rules.DOMAIN_RULES_ONLY);
 
 	if (descriptions.description)
 		for (kind in descriptions.description)
@@ -258,6 +262,9 @@ Resource.prototype.descriptionsForResource = function (isAllowed) {
 };
 
 Resource.prototype.shouldHide = function () {
+	if (this.sourceProto === 'data:')
+		return false;
+
 	var filterHideBlacklist = this.action === ACTION.BLACKLIST && Settings.getItem('autoHideBlacklist'),
 		filterHideWhitelist = this.action === ACTION.WHITELIST && Settings.getItem('autoHideWhitelist'),
 		ruleHide = (this.kind !== 'special' && this.kind !== 'user_script' && (this.action === 0 || this.action === 1) && this.action !== ACTION.AWAIT_XHR_PROMPT && Settings.getItem('autoHideRule')),

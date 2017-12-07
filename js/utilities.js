@@ -61,7 +61,7 @@ var Utilities = {
 			var first;
 
 			if (typeof callback !== 'function')
-				callback = $.noop;
+				callback = Utilities.noop;
 
 			if (!Utilities.__watchdog[type])
 				Utilities.__watchdog[type] = [];
@@ -1701,13 +1701,11 @@ Object._deepFreeze = function (object) {
 Utilities.Page.isWebpage = window.GlobalPage ? (!!GlobalPage.tab && !window.location.href._startsWith(ExtensionURL())) : false;
 Utilities.Page.isUserScript = window.location ? window.location.href._endsWith('.user.js') : false;
 
-if (Utilities.Page.isGlobal || Utilities.Page.isPopover) {
-	Utilities.safariBuildVersion = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10);
-	Utilities.safariVersionSupported = Utilities.safariBuildVersion >= 537;
+Utilities.safariBuildVersion = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10);
+Utilities.safariVersionSupported = Utilities.safariBuildVersion >= 537;
 
-	if (!Utilities.safariVersionSupported)
-		throw new Error('Safari version too old');
-}
+if ((Utilities.Page.isGlobal || Utilities.Page.isPopover) && !Utilities.safariVersionSupported)
+	throw new Error('Safari version too old');
 
 Utilities.Group.NOT._createReverseMap();
 
