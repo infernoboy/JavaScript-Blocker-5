@@ -114,6 +114,8 @@ Poppy.Menu = {
 			for (var i = poppyTargets.length; i--;) {
 				poppyTargets[i].classList.add('poppy-menu-target-ready');
 
+				$('<span class="poppy-menu-divider" aria-hidden="true">&nbsp;</span>').appendTo($(poppyTargets[i]));
+
 				$(poppyTargets[i]).click(function (event) {
 					var self = $(event.currentTarget),
 						menuHolder = self.parents('*[data-poppyMenu]'),
