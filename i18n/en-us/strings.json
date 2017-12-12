@@ -396,7 +396,7 @@
 	"setting.importSettings.label": "Import backup",
 	"setting.importSettings.subLabel": "Import",
 	"setting.useSecureSettings.label": "Use secure settings",
-	"setting.useSecureSettings.help": "When enabled, all settings and rules are stored in your macOS keychain. You may incur performance penalties once enabled. This setting's state will not sync with JSB Sync.",
+	"setting.useSecureSettings.help": "When enabled, all settings and rules are stored in your macOS keychain. You may incur performance penalties once enabled. This setting's state will not sync with JSB Sync. To prevent unauthorized changes to this setting, enable the locker below.",
 	"setting.useSecureSettings.enabling": "Enabling secure settings, please wait...",
 	"setting.useSecureSettings.disabling": "Disabling secure settings, please wait...",
 	"setting.useSecureSettings.encryptingBackup": "Encrypting backup, please wait...",
