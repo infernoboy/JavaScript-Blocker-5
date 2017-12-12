@@ -212,8 +212,10 @@ window.Store = (function () {
 			if (!skipSync)
 				SyncClient.Settings.setStore(self.id, savableStore);
 
-			if (window.globalSetting.debugMode)
+			if (window.globalSetting.debugMode) {
 				console.timeEnd(startTime.toLocaleTimeString() + ' - Save: ' + self.id);
+				LogDebug.history.unshift(startTime.toLocaleTimeString() + ' - Save: ' + self.id + ': ' + (Date.now() - startTime) + 'ms');
+			}
 
 			if (!skipSync)
 				self.triggerEvent('storeDidSave');
