@@ -113,6 +113,8 @@ var SyncClient = {
 			hash: hash
 		}).then(function (decrypted) {
 			return JSON.parse(decrypted);
+		}, function (error) {
+			return error;
 		});
 	},
 
