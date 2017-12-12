@@ -476,7 +476,7 @@ Object._extend(Settings, {
 		return Settings.map;
 	},
 
-	export: function (options, deleteProps) {
+	export: function (options, deleteProps, unencrypted) {
 		return CustomPromise(function (resolve, reject) {
 			var allSettings = SettingStore.all(),
 				exported = {};
@@ -535,7 +535,7 @@ Object._extend(Settings, {
 				if ((exported.hasOwnProperty(key) && Settings.isDefault(key)) || !Settings.isKnown(key))
 					delete exported[key];
 
-			if (SettingStore.useSecureSettings) {
+			if (SettingStore.useSecureSettings && !unencrypted) {
 				var exportedSecure = {
 					salt: SyncClient.generateSalt()
 				};

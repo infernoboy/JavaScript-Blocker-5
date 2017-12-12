@@ -1077,18 +1077,19 @@ Object._extend(Poppy.scripts, {
 		poppy.content
 			.on('click', '#feedback-send-email', function () {
 				/* eslint-disable */
-				var feedbackData = globalPage.Feedback.createFeedbackData(messageElement.val(), ''),
-					emailableFeedback = "\n\n";
+				globalPage.Feedback.createFeedbackData(messageElement.val(), '').then(function (feedbackData) {
+					var emailableFeedback = "\n\n";
 
-				for (var key in feedbackData)
-					if (key !== 'email')
-						emailableFeedback += key + ': ' + feedbackData[key] + "\n";
+					for (var key in feedbackData)
+						if (key !== 'email')
+							emailableFeedback += key + ': ' + feedbackData[key] + "\n";
 
-				/* eslint-enable */
+					/* eslint-enable */
 
-				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5 Feedback&body=' + encodeURIComponent(emailableFeedback));
+					Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5 Feedback&body=' + encodeURIComponent(emailableFeedback));
 
-				poppy.close();
+					poppy.close();
+				});
 			})
 
 			.on('input', '#feedback-message', function () {

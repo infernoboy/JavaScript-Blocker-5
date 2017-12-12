@@ -9,7 +9,11 @@ var Feedback = {
 	__lastSubmissionTime: 0,
 
 	getSubmittableSettings: function () {
-		return Utilities.encode(Settings.export({ exportSettings: true }, ['Storage-StoreSettings']));
+		return CustomPromise(function (resolve) {
+			Settings.export({ exportSettings: true }, ['Storage-StoreSettings'], true).then(function (settings) {
+				resolve(Utilities.encode(settings));
+			});
+		});
 	},
 
 	useSubmittedSettings: function (settings) {
@@ -33,16 +37,20 @@ var Feedback = {
 	},
 
 	createFeedbackData: function (message, email) {
-		return {
-			email: email.substr(0, 200),
-			message: message.substr(0, 5000),
-			displayVersion: Version.display,
-			bundleID: Version.bundle,
-			userAgent: window.navigator.userAgent,
-			console: Feedback.getConsoleMessages(),
-			installID: Settings.getItem('installID'),		
-			settings: Feedback.getSubmittableSettings()
-		};
+		return CustomPromise(function (resolve) {
+			Feedback.getSubmittableSettings().then(function (settings) {
+				resolve({
+					email: email.substr(0, 200),
+					message: message.substr(0, 5000),
+					displayVersion: Version.display,
+					bundleID: Version.bundle,
+					userAgent: window.navigator.userAgent,
+					console: Feedback.getConsoleMessages(),
+					installID: Settings.getItem('installID'),		
+					settings: settings
+				});
+			});
+		});
 	},
 
 	submitFeedback: function (message, email) {
@@ -54,13 +62,15 @@ var Feedback = {
 		Settings.setItem('feedbackEmail', email);
 
 		return CustomPromise(function (resolve, reject) {
-			$.post(Feedback.__feedbackURL, Feedback.createFeedbackData(message, email)).then(function (result) {
-				if (result !== '1')
-					reject(result);
-				else
-					resolve();
-			}, function (error) {
-				reject(error);
+			Feedback.createFeedbackData(message, email).then(function (feedbackData) {
+				$.post(Feedback.__feedbackURL, feedbackData).then(function (result) {
+					if (result !== '1')
+						reject(result);
+					else
+						resolve();
+				}, function (error) {
+					reject(error);
+				});
 			});
 		});
 	}
