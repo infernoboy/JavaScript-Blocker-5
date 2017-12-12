@@ -20,7 +20,7 @@ function FilterList (listName, listURL, humanName) {
 
 FilterList.__cancel = 0;
 FilterList.__updating = 0;
-FilterList.__updateInterval = TIME.ONE.DAY * 4;
+FilterList.__updateInterval = TIME.ONE.DAY;
 FilterList.__addQueue = {};
 
 FilterList.promiseWorker = new PromiseWorker('../js/global/filterlist-worker.js');
