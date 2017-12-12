@@ -49,18 +49,17 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 					z-index: 3;
 				}
 
-				.page-host- {
-					&type {
-						&:after {
-							content: '│';
-							color: #ddd;
+				&-divider {
+					visibility: hidden;
+					content: '│';
+					color: #ddd;
 
-							& when (@darkMode) {
-								color: darken(#ddd, @darknessLevel - 22%);
-							}
-						}
+					& when (@darkMode) {
+						color: darken(#ddd, @darknessLevel - 22%);
 					}
+				}
 
+				.page-host- {
 					&host {
 						max-width: 220px;
 						display: inline-block;
@@ -68,17 +67,6 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 						.jsb-large-font& {
 							max-width: 180px;
-						}
-					}
-
-					&hidden-count {
-						&:before {
-							content: '│';
-							color: #ddd;
-
-							& when (@darkMode) {
-								color: darken(#ddd, @darknessLevel - 22%);
-							}
 						}
 					}
 
