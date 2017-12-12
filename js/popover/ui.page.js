@@ -335,7 +335,7 @@ UI.Page = {
 			if ((wasInEditMode && force === true) || (!wasInEditMode && force === false))
 				return;
 
-			var editButtons = $('.page-host-edit .poppy-menu-target', section),
+			var editButtons = $('.page-host-edit .poppy-menu-target-text', section),
 				items = $('.page-host-columns .page-host-item', section).find('.page-host-item-container, .page-host-item-edit-container');
 
 			editButtons.text(wasInEditMode ? _('view.page.host.edit') : _('view.page.host.done'));
