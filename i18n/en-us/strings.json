@@ -287,6 +287,9 @@
 
 	"rules.add_many": "Adding rules for \"{0}\"",
 
+	"setting_menu.encrypt_backup": "Encrypt Backup",
+	"setting_menu.decrypt_backup": "Decrypt Backup",
+	"setting_menu.backup_encrypted": "This backup is encrypted and requires a password before it can be imported.",
 	"setting_menu.backup": "Backup",
 	"setting_menu.include": "Include",
 	"setting_menu.export_first_visit": "Trusted websites",
@@ -392,6 +395,13 @@
 	"setting.disableTime.option.1_hour": "1 hour",
 	"setting.importSettings.label": "Import backup",
 	"setting.importSettings.subLabel": "Import",
+	"setting.useSecureSettings.label": "Use secure settings",
+	"setting.useSecureSettings.help": "When enabled, all settings and rules are stored in your macOS keychain. You may incur peformance penalties once enabled.",
+	"setting.useSecureSettings.enabling": "Enabling secure settings, please wait...",
+	"setting.useSecureSettings.disabling": "Disabling secure settings, please wait...",
+	"setting.useSecureSettings.encryptingBackup": "Encrypting backup, please wait...",
+	"setting.useSecureSettings.decryptingBackup": "Decrypting backup, please wait...",
+	"setting.useSecureSettings.passwordRequired": "Because you are using secure settings, a password is required to encrypt your backup.",
 	"setting.useAnimations.label": "Use animations",
 	"setting.largeFont.label": "Use large font",
 	"setting.createRulesOnClick.label": "Create rules without switching to page editor",

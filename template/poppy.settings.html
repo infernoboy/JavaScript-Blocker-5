@@ -238,4 +238,65 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 <noscript id="fanboys-ultimate">
 	<p class="jsb-info jsb-readable"><%=_('setting.filterLists.ultimate')%></p>
-	</noscript>
+</noscript>
+
+<noscript id="encrypt-backup">
+	<h3 class="jsb-centered"><%=_('setting_menu.encrypt_backup')%></h3>
+
+	<div class="generic-menu">
+		<ul id="encrypt-backup" class="generic-menu-menu generic-menu-options">
+			<li>
+				<p class="jsb-info jsb-readable"><%=_('setting.useSecureSettings.passwordRequired')%></p>
+				<div class="horizontal-divider"></div>
+			</li>
+			<li>
+				<table class="generic-menu-options jsb-centered">
+					<tbody>
+						<tr>
+							<td class="jsb-align-right"><label for="backup-password"><%=_('settings.new_locker_password')%>:</label><q></q></td>
+							<td><input type="password" id="backup-password" class="trigger-on-enter" /></td>
+						</tr>
+
+						<tr>
+							<td class="jsb-align-right"><label for="backup-password-verify"><%=_('settings.verify_locker_password')%>:</label><q></q></td>
+							<td><input type="password" id="backup-password-verify" class="trigger-on-enter" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</li>
+
+			<li class="jsb-align-right">
+				<input type="button" id="backup-password-cancel" value="<%=_('Cancel')%>" />
+				<input type="button" id="backup-password-save" class="on-enter" value="<%=_('setting_menu.export')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>
+
+<noscript id="decrypt-backup">
+	<h3 class="jsb-centered"><%=_('setting_menu.decrypt_backup')%></h3>
+
+	<div class="generic-menu">
+		<ul id="decrypt-backup" class="generic-menu-menu generic-menu-options">
+			<li>
+				<p class="jsb-info jsb-readable"><%=_('setting_menu.backup_encrypted')%></p>
+				<div class="horizontal-divider"></div>
+			</li>
+			<li>
+				<table class="generic-menu-options jsb-centered">
+					<tbody>
+						<tr>
+							<td class="jsb-align-right"><label for="backup-password"><%=_('settings.locker_password')%>:</label><q></q></td>
+							<td><input type="password" id="backup-password" class="trigger-on-enter" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</li>
+
+			<li class="jsb-align-right">
+				<input type="button" id="backup-password-cancel" value="<%=_('Cancel')%>" />
+				<input type="button" id="backup-password-import" class="on-enter" value="<%=_('setting_menu.import')%>" />
+			</li>
+		</ul>
+	</div>
+</noscript>

@@ -200,6 +200,19 @@ window.SettingStore = {
 
 	available: !!(window.safari && safari.extension && safari.extension.settings),
 
+	_useSecureSettings: (window.safari && safari.extension && safari.extension.settings && safari.extension.settings.getItem('useSecureSettings')),
+
+	get useSecureSettings() {
+		return SettingStore._useSecureSettings;
+	},
+
+	set useSecureSettings(value) {
+		SettingStore._useSecureSettings = value;
+
+		safari.extension.settings.setItem('useSecureSettings', value);
+		safari.extension.secureSettings.setItem('useSecureSettings', value);
+	},
+
 	__setCache: function (key, value) {
 		if (key._startsWith(Store.STORE_STRING) || value === undefined || typeof value === 'object')
 			return;
@@ -217,7 +230,10 @@ window.SettingStore = {
 			fn: (function (key, value) {
 				delete SettingStore.__syncTimeout[key];
 
-				safari.extension.settings.setItem(key, value);
+				if (SettingStore.useSecureSettings)
+					safari.extension.secureSettings.setItem(key, value);
+				else
+					safari.extension.settings.setItem(key, value);
 			}).bind(this, key, value)
 		};
 
@@ -249,6 +265,9 @@ window.SettingStore = {
 	},
 
 	isSet: function (key) {
+		if (SettingStore.useSecureSettings)
+			return safari.extension.secureSettings.hasOwnProperty(key);
+
 		return localStorage.hasOwnProperty(key) || safari.extension.settings.hasOwnProperty(key);
 	},
 
@@ -256,8 +275,8 @@ window.SettingStore = {
 		if (key in this.__cache)
 			return this.__cache[key];
 
-		var localValue = localStorage.getItem(key),
-			value = (typeof localValue === 'string') ? JSON.parse(localValue) : safari.extension.settings.getItem(key);
+		var localValue = SettingStore.useSecureSettings ? undefined : localStorage.getItem(key),
+			value = (typeof localValue === 'string') ? JSON.parse(localValue) : (SettingStore.useSecureSettings ? safari.extension.secureSettings.getItem(key) : safari.extension.settings.getItem(key));
 
 		if (value === null)
 			return defaultValue === undefined ? value : defaultValue;
@@ -279,6 +298,9 @@ window.SettingStore = {
 		if (SettingStore.__badKeys._contains(key))
 			throw new Error(key + ' cannot be used as a setting key.');
 
+		if (SettingStore.useSecureSettings)
+			persist = true;
+
 		SettingStore.syncCancel(key);
 
 		delete this.__cache[key];
@@ -288,7 +310,11 @@ window.SettingStore = {
 
 		if (persist) {
 			localStorage.removeItem(key);
-			safari.extension.settings.setItem(key, value);
+
+			if (SettingStore.useSecureSettings)
+				safari.extension.secureSettings.setItem(key, value);
+			else
+				safari.extension.settings.setItem(key, value);
 		} else {
 			localStorage.setItem(key, JSON.stringify(value));
 
@@ -304,7 +330,11 @@ window.SettingStore = {
 		
 		delete this.__cache[key];
 
-		safari.extension.settings.removeItem(key);
+		if (SettingStore.useSecureSettings)
+			safari.extension.secureSettings.removeItem(key);
+		else
+			safari.extension.settings.removeItem(key);
+
 		localStorage.removeItem(key);
 	},
 
@@ -313,13 +343,16 @@ window.SettingStore = {
 
 		var all = {};
 
-		for (var key in localStorage)
-			if (localStorage.hasOwnProperty(key))
-				all[key] = JSON.parse(localStorage[key]);
+		if (!SettingStore.useSecureSettings)
+			for (var key in localStorage)
+				if (localStorage.hasOwnProperty(key))
+					all[key] = JSON.parse(localStorage[key]);
 
-		for (key in safari.extension.settings)
-			if (safari.extension.settings.hasOwnProperty(key))
-				all[key] = safari.extension.settings[key];
+		var settings = SettingStore.useSecureSettings ? safari.extension.secureSettings : safari.extension.settings;
+
+		for (key in settings)
+			if (settings.hasOwnProperty(key))
+				all[key] = settings[key];
 			
 		return all;
 	},
@@ -343,8 +376,27 @@ window.SettingStore = {
 	clear: function () {
 		this.__cache = {};
 
+		var useSecureSettings = Boolean(SettingStore.useSecureSettings);
+
+		safari.extension.settings.clear();
+		safari.extension.secureSettings.clear();
+		localStorage.clear();
+
+		SettingStore.useSecureSettings = useSecureSettings;
+	}
+};
+
+SettingStore.migrateToSecure = function (clear, useSecureSettings) {
+	var allSettings = SettingStore.all();
+
+	for (var key in allSettings)
+		safari.extension.secureSettings.setItem(key, allSettings[key]);
+
+	if (clear) {
 		safari.extension.settings.clear();
 		localStorage.clear();
+
+		SettingStore.useSecureSettings = useSecureSettings;
 	}
 };
 
@@ -370,8 +422,24 @@ window.SecureSettings = {
 	},
 
 	clear: function () {
+		var useSecureSettings = Boolean(SettingStore.useSecureSettings);
+
 		safari.extension.secureSettings.clear();
+
+		SettingStore.useSecureSettings = useSecureSettings;
 	}
+};
+
+SecureSettings.migrateToPlain = function (clear, useSecureSettings) {
+	var allSettings = {};
+
+	for (var key in safari.extension.secureSettings)
+		if (safari.extension.secureSettings.hasOwnProperty(key))
+			allSettings[key] = safari.extension.secureSettings[key];
+
+	Settings.import(allSettings, true, false, true);
+
+	SettingStore.useSecureSettings = useSecureSettings;
 };
 
 window.Events = {
