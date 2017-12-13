@@ -693,6 +693,7 @@
 	"rules.protocol.about:": " ",
 	"rules.protocol.data:": " ",
 	"rules.protocol.javascript:": " ",
+	"rules.protocol.blob:": " ",
 
 	"snapshots.current": "current",
 	"snapshots.count_size": "{0} snapshot, {1}",
