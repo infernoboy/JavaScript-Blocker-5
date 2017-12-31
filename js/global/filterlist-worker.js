@@ -90,7 +90,6 @@ function processFilterList (id, list) {
 			.replace(/\^/g, '([^a-zA-Z0-9_\.%-]+|$)')
 			.replace(/\./g, '\\.')
 			.replace(/\*/g, '.*');
-
 		if (line._startsWith('||'))
 			rule = rule.replace('||', 'https?:\\/\\/([^\\/]+\\.)?');
 		else if (line[0] === '|')
@@ -121,6 +120,9 @@ function processFilterList (id, list) {
 				else if (args[j] in kindMap)
 					useKind = kindMap[args[j]];
 		}
+
+		if (domains[0] === '*' && 'https://will.block/anything/'.match(new RegExp(rule)))
+			continue; // This rule will end up blocking everything, skip it.
 
 		var exclusivelyExceptions = domains.every(function (domain) {
 			return domain._startsWith('.~');
