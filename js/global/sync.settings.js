@@ -14,7 +14,7 @@ Object._extend(SyncClient.Settings, {
 		'syncQueue', 'trialStart', 'FilterListLastUpdate', 'donationVerified', 'installID', 'installedBundle',
 		'setupComplete', 'isDisabled', 'showPopoverOnLoad', 'openSettings', 'temporarilyShowResourceURLs',
 		'settingCurrentView', 'syncNeedsFullSettingsSync', 'syncLastTime', 'syncClientSync', 'lastRuleWasTemporary',
-		'syncClientUseDevelopmentServer', 'syncClientNeedsVerification'],
+		'syncClientUseDevelopmentServer', 'syncClientNeedsVerification', 'useSecureSettings'],
 	DO_NOT_APPEND: ['Storage-StoreSettings'],
 
 	_autoSync: false,
@@ -533,12 +533,18 @@ Object._extend(SyncClient.Settings.prototype, {
 
 					UI.view.updateProgressBar(100, 250, _('sync.uploading_settings'), _('sync.failed'));
 
-					if (err.responseJSON && err.responseJSON.error)
-						SyncClient.handleError('SyncClient.Settings#syncEncryptedSettings post', err.responseJSON.error);
-					else
-						LogError('SyncClient.Settings#syncEncryptedSettings post', err.responseText || err);
+					if (err.status === 413) {
+						Settings.setItem('syncNeedsFullSettingsSync', true);
 
-					reject(err);
+						self.performFullSettingsSync().then(resolve, reject);
+					} else  {
+						if (err.responseJSON && err.responseJSON.error)
+							SyncClient.handleError('SyncClient.Settings#syncEncryptedSettings post', err.responseJSON.error);
+						else
+							LogError('SyncClient.Settings#syncEncryptedSettings post', err.responseText || err);
+
+						reject(err);
+					}
 				});
 			}, function (err) {
 				LogError('SyncClient.Settings#syncEncryptedSettings encrypt data', err);

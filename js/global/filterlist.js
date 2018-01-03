@@ -20,7 +20,7 @@ function FilterList (listName, listURL, humanName) {
 
 FilterList.__cancel = 0;
 FilterList.__updating = 0;
-FilterList.__updateInterval = TIME.ONE.DAY * 4;
+FilterList.__updateInterval = TIME.ONE.DAY;
 FilterList.__addQueue = {};
 
 FilterList.promiseWorker = new PromiseWorker('../js/global/filterlist-worker.js');
@@ -32,6 +32,8 @@ FilterList.executeQueue = function () {
 		for (var listName in FilterList.__addQueue)
 			if (Rules.list[listName])
 				promise = promise.then(function (listName) {
+					Rules.list[listName].clear();
+					
 					return Rules.list[listName].addMany(FilterList.__addQueue[listName].rules);
 				}.bind(null, listName), function (err) {
 					LogError(err);

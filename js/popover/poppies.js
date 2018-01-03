@@ -319,23 +319,31 @@ Object._extend(Poppy.scripts, {
 					exportUserScripts: $('#setting-menu-backup-export-user-scripts', poppy.content).is(':checked')
 				};
 
-				Settings.EXPORTED_BACKUP = Settings.export(options);
+				Settings.export(options).then(function (exported) {
+					Settings.EXPORTED_BACKUP = exported;
 
-				var activeTab = Tabs.active();
+					setTimeout(function () {
+						delete Settings.EXPORTED_BACKUP;
+					}, 30000);
 
-				Tabs.create(ExtensionURL('html/exportBackup.html'));
+					var activeTab = Tabs.active();
 
-				if (activeTab && Utilities.safariBuildVersion < 603) {
-					poppy.setContent(Template.create('main', 'jsb-info', {
-						string: _('setting_menu.export.done')
-					}));
+					Tabs.create(ExtensionURL('html/exportBackup.html'));
 
-					activeTab.activate();
-				}	else {
+					if (activeTab && Utilities.safariBuildVersion < 603) {
+						poppy.setContent(Template.create('main', 'jsb-info', {
+							string: _('setting_menu.export.done')
+						}));
+
+						activeTab.activate();
+					}	else {
+						poppy.close();
+						
+						Popover.hide();
+					}
+				}, function () {
 					poppy.close();
-					
-					Popover.hide();
-				}
+				});
 			})
 
 			.on('drop', '#setting-menu-backup-import', function (event) {
@@ -373,6 +381,117 @@ Object._extend(Poppy.scripts, {
 				var alternativePoppy = new Poppy(poppy.originalPosition.x, poppy.originalPosition.y, true, 'backup-import-alternative');
 
 				alternativePoppy.setContent(Template.create('poppy.settings', 'backup-import-alternative')).show();
+			});
+	},
+
+	'encrypt-backup': function (poppy) {
+		var password = $('#backup-password', poppy.content),
+			verifyPassword = $('#backup-password-verify', poppy.content);
+
+		password.focus();
+
+		poppy.content
+			.on('click', '#backup-password-cancel', function () {
+				poppy.reject();
+
+				poppy.close();
+			})
+			.on('click', '#backup-password-save', function () {
+				var passwordValue = password.val(),
+					verifyPasswordValue = verifyPassword.val();
+
+				if (!passwordValue.length)
+					return password.shake().focus();
+
+				if (passwordValue !== verifyPasswordValue)
+					return verifyPassword.shake().focus().selectAll();
+
+				poppy.setContent(Template.create('main', 'jsb-readable', {
+					string: _('setting.useSecureSettings.encryptingBackup')
+				}));
+
+				globalPage.SyncClient.generateHashWorker(passwordValue, poppy.exportedSecure.salt).then(function (backupPasswordHash) {
+					globalPage.SyncClient.encryptWorkerTest(globalPage.SyncClient.CHALLENGE, backupPasswordHash).then(function (encryptedChallenge) {
+						globalPage.SyncClient.encryptWorkerTest(poppy.exported, backupPasswordHash).then(function (encryptedBackup) {
+							delete poppy.exported;
+
+							poppy.exportedSecure.challenge = encryptedChallenge;
+							poppy.exportedSecure.encryptedBackup = encryptedBackup;
+
+							poppy.resolve(JSON.stringify(poppy.exportedSecure));
+
+							poppy.close();
+						}, function () {
+							LogError('Failed to encrypt backup!');
+
+							poppy.reject();
+
+							poppy.close();
+						});
+					}, function () {
+						LogError('Failed to generate challenge!');
+
+						poppy.reject();
+
+						poppy.close();
+					});
+				}, function () {
+					LogError('Failed to generate hash from backup password!');
+
+					poppy.reject();
+
+					poppy.close();
+				});
+			});
+	},
+
+	'decrypt-backup': function (poppy) {
+		var password = $('#backup-password', poppy.content);
+
+		password.focus();
+
+		poppy.content
+			.on('click', '#backup-password-cancel', function () {
+				poppy.reject(true);
+
+				poppy.close();
+			})
+			.on('click', '#backup-password-import', function () {
+				var passwordValue = password.val();
+
+				if (!passwordValue.length)
+					return password.shake().focus();
+
+				globalPage.SyncClient.generateHashWorker(passwordValue, poppy.backup.salt).then(function (backupPasswordHash) {
+					globalPage.SyncClient.decryptWorker(poppy.backup.challenge, backupPasswordHash).then(function (decryptedChallenge) {
+						if (decryptedChallenge !== globalPage.SyncClient.CHALLENGE)
+							return password.shake().focus().selectAll();
+
+						poppy.setContent(Template.create('main', 'jsb-readable', {
+							string: _('setting.useSecureSettings.decryptingBackup')
+						}));
+
+						globalPage.SyncClient.decryptWorker(poppy.backup.encryptedBackup, backupPasswordHash).then(function (decryptedBackup) {
+							poppy.resolve(JSON.parse(decryptedBackup));
+
+							poppy.close();
+						}, function () {
+							LogError('Failed to decrypt backup!');
+
+							poppy.reject(Error('unknown'));
+
+							poppy.close();
+						});
+					}, function () {
+						return password.shake().focus().selectAll();
+					});
+				}, function () {
+					LogError('Failed to generate hash from backup password!');
+
+					poppy.reject(Error('hash'));
+
+					poppy.close();
+				});
 			});
 	},
 
@@ -958,18 +1077,19 @@ Object._extend(Poppy.scripts, {
 		poppy.content
 			.on('click', '#feedback-send-email', function () {
 				/* eslint-disable */
-				var feedbackData = globalPage.Feedback.createFeedbackData(messageElement.val(), ''),
-					emailableFeedback = "\n\n";
+				globalPage.Feedback.createFeedbackData(messageElement.val(), '').then(function (feedbackData) {
+					var emailableFeedback = "\n\n";
 
-				for (var key in feedbackData)
-					if (key !== 'email')
-						emailableFeedback += key + ': ' + feedbackData[key] + "\n";
+					for (var key in feedbackData)
+						if (key !== 'email')
+							emailableFeedback += key + ': ' + feedbackData[key] + "\n";
 
-				/* eslint-enable */
+					/* eslint-enable */
 
-				Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5 Feedback&body=' + encodeURIComponent(emailableFeedback));
+					Tabs.create('mailto:JSB5Feedback@toggleable.com?subject=JSB5 Feedback&body=' + encodeURIComponent(emailableFeedback));
 
-				poppy.close();
+					poppy.close();
+				});
 			})
 
 			.on('input', '#feedback-message', function () {
@@ -1106,7 +1226,7 @@ Object._extend(Poppy.scripts, {
 					return password.shake().focus();
 
 				if (passwordValue !== verifyPasswordValue)
-					return verifyPassword.shake().focus();
+					return verifyPassword.shake().focus().selectAll();
 
 				globalPage.SyncClient.SRP.register(emailValue, passwordValue).then(function () {
 					poppy.close();

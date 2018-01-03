@@ -109,6 +109,7 @@ FloatingHeader.prototype.adjustPosition = function () {
 		currentHeader
 			.clone(true, true)
 			.attr('id', floatedHeaderID)
+			.attr('aria-hidden', true)
 			.addClass('floated-header');
 
 	$('*', currentHeaderClone).removeClass('poppy-menu-ready');

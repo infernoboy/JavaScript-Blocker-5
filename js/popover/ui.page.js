@@ -72,15 +72,17 @@ UI.Page = {
 		UI.Page.stateContainer
 			.empty()
 			.data('page', page)
-			.append(sections)
-			.find('.page-host-editor-kind')
-			.trigger('change');
-
-		UI.view.toTop(UI.view.views);
+			.append(sections);
 
 		UI.Page.__rendering = false;
 
 		UI.event.trigger('pageDidRender', page);
+
+		FloatingHeader.adjustAll();
+
+		setTimeout(function (sections) {
+			sections.find('.page-host-editor-kind').trigger('change');
+		}, 150, sections);
 	},
 
 	init: function () {
@@ -319,7 +321,7 @@ UI.Page = {
 
 			Utilities.Timer.timeout('renderPage', UI.Page.throttledRequestFromActive, 1000);
 		}
-	}, 50, null, true),
+	}, 200, null, true),
 
 	section: {
 		toggleEditMode: function (section, force, quick, forceAdvanced) {
@@ -335,7 +337,7 @@ UI.Page = {
 			if ((wasInEditMode && force === true) || (!wasInEditMode && force === false))
 				return;
 
-			var editButtons = $('.page-host-edit .poppy-menu-target', section),
+			var editButtons = $('.page-host-edit .poppy-menu-target-text', section),
 				items = $('.page-host-columns .page-host-item', section).find('.page-host-item-container, .page-host-item-edit-container');
 
 			editButtons.text(wasInEditMode ? _('view.page.host.edit') : _('view.page.host.done'));

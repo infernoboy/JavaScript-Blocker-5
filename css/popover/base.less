@@ -327,10 +327,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 						height: 19px;
 						cursor: default;
 						background: -webkit-linear-gradient(top, darken(rgb(252, 252, 252), @darknessLevel), darken(rgb(241, 241, 241), @darknessLevel));
-						width: 74px;
+						width: 78px;
 
 						.jsb-large-font& {
-							width: 72px;
+							width: 76px;
 						}
 
 						.transition;
@@ -390,6 +390,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 							border-left: none;
 							width: 0;
 							overflow: hidden;
+							visibility: hidden;
 						}
 
 						.view-switcher-item-container {
@@ -490,29 +491,51 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 				height: 9px;
 			}
 
-			*[data-poppyMenu] {		
+			*[data-poppyMenu] {
+				.poppy-menu-divider {
+					display: inline-block;
+					position: relative;
+					top: 2px;
+					background: #bbb;
+					margin-left: 5px;
+					height: 10px;
+					width: 1px;
+
+					.jsb-large-font& {
+						top: 3px;
+					}
+
+					& when (@darkMode) {
+						color: #aaa;
+					}
+				}
+
 				.poppy-menu-target:after {
 					display: inline-block;
 					position: relative;
 					top: -3px;
 					font-family: Times;
 					content: ' ⌄';
-					margin-left: 3px;
-					color: #999;
+					margin-left: 2px;
+					color: #aaa;
 					-webkit-transform: scale(1.4, 1.2);
 					-webkit-font-smoothing: antialiased;
 					font-weight: bold;
 					font-size: 21px;
 					line-height: 0;
 					vertical-align: middle;
+					background: red;
 
 					& when (@darkMode) {
-						color: #888;
+						color: #999;
 					}
 				}
 
-				&.poppy-menu-disabled .poppy-menu-target:after {
-					display: none;
+				&.poppy-menu-disabled {
+					.poppy-menu-divider,
+					.poppy-menu-target:after {
+						display: none;
+					}
 				}
 			}
 

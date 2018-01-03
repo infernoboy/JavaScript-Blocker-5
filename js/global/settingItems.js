@@ -321,6 +321,36 @@ Settings.settings = {
 		collapsible: 'setting.collapsible.ui',
 		props: {
 			subSettings: [{
+				setting: 'useSecureSettings',
+				props: {
+					type: 'boolean',
+					default: false,
+					locked: true,
+					onChange: function (type, settingKey, value) {
+						var poppy = new Popover.window.Poppy(0.5, 0);
+
+						poppy
+							.modal()
+							.setContent(Template.create('main', 'jsb-info', {
+								string: _('setting.useSecureSettings.' + (value ? 'enabling' : 'disabling'))
+							}))
+							.show();
+
+						setTimeout(function () {
+							if (value) {
+								SettingStore.migrateToSecure(true, true);
+
+								Settings.restartRequired();
+							} else
+								SecureSettings.migrateToPlain(false);
+
+							setTimeout(function () {
+								poppy.close();
+							}, 2500);
+						}, 1500);
+					}
+				}
+			}, {
 				setting: 'useAnimations',
 				props: {
 					type: 'boolean',

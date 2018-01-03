@@ -5,6 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 'use strict';
 
 var SyncClient = {
+	CHALLENGE: '25FBE6FE-C272-4B33-9A81-102ED88BCEBD',
 	PING_EVERY: TIME.ONE.HOUR,
 	SERVER_TIMEOUT: 40000,
 
@@ -112,6 +113,21 @@ var SyncClient = {
 			hash: hash
 		}).then(function (decrypted) {
 			return JSON.parse(decrypted);
+		}, function (error) {
+			return error;
+		});
+	},
+
+	encryptWorkerTest: function (string, hash) {
+		return CustomPromise(function (resolve, reject) {
+			SyncClient.encryptWorker(string, hash).then(function (encryptResult) {
+				SyncClient.decryptWorker(encryptResult, hash).then(function (decryptResult) {
+					if (decryptResult === string)
+						resolve(encryptResult);
+					else
+						reject(false);
+				});
+			}, reject);
 		});
 	},
 

@@ -18,8 +18,8 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>" data-blockedFirstVisitStatus="<%=JSON.stringify(self.blockFirstVisitStatus)._entityQuotes()%>" data-private="<%=self.private ? '1' : '0'%>">
 		<div class="page-host-header floating-header">
-			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-host jsb-light-scrollbars"><%=self.host%></span><span class="page-host-hidden-count">0 hidden items</span>
-			<button class="page-host-edit" data-poppyMenu="edit-page" data-poppyMenuMeta="<%=self.id%>" data-cancelForceBegin="1"><span class="poppy-menu-target no-underline"><%=_('view.page.host.edit')%></span></button>
+			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-header-divider" aria-hidden="true">│</span><span class="page-host-host jsb-light-scrollbars"><%=self.host%></span><span class="page-host-header-divider" aria-hidden="true">│</span><span class="page-host-hidden-count">0 hidden items</span>
+			<button class="page-host-edit" data-poppyMenu="edit-page" data-poppyMenuMeta="<%=self.id%>" data-cancelForceBegin="1"><span class="poppy-menu-target no-underline"><span class="poppy-menu-target-text"><%=_('view.page.host.edit')%></span></span></button>
 			<input type="button" class="page-host-create-rules" value="<%=_('view.page.host.editor.create_rules')%>" />
 			<input type="button" class="page-host-toggle-disable" value="<%=_(self.disabled ? 'view_toolbar.enable' : 'view_toolbar.disable')%>" />
 		</div>

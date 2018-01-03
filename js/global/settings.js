@@ -476,142 +476,193 @@ Object._extend(Settings, {
 		return Settings.map;
 	},
 
-	export: function (options, deleteProps) {
-		var allSettings = SettingStore.all(),
-			exported = {};
+	export: function (options, deleteProps, unencrypted) {
+		return CustomPromise(function (resolve, reject) {
+			var allSettings = SettingStore.all(),
+				exported = {};
 
-		if (options.exportSettings)
-			exported = SettingStore.all()._clone(true);
+			if (options.exportSettings)
+				exported = SettingStore.all()._clone(true);
 
-		delete exported.length;
+			delete exported.length;
 
-		if (!options.exportFirstVisit)
-			delete exported['Storage-FirstVisit'];
-		else if (!options.exportSettings)
-			exported['Storage-FirstVisit'] = allSettings['Storage-FirstVisit'];
+			if (!options.exportFirstVisit)
+				delete exported['Storage-FirstVisit'];
+			else if (!options.exportSettings)
+				exported['Storage-FirstVisit'] = allSettings['Storage-FirstVisit'];
 
-		if (!options.exportRules) {
-			delete exported['Storage-AllResourcesRules'];
-			delete exported['Storage-Rules'];
-		}	else if (!options.exportSettings) {
-			exported['Storage-AllResourcesRules'] = allSettings['Storage-AllResourcesRules'];
-			exported['Storage-Rules'] = allSettings['Storage-Rules'];
-		}
+			if (!options.exportRules) {
+				delete exported['Storage-AllResourcesRules'];
+				delete exported['Storage-Rules'];
+			}	else if (!options.exportSettings) {
+				exported['Storage-AllResourcesRules'] = allSettings['Storage-AllResourcesRules'];
+				exported['Storage-Rules'] = allSettings['Storage-Rules'];
+			}
 
-		if (!options.exportSnapshots)
-			delete exported['Storage-Snapshots'];
-		else if (!options.exportSettings)
-			exported['Storage-Snapshots'] = allSettings['Storage-Snapshots'];
+			if (!options.exportSnapshots)
+				delete exported['Storage-Snapshots'];
+			else if (!options.exportSettings)
+				exported['Storage-Snapshots'] = allSettings['Storage-Snapshots'];
 
-		if (!options.exportUserScripts) {
-			delete exported['Storage-UserScripts'];
-			delete exported['Storage-UserScripts-Storage'];
-		} else if (!options.exportSettings) {
-			exported['Storage-UserScripts'] = allSettings['Storage-UserScripts'];
-			exported['Storage-UserScripts-Storage'] = allSettings['Storage-UserScripts-Storage'];
-		}
+			if (!options.exportUserScripts) {
+				delete exported['Storage-UserScripts'];
+				delete exported['Storage-UserScripts-Storage'];
+			} else if (!options.exportSettings) {
+				exported['Storage-UserScripts'] = allSettings['Storage-UserScripts'];
+				exported['Storage-UserScripts-Storage'] = allSettings['Storage-UserScripts-Storage'];
+			}
 
-		delete exported['FilterListLastUpdate'];
-		delete exported['Storage-FilterRules'];
-		delete exported['Storage-Predefined'];
-		delete exported['Storage-ResourceCanLoad'];
-		delete exported['donationVerified'];
-		delete exported['trialStart'];
-		delete exported['updateNotify'];
-		delete exported['installedBundle'];
-		delete exported['openSettings'];
-		delete exported['syncQueue'];
-		delete exported['syncLastTime'];
-		delete exported['syncNeedsFullSettingsSync'];
-		delete exported['syncClientUseDevelopmentServer'];
-		delete exported['syncClientNeedsVerification'];
+			delete exported['FilterListLastUpdate'];
+			delete exported['Storage-FilterRules'];
+			delete exported['Storage-Predefined'];
+			delete exported['Storage-ResourceCanLoad'];
+			delete exported['donationVerified'];
+			delete exported['trialStart'];
+			delete exported['updateNotify'];
+			delete exported['installedBundle'];
+			delete exported['openSettings'];
+			delete exported['syncQueue'];
+			delete exported['syncLastTime'];
+			delete exported['syncNeedsFullSettingsSync'];
+			delete exported['syncClientUseDevelopmentServer'];
+			delete exported['syncClientNeedsVerification'];
 
-		if (Array.isArray(deleteProps))
-			for (var i = deleteProps.length; i--;)
-				delete exported[deleteProps[i]];
+			if (Array.isArray(deleteProps))
+				for (var i = deleteProps.length; i--;)
+					delete exported[deleteProps[i]];
 
-		for (var key in exported)
-			if ((exported.hasOwnProperty(key) && Settings.isDefault(key)) || !Settings.isKnown(key))
-				delete exported[key];
+			for (var key in exported)
+				if ((exported.hasOwnProperty(key) && Settings.isDefault(key)) || !Settings.isKnown(key))
+					delete exported[key];
 
-		return JSON.stringify(exported);
+			if (SettingStore.useSecureSettings && !unencrypted) {
+				var exportedSecure = {
+					salt: SyncClient.generateSalt()
+				};
+
+				var poppy = new Popover.window.Poppy(0.5, 0, Utilities.safariBuildVersion >= 603, 'encrypt-backup');
+
+				poppy.exported = JSON.stringify(exported);
+				poppy.exportedSecure = exportedSecure;
+				poppy.resolve = resolve;
+				poppy.reject = reject;
+
+				poppy.setContent(Template.create('poppy.settings', 'encrypt-backup')).modal().show();
+
+			} else
+				resolve(JSON.stringify(exported));
+		});
 	},
 
-	import: function (settings, clearExisting, semi) {
+	decryptImportedBackup: function (encryptedBackup) {
+		return CustomPromise(function (resolve, reject) {
+			var poppy = new Popover.window.Poppy(0.5, 0, Utilities.safariBuildVersion >= 603, 'decrypt-backup');
+
+			poppy.backup = encryptedBackup;
+			poppy.resolve = resolve;
+			poppy.reject = reject;
+
+			poppy.setContent(Template.create('poppy.settings', 'decrypt-backup')).modal().show();
+		});
+	},
+
+	import: function (settings, clearExisting, semi, isUnlocked) {
 		var syncClientIsLoggedIn = SyncClient.SRP.isLoggedIn(),
-			willNotImport = ['donationVerified', 'trialStart', 'updateNotify', 'FilterListLastUpdate', 'installedBundle', 'openSettings'];
+			willNotImport = ['donationVerified', 'trialStart', 'updateNotify', 'FilterListLastUpdate', 'installedBundle', 'openSettings', 'useSecureSettings'];
 
 		UI.Locker
-			.showLockerPrompt('importBackupSettings', !!semi)
+			.showLockerPrompt('importBackupSettings', !!semi || isUnlocked)
 			.then(function (importedSettings) {
-				var settings = SettingStore.import(importedSettings);
+				var settings = SettingStore.import(importedSettings),
+					backupIsEncrypted = settings.hasOwnProperty('encryptedBackup');
 
 				if (!settings)
 					return LogError(Error('failed to import settings'));
 
-				if (!semi)
-					Settings.IMPORTING = true;
+				var decryptSettings = backupIsEncrypted ? Settings.decryptImportedBackup(settings) : Promise.resolve(settings);
 
-				var temporaryBackup = JSON.stringify(SettingStore.all());
+				decryptSettings.then(function (settings) {
+					if (!semi)
+						Settings.IMPORTING = true;
 
-				if (clearExisting)
-					SettingStore.clear();
+					if (backupIsEncrypted)
+						SettingStore.useSecureSettings = true;
 
-				if (settings.settings && settings.rules && settings.simpleRules)
-					try {
-						Upgrade.importJSB4Backup(settings);
-					} catch (error) {
-						LogError('failed to import JSB4 backup', error);
+					var temporaryBackup = JSON.stringify(SettingStore.all()),
+						useSecureSettings = SettingStore.useSecureSettings;
 
-						Settings.import(temporaryBackup, true);
+					if (clearExisting)
+						SettingStore.clear();
 
-						return;
-					}
-				else {
-					var value;
+					SettingStore.useSecureSettings = useSecureSettings;
 
-					for (var setting in settings) {
-						if (willNotImport._contains(setting))
-							continue;
+					if (settings.settings && settings.rules && settings.simpleRules)
+						try {
+							Upgrade.importJSB4Backup(settings);
+						} catch (error) {
+							LogError('failed to import JSB4 backup', error);
 
-						value = settings[setting];
+							Settings.import(temporaryBackup, true);
 
-						if (setting._startsWith(Store.STORE_STRING) || (settings[setting] && settings[setting].STORE))
-							try {
-								SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= Store.LOCAL_SAVE_SIZE);
-							} catch (e) {
-								LogError('failed to import store setting - ' + setting, e);
+							return;
+						}
+					else {
+						var value;
+
+						for (var setting in settings) {
+							if (willNotImport._contains(setting))
+								continue;
+
+							value = settings[setting];
+
+							if (setting._startsWith(Store.STORE_STRING) || (settings[setting] && settings[setting].STORE))
+								try {
+									SettingStore.setItem(setting, settings[setting], null, settings[setting].length >= Store.LOCAL_SAVE_SIZE);
+								} catch (e) {
+									LogError('failed to import store setting - ' + setting, e);
+								}
+							else {
+								try {
+									value = JSON.parse(value);
+								} catch (e) { /* do nothing */ }
+
+								try {
+									if (Settings.isKnown(setting))
+										SettingStore.setItem(setting, value);
+								} catch (e) { /* do nothing */ }
 							}
-						else {
-							try {
-								value = JSON.parse(value);
-							} catch (e) { /* do nothing */ }
-
-							try {
-								if (Settings.isKnown(setting))
-									SettingStore.setItem(setting, value);
-							} catch (e) { /* do nothing */ }
 						}
 					}
-				}
 
-				setTimeout(function (settings, semi) {
-					if (!settings._isEmpty())
-						Settings.setItem('setupComplete', true);
+					setTimeout(function (settings, semi) {
+						if (!settings._isEmpty())
+							Settings.setItem('setupComplete', true);
 
-					if (!semi) {
-						Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
-						Settings.setItem('showPopoverOnLoad', true);
-						Settings.setItem('syncNeedsFullSettingsSync', syncClientIsLoggedIn);
-						Settings.setItem('syncNeedsLogin', syncClientIsLoggedIn);
+						if (!semi) {
+							Settings.setItem('trialStart', Date.now() - Extras.Trial.__length + TIME.ONE.DAY);
+							Settings.setItem('showPopoverOnLoad', true);
+							Settings.setItem('syncNeedsFullSettingsSync', syncClientIsLoggedIn);
+							Settings.setItem('syncNeedsLogin', syncClientIsLoggedIn);
 
-						Settings.restartRequired();
+							Settings.restartRequired();
 
-						SecureSettings.clear();
-					}
+							if (!SettingStore.useSecureSettings)
+								SecureSettings.clear();
+							else {
+								SecureSettings.removeItem('lockerPassword');
+								SecureSettings.removeItem('syncEmail');
+								SecureSettings.removeItem('syncSessionID');
+								SecureSettings.removeItem('syncSharedKey');
+								SecureSettings.removeItem('syncPasswordHash');
+							}
+						}
 
-					SettingStore.syncNow();
-				}, 1000, settings, semi);
+						SettingStore.syncNow();
+					}, 1000, settings, semi);
+				}, function (result) {
+					if (result !== true)
+						LogError('something terrible went wrong.');
+				});
 			}.bind(null, settings), Utilities.noop);
 	},
 

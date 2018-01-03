@@ -387,7 +387,7 @@ Rule.prototype.addMany = function (kinds) {
 			domain,
 			rule;
 
-		var delay = 0.2,
+		var delay = 0.1,
 			i = 0;
 
 		for (kind in kinds) {
