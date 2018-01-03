@@ -308,3 +308,12 @@ Update.versions[170305] = {
 		return true;
 	}
 };
+
+// === 5.3.0 ===
+Update.versions[180103] = {
+	blocking: false,
+
+	update: function() {
+		FilterList.fetch();
+	}
+};
