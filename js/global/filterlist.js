@@ -32,6 +32,8 @@ FilterList.executeQueue = function () {
 		for (var listName in FilterList.__addQueue)
 			if (Rules.list[listName])
 				promise = promise.then(function (listName) {
+					Rules.list[listName].clear();
+					
 					return Rules.list[listName].addMany(FilterList.__addQueue[listName].rules);
 				}.bind(null, listName), function (err) {
 					LogError(err);
