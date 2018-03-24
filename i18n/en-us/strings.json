@@ -100,7 +100,7 @@
 
 	"change_log": "Change Log - {0}",
 	"update_available": "Update Available - {0}",
-	"update_available.more": "Open Safari preferences to update or <a href=\"{0}\">download it directly</a>.",
+	"update_available.more": "Open Safari preferences to update or <a href=\"{0}\">download from website</a>.",
 	"update_available.ignore": "Ignore this update",
 	"update_available.if_gallery": "<b>Important:</b> If you downloaded JS Blocker from Apple's extensions gallery, you won't be able to update to the website version; you'll have to uninstall the current version first. If you don't, an error will occur while installing.",
 	
@@ -690,6 +690,7 @@
 	"rules.protocol.https:": "secure",
 	"rules.protocol.ftp:": "FTP",
 	"rules.protocol.safari-extension:": "Safari extension",
+	"rules.protocol.safari-resource:": "Safari built-in",
 	"rules.protocol.about:": " ",
 	"rules.protocol.data:": " ",
 	"rules.protocol.javascript:": " ",
