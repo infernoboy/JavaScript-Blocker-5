@@ -695,6 +695,11 @@ var UI = {
 				previousViewSwitcherItem = viewSwitcherItems.filter('.active-view').removeClass('active-view'),
 				activeViewSwitcherItem = viewSwitcherItems.filter('[data-view="' + viewID + '"]').addClass('active-view');
 
+			if (previousViewSwitcherItem.hasClass('view-switcher-hidden'))
+				previousViewSwitcherItem.attr('aria-hidden', true);
+
+			activeViewSwitcherItem.removeAttr('aria-hidden');
+
 			document.activeElement.blur();
 
 			UI.view.toTop(viewContainer.attr('data-activeView', viewID));
