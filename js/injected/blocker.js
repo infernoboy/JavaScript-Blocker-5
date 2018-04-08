@@ -933,6 +933,21 @@ if (!globalSetting.disabled) {
 			action: -1
 		};
 
+	if (JSBSupport.isAllowed && Page.info.isFrame && JSBSupport.action < 0 && globalSetting.disableViaParent) {
+		JSBSupport = GlobalCommand('canLoadResource', {
+			getPageLocationFromTab: true,
+			kind: 'disable',
+			strict: true,
+			source: '*',
+			isFrame: true
+		});
+
+		if (!JSBSupport.isAllowed)
+			Page.info.disabledViaParent = {
+				action: JSBSupport.action
+			};
+	}
+
 	if (!JSBSupport.isAllowed) {
 		globalSetting.disabled = true;
 

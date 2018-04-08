@@ -1001,6 +1001,12 @@ Settings.settings = {
 					default: true
 				}
 			}, {
+				setting: 'disableViaParent',
+				props: {
+					type: 'boolean',
+					default: true
+				}
+			}, {
 				divider: true
 			}, {
 				description: 'defaultRuleDomain.description'

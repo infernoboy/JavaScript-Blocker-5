@@ -210,6 +210,7 @@ function Command (command, data, event) {
 					blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
 					showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 					showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
+					disableViaParent: Settings.getItem('disableViaParent'),
 
 					contentURLs: window.CONTENT_URLS
 				};

@@ -185,7 +185,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		if (self.disabled) {
 			if (self.disabled.action > -1) { %>
 				<div class="page-host-disabled">
-					<p class="jsb-info jsb-embossed jsb-centered"><%=_('view.page.host.disabled')%></p>
+					<p class="jsb-info jsb-embossed jsb-centered"><%=_(self.disabledViaParent ? 'view.page.host.disabled_via_parent' : 'view.page.host.disabled')%></p>
 				</div><%
 			}
 		} else { %>
