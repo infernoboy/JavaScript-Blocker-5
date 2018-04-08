@@ -1,4 +1,4 @@
-![JSB 5](https://hero.toggleable.com/JSB.png "JSB 5")
+<img src="https://hero.toggleable.com/JSB.png" width="549" height="458" title="JSB 5 Screenshot">
 
 An open-source, indie developed, Safari extension that protects your privacy on the web.
 
