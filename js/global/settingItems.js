@@ -1007,6 +1007,12 @@ Settings.settings = {
 					default: true
 				}
 			}, {
+				setting: 'allowAlwaysInPrivate',
+				props: {
+					type: 'boolean',
+					default: false
+				}
+			}, {
 				divider: true
 			}, {
 				description: 'defaultRuleDomain.description'

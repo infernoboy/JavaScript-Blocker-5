@@ -8,6 +8,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 				snapshotInUse = globalPage.Rules.snapshotInUse(),
 				useSimplePageEditor = Settings.getItem('useSimplePageEditor') && !self.forceAdvanced,
 				simplifiedUI = Settings.getItem('simplifiedUI') && Settings.getItem('blockFirstVisit') === 'nowhere',
+				allowAlwaysInPrivate = Settings.getItem('allowAlwaysInPrivate'),
 				allResourcesRules = simplifiedUI ? globalPage.Rules.list.allResources.domain(self.host)['*'] : null,
 				allResourcesAction = null;
 
@@ -16,7 +17,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		}
 	%>
 
-	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>" data-blockedFirstVisitStatus="<%=JSON.stringify(self.blockFirstVisitStatus)._entityQuotes()%>" data-private="<%=self.private ? '1' : '0'%>">
+	<div class="page-host-section <%=isLocked ? 'page-host-rules-locked' : ''%>" data-id="<%=self.id%>" data-domain="<%=self.host._entityQuotes()%>" data-disabled="<%=self.disabled ? 1 : 0%>" data-blockedFirstVisitStatus="<%=JSON.stringify(self.blockFirstVisitStatus)._entityQuotes()%>" data-private="<%=(self.private && !allowAlwaysInPrivate) ? '1' : '0'%>">
 		<div class="page-host-header floating-header">
 			<span class="page-host-type"><%=self.isFrame ? _('view.page.header.frame') : _('view.page.header.top')%></span><span class="page-host-header-divider" aria-hidden="true">│</span><span class="page-host-host jsb-light-scrollbars"><%=self.host%></span><span class="page-host-header-divider" aria-hidden="true">│</span><span class="page-host-hidden-count">0 hidden items</span>
 			<button class="page-host-edit" data-poppyMenu="edit-page" data-poppyMenuMeta="<%=self.id%>" data-cancelForceBegin="1"><span class="poppy-menu-target no-underline"><span class="poppy-menu-target-text"><%=_('view.page.host.edit')%></span></span></button>
@@ -37,8 +38,10 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 			<div class="jsb-info">
 				<select class="page-host-editor-list" title="<%=_('view.page.editor.list.title')%>">
-					<% if (!self.private) { %>
+					<% if (!self.private || allowAlwaysInPrivate) { %>
 						<option value="user"><%=_('view.page.host.editor.always')%></option><%
+					} else { %>
+						<option value="temporary" disabled="disabled"><%=_('view.page.host.editor.always_disabled')%></option><%
 					} %>
 					<option value="temporary" <%=(Settings.getItem('defaultRuleList') !== 'always' && (Settings.getItem('lastRuleWasTemporary') || Settings.getItem('defaultRuleList') === 'temporary')) ? 'selected="selected"' : ''%>><%=_('view.page.host.editor.temporarily')%></option>
 				</select><label></label>
@@ -286,8 +289,9 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 					showItemDescription = Settings.getItem('showItemDescription'),
 					showHiddenItems = Settings.getItem('showHiddenItems'),
 					showResourceURLs = Settings.getItem('showResourceURLs') || Settings.getItem('temporarilyShowResourceURLs'),
+					allowAlwaysInPrivate = Settings.getItem('allowAlwaysInPrivate'),
 					createRulesOnClick = Settings.getItem('createRulesOnClick'),
-					createTemporaryRules = self.private || ((Settings.getItem('defaultRuleList') !== 'always' && (Settings.getItem('lastRuleWasTemporary') || Settings.getItem('defaultRuleList') === 'temporary'))),
+					createTemporaryRules = (self.private && !allowAlwaysInPrivate) || ((Settings.getItem('defaultRuleList') !== 'always' && (Settings.getItem('lastRuleWasTemporary') || Settings.getItem('defaultRuleList') === 'temporary'))),
 					actionGroup = {},
 					hiddenCount = 0;
 
