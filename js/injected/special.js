@@ -344,7 +344,7 @@ var Special = {
 
 		JSBCallbackSetup: function () {
 			if (!window[JSB.eventToken])
-				return console.error('frame disappeared?');
+				return window && window.console && console.error('frame disappeared?');
 
 			var doNotFreeze = ['commandGeneratorToken', 'eventCallback'];
 
