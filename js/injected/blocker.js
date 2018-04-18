@@ -629,12 +629,12 @@ var Element = {
 				jsbFrameURL: {
 					configurable: true,
 					writable: true,
-					value: source
+					value: element.srcdoc ? 'about:srcdoc' : source
 				},
 				jsbFrameURLToken: {
 					configurable: true,
 					writable: true,
-					value: Utilities.Token.create(source + 'FrameURL', true)
+					value: Utilities.Token.create((element.srcdoc ? 'about:srcdoc' : source) + 'FrameURL', true)
 				}
 			});
 		}
@@ -771,7 +771,7 @@ var Element = {
 
 				var proto = Utilities.URL.protocol(frame.src);
 
-				if (!['data:', 'javascript:']._contains(proto) && document.getElementById(frame.id))
+				if (!['data:', 'javascript:']._contains(proto) && !frame.srcdoc && document.getElementById(frame.id))
 					Resource.canLoad({
 						target: frame,
 						unblockable: !!frame.src
