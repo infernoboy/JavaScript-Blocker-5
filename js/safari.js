@@ -197,6 +197,7 @@ window.SettingStore = {
 	__cache: {},
 	__badKeys: ['setItem', 'getItem', 'removeItem', 'clear', 'addEventListener', 'removeEventListener'],
 	__localKeys: [],
+	__doNotSync: ['syncQueue'],
 
 	available: !!(window.safari && safari.extension && safari.extension.settings),
 
@@ -226,9 +227,14 @@ window.SettingStore = {
 	},
 
 	sync: function (key, value) {
+		SettingStore.syncCancel(key); 
+
 		SettingStore.__syncTimeout[key] = {
 			fn: (function (key, value) {
 				delete SettingStore.__syncTimeout[key];
+
+				if (SettingStore.__doNotSync._contains(key))
+					return safari.extension.settings.removeItem(key);
 
 				if (SettingStore.useSecureSettings)
 					safari.extension.secureSettings.setItem(key, value);
@@ -254,7 +260,7 @@ window.SettingStore = {
 
 	syncCancel: function (key) {
 		if (SettingStore.__syncTimeout[key]) {
-			clearTimeout(SettingStore.__syncTimeout[key]);
+			clearTimeout(SettingStore.__syncTimeout[key].timeout);
 
 			delete SettingStore.__syncTimeout[key];
 		}
