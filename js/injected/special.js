@@ -205,8 +205,8 @@ var Special = {
 
 		if (Page.info.frameBlocked)
 			this.enabled.page_blocker = {
-				enabled: true,
-				action: -14
+				enabled: !Page.info.frameBlocked.isAllowed,
+				action: Page.info.frameBlocked.isAllowed ? Page.info.frameBlocked.action : -14
 			};
 
 		for (var special in this.enabled)

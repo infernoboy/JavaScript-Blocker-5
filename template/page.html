@@ -142,7 +142,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 		</div>
 
 		<%
-			if (self.frameBlocked) { %>
+			if (self.frameBlocked && !self.frameBlocked.isAllowed) { %>
 				<div class="page-host-frame-blocked">
 					<p class="jsb-info"><%=_('frame_blocked')%></p>
 				</div><%

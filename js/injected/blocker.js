@@ -966,13 +966,34 @@ if (!globalSetting.disabled) {
 			});
 
 			if (!frameState.isAllowed && frameState.action >= 0) {
-				Page.info.frameBlocked = frameState;
+				var frameSelfState = GlobalCommand('canLoadResource', {
+					kind: 'special',
+					strict: true,
+					pageLocation: Page.info.location,
+					pageProtocol: Page.info.protocol,
+					source: 'page_blocker',
+					isFrame: true
+				});
 
-				for (var nodeName in BLOCKABLE)
-					Resource.staticActions[BLOCKABLE[nodeName][0]] = {
-						isAllowed: false,
-						action: -16
-					};
+				var nodeName;
+
+				if (!frameSelfState.isAllowed && frameSelfState.action < 0) {
+					Page.info.frameBlocked = frameState;
+
+					for (nodeName in BLOCKABLE)
+						Resource.staticActions[BLOCKABLE[nodeName][0]] = {
+							isAllowed: false,
+							action: -16
+						};
+				} else if (frameSelfState.action >= 0) {
+					Page.info.frameBlocked = frameSelfState;
+					
+					for (nodeName in BLOCKABLE)
+						Resource.staticActions[BLOCKABLE[nodeName][0]] = {
+							isAllowed: true,
+							action: -17
+						};
+				}
 
 				Page.send();
 			}
