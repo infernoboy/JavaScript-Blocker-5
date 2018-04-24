@@ -1674,24 +1674,48 @@ Settings.settings = {
 						}
 					},
 					onChange: function (type, settingKey, value, storeKey, prevValue, isSync, isFullSync) {
-						if (!isFullSync && storeKey === '$fanboyUltimate' && value && value.enabled) {
-							var poppy = new Popover.window.Poppy(0.5, 0, 'fanboys-ultimate');
+						if (!isFullSync && value && value.enabled) {
+							var poppy, fanboySocial;
 
-							poppy
-								.modal()
-								.showCloseButton()
-								.setContent(Template.create('poppy.settings', 'fanboys-ultimate'))
-								.show();
+							if (storeKey === '$fanboyUltimate') {
+								poppy = new Popover.window.Poppy(0.5, 0);
 
-							var list = Settings.map.filterLists.props.default.$list._clone(),
-								privacy = Settings.map.filterLists.props.default.$privacy._clone();
+								poppy
+									.modal()
+									.showCloseButton()
+									.setContent(Template.create('poppy.settings', 'fanboys-ultimate'))
+									.show();
 
-							list.enabled = false;
-							privacy.enabled = false;
+								var list = Settings.map.filterLists.props.default.$list._clone(),
+									privacy = Settings.map.filterLists.props.default.$privacy._clone(),
+									fanboyAnnoy = Settings.map.filterLists.props.default.$fanboyAnnoy._clone();
+								
+								fanboySocial = Settings.map.filterLists.props.default.$fanboySocial._clone();
 
-							Settings.setItem('filterLists', list, '$list');
-							Settings.setItem('filterLists', privacy, '$privacy');
-							Settings.setItem('filterLists', Settings.map.filterLists.props.default.$fanboyAnnoy, '$fanboyAnnoy');
+								list.enabled = false;
+								privacy.enabled = false;
+								fanboyAnnoy.enabled = false;
+								fanboySocial.enabled = false;
+
+								Settings.setItem('filterLists', list, '$list');
+								Settings.setItem('filterLists', privacy, '$privacy');
+								Settings.setItem('filterLists', fanboyAnnoy, '$fanboyAnnoy');
+								Settings.setItem('filterLists', fanboySocial, '$fanboySocial');
+							} else if (storeKey === '$fanboyAnnoy') {
+								poppy = new Popover.window.Poppy(0.5, 0);
+
+								poppy
+									.modal()
+									.showCloseButton()
+									.setContent(Template.create('poppy.settings', 'fanboys-annoyances'))
+									.show();
+
+								fanboySocial = Settings.map.filterLists.props.default.$fanboySocial._clone();
+
+								fanboySocial.enabled = false;
+
+								Settings.setItem('filterLists', fanboySocial, '$fanboySocial');
+							}
 						}
 
 						Utilities.Timer.timeout('filterListsChanged', function () {
@@ -1702,7 +1726,10 @@ Settings.settings = {
 					},
 					confirm: {
 						prompt: function (settingKey, value, storeKey) {
-							if (['$list', '$privacy', '$fanboyAnnoy']._contains(storeKey) && value.enabled && Settings.getItem('filterLists', '$fanboyUltimate').enabled)
+							if (storeKey === '$fanboySocial' && value.enabled && (Settings.getItem('filterLists', '$fanboyUltimate').enabled || Settings.getItem('filterLists', '$fanboyAnnoy').enabled))
+								return confirm(_('setting.filterLists.confirmSocial'));
+
+							if (['$list', '$privacy', '$fanboyAnnoy', '$fanboySocial']._contains(storeKey) && value.enabled && Settings.getItem('filterLists', '$fanboyUltimate').enabled)
 								return confirm(_('setting.filterLists.confirm'));
 
 							return true;
