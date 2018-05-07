@@ -730,7 +730,10 @@ Special.specials = {
 	frameSandboxFixer: function () {
 		var frameSandbox;
 
-		if (window.frameElement && (frameSandbox = window.frameElement.getAttribute('data-jsbFrameSandbox'))) {
+		if (window === window.top)
+			return;
+
+		if (window.location.origin === messageExtensionSync('topOrigin') && window.frameElement && (frameSandbox = window.frameElement.getAttribute('data-jsbFrameSandbox'))) {
 			var meta = document.createElement('meta');
 
 			meta.setAttribute('http-equiv', 'content-security-policy');
@@ -753,7 +756,6 @@ Special.specials = {
 Special.specials.prepareScript.ignoreHelpers = true;
 Special.specials.historyFixer.excludeFromPage = true;
 Special.specials.frameSandboxFixer.excludeFromPage = true;
-Special.specials.frameSandboxFixer.ignoreHelpers = true;
 Special.specials.xhr_intercept.excludeFromPage = true;
 Special.specials.popups.excludeFromPage = true;
 Special.specials.simple_referrer.noInject = true;

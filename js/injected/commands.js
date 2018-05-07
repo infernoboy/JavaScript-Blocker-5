@@ -837,6 +837,10 @@ var Command = function (type, event) {
 			return Command.globalRelay(detail);
 		},
 
+		topOrigin: function (detail) {
+			return Command.globalRelay(detail);
+		},
+
 		extensionURL: function (detail) {
 			return {
 				callbackID: detail.callbackID,

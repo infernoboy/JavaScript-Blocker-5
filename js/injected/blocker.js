@@ -47,7 +47,7 @@ var BLOCKED_ELEMENTS = [],
 	FRAME_ELEMENT = null;
 /* eslint-enable */
 
-if (!Utilities.Page.isTop)
+if (!Utilities.Page.isTop && window.location.origin === GlobalCommand('topOrigin'))
 	FRAME_ELEMENT = window.frameElement;
 
 var TOKEN = {

@@ -508,6 +508,10 @@ function Command (command, data, event) {
 			delete Settings.EXPORTED_BACKUP;
 		},
 
+		topOrigin: function () {
+			this.message = Utilities.URL.origin(event.target.url);
+		},
+
 		template: {
 			create: function (detail) {
 				try {
