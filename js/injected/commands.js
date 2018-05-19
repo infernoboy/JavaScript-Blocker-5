@@ -308,7 +308,7 @@ var Command = function (type, event) {
 				}
 			}
 
-			var previousURL = frame ? frame.jsbFrameURL : 'about:blank',
+			var previousURL = frame ? (frame.jsbFrameURL ? frame.jsbFrameURL : 'about:srcdoc') : 'about:blank',
 				previousURLTokenString = previousURL + 'FrameURL';
 
 			if (frame && !Utilities.Token.valid(frame.jsbFrameURLToken, previousURLTokenString))
@@ -834,6 +834,10 @@ var Command = function (type, event) {
 		},
 
 		localize: function (detail) {
+			return Command.globalRelay(detail);
+		},
+
+		topOrigin: function (detail) {
 			return Command.globalRelay(detail);
 		},
 

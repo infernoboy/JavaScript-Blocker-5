@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on May 24, 2017 06:49:51 AM
+* @Last modified in Sublime on Apr 16, 2018 02:38:47 AM
 */
 
 'use strict';
@@ -99,7 +99,7 @@ SyncClient.SRP = {
 
 						resolve(true);
 					});
-			});
+			}, Utilities.noop);
 		});
 	},
 
@@ -132,7 +132,7 @@ SyncClient.SRP = {
 
 						resolve(true);
 					});
-			});
+			}, Utilities.noop);
 		});
 	},
 

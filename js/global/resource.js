@@ -52,7 +52,7 @@ function Resource (resource) {
 	});
 
 	if (this.sourceIsURL) {
-		var protos = ['http:', 'https:', 'ftp:', 'sftp:', 'safari-extension:'];
+		var protos = ['http:', 'https:', 'ftp:', 'sftp:', 'safari-extension:', 'safari-resource:'];
 
 		this.sourceProto = Utilities.URL.protocol(this.source),
 		this.locationProto = Utilities.URL.protocol(this.pageLocation);
@@ -159,7 +159,7 @@ Resource.prototype.allowedBySettings = function (enforceNowhere) {
 
 	var blockFrom = enforceNowhere ? 'nowhere' : Settings.getItem('alwaysBlock', this.kind);
 
-	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || this.sourceProto === 'safari-extension:')
+	if (blockFrom === 'nowhere' || blockFrom === 'blacklist' || this.sourceProto === 'safari-extension:' || this.sourceProto === 'safari-resource:')
 		return canLoad;
 	else {
 		var pageParts = Utilities.URL.hostParts(this.pageHost),

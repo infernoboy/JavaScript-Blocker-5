@@ -745,7 +745,7 @@ var Utilities = {
 		isURL: function (url) {
 			var proto = this.protocol(url);
 
-			return typeof url === 'string' && (this.__structure.test(url) || proto === 'about:' || proto === 'data:' || proto === 'javascript:');
+			return typeof url === 'string' && (this.__structure.test(url) || proto === 'about:' || proto === 'data:' || proto === 'javascript:' || proto === 'safari-resource:');
 		},
 
 		strip: function (url) {
@@ -792,6 +792,9 @@ var Utilities = {
 
 			if (/^blob:/.test(url))
 				return 'Blob URI';
+
+			if (/^safari-resource:/.test(url))
+				return 'Safari built-in resource URI';
 
 			return this.__anchor.host;
 		},

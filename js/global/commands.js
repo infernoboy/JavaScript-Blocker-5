@@ -210,6 +210,7 @@ function Command (command, data, event) {
 					blockFirstVisitEnabled: Settings.getItem('blockFirstVisit') !== 'nowhere',
 					showUnblockedScripts: Settings.getItem('showUnblockedScripts'),
 					showBlockFirstVisitNotification: Settings.getItem('showBlockFirstVisitNotification'),
+					disableViaParent: Settings.getItem('disableViaParent'),
 
 					contentURLs: window.CONTENT_URLS
 				};
@@ -505,6 +506,10 @@ function Command (command, data, event) {
 			this.message = Settings.EXPORTED_BACKUP;
 
 			delete Settings.EXPORTED_BACKUP;
+		},
+
+		topOrigin: function () {
+			this.message = Utilities.URL.origin(event.target.url);
 		},
 
 		template: {

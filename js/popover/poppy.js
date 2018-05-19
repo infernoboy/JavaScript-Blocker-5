@@ -492,21 +492,21 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 		Poppy.__creating = true;
 
+		this.poppy.hide();
+
 		this.poppy.prependTo(Poppy.__container);
 
 		this.displayed = true;
-
-		this.executeScript();
 
 		this.poppy
 			.toggleClass('poppy-open-quick', !!quick)
 			.toggleClass('poppy-open-instant', !!instant)
 			.addClass('poppy-open poppy-displayed');
 
-		this.poppy.hide();
-
 		Utilities.setImmediateTimeout(function (self) {
 			self.setPosition();
+
+			self.executeScript();
 		}, [this]);
 
 		Poppy.event.trigger('poppyDidShow', this);

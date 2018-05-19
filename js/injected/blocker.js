@@ -47,7 +47,7 @@ var BLOCKED_ELEMENTS = [],
 	FRAME_ELEMENT = null;
 /* eslint-enable */
 
-if (!Utilities.Page.isTop)
+if (!Utilities.Page.isTop && window.location.origin === GlobalCommand('topOrigin'))
 	FRAME_ELEMENT = window.frameElement;
 
 var TOKEN = {
@@ -629,12 +629,12 @@ var Element = {
 				jsbFrameURL: {
 					configurable: true,
 					writable: true,
-					value: source
+					value: element.srcdoc ? 'about:srcdoc' : source
 				},
 				jsbFrameURLToken: {
 					configurable: true,
 					writable: true,
-					value: Utilities.Token.create(source + 'FrameURL', true)
+					value: Utilities.Token.create((element.srcdoc ? 'about:srcdoc' : source) + 'FrameURL', true)
 				}
 			});
 		}
@@ -771,7 +771,7 @@ var Element = {
 
 				var proto = Utilities.URL.protocol(frame.src);
 
-				if (!['data:', 'javascript:']._contains(proto) && document.getElementById(frame.id))
+				if (!['data:', 'javascript:']._contains(proto) && !frame.srcdoc && document.getElementById(frame.id))
 					Resource.canLoad({
 						target: frame,
 						unblockable: !!frame.src
@@ -933,6 +933,21 @@ if (!globalSetting.disabled) {
 			action: -1
 		};
 
+	if (JSBSupport.isAllowed && Page.info.isFrame && JSBSupport.action < 0 && globalSetting.disableViaParent) {
+		JSBSupport = GlobalCommand('canLoadResource', {
+			getPageLocationFromTab: true,
+			kind: 'disable',
+			strict: true,
+			source: '*',
+			isFrame: true
+		});
+
+		if (!JSBSupport.isAllowed)
+			Page.info.disabledViaParent = {
+				action: JSBSupport.action
+			};
+	}
+
 	if (!JSBSupport.isAllowed) {
 		globalSetting.disabled = true;
 
@@ -951,13 +966,34 @@ if (!globalSetting.disabled) {
 			});
 
 			if (!frameState.isAllowed && frameState.action >= 0) {
-				Page.info.frameBlocked = frameState;
+				var frameSelfState = GlobalCommand('canLoadResource', {
+					kind: 'special',
+					strict: true,
+					pageLocation: Page.info.location,
+					pageProtocol: Page.info.protocol,
+					source: 'page_blocker',
+					isFrame: true
+				});
 
-				for (var nodeName in BLOCKABLE)
-					Resource.staticActions[BLOCKABLE[nodeName][0]] = {
-						isAllowed: false,
-						action: -16
-					};
+				var nodeName;
+
+				if (!frameSelfState.isAllowed && frameSelfState.action < 0) {
+					Page.info.frameBlocked = frameState;
+
+					for (nodeName in BLOCKABLE)
+						Resource.staticActions[BLOCKABLE[nodeName][0]] = {
+							isAllowed: false,
+							action: -16
+						};
+				} else if (frameSelfState.action >= 0) {
+					Page.info.frameBlocked = frameSelfState;
+					
+					for (nodeName in BLOCKABLE)
+						Resource.staticActions[BLOCKABLE[nodeName][0]] = {
+							isAllowed: true,
+							action: -17
+						};
+				}
 
 				Page.send();
 			}
