@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on Apr 16, 2018 02:38:47 AM
+* @Last modified in Sublime on May 26, 2018 01:54:37 AM
 */
 
 'use strict';
@@ -269,16 +269,19 @@ SyncClient.SRP = {
 					UI.SyncClient.SRP.sessionExpired();
 				});
 
-			SyncClient.ping(SecureSettings.getItem('syncSessionID')).then(function (sessionIsValid) {
-				if (sessionIsValid) {
-					SyncClient.event.trigger('login');
+			var syncSessionID = SecureSettings.getItem('syncSessionID');
 
-					return resolve(true);
-				}
+			if (syncSessionID)
+				SyncClient.ping(syncSessionID).then(function (sessionIsValid) {
+					if (sessionIsValid) {
+						SyncClient.event.trigger('login');
 
-				if (SecureSettings.getItem('syncSharedKey'))
-					SyncClient.SRP.sessionExpired();
-			}, reject);
+						return resolve(true);
+					}
+
+					if (SecureSettings.getItem('syncSharedKey'))
+						SyncClient.SRP.sessionExpired();
+				}, reject);
 		});
 	}
 };
