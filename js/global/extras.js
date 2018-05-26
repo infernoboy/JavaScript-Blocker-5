@@ -27,6 +27,7 @@ var Extras = {
 		return CustomPromise(function (resolve, reject) {
 			$.ajax({
 				url: Extras.__verificationURL,
+				method: 'POST',
 				timeout: 5000,
 				data: {
 					id: email,
