@@ -1177,9 +1177,15 @@ Object._extend(Poppy.scripts, {
 				if (!passwordValue.length)
 					return password.shake().focus();
 
+				var self = this;
+
+				this.disabled = true;
+
 				globalPage.SyncClient.SRP.login(emailValue, passwordValue).then(function () {
 					poppy.close();
 				}, function (err) {					
+					self.disabled = false;
+
 					if (err === 'server error')
 						globalPage.SyncClient.getServerStatus().then(function () {
 							errorMessage.show().text(_('sync.server.unknown_error'));
@@ -1228,11 +1234,17 @@ Object._extend(Poppy.scripts, {
 				if (passwordValue !== verifyPasswordValue)
 					return verifyPassword.shake().focus().selectAll();
 
+				var self = this;
+
+				this.disabled = true;
+
 				globalPage.SyncClient.SRP.register(emailValue, passwordValue).then(function () {
 					poppy.close();
 
 					UI.SyncClient.SRP.showVerify();
-				}, function (err) {					
+				}, function (err) {
+					self.disabled = false;
+
 					if (err === 'server error')
 						globalPage.SyncClient.getServerStatus().then(function () {
 							errorMessage.show().text(_('sync.server.unknown_error'));
@@ -1274,11 +1286,17 @@ Object._extend(Poppy.scripts, {
 				if (!verificationKeyValue.length)
 					return verificationKey.shake().focus();
 
+				var self = this;
+
+				this.disabled = true;
+
 				globalPage.SyncClient.SRP.verify(verificationKeyValue).then(function () {
 					poppy.close();
 
 					UI.SyncClient.SRP.showLogin(_('sync.verify.verified'));
-				}, function (err) {					
+				}, function (err) {
+					self.disabled = false;		
+
 					if (err === 'server error')
 						globalPage.SyncClient.getServerStatus().then(function () {
 							errorMessage.show().text(_('sync.server.unknown_error'));
@@ -1325,11 +1343,17 @@ Object._extend(Poppy.scripts, {
 				if (passwordValue !== verifyPasswordValue)
 					return verifyPassword.shake().focus();
 
+				var self = this;
+
+				this.disabled = true;
+
 				globalPage.SyncClient.SRP.changePassword(email, currentPasswordValue, passwordValue).then(function () {
 					poppy.close();
 
 					UI.SyncClient.SRP.showLogin(_('sync.password_changed'));
-				}, function (err) {					
+				}, function (err) {
+					self.disabled = false;
+
 					if (err === 'server error')
 						globalPage.SyncClient.getServerStatus().then(function () {
 							errorMessage.show().text(_('sync.server.unknown_error'));
