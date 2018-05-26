@@ -317,3 +317,31 @@ Update.versions[180103] = {
 		FilterList.fetch();
 	}
 };
+
+// === 5.3.2 ===
+Update.versions[180526] = {
+	blocking: false,
+
+	poppy: function (poppy) {
+		poppy
+			.modal()
+			.showCloseButton();
+
+		$('#go-to-privacy', poppy.content).click(function (event) {
+			event.preventDefault();
+
+			UI.view.switchTo('#help-views-privacy');
+			UI.view.switchTo('#main-views-help');
+
+			poppy.close();
+		});
+
+		Poppy.event.addCustomEventListener('poppyDidClose', function (event) {
+			if (event.detail === poppy) {
+				event.unbind();
+
+				Update.updatedToVersion(poppy.updateVersion);
+			}
+		});
+	}
+};

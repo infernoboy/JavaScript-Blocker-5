@@ -70,7 +70,7 @@
 	"setup.please_complete": "Please scroll down and click <b>Complete Setup</b> if you're ready to continue.",
 	"setup.complete": "Complete Setup",
 	"setup.hello": "Thanks for installing JS Blocker!",
-	"setup.intro": "Your browsing experience just got a whole lot safer and faster. JS Blocker puts you in control of what webpages can do—no more advertisements, no more being tracked, and no more unnecessary clutter. You'll have to reload any pages you already have open for JS Blocker to start taking effect on them.",
+	"setup.intro": "Your browsing experience just got a whole lot safer and faster. JS Blocker puts you in control of what webpages can do—no more advertisements, no more being tracked, and no more unnecessary clutter. You'll have to reload any pages you already have open for JS Blocker to start taking effect on them. <a href='javascript:void(0)' id='review-privacy'>Review privacy policy.</a>",
 	"setup.common_settings": "Common Settings",
 
 	"importBackup.title": "Import Backup - JS Blocker",
@@ -819,6 +819,7 @@
 	"help.faq": "FAQ",
 	"help.contact": "Contact",
 	"help.about": "About",
+	"help.privacy": "Privacy",
 	"help.faq.page": "Page",
 	"help.faq.general": "General",
 	"help.faq.rules": "Rules",
