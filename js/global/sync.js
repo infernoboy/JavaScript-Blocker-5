@@ -232,9 +232,3 @@ SyncClient.event
 	});
 
 SyncClient.promiseWorker = new PromiseWorker('../js/global/sync.worker.js');
-
-if (Libraries.CryptoJS.blobURL)
-	SyncClient.promiseWorker.postMessage({
-		command: 'importScript',
-		url: Libraries.CryptoJS.blobURL
-	});
