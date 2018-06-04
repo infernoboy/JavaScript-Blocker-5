@@ -826,7 +826,7 @@
 	"help.faq.settings": "Settings",
 
 	"feedback.feedback": "Feedback",
-	"feedback.includes": "Anonymous settings and console messages included.",
+	"feedback.includes": "Anonymous settings and console messages included.<br><b>Email required to receive reply to feedback</b>.",
 	"feedback.feedback_success": "Your submission has been received. Thanks for the feedback!",
 	"feedback.please_wait": "Please wait at least 5 minutes between submissions.",
 	"feedback.email": "Send an email instead",
