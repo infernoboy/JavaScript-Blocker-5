@@ -231,7 +231,7 @@ var Update = {
 
 	fetchChangeLog: function (displayVersion) {
 		return CustomPromise(function (resolve, reject) {
-			$.get('http://jsblocker.toggleable.com/change-log/' + displayVersion.replace(/\./g, ''))
+			$.get('https://jsblocker.toggleable.com/change-log/' + displayVersion.replace(/\./g, ''))
 				.done(function (responseText, textStatus, request) {
 					if (textStatus === 'success')
 						resolve($('article .post-content', responseText));
