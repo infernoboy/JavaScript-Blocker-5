@@ -234,7 +234,7 @@ var Update = {
 			$.get('http://jsblocker.toggleable.com/change-log/' + displayVersion.replace(/\./g, ''))
 				.done(function (responseText, textStatus, request) {
 					if (textStatus === 'success')
-						resolve($('#sites-canvas-main-content', responseText));
+						resolve($('article .post-content', responseText));
 					else
 						reject(request.status);
 				})
