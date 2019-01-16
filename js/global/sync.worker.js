@@ -8,7 +8,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 var window = self;
 /* eslint-enable */
 
-importScripts('../utilities.js');
+importScripts('../utilities.js', 'crypto-js.min.js');
 
 self.addEventListener('message', function (message) {
 	var id = message.data.id;

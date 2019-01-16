@@ -22,7 +22,12 @@ UI.Setup = {
 		Poppy.Menu.event.addCustomEventListener('poppyMenuWillShow', UI.Setup.preventPoppyMenus);
 
 		UI.Setup.view
-			.on('click', '#mark-setup-complete', UI.Setup.complete);
+			.on('click', '#mark-setup-complete', UI.Setup.complete)
+			.on('click', '#review-privacy', function (event) {
+				var poppy = new Poppy(event.pageX, event.pageY);
+
+				poppy.setContent(Template.create('help', 'help-privacy')).show();
+			});
 	},
 
 	reinit: function () {

@@ -229,12 +229,9 @@ var SyncClient = {
 SyncClient.event
 	.addCustomEventListener('login', function () {
 		SyncClient.pingTimer(true, SecureSettings.getItem('syncSessionID'));
+	})
+	.addCustomEventListener('logout', function () {
+		SyncClient.pingTimer(false);
 	});
 
 SyncClient.promiseWorker = new PromiseWorker('../js/global/sync.worker.js');
-
-if (Libraries.CryptoJS.blobURL)
-	SyncClient.promiseWorker.postMessage({
-		command: 'importScript',
-		url: Libraries.CryptoJS.blobURL
-	});

@@ -5,7 +5,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 'use strict';
 
 UI.Help = {
-	__sections: ['contact', 'faq', 'about'],
+	__sections: ['contact', 'faq', 'about', 'privacy'],
 
 	init: function () {
 		UI.Help.view = $('#main-views-help', UI.view.views);

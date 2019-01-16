@@ -51,6 +51,7 @@
 	"sync.login.login": "Log In",
 	"sync.login.forgot": "Forgot?",
 
+	"sync.register.disabled": "JSB Sync registration is disabled.",
 	"sync.register.header": "JSB Sync Register",
 	"sync.register.description": "Sign up to begin syncing your settings and rules across multiple computers. You'll receive an email with a verification key to activate your account.",
 	"sync.register.register": "Register",
@@ -70,7 +71,7 @@
 	"setup.please_complete": "Please scroll down and click <b>Complete Setup</b> if you're ready to continue.",
 	"setup.complete": "Complete Setup",
 	"setup.hello": "Thanks for installing JS Blocker!",
-	"setup.intro": "Your browsing experience just got a whole lot safer and faster. JS Blocker puts you in control of what webpages can do—no more advertisements, no more being tracked, and no more unnecessary clutter. You'll have to reload any pages you already have open for JS Blocker to start taking effect on them.",
+	"setup.intro": "Your browsing experience just got a whole lot safer and faster. JS Blocker puts you in control of what webpages can do—no more advertisements, no more being tracked, and no more unnecessary clutter. You'll have to reload any pages you already have open for JS Blocker to start taking effect on them. <a href='javascript:void(0)' id='review-privacy'>Review privacy policy.</a>",
 	"setup.common_settings": "Common Settings",
 
 	"importBackup.title": "Import Backup - JS Blocker",
@@ -819,13 +820,14 @@
 	"help.faq": "FAQ",
 	"help.contact": "Contact",
 	"help.about": "About",
+	"help.privacy": "Privacy",
 	"help.faq.page": "Page",
 	"help.faq.general": "General",
 	"help.faq.rules": "Rules",
 	"help.faq.settings": "Settings",
 
 	"feedback.feedback": "Feedback",
-	"feedback.includes": "Anonymous settings and console messages included.",
+	"feedback.includes": "Anonymous settings and console messages included.<br><b>Email required to receive reply to feedback</b>.",
 	"feedback.feedback_success": "Your submission has been received. Thanks for the feedback!",
 	"feedback.please_wait": "Please wait at least 5 minutes between submissions.",
 	"feedback.email": "Send an email instead",

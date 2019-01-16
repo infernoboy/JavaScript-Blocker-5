@@ -131,33 +131,23 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 			* {
 				line-height: 1.5;
 			}
-			
-			table {
-				width: auto !important;
+
+			ul {
+				margin-left: 13px;
+
+				li {
+					margin-bottom: 7px;
+				}
 			}
 
-			div[dir] div {
-				&:not(:last-child) {
-					padding: 0 0 5px;
-					margin: 5px 0;
-				}
-
-				ul {
-					margin-left: 13px;
-
-					li {
-						margin-bottom: 7px;
-					}
-				}
-
-				div {
-					> b,
-					> u,
-					> i {
-						display: inline-block;
-						margin-top: 10px;
-						margin-bottom: -5px;
-					}
+			div,
+			p {
+				> b,
+				> u,
+				> i {
+					display: inline-block;
+					margin-top: 10px;
+					margin-bottom: -5px;
 				}
 			}
 		}
@@ -559,6 +549,7 @@ JS Blocker 5 (http://jsblocker.toggleable.com) - Copyright 2017 Travis Lee Roman
 
 		@import "view.setup.less";
 		@import "view.about.less";
+		@import "view.privacy.less";
 		@import "view.page.less";
 		@import "view.resource.less";
 		@import "view.setting.less";

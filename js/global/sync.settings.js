@@ -286,6 +286,10 @@ Object._extend(SyncClient.Settings.prototype, {
 
 			LogDebug('SyncClient: Operation cancelled because syncSessionID changed unexpectedly.');
 
+			SyncClient.logout().then(Utilities.noop, Utilities.noop);
+
+			UI.SyncClient.SRP.showLogin(_('sync.session_expired'));
+
 			throw new Error('syncSessionID changed');
 		}
 	},
