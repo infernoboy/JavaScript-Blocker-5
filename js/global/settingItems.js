@@ -802,14 +802,6 @@ Settings.settings = {
 						}
 					}
 				}]
-			}, {
-				setting: 'syncClientRegister',
-				props: {
-					type: 'stand-alone-button',
-					onClick: function () {
-						UI.SyncClient.SRP.showRegister();
-					}
-				}
 			}]
 		}]
 	}, {

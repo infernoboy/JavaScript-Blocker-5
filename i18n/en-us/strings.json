@@ -51,6 +51,7 @@
 	"sync.login.login": "Log In",
 	"sync.login.forgot": "Forgot?",
 
+	"sync.register.disabled": "JSB Sync registration is disabled.",
 	"sync.register.header": "JSB Sync Register",
 	"sync.register.description": "Sign up to begin syncing your settings and rules across multiple computers. You'll receive an email with a verification key to activate your account.",
 	"sync.register.register": "Register",

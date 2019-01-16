@@ -1,5 +1,5 @@
 /*
-* @Last modified in Sublime on May 26, 2018 01:54:37 AM
+* @Last modified in Sublime on Jan 16, 2019 04:11:54 PM
 */
 
 'use strict';
@@ -53,53 +53,9 @@ SyncClient.SRP = {
 		reject(error);
 	},
 
-	register: function (email, password) {
+	register: function () {
 		return CustomPromise(function (resolve, reject) {			
-			if (typeof email !== 'string' || typeof password !== 'string')
-				return reject(Error('email or password is not a string'));
-
-			Utilities.watchdog('syncClientRegister', 1, 1000).then(function () {
-				email = email.toLowerCase();
-
-				var socket = SyncClient.SRP.init();
-
-				socket
-					.on('connect_error', function () {
-						SyncClient.SRP.cleanup();
-
-						reject('server error');
-					})
-					.on('SRPError', SyncClient.SRP.errorHandler.bind(null, reject))
-					.on('ready', function () {
-						SyncClient.SRP.client = new jsrp.client();
-
-						SyncClient.SRP.client.init({
-							username: email,
-							password: password
-						}, function () {
-							SyncClient.SRP.client.createVerifier(function(err, result) {
-								if (err)
-									return reject(err);
-
-								socket.emit('register', {
-									email: email,
-									salt: result.salt,
-									verifier: result.verifier
-								});
-							});
-						});
-					})
-					.on('registered', function () {
-						SecureSettings.setItem('syncEmail', email);
-						Settings.setItem('syncClientNeedsVerification', true);
-
-						SyncClient.SRP.cleanup();
-
-						SyncClient.event.trigger('registered');
-
-						resolve(true);
-					});
-			}, Utilities.noop);
+			return reject(Error('registration disabled'));
 		});
 	},
 
